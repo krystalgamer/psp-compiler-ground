@@ -2,9 +2,13 @@
 #include "common.h"
 #include "mes_js.h"
 #include "m2c_macros.h"
+extern MesObject *D_00585350;
+int isnan(double d);
+int isinf(double d);
+MesValue mes_eval_to_number(MesContext *ctx, MesValue v);
 extern unsigned int mes_ids[];
 extern void *mes_number_table;
-MesValue mes_number_constructor(MesContext *ctx);
+MesValue mes_number_constructor(MesContext *ctx, MesValue v);
 MesValue mes_number_alloc(MesContext *ctx, double d);
 MesValue mes_number_from_string(MesContext *ctx, MesValue s, int a, int b);
 MesValue mes_string_new2(MesContext *ctx, const char *s, int len);
@@ -84,9 +88,21 @@ int mes_is_number(int arg0) {
     return var_a0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_num);
+double mes_num(MesValue v)
+{
+    if ((v & 3) == 1)
+        return v >> 2;
+    if ((v & 3) == 2)
+        return ((MesNum *)(v & ~3))->d;
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_floor);
+double mes_number_floor(double d)
+{
+    if (d < 0)
+        return -floor(-d);
+    return floor(d);
+}
 
 double mes_number_fdiv(double a, double b)
 {
@@ -101,11 +117,47 @@ void mes_number_fmod(void) {
     fmod();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_add);
+MesValue mes_number_add(MesContext *ctx, MesValue a, MesValue b)
+{
+    MesValue r;
+
+    if (a == 0x1C || b == 0x1C)
+        r = 0x1C;
+    else if (a == 0x14)
+        r = b == 0x18 ? 0x1C : 0x14;
+    else if (a == 0x18)
+        r = b == 0x14 ? 0x1C : 0x18;
+    else if (b == 0x14)
+        r = 0x14;
+    else if (b == 0x18)
+        r = 0x18;
+    else if (a == 0x10 && b == 0x10)
+        r = 0x10;
+    else
+        r = mes_number_alloc(ctx, mes_num(a) + mes_num(b));
+    return r;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_sub);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_minus);
+MesValue mes_number_minus(MesContext *ctx, MesValue v)
+{
+    MesValue r;
+
+    if (v == 0x1C)
+        r = 0x1C;
+    else if (v == 0x14)
+        r = 0x18;
+    else if (v == 0x18)
+        r = 0x14;
+    else if (v == 0x10)
+        r = 1;
+    else if (v == 1)
+        r = 0x10;
+    else
+        r = mes_number_alloc(ctx, -mes_num(v));
+    return r;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_mul);
 
@@ -171,7 +223,24 @@ void mes_number_initialize(void) {
     mes_gc_register(&mes_number_method, 0x10, 0x64, 0x64);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_constructor);
+MesValue mes_number_constructor(MesContext *ctx, MesValue v)
+{
+    MesArgs *a = ctx->frame->args;
+    MesObject *o;
+
+    if (a != NULL && a->argc != 0)
+        v = mes_eval_to_number(ctx, v);
+    else
+        v = 1;
+    if (ctx->frame->construct) {
+        *--ctx->sp = v;
+        o = mes_object_new(ctx, 8, D_00585350);
+        ctx->sp++;
+        o->fC = v;
+        return (MesValue)o;
+    }
+    return v;
+}
 
 MesValue mes_number_to_special(MesValue v)
 {
