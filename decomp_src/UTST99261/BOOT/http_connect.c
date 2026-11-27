@@ -14,13 +14,54 @@ int sceKernelReferSemaStatus(int id, HttpSemaInfo *info);
 int sceKernelSignalSema(int id, int n);
 int sceHttpAddExtraHeader(int id, char *name, char *value, int mode);
 
+int http_setrequestheader_Authorization(int h, char **up);
+int http_setproxyheader_Authorization(int h, char **up);
+int http_setrequestheader_ContentLength(int h, char *v);
+int http_setproxyheader_ContentLength(int h, char *v);
+int sceHttpDeleteHeader(int id, const char *name);
+extern char htlib_cstrCONTENTLENGTH[];
+void http_connect_error_end(HttpObj *o);
+int sprintf(char *, const char *, ...);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_connect", http_connect);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_connect", http_connect_init);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_connect", http_connect_checkServer);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_connect", http_connect_SetAutoHead);
+int http_connect_SetAutoHead(int h, int body, unsigned int len, int method)
+{
+    HttpObj *o = HTTP_OBJ(h);
+    int r;
+    char buf[48];
+
+    if (o->proxy == NULL)
+        r = http_setrequestheader_Authorization(h, &o->user);
+    else
+        r = http_setproxyheader_Authorization(h, &o->puser);
+    if (r != 0)
+        return r;
+    if (o->rule & 2) {
+        if (method == 1 || body != 0) {
+            h = (int)o >> 1;
+            sprintf(buf, "%u", len);
+            if (o->proxy == NULL)
+                r = http_setrequestheader_ContentLength(h, buf);
+            else
+                r = http_setproxyheader_ContentLength(h, buf);
+            if (r < 0)
+                return r;
+        }
+    } else {
+        r = sceHttpDeleteHeader(o->req, htlib_cstrCONTENTLENGTH);
+        if (r != 0) {
+            http_connect_error_end(o);
+            if (o->error == 0)
+                o->error = r;
+            return o->error;
+        }
+    }
+    return 0;
+}
 
 int http_connect_setAllReqHead(int h)
 {
