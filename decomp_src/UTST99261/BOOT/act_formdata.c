@@ -83,7 +83,24 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_formdata", getFormCollectDa
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_formdata", addFormCollectSymbol);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_formdata", fileContentType);
+int fileContentType(char *name) {
+    char *ext;
+    char *p;
+    int i;
+
+    p = name;
+    ext = p;
+    while (*p) {
+        if (*p == '.')
+            ext = p;
+        p++;
+    }
+    for (i = 0; contentType[i].ext != NULL; i++) {
+        if (strcmp(ext, contentType[i].ext) == 0)
+            break;
+    }
+    return contentType[i].type;
+}
 
 FILEDATA *newFileData(char *path) {
     FILEDATA *fd = MEM_malloc(0, sizeof(FILEDATA));
