@@ -25,6 +25,9 @@ u16 *CSS_string(u16 *p, u16 **out);
 
 typedef struct CSSUNITVAL { s16 unit; s16 pad; int x4; double val; int x10[4]; } CSSUNITVAL;
 u16 *CSS_ident(u16 *s, u16 **out);
+void *newCSSPrimitiveValue(int type);
+void *duplicateCSSPrimitiveValue(void *s);
+void MEM_free(int pool, void *p);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", ParseUNIT);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", ParseIDENT);
@@ -715,7 +718,65 @@ fail:
     return CSS_SkipProperty(p);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", ParseCSSBorderSpacing);
+u16 *ParseCSSBorderSpacing(void *decl, u16 *p) {
+    CSSVALUE *v;
+    u16 *r;
+    s16 *h = NULL;
+    s16 *w = NULL;
+    v = newCSSValue();
+    if (v == NULL) {
+        goto fail;
+    }
+    p = CSS_SkipBlanksAndComments(p);
+    if ((r = ParseCSSIdent(v, p, 0x4D)) != NULL) {
+        addCSSValue(decl, v);
+        return r;
+    }
+    h = newCSSPrimitiveValue(0x15);
+    if (h == NULL) {
+        goto fail;
+    }
+    w = newCSSPrimitiveValue(0x15);
+    if (w == NULL) {
+        goto fail;
+    }
+    r = ParseUNIT(h, p);
+    if (r != NULL) {
+        p = CSS_SkipBlanksAndComments(r);
+        if (*p == ',') {
+            p++;
+            p = CSS_SkipBlanksAndComments(p);
+        }
+        r = ParseUNIT(w, p);
+        if (r != NULL) {
+            p = r;
+        } else {
+            MEM_free(0, w);
+            w = duplicateCSSPrimitiveValue(h);
+            if (w == NULL) {
+                goto fail;
+            }
+        }
+        v->type = 5;
+        *(s16 **)&v->unit = h;
+        *(s16 **)&v->unk24 = w;
+        addCSSValue(decl, v);
+        return p;
+    }
+    MEM_free(0, h);
+    MEM_free(0, w);
+    freeCSSValue(v);
+    return CSS_SkipProperty(p);
+fail:
+    if (h != NULL) {
+        MEM_free(0, h);
+    }
+    if (w != NULL) {
+        MEM_free(0, w);
+    }
+    freeCSSValue(v);
+    return CSS_SkipProperty(p);
+}
 
 u16 *ParseCSSBorderStyle(void *decl, u16 *p) {
     CSSVALUE *top = NULL;
@@ -1300,7 +1361,45 @@ u16 *ParseFontFamily(CSSVALUE *v, u16 *p) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", ParseCSSFont);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", ParseCSSFontFamily);
+u16 *ParseCSSFontFamily(void *decl, u16 *p) {
+    CSSVALUE *v;
+    u16 *r;
+    u16 *s;
+    v = newCSSValue();
+    if (v == NULL) {
+        return CSS_SkipProperty(p);
+    }
+    while (*p != 0 && *p != ';' && *p != '}' && *p != '!') {
+        if ((r = ParseFontFamily(v, p)) == NULL) {
+            r = CSS_nstring(p, &s);
+            if (s != NULL) {
+                v->type = 2;
+                v->unit = 0x13;
+                *(u16 **)&v->ident = s;
+            } else {
+                r = p;
+            }
+        }
+        if (p < r) {
+            addCSSValue(decl, v);
+            p = r;
+            v = newCSSValue();
+            if (v == NULL) {
+                return CSS_SkipProperty(p);
+            }
+            p = CSS_SkipBlanksAndComments(p);
+            if (*p == ',') {
+                p++;
+                p = CSS_SkipBlanksAndComments(p);
+            }
+        } else {
+            freeCSSValue(v);
+            return CSS_SkipProperty(p);
+        }
+    }
+    freeCSSValue(v);
+    return p;
+}
 
 u16 *ParseCSSFontSize(void *decl, u16 *p) {
     CSSVALUE *v;
@@ -1732,7 +1831,33 @@ u16 *ParseCSSMarkerOffset(void *decl, u16 *p) {
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", ParseCSSMarks);
+u16 *ParseCSSMarks(void *decl, u16 *p) {
+    CSSVALUE *v;
+    u16 *r;
+    v = newCSSValue();
+    if (v == NULL) {
+        return CSS_SkipProperty(p);
+    }
+    p = CSS_SkipBlanksAndComments(p);
+    if ((r = ParseCSSIdent(v, p, 0x79)) == NULL && (r = ParseCSSIdent(v, p, 0x4D)) == NULL) {
+        while (*p != 0 && *p != ';' && *p != '}' && *p != '!') {
+            if ((r = ParseCSSIdent(v, p, 0x2A)) == NULL && (r = ParseCSSIdent(v, p, 0x2B)) == NULL) {
+                p = CSS_SkipProperty(p);
+                break;
+            }
+            p = r;
+            addCSSValue(decl, v);
+            v = newCSSValue();
+            if (v == NULL) {
+                return CSS_SkipProperty(r);
+            }
+        }
+        freeCSSValue(v);
+        return p;
+    }
+    addCSSValue(decl, v);
+    return r;
+}
 
 u16 *ParseCSSMaxHeight(void *decl, u16 *p) {
     CSSVALUE *v;
@@ -2056,7 +2181,39 @@ u16 *ParseCSSPosition(void *decl, u16 *p) {
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", ParseCSSQuotes);
+u16 *ParseCSSQuotes(void *decl, u16 *p) {
+    CSSVALUE *v;
+    u16 *r;
+    int n;
+    v = newCSSValue();
+    if (v == NULL) {
+        return CSS_SkipProperty(p);
+    }
+    r = CSS_SkipBlanksAndComments(p);
+    p = r;
+    if ((r = ParseCSSIdent(v, p, 0x79)) == NULL && (r = ParseCSSIdent(v, p, 0x4D)) == NULL) {
+        n = 0;
+        while (*p != 0 && *p != ';' && *p != '}' && *p != '!') {
+            if ((r = ParseCSSString(v, p)) == NULL) {
+                break;
+            }
+            addCSSValue(decl, v);
+            v = newCSSValue();
+            n = 1;
+            if (v == NULL) {
+                return CSS_SkipProperty(r);
+            }
+            p = CSS_SkipBlanksAndComments(r);
+        }
+        freeCSSValue(v);
+        if (n == 0) {
+            return CSS_SkipProperty(p);
+        }
+        return p;
+    }
+    addCSSValue(decl, v);
+    return r;
+}
 
 u16 *ParseCSSTableLayout(void *decl, u16 *p) {
     CSSVALUE *v;
