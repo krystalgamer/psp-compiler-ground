@@ -57,6 +57,10 @@ int func_000001A8(const char *path);
 char *func_000002FC(char *path);
 int func_00000350(SceUID in, SceUID out);
 int func_000003F0(SceUID fd1, SceUID fd2);
+int func_0000081C(void);
+int func_00000E38(const char *name);
+int func_00000EDC(unsigned int i);
+int func_00000F40(unsigned int i);
 int func_00000000(char *str, char **argv, int max);
 int func_000011A4(char *file);
 int func_00001594(char *cmd);
@@ -69,6 +73,7 @@ extern const char D_0000521C[];	/* "sceIoOpen 0x%08x\n" */
 extern const char D_00005294[];	/* "argument error" */
 extern const char D_000052A4[];	/* "%s " */
 extern const char D_000052A8[];	/* "sceIoClose 0x%08x\n" */
+extern const char D_00005378[];	/* "/" */
 
 /* .data */
 extern char *D_000056E0[6];	/* "flash0".."flash5" */
@@ -76,5 +81,12 @@ extern char *D_000056F8[6];	/* "lflash0:0,0".. */
 extern char *D_00005710[6];	/* "flash0:".. */
 extern char *D_00005728[6];	/* "flashfat0:".. */
 extern char *D_00005740[];	/* fatfmt argv: { "fatfmt", dev } */
+
+/* .bss */
+extern char D_00006760[256];	/* source directory */
+extern char D_00006860[256];	/* current relative path */
+extern char D_00006960[256];	/* path being built */
+extern char D_00006A60[256];	/* directory name to resume after */
+extern char D_00006B60[256];	/* destination directory */
 
 #endif
