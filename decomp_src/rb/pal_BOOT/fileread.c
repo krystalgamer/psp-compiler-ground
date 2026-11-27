@@ -96,4 +96,40 @@ SceInt32 read_getCapacity(t_ringBuffer *pRing)
 	return sceMpegRingbufferAvailableSize(pRing->pRingbuf);
 }
 
-INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/fileread", read_func);
+SceInt32 read_func(SceSize size, void *argp)
+{
+	t_ringBuffer *pRing;
+	SceInt32 readSize;
+
+	pRing = argp;
+	readSize = 0;
+	while (read_isEnd(pRing) != 2) {
+		SceInt32 iReadSize;
+		SceInt32 iCapacitySize;
+		SceInt32 getSize;
+		SceInt32 rest;
+
+		iCapacitySize = sceMpegRingbufferAvailableSize(pRing->pRingbuf);
+		if (iCapacitySize > 0 && readSize < pRing->data_len) {
+				iReadSize = 32;
+				if (iCapacitySize < 32) {
+					rest = pRing->data_len - readSize;
+					iReadSize = (iCapacitySize < rest) ? iCapacitySize : rest;
+				}
+				getSize = sceMpegRingbufferPut(pRing->pRingbuf, iReadSize, iCapacitySize);
+				if (getSize < 0) {
+					printf("error error error\n %d total = %d\n", getSize, readSize);
+					*pRing->end_flag = 3;
+					sceKernelSignalSema(pRing->ringbuf_sema, 1);
+					break;
+				}
+		} else
+			getSize = 0;
+		readSize += getSize * 2048;
+		sceKernelSignalSema(pRing->ringbuf_sema, 1);
+		if (readSize >= pRing->data_len && *pRing->end_flag == 0)
+			*pRing->end_flag = 1;
+	}
+	sceKernelExitThread(0);
+	return 0;
+}
