@@ -77,6 +77,14 @@ MesValue mes_array_new(MesContext *ctx, int n);
 void mes_class_property_setup(MesContext *ctx, MesObject *o, const char *name, MesValue v, int flags);
 void mes_native_setup(MesContext *ctx, MesObject *o, void *table, int n);
 void mes_object_setup(MesContext *ctx, MesObject *o, const char *name, MesValue v, int flags, int x);
+extern char D_0013C3D0[];
+extern char D_0013C3C4[];
+extern char D_0013C410[];
+extern char D_0013C404[];
+extern char D_0013C41C[];
+extern char D_0013C428[];
+extern char D_0013C444[];
+extern char D_0013C44C[];
 void mes_window_check_validate(MesContext *ctx, void **a, void **b, int *sid, void **node)
 {
     MesObject *o;
@@ -524,7 +532,24 @@ MesObject *mes_window_new(MesContext *ctx, void *priv)
     return w;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_set_global_property);
+void mes_window_set_global_property(MesContext *ctx)
+{
+    WinPriv *priv;
+
+    priv = mes_class_private_get((MesObject *)mes_class_property_get(ctx, ctx->global, D_0013C28C));
+    {
+    WinRec rec = {0};
+    JSI_getWindowRec(priv->dom, &rec);
+    mes_object_setup(ctx, ctx->global, D_0013C3D0, MES_INT(rec.fE), 7, 0);
+    mes_object_setup(ctx, ctx->global, D_0013C3C4, MES_INT(rec.f10), 7, 0);
+    mes_object_setup(ctx, ctx->global, D_0013C410, MES_INT(rec.f6), 7, 0);
+    mes_object_setup(ctx, ctx->global, D_0013C404, MES_INT(rec.f8), 7, 0);
+    mes_object_setup(ctx, ctx->global, D_0013C41C, MES_INT(rec.fA), 7, 0);
+    mes_object_setup(ctx, ctx->global, D_0013C428, MES_INT(rec.fC), 7, 0);
+    mes_object_setup(ctx, ctx->global, D_0013C444, MES_INT(rec.f2), 7, 0);
+    mes_object_setup(ctx, ctx->global, D_0013C44C, MES_INT(rec.f4), 7, 0);
+    }
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", D_0013C3A8);
 
