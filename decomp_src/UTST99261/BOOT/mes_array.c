@@ -244,7 +244,35 @@ MesValue mes_array_push(MesContext *ctx)
     return v;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_array", mes_array_reverse);
+MesValue mes_array_reverse(MesContext *ctx)
+{
+    MesValue t = (MesValue)ctx->frame->thisobj;
+    MesValue x;
+    MesValue y;
+    unsigned int n;
+    unsigned int half;
+    unsigned int i;
+    unsigned int j;
+    unsigned int ia;
+    unsigned int ib;
+
+    x = mes_eval_object_get(ctx, t, D_005852E4);
+    n = 0;
+    if (x != 0x20)
+        n = mes_eval_to_uint32(ctx, x);
+    half = n / 2;
+    j = n;
+    j--;
+    for (i = 0; i < half; i++, j--) {
+        ia = MES_INT(i);
+        x = mes_eval_object_get(ctx, t, ia);
+        ib = MES_INT(j);
+        y = mes_eval_object_get(ctx, t, ib);
+        mes_eval_object_put(ctx, t, ia, y);
+        mes_eval_object_put(ctx, t, ib, x);
+    }
+    return t;
+}
 
 MesValue mes_array_shift(MesContext *ctx)
 {
