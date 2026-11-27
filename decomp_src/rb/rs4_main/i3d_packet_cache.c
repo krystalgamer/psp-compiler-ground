@@ -78,7 +78,17 @@ int I3dPacketEntry__GetTexEnv(int *e, int i)
 	return ((int *)e[4])[i];
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_cache", I3dPacketEntry__SetTofu);
+int I3dTexEnv__SetErrorTex();
+int I3dPacketEntry__SetTofu(int *e)
+{
+	unsigned int n = e[10];
+	unsigned int i;
+	for (i = 0; i < n; i++) {
+		if (((int *)e[5])[i] != 0)
+			I3dTexEnv__SetErrorTex(((int *)e[4])[i]);
+	}
+	return 0;
+}
 
 void I3dPacketEntryParam__Clear(int *p)
 {
