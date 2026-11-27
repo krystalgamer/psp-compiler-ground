@@ -15,6 +15,15 @@ int actDefaultClickAction(void *frame, void *box, void *a2, int a3, int t0);
 void actLinkJump(void *frame, void *link, int a2);
 
 
+void *getSelectListFromGadget(void *g);
+void *getAncestorForm(void *n);
+void *getPreviousForm(void *n);
+int actFormInput(void *ev, void *box, void *sel, int kind);
+BOX *lo_getActiveFrameBodybox(void);
+void getTextSelectionRange(BOX *box, int *start, int *end);
+void replaceTextStrings(BOX *box, char *s, int start, int end);
+char *strchr(const char *s, int c);
+void *make_msg_LP19(void *ev, int x, int y, int a, int b, int c, int d);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_eventHandler", getTargetBox);
 
 void *getEventTargetNode(BOX *box) {
@@ -368,7 +377,30 @@ int handleFrameFocusDown(void) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_eventHandler", handleChoiceSelect);
+int handleChoiceSelect(void *ev) {
+    BOX *box;
+    void *sel;
+    void *form;
+    box = M2C_FIELD(getFocusTargetContentContext(gESPRIT_LO_GLOBAL_NDA), BOX **, 0x6C);
+    if (box == NULL || !checkBoxValidity(box)) {
+        return -1;
+    }
+    sel = getSelectListFromGadget(M2C_FIELD(M2C_FIELD(ev, void **, 0x1C), void **, 4));
+    if (sel == NULL) {
+        return -1;
+    }
+    if (M2C_FIELD(sel, void **, 0x28) == NULL) {
+        return -1;
+    }
+    form = getAncestorForm(M2C_FIELD(sel, void **, 0x28));
+    if (form == NULL) {
+        form = getPreviousForm(M2C_FIELD(sel, void **, 0x28));
+        if (form == NULL) {
+            return -1;
+        }
+    }
+    return actFormInput(ev, Node_getBox(form), sel, 9);
+}
 
 int actDefaultClickActionWithFocus(void *frame, FOCUSLIST *f, void *a2) {
     if (f->type == 0) {
@@ -411,9 +443,58 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_eventHandler", getBox_fromAc
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_eventHandler", handleAccessKey);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_eventHandler", handleInputText);
+int handleInputText(void *ev) {
+    int start = 0;
+    int end = 0;
+    void *data = M2C_FIELD(ev, void **, 0x1C);
+    BOX *box;
+    BOX *t;
+    char *p;
+    box = lo_getActiveFrameBodybox();
+    if (box == NULL || M2C_FIELD(box->geom, void **, 0x70) == NULL) {
+        return -1;
+    }
+    t = M2C_FIELD(M2C_FIELD(box->geom, void **, 0x70), BOX **, 0xC);
+    if (t->content == 13) {
+    if (*(int *)t->geom != 1) {
+        p = strchr(M2C_FIELD(data, char **, 8), '\n');
+        if (p != NULL) {
+            *p = 0;
+        }
+    }
+    getTextSelectionRange(t, &start, &end);
+    replaceTextStrings(t, M2C_FIELD(data, char **, 8), start, end);
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_eventHandler", confirmScrollInfo);
+int confirmScrollInfo(void *ev) {
+    BOX *box;
+    int x;
+    int y;
+    void *m;
+    box = M2C_FIELD(getFocusTargetContentContext(gESPRIT_LO_GLOBAL_NDA), BOX **, 0x6C);
+    if (box == NULL || !checkBoxValidity(box)) {
+        return -1;
+    }
+    if (M2C_FIELD(box, void **, 0x2C) == NULL) {
+        return -1;
+    }
+    getViewPort(box, &x, &y);
+    {
+        int *g = (int *)box->geom;
+        int a = g[2];
+        int bb = g[3];
+        int c = g[4];
+        int d = g[5];
+        m = make_msg_LP19(ev, x, y, a, bb, c, d);
+    }
+    if (m == NULL) {
+        return -1;
+    }
+    putLLIST(&REQUEST_LLIST, m);
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_eventHandler", handleMouseEvent);
 
