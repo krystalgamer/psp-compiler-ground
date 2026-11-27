@@ -764,13 +764,294 @@ int asciiToUcs2(u16 *dst, const u8 *src, int len) {
     return n;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", utf8ToSjis);
+int utf8ToSjis(u8 *dst, const u8 *src, int len) {
+    int i = 0;
+    int n = 0;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", sjisToUtf8);
+    if (src == NULL || len <= 0)
+        return 0;
+    while (i < len) {
+        u16 c, j;
+        u8 hi, lo;
+        if (!(*src & 0x80)) {
+            if (dst != NULL)
+                *dst++ = *src;
+            n++;
+            i++;
+            src++;
+        } else if ((*src & 0xE0) == 0xC0) {
+            c = (*src & 0x1F) << 6;
+            if (++i >= len)
+                break;
+            src++;
+            c += *src & 0x3F;
+            i++;
+            src++;
+            if ((j = unicodeToJisx0208(c)) != 0) {
+                hi = j >> 8;
+                lo = j & 0xFF;
+                lo += (hi & 1) ? 0x1F : 0x7D;
+                if (lo >= 0x7F)
+                    lo++;
+                hi = ((hi - 0x21) >> 1) + 0x81;
+                if (hi > 0x9F)
+                    hi += 0x40;
+                if (dst != NULL) {
+                    *dst++ = hi;
+                    *dst++ = lo;
+                }
+                n += 2;
+            } else if ((c & 0xFF00) == 0)
+                goto single;
+            else
+                goto question;
+        } else if ((*src & 0xF0) == 0xE0) {
+            c = (*src & 0xF) << 12;
+            if (++i >= len)
+                break;
+            src++;
+            c += (*src & 0x3F) << 6;
+            if (++i >= len)
+                break;
+            src++;
+            c = (*src & 0x3F) | c;
+            i++;
+            src++;
+            if (c >= 0xFF61 && c <= 0xFF9F) {
+                c = unicodeToJisx0201(c);
+            single:
+                if (dst != NULL)
+                    *dst++ = c;
+                n++;
+            } else if ((c = unicodeToJisx0208(c)) != 0) {
+                hi = c >> 8;
+                lo = c & 0xFF;
+            conv:
+                lo += (hi & 1) ? 0x1F : 0x7D;
+                if (lo >= 0x7F)
+                    lo++;
+                hi = ((hi - 0x21) >> 1) + 0x81;
+                if (hi > 0x9F)
+                    hi += 0x40;
+                if (dst != NULL) {
+                    *dst++ = hi;
+                    *dst++ = lo;
+                }
+                n += 2;
+            } else {
+            question:
+                if (dst != NULL) {
+                    *dst++ = '?';
+                    *dst++ = '?';
+                }
+                n += 2;
+            }
+        } else {
+            break;
+        }
+    }
+    return n;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", utf8ToEuc);
+int sjisToUtf8(u8 *dst, const u8 *src, int len) {
+    int i;
+    int n;
+    u16 c;
+    int hi, lo;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", eucToUtf8);
+    n = 0;
+    for (i = 0; i < len; i++) {
+        if ((*src >= 0x81 && *src <= 0x9F) || (*src >= 0xE0 && *src <= 0xEF)) {
+            c = *src << 8;
+            if (++i >= len)
+                break;
+            src++;
+            c += *src;
+            if (c > 0xDFFF)
+                c -= 0x4000;
+            lo = c & 0xFF;
+            hi = (c >> 8) & 0xFF;
+            c = ((hi - 0x81) << 9) + lo;
+            if ((c & 0xFF) >= 0x80)
+                c--;
+            if ((c & 0xFF) >= 0x9E)
+                c += 0x62;
+            else
+                c -= 0x40;
+            c += 0x2121;
+            c = jisx0208ToUnicode(c);
+        } else {
+            c = jisx0201ToUnicode(*src);
+        }
+        if (c < 0x80) {
+            if (dst != NULL)
+                *dst++ = c;
+            n++;
+        } else if (c < 0x800) {
+            if (dst != NULL) {
+                *dst++ = ((c >> 6) & 0x1F) + 0xC0;
+                *dst++ = (c & 0x3F) + 0x80;
+            }
+            n += 2;
+        } else {
+            if (dst != NULL) {
+                *dst++ = ((c >> 12) & 0xF) + 0xE0;
+                *dst++ = ((c >> 6) & 0x3F) + 0x80;
+                *dst++ = (c & 0x3F) + 0x80;
+            }
+            n += 3;
+        }
+        src++;
+    }
+    return n;
+}
+
+int utf8ToEuc(u8 *dst, const u8 *src, int len) {
+    int i;
+    int n;
+    u16 c, j;
+
+    n = 0;
+    for (i = 0; i < len; i++) {
+        if (!(*src & 0x80)) {
+            if (dst != NULL)
+                *dst++ = *src;
+            n++;
+        } else if ((*src & 0xE0) == 0xC0) {
+            c = (*src & 0x1F) << 6;
+            if (++i >= len)
+                break;
+            src++;
+            c += *src & 0x3F;
+            if ((j = unicodeToJisx0208(c)) != 0) {
+                if (dst != NULL) {
+                    *dst++ = (j >> 8) + 0x80;
+                    *dst++ = j + 0x80;
+                }
+                n += 2;
+            } else if ((c & 0xFF00) == 0) {
+                if ((c & 0xFF) >= 0xA1 && (c & 0xFF) <= 0xDF) {
+                    if (dst != NULL)
+                        *dst++ = 0x8E;
+                    n++;
+                }
+                if ((c & 0xFF) == 0xA0)
+                    c = 0x20;
+                if (dst != NULL)
+                    *dst++ = c;
+                n++;
+            } else {
+                if (dst != NULL) {
+                    *dst++ = '?';
+                    *dst++ = '?';
+                }
+                n += 2;
+            }
+        } else if ((*src & 0xF0) == 0xE0) {
+            c = (*src & 0xF) << 12;
+            if (++i >= len)
+                break;
+            src++;
+            c += (*src & 0x3F) << 6;
+            if (++i >= len)
+                break;
+            src++;
+            c = (*src & 0x3F) | c;
+            if (c >= 0xFF61 && c <= 0xFF9F) {
+                j = unicodeToJisx0201(c);
+                if (j >= 0xA1 && j <= 0xDF) {
+                    if (dst != NULL)
+                        *dst++ = 0x8E;
+                    n++;
+                }
+                if (j == 0xA0)
+                    j = 0x20;
+                if (dst != NULL)
+                    *dst++ = j;
+                n++;
+            } else if ((j = unicodeToJisx0208(c)) != 0) {
+                if (dst != NULL) {
+                    *dst++ = (j >> 8) + 0x80;
+                    *dst++ = j + 0x80;
+                }
+                n += 2;
+            } else if ((j = unicodeToJisx0212(c)) != 0) {
+                if (dst != NULL) {
+                    *dst++ = 0x8F;
+                    *dst++ = (j >> 8) + 0x80;
+                    *dst++ = j + 0x80;
+                }
+                n += 3;
+            } else {
+                if (dst != NULL) {
+                    *dst++ = '?';
+                    *dst++ = '?';
+                }
+                n += 2;
+            }
+        } else {
+            break;
+        }
+        src++;
+    }
+    return n;
+}
+
+int eucToUtf8(u8 *dst, const u8 *src, int len) {
+    int i;
+    int n;
+    u16 c, j;
+
+    n = 0;
+    for (i = 0; i < len; i++) {
+        c = *src;
+        if (*src & 0x80) {
+            if (*src == 0x8F) {
+                if (++i >= len)
+                    break;
+                src++;
+                j = *src << 8;
+                if (++i >= len)
+                    break;
+                src++;
+                j = j + *src - 0x8080;
+                c = jisx0212ToUnicode(j);
+            } else if (*src == 0x8E) {
+                if (++i >= len)
+                    break;
+                src++;
+                c = jisx0201ToUnicode(*src);
+            } else {
+                j = *src << 8;
+                if (++i >= len)
+                    break;
+                src++;
+                j = j + *src - 0x8080;
+                c = jisx0208ToUnicode(j);
+            }
+        }
+        if (c < 0x80) {
+            if (dst != NULL)
+                *dst++ = c;
+            n++;
+        } else if (c < 0x800) {
+            if (dst != NULL) {
+                *dst++ = ((c >> 6) & 0x1F) + 0xC0;
+                *dst++ = (c & 0x3F) + 0x80;
+            }
+            n += 2;
+        } else {
+            if (dst != NULL) {
+                *dst++ = ((c >> 12) & 0xF) + 0xE0;
+                *dst++ = ((c >> 6) & 0x3F) + 0x80;
+                *dst++ = (c & 0x3F) + 0x80;
+            }
+            n += 3;
+        }
+        src++;
+    }
+    return n;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", unicodeToJisx0208_00);
 
