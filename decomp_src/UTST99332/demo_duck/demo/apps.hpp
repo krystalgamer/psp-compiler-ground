@@ -11,6 +11,7 @@ void run_ahiru();
 class CityApp : public app3d::Callbacks {
 public:
     enum ControledObject { };
+    class Car;
     CityApp();
     void init_lights();
     void camera_idle();

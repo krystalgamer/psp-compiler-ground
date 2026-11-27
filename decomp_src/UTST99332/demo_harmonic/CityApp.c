@@ -540,29 +540,53 @@ SGL_LINKONCE_END
 #undef INCLUDE_ASM
 #define INCLUDE_ASM INCLUDE_ASM_LINKONCE
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common6handleIN5scene4NodeEE10invalidateEv);
+/* Graph's map<const string, handle<Node> >::find stays asm: splat put its start at the end of the basic_string<char *>
+   constructor's .s (func_00008404 is the rest) */
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common6handleIN5scene5GroupEE10invalidateEv);
+/* template instances of this object that only its asm functions use: called from here (a discarded function) so
+   that cc1plus emits them (their order is DEMO_LINKONCE_ORDER's) */
+extern "C" void CityApp_instance_refs(common::handle<scene::Node> &n, common::handle<scene::Group> &g,
+                                      common::handle<scene::Object> &o, common::handle<scene::Texture> &t,
+                                      common::handle<scene::Transform> &tr, common::handle<CityApp::Car> &c,
+                                      common::handle<glutils::TurnTable> &tt,
+                                      common::handle<glutils::PositioningInterface> &pi,
+                                      std::vector<common::handle<CityApp::Car> > &cars, std::vector<std::string> &v)
+    __attribute__((section(".discard.asm")));
+extern "C" void CityApp_instance_refs(common::handle<scene::Node> &n, common::handle<scene::Group> &g,
+                                      common::handle<scene::Object> &o, common::handle<scene::Texture> &t,
+                                      common::handle<scene::Transform> &tr, common::handle<CityApp::Car> &c,
+                                      common::handle<glutils::TurnTable> &tt,
+                                      common::handle<glutils::PositioningInterface> &pi,
+                                      std::vector<common::handle<CityApp::Car> > &cars, std::vector<std::string> &v)
+{
+    n.invalidate();
+    g.invalidate();
+    o.invalidate();
+    t.invalidate();
+    tr.invalidate();
+    c.invalidate();
+    tt.invalidate();
+    tr = tr;
+    c = c;
+    v.push_back(std::string());
+    common::handle<scene::Node> a(g), b(o), d(tr);
+    common::handle<scene::Group> e(n);
+    common::handle<glutils::TurnTable> f(pi);
+    common::handle<scene::Texture> h(n);
+    common::handle<scene::Transform> i(n);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common6handleIN5scene6ObjectEE10invalidateEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common6handleIN5scene7TextureEE10invalidateEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common6handleIN5scene9TransformEE10invalidateEv);
+/* out-of-line inline members / instances that stay asm */
+#undef INCLUDE_ASM
+#define INCLUDE_ASM INCLUDE_ASM_LINKONCE
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNSt6vectorIN6common7CmdLine6OptionESaIS2_EE9push_backERKS2_);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common6handleIN7CityApp3CarEE10invalidateEv);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN5scene5Graph7newNodeINS_9TransformEEEN6common6handleIT_EESsb);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common6handleIN5scene9TransformEEaSERKS3_);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNKSt15basic_stringbufIcSt11char_traitsIcESaIcEE3strEv);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN5scene5Graph13getMappedNodeINS_7TextureEEEN6common6handleIT_EERKSs);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common6handleIN7glutils9TurnTableEE10invalidateEv);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNSt6vectorIN6common7CmdLine6OptionESaIS2_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS2_S4_EERKS2_);
 
@@ -573,8 +597,6 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNSt6vector
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN5scene5Graph13getMappedNodeINS_9TransformEEEN6common6handleIT_EERKSs);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNSt15basic_stringbufIcSt11char_traitsIcESaIcEE17_M_stringbuf_initESt13_Ios_Openmode);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common6handleIN7CityApp3CarEEaSERKS3_);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNSsC1IPcEET_S1_RKSaIcE);
 CONT_INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", func_00008404, _ZNSsC1IPcEET_S1_RKSaIcE);
@@ -618,21 +640,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN7glutils1
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNK7glutils17AnimableTrackball3getEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common6handleIN5scene4NodeEED1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common6handleIN5scene5GroupEED1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common6handleIN5scene4NodeEEC1INS1_5GroupEEERKNS0_IT_EE);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common6handleIN5scene6ObjectEED1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common6handleIN5scene4NodeEEC1INS1_6ObjectEEERKNS0_IT_EE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common6handleIN5scene7TextureEED1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common6handleIN5scene9TransformEED1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common6handleIN5scene4NodeEEC1INS1_9TransformEEERKNS0_IT_EE);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common7CmdLine6OptionD1Ev);
 
@@ -666,12 +674,6 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNSt19basic
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZTv0_n12_NSt19basic_ostringstreamIcSt11char_traitsIcESaIcEED1Ev);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common6handleIN5scene5GroupEEC1INS1_4NodeEEERKNS0_IT_EE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common6handleIN7glutils9TurnTableEEC1INS1_20PositioningInterfaceEEERKNS0_IT_EE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common6handleIN7glutils9TurnTableEED1Ev);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp16HasPathInterfaceINS_4PathEN4math5FrameEE8evaluateEf);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp16HasPathInterfaceINS_13VectorRGBAnimEN2sh9VectorRGBEE8evaluateEf);
@@ -680,15 +682,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp16
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp16HasPathInterfaceINS_4PathEN4math5FrameEED0Ev);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common6handleIN5scene4NodeEED0Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common6handleIN5scene5GroupEED0Ev);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common6handleIN5scene6ObjectEED0Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common6handleIN5scene7TextureEED0Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common6handleIN5scene9TransformEED0Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp16HasPathInterfaceINS_13VectorRGBAnimEN2sh9VectorRGBEED1Ev);
 
@@ -700,27 +694,17 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNSt19basic
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZTv0_n12_NSt19basic_ostringstreamIcSt11char_traitsIcESaIcEED0Ev);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common6handleIN5scene7TextureEEC1INS1_4NodeEEERKNS0_IT_EE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common6handleIN7glutils9TurnTableEED0Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNSt6vectorISsSaISsEE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPSsS1_EERKSs);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZSt4findIN9__gnu_cxx17__normal_iteratorIPKSsSt6vectorISsSaISsEEEEPKcET_SA_SA_RKT0_St26random_access_iterator_tag);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp16KeyFrameSequenceIfED1Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp16KeyFrameSequenceIfED0Ev);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common6handleIN5scene9TransformEEC1INS1_4NodeEEERKNS0_IT_EE);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp20KeyFrameSequenceBaseIfED1Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp20KeyFrameSequenceBaseIfED0Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNSt15basic_stringbufIcSt11char_traitsIcESaIcEE14_M_really_syncEjj);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPSsSt6vectorISsSaISsEEEES6_ET0_T_S8_S7_12__false_type);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNSt15basic_stringbufIcSt11char_traitsIcESaIcEE6setbufEPci);
 
