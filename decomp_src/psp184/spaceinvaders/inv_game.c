@@ -1087,7 +1087,64 @@ void enemy_gp_init(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", enemy_gp_control);
+void zako_control_once(ENEMY *e);
+extern float cam_f4c __asm__("D_005FB37C");
+void enemy_gp_control(void)
+{
+	int r[2];
+	int wrap;
+	int i, j, k;
+	EGP_T *g;
+	ENEMY *e;
+
+	if (gmain.f.f1088 == 0)
+		return;
+	wrap = 0;
+	r[1] = r[0] = cam_f4c;
+	while (r[0] <= 0)
+		r[0] += gmain.f.f10bc - 0.0f;
+	while (r[0] >= gmain.f.f10bc)
+		r[0] -= gmain.f.f10bc - 0.0f;
+	while (r[1] <= 0)
+		r[1] += gmain.f.f10bc - 0.0f;
+	while (r[1] >= gmain.f.f10bc)
+		r[1] -= gmain.f.f10bc - 0.0f;
+	if (r[0] < gmain.f.f10bc - 40 && 40 < r[0]) {
+		r[0] -= 40;
+		r[1] += 40;
+	} else {
+		wrap = 1;
+		if (gmain.f.f10bc - 40 <= r[0]) {
+			r[0] -= 40;
+			r[1] += 40 - gmain.f.f10bc;
+		} else {
+			r[0] -= 40 - gmain.f.f10bc;
+			r[1] += 40;
+		}
+	}
+	for (i = 0; i < gmain.f.febd94; i++) {
+		g = &D_005A0D80[i];
+		if (g->f0 == 0)
+			return;
+		g->f4 = 1;
+		if (wrap == 0) {
+			if (g->x1 < r[0] || r[1] < g->x0)
+				g->f4 = 0;
+		} else {
+			if (r[1] <= g->x0 && g->x1 <= r[0])
+				g->f4 = 0;
+		}
+		g->f14 = 0;
+		for (j = 0; j < 4; j++) {
+			for (k = 0; k < 11; k++) {
+				e = (ENEMY *)&g->z[j][k];
+				zako_control_once(e);
+				if (e->dead == 1)
+					g->f14++;
+			}
+		}
+	}
+}
 
 void zako_disp_once(ENEMY *e);
 void enemy_gp_disp(void)
