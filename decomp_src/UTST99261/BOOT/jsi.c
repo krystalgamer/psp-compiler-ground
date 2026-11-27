@@ -52,6 +52,12 @@ unsigned int Util_HTMLSelectElement_getLength(void *node);
 typedef struct JSRAD { void *prev; struct JSRAD *next; void *x8; char *name; } JSRAD;
 void GUI_RadioButton_setState(void *w, int state);
 int strcmp(const char *a, const char *b);
+int get_global_ptr(void);
+typedef struct { int type; int sid; int x8; int cmd; int x10; int x14; int x18; int x1C; } JSMSG;
+typedef struct { int hdr; JSMSG m; } JSMSGBUF;
+int OS_mq_receive(int q, void *buf, int size, int flag);
+int OS_mq_send(int q, void *buf, int size, int flag);
+int CLIB_time(void *t);
 DOMStr *newDOMString_4B5FC(const char *utf8, int len) {
     DOMStr *s = MEM_malloc(0, sizeof(DOMStr));
 
@@ -763,7 +769,39 @@ int JSSendMail(JSMsgBody *b, const char *qname) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSWaitMail);
+void *JSWaitMail(int cmd, int sid) {
+    void *g;
+    JSMSGBUF buf;
+    JSMSG *m;
+    JSMSG *r;
+    int c;
+    g = (void *)get_global_ptr();
+    OS_thread_mutex_unlock(jsapi_lock);
+    m = &buf.m;
+    for (;;) {
+        OS_mq_receive(M2C_FIELD(g, int *, 0x14), &buf, 0x24, 0);
+        if (buf.m.cmd == cmd && buf.m.sid == sid) {
+            break;
+        }
+        c = m->cmd;
+        if (c == 0x810) {
+            continue;
+        }
+        if (c == 0x403 || c == 0x409) {
+            OS_mq_send(M2C_FIELD(g, int *, 0x18), &buf, 0x24, 0);
+            OS_thread_mutex_lock(jsapi_lock);
+            return NULL;
+        }
+        OS_mq_send(M2C_FIELD(g, int *, 0x18), &buf, 0x24, 0);
+    }
+    OS_thread_mutex_lock(jsapi_lock);
+    r = MEM_malloc(0, 0x20);
+    if (r != NULL) {
+        *r = *m;
+    }
+    M2C_FIELD(g, int *, 8) = CLIB_time(NULL);
+    return r;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
