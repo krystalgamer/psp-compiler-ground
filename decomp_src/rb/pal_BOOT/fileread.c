@@ -43,7 +43,13 @@ SceInt32 read_getCapacity(t_ringBuffer *pRing);
 SceInt32 read_func(SceSize size, void *argp);
 
 
-INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/fileread", read_create);
+SceInt32 read_create(t_ringBuffer *pRing, SceMpegRingbuffer *pRB)
+{
+	pRing->pRingbuf = pRB;
+	pRing->end_flag = &file_terminate_flag;
+	pRing->ringbuf_sema = sceKernelCreateSema("decode_sleep_sema", 0, 0, 1, NULL);
+	return 0;
+}
 
 SceInt32 read_init(t_ringBuffer *pRing, int fileSize)
 {
