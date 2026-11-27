@@ -24,11 +24,39 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/actor", D_000FEAD0);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/actor", D_000FEAD8);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/actor", ActorSetTask);
+extern unsigned char D_000FEAD8, D_000FEB10;
+unsigned int sceKernelGetGPI(void);
+int ActorSetTask(void *s, int idx, int task)
+{
+	if (s != NULL && M2C_FIELD(s, int **, 0x128) != NULL) {
+		if (idx >= 0 && idx < M2C_FIELD(s, int *, 0x80)) {
+			M2C_FIELD(s, int **, 0x128)[idx] = task;
+			return 1;
+		}
+		if (sceKernelGetGPI() & 8)
+			consPrintf(&D_000FEB10, "ActorSetTask", idx);
+		return 0;
+	}
+	consPrintf(&D_000FEAD8, "ActorSetTask", idx);
+	return 0;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/actor", D_000FEB10);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/actor", ActorGetTask);
+extern unsigned char D_000FEAD8, D_000FEB10;
+unsigned int sceKernelGetGPI(void);
+int ActorGetTask(void *s, int idx)
+{
+	if (s != NULL && M2C_FIELD(s, int **, 0x128) != NULL) {
+		if (idx >= 0 && idx < M2C_FIELD(s, int *, 0x80))
+			return M2C_FIELD(s, int **, 0x128)[idx];
+		if (sceKernelGetGPI() & 8)
+			consPrintf(&D_000FEB10, "ActorGetTask", idx);
+		return 0;
+	}
+	consPrintf(&D_000FEAD8, "ActorGetTask", idx);
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/actor", ActorGetVariable);
 
