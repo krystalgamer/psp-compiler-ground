@@ -1,6 +1,11 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+int mes_list_member(int l, int v);
+int mes_compile_body(void *ctx, void *node, int id, void *args, void *vars);
+void *mes_list_cons(void *l, int v);
+void mes_util_vals_free(void *v);
+int mes_list_tail_add(int l, int v);
 typedef struct CompState {
     void *ctx;                        /* 0x0 cs */
     int f4;                           /* 0x4 cs */
@@ -59,12 +64,12 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_compile", mes_compile_vars_
 #define NULL ((void *)0)
 #endif
 
-void mes_compile_vars(int arg0) {
+Vals *mes_compile_vars(int arg0) {
     int temp_v0;
 
     temp_v0 = mes_list_tail_new();
     mes_compile_vars_list(arg0, temp_v0);
-    mes_list_tail_to_vals(temp_v0);
+    return (Vals *)mes_list_tail_to_vals(temp_v0);
 }
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_compile", mes_compile_args);
@@ -177,7 +182,27 @@ int mes_compile_op2(int arg0) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_compile", mes_compile_function);
+void mes_compile_function(Compiler *c, Node *n, int decl)
+{
+    Node *name = ((Node **)n->f8)[0];
+    int id;
+    Vals *args, *vars;
+    int f;
+    void *ctx;
+
+    id = name != NULL && name->type == 0x67 ? (int)name->f8 : 0;
+    args = (Vals *)mes_compile_args(((Node **)n->f8)[1]);
+    vars = (Vals *)mes_compile_vars(((int *)n->f8)[2]);
+    f = mes_compile_body(M2C_FIELD(c, void **, 0), ((Node **)n->f8)[2], id, args, vars);
+    ctx = M2C_FIELD(c, void **, 0);
+    M2C_FIELD(ctx, void **, 8) = mes_list_cons(M2C_FIELD(ctx, void **, 8), f);
+    mes_util_vals_free(args);
+    mes_util_vals_free(vars);
+    mes_byte_code_opw(M2C_FIELD(c, int *, 0x14), 0xC3, mes_list_tail_add(M2C_FIELD(c, int *, 0x10), f));
+    mes_byte_code_op(M2C_FIELD(c, int *, 0x14), 0x11);
+    if (decl)
+        mes_compile_set_var(c, name, 0);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_compile", mes_compile_expression);
 
@@ -217,7 +242,31 @@ signed char mes_compile_nest_pop(void *arg0) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_compile", mes_compile_nest_out);
+int mes_compile_nest_out(Compiler *c, int type, int label)
+{
+    CNest *nn;
+
+    for (nn = c->nest; nn != NULL; nn = nn->next) {
+        if (nn->type == type && mes_list_member(nn->f8, label))
+            break;
+    }
+    if (nn == NULL)
+        return -1;
+    for (nn = c->nest; nn != NULL; nn = nn->next) {
+        if (nn->type == type && mes_list_member(nn->f8, label))
+            break;
+        if (nn->type == 3)
+            mes_byte_code_op(M2C_FIELD(c, int *, 0x14), 0x18);
+        else if (nn->type == 4) {
+            mes_byte_code_op(M2C_FIELD(c, int *, 0x14), 0x14);
+            if (nn->fC >= 0)
+                mes_byte_code_jump(M2C_FIELD(c, int *, 0x14), 0xDB, nn->fC);
+        } else if (nn->type == 5)
+            mes_byte_code_op(M2C_FIELD(c, int *, 0x14), 8);
+    }
+    nn->f5 = 1;
+    return nn->fC;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
