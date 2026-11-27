@@ -105,6 +105,8 @@ extern unsigned char mes_eval_native_table;
 M2C_UNK mes_util_vals_free(int);                    /* extern */
 
 
+int mes_util_is_alpha_digit(unsigned short c);
+int mes_util_char_in(unsigned short c, const char *set);
 void *mes_eval_scope_new(EvCtx *ctx, int a, int b, int c)
 {
     char *o = mes_gc_alloc(ctx, 5);
@@ -652,7 +654,49 @@ void mes_eval_url_hex(void *buf, int c)
     mes_util_string_put(buf, mes_util_hex_char(c & 0xF));
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_encode);
+int mes_eval_encode(void *buf, unsigned short *s, int len, const char *set)
+{
+    int c;
+    int c2;
+
+    while (len-- > 0) {
+        c = *s++;
+        if (mes_util_is_alpha_digit(c) || mes_util_char_in(c, set)) {
+            mes_util_string_put(buf, c);
+            continue;
+        }
+        if ((unsigned int)(c - 0xDC00) < 0x400) {
+            return 1;
+        }
+        if ((unsigned int)(c - 0xD800) < 0x400) {
+            if (len <= 0) {
+                return 1;
+            }
+            c2 = *s++;
+            len--;
+            if ((unsigned int)(c2 - 0xDC00) >= 0x400) {
+                return 1;
+            }
+            c = ((c & 0x3FF) << 10) + (c2 & 0x3FF) + 0x10000;
+        }
+        if (c < 0x80) {
+            mes_eval_url_hex(buf, c);
+        } else if (c < 0x800) {
+            mes_eval_url_hex(buf, ((c >> 6) & 0x1F) | 0xC0);
+            mes_eval_url_hex(buf, (c & 0x3F) | 0x80);
+        } else if (c > 0xFFFF) {
+            mes_eval_url_hex(buf, ((c >> 18) & 0x7) | 0xF0);
+            mes_eval_url_hex(buf, ((c >> 12) & 0x3F) | 0x80);
+            mes_eval_url_hex(buf, ((c >> 6) & 0x3F) | 0x80);
+            mes_eval_url_hex(buf, (c & 0x3F) | 0x80);
+        } else {
+            mes_eval_url_hex(buf, ((c >> 12) & 0xF) | 0xE0);
+            mes_eval_url_hex(buf, ((c >> 6) & 0x3F) | 0x80);
+            mes_eval_url_hex(buf, (c & 0x3F) | 0x80);
+        }
+    }
+    return 0;
+}
 
 int mes_eval_encode_uri(EvCtx *ctx, int v)
 {
