@@ -118,14 +118,23 @@ void sceGimPictureSetDissolve(SceGimPicture *picture, float dissolve);
 float sceGimPictureGetDissolve(SceGimPicture *picture);
 void sceGimPictureSetImageCrop(SceGimPicture *picture, const float *crop);
 const float *sceGimPictureGetImageCrop(SceGimPicture *picture);
+void sceGimPictureActivateTexture( SceGimPicture *picture ) ;
+void sceGimPictureActivateRenderState( SceGimPicture *picture ) ;
 static void reconfigure_picture(SceGimPicture *picture);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_activate", sceGimPictureLoadCache);
+_Bool sceGimPictureLoadCache( SceGimPicture *picture )
+{
+	return 1 ;
+}
 
 void sceGimPictureUnloadCache(void) {
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_activate", sceGimPictureActivate);
+void sceGimPictureActivate( SceGimPicture *picture )
+{
+	sceGimPictureActivateTexture( picture ) ;
+	sceGimPictureActivateRenderState( picture ) ;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_activate", sceGimPictureActivateTexture);
 
