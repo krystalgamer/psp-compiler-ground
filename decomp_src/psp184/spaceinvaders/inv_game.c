@@ -988,7 +988,58 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", laser_start);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", laser_control);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", laser_hit_check);
+extern int D_005FB890;
+extern int rank_shot_attack[][2];
+int bgm_rank(void);
+int hit_check_enemy(float *pos, int dmg, int flag, float r);
+int hit_check_ufo(float *pos, int dmg, float r);
+int hit_check_shield(float *pos, float r);
+int hit_check_player(float *pos, float r);
+void inv_laser_end(int no);
+void efc_shot_del(float x, float y, float z);
+typedef struct { u8 pad[0x64]; int atk; } ZIKI_ATK;
+void laser_hit_check(int *l)
+{
+	int atk, dmg;
+	float r;
+
+	if (l[2] == 0) {
+		if (hit_check_enemy((float *)&l[9], 2, 1, 15.0f) >= 0) {
+			IST.f30++;
+			if (IST.f30 > 2000000000)
+				IST.f30 = 2000000000;
+			l[0] = 0;
+			inv_laser_end(l[1]);
+		}
+	} else if (l[2] == 4) {
+		if (hit_check_enemy((float *)&l[9], 1, 1, 15.0f) >= 0) {
+			IST.f30++;
+			if (IST.f30 > 2000000000)
+				IST.f30 = 2000000000;
+			l[0] = 0;
+			inv_laser_end(l[1]);
+		}
+	} else if (l[2] == 1) {
+		if (hit_check_shield((float *)&l[9], 15.0f) >= 0 || hit_check_player((float *)&l[9], 10.0f) >= 0) {
+			l[0] = 0;
+			inv_laser_end(l[1]);
+			efc_shot_del(((float *)l)[9], ((float *)l)[10], ((float *)l)[11]);
+		}
+	} else if (l[2] == 2) {
+		atk = ((ZIKI_ATK *)&D_005A06D8)->atk;
+		if (D_005FB890 == 1)
+			atk = 0;
+		dmg = rank_shot_attack[bgm_rank()][0] * ((ZIKI_ATK *)&D_005A06D8)->atk;
+		r = (int)((bgm_rank() + 1) * 15.0f * 5.0f * 0.125f + 15.0f);
+		if (hit_check_enemy((float *)&l[9], dmg, atk, r) >= 0)
+			l[3]++;
+		if (hit_check_ufo((float *)&l[9], dmg, 200.0f) >= 0) {
+			l[0] = 0;
+			l[3]++;
+			inv_laser_end(l[1]);
+		}
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", laser_disp);
 
