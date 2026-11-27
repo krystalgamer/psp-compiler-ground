@@ -25,6 +25,7 @@ typedef struct { u8 pad[0x10]; int width; } TDCOL;
 typedef struct { LIST l; int f; } URLL;
 extern URLL D_00584CF0;
 void lfm_resetPageRegion(void *r, int w);
+extern char D_00139244[];
 int getPrevLineHeight(void *arg0) {
     return M2C_FIELD(M2C_FIELD(arg0, void **, 4), int *, 0x34);
 }
@@ -594,7 +595,91 @@ void getBaseBlockPosition(void *arg0, int *arg1, int *arg2) {
     *arg2 = M2C_FIELD(M2C_FIELD(M2C_FIELD(arg0, void **, 4), void **, 0x24), short *, 0x30) + temp_v1_2;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_position", adjustLineVposition);
+int adjustLineVposition(void *ctx, BOX *box, LIST *line) {
+    int w, h;
+    int base;
+    LISTNODE *n;
+    LISTNODE *m;
+    BOX *b;
+    int top;
+    int d;
+    int maxh;
+    int hh;
+
+    GUI_Graphics_getStringSize(box->style->unk64, D_00139244, 1, &w, &h);
+    hh = h;
+    base = 0;
+    maxh = 0;
+    for (n = line->head; n != NULL; n = n->next) {
+        b = n->data;
+        top = b->y;
+        switch (M2C_FIELD(b->style, s8 *, 0x70)) {
+        case 5:
+            d = b->height / 2 - (base - hh / 2);
+            if (d > 0) {
+                for (m = line->head; m != n; m = m->next) {
+                    if (M2C_FIELD(((BOX *)m->data)->style, s8 *, 0x70) != 3) {
+                        moveBoxPosition(m->data, 0, d);
+                        adjustInlineBoxDimensionLoop(m->data, M2C_FIELD(ctx, void **, 4));
+                        maxh = maxh < ((BOX *)m->data)->y - top + ((BOX *)m->data)->height ? ((BOX *)m->data)->y - top + ((BOX *)m->data)->height : maxh;
+                    }
+                }
+                base += d;
+            } else if (d < 0) {
+                moveBoxPosition(b, 0, -d);
+                adjustInlineBoxDimensionLoop(b, M2C_FIELD(ctx, void **, 4));
+            }
+            break;
+        case 0:
+        case 6:
+            d = b->height - base;
+            if (d > 0) {
+                for (m = line->head; m != n; m = m->next) {
+                    if (M2C_FIELD(((BOX *)m->data)->style, s8 *, 0x70) != 3) {
+                        moveBoxPosition(m->data, 0, d);
+                        adjustInlineBoxDimensionLoop(m->data, M2C_FIELD(ctx, void **, 4));
+                        maxh = maxh < ((BOX *)m->data)->y - top + ((BOX *)m->data)->height ? ((BOX *)m->data)->y - top + ((BOX *)m->data)->height : maxh;
+                    }
+                }
+                base = b->height;
+            } else if (d < 0) {
+                moveBoxPosition(b, 0, -d);
+                adjustInlineBoxDimensionLoop(b, M2C_FIELD(ctx, void **, 4));
+            }
+            break;
+        case 1:
+            d = base - hh / 2;
+            if (d > 0) {
+                maxh = maxh < d + b->height ? d + b->height : maxh;
+                moveBoxPosition(b, 0, d);
+                adjustInlineBoxDimensionLoop(b, M2C_FIELD(ctx, void **, 4));
+            }
+            break;
+        case 2:
+            d = hh / 2 + b->height - base;
+            if (d > 0) {
+                for (m = line->head; m != n; m = m->next) {
+                    if (M2C_FIELD(((BOX *)m->data)->style, s8 *, 0x70) != 3) {
+                        moveBoxPosition(m->data, 0, d);
+                        adjustInlineBoxDimensionLoop(m->data, M2C_FIELD(ctx, void **, 4));
+                        maxh = maxh < ((BOX *)m->data)->y - top + ((BOX *)m->data)->height ? ((BOX *)m->data)->y - top + ((BOX *)m->data)->height : maxh;
+                    }
+                }
+                base = hh / 2;
+                base += b->height;
+            } else if (d < 0) {
+                moveBoxPosition(b, 0, -d);
+                adjustInlineBoxDimensionLoop(b, M2C_FIELD(ctx, void **, 4));
+            }
+            break;
+        case 3:
+        case 4:
+            break;
+        }
+        maxh = maxh < b->y - top + b->height ? b->y - top + b->height : maxh;
+    }
+    return maxh;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_position", adjustLineHposition);
 
