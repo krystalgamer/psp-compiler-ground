@@ -12,6 +12,10 @@ void getStringsExtents(int font, char *s, int len, int *w, int *h);
 int lfm_getHeight(void *region);
 void adjustLineHposition(void *ctx, void *line);
 int adjustLineVposition(void *ctx, BOX *box, void *line);
+void calcInLineBoxSize(void *ctx, BOX *box);
+void calcBlockBoxSize(void *ctx, BOX *box, int f);
+void calcBlockButtonBoxSize(void *ctx, BOX *box);
+void calcTdBoxSize(void *ctx, BOX *box);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_size", calcInLineBoxSize);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_size", calcBlockBoxSize);
@@ -169,4 +173,51 @@ void setBoxSize(void *arg0, int arg1, int arg2) {
     M2C_FIELD(arg0, int *, 0x1C) = (int) (M2C_FIELD(temp_a3, short *, 0x34) + temp_a1_2);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_size", calcBoxSize);
+void calcBoxSize(void *ctx, BOX *box) {
+    switch (box->content) {
+    case 1:
+        calcBodyBoxSize(ctx, box);
+        break;
+    case 0:
+    case 8:
+    case 11:
+    case 12:
+    case 19:
+    case 21:
+        switch (box->display) {
+        case 0:
+        case 3:
+            calcBlockBoxSize(ctx, box, 0);
+            break;
+        case 1:
+        case 2:
+            calcInLineBoxSize(ctx, box);
+            break;
+        }
+        break;
+    case 9:
+        calcInLineBoxSize(ctx, box);
+        break;
+    case 17:
+        calcBlockButtonBoxSize(ctx, box);
+        break;
+    case 4:
+        calcTableBoxSize(ctx, box);
+        break;
+    case 6:
+        calcTdBoxSize(ctx, box);
+        break;
+    case 2:
+    case 3:
+    case 5:
+    case 7:
+    case 10:
+    case 13:
+    case 14:
+    case 15:
+    case 16:
+    case 18:
+    case 20:
+        break;
+    }
+}
