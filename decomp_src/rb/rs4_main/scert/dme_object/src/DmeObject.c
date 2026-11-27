@@ -12,11 +12,13 @@ int NetGetMaxStructures(int *arg0);
 int NetIGetSessionMasterClientIndex(int *arg0, void *arg1);
 int NetSetSessionMasterClientIndex(void *arg0, int arg1);
 int RemoveFromObjectUpdateList(void);
-void NetIGetDataStream(void);
+char *NetIGetDataStream(unsigned int);
+char *NetGetStreamChannel();
 void NetISendFieldUpdates(void);
 M2C_UNK SendGroupedFieldUpdate(int, M2C_UNK, M2C_UNK); /* extern */
-M2C_UNK NetGetStreamChannel();                      /* extern */
 extern void *gObjectInterfacePtr;
+
+extern char *D_00132A34;
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetISendMyClientUpdate);
 
@@ -335,8 +337,8 @@ void *NetIGetObject(idx)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetGetMyPersistantObjectCount);
 
-void NetIGetDataStream(void) {
-    NetGetStreamChannel();
+char *NetIGetDataStream(unsigned int id) {
+    return NetGetStreamChannel(id);
 }
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetGetStreamChannel);
@@ -383,7 +385,19 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", N
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetIOpenDataStream);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetIEndDataStream);
+int NetIEndDataStream(unsigned int id)
+{
+    char *g;
+    char *s;
+    if (id >= *(unsigned int *)((char *)gObjectInterfacePtr + 0x10C)) return 0x17;
+    g = D_00132A34;
+    if (g == NULL) return 9;
+    s = NetIGetDataStream(id);
+    if (s == NULL) return 9;
+    if (*(int *)(s + 0xC) != *(int *)(g + 0x404)) return 9;
+    s[4] = 1;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetIRequestObjectPrivateOwnership);
 
