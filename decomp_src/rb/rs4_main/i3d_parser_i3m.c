@@ -51,7 +51,14 @@ int I3mRoot__GetNodeAnim(signed char *arg0, int arg1) {
     return var_a0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_parser_i3m", I3mRoot__Get_nSection);
+unsigned short I3mRoot__Get_nSection(char *r, unsigned short i)
+{
+	if (I3mRoot__CheckIdString(r) != 0)
+		return 0xFFFF;
+	if (i < *(unsigned short *)(r + 0x14))
+		return *(unsigned short *)(*(char **)(r + 0x1C) + i * 12 + 6);
+	return 0xFFFF;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_parser_i3m", I3mRoot__GetKeyTime);
 

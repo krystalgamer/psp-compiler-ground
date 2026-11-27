@@ -45,7 +45,15 @@ int I3dPicture__Get_hPixel(char *p, int lv)
 	return r;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", I3dClut__Construct);
+int I3dClut__Construct(int *c)
+{
+	c[0] = 0; c[1] = 0; c[2] = 0; c[3] = 0; c[4] = 0;
+	c[5] = 0; c[6] = 0; c[7] = 0; c[8] = 0; c[9] = 0;
+	I3dResourceTag__Construct(c);
+	c[4] = 0;
+	c[5] = 0;
+	return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

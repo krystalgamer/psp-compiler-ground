@@ -3,8 +3,6 @@
 M2C_UNK I3dResourceTag__PurgeCache();               /* extern */
 M2C_UNK I3dCacheManager__CreateNewMemBlockAsGarbage(int, int, int); /* extern */
 M2C_UNK I3dCacheManager__ClearAllKeepAttr(int);     /* extern */
-M2C_UNK I3dCacheManager__ClearAllMoveAttr(int);     /* extern */
-M2C_UNK I3dCacheManager__ClearAllNewAttr();         /* extern */
 M2C_UNK I3dVecClear(int);                           /* extern */
 M2C_UNK I3dPicture__FlushCache(void *);             /* extern */
 M2C_UNK sceGimPictureDelete(int);                   /* extern */
@@ -133,13 +131,56 @@ void I3dCacheManager__KeepMemBlock(void *arg0, void *arg1) {
     M2C_FIELD(arg0, int *, 8) = (int) (M2C_FIELD(arg0, int *, 8) + M2C_FIELD(arg1, int *, 0x38));
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dCacheManager__ClearAllMarkAttr);
+typedef struct MBLnk4 { struct MBk4 *next, *prev; } MBLnk4;
+typedef struct MBk4 { MBLnk4 l[6]; unsigned int attr; } MBk4;
+int I3dCacheManager__ClearAllMarkAttr(char *cm)
+{
+	MBk4 *h = (MBk4 *)(cm + 0x18);
+	MBk4 *b = ((MBk4 *)(cm + 0x18))->l[3].prev;
+	MBk4 *n;
+	while (b != h) {
+		n = b->l[3].prev;
+		b->attr &= ~0x1000;
+		I3dMemBlock__RemoveList(b, 3);
+		b = n;
+	}
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dCacheManager__ClearAllKeepAttr);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dCacheManager__ClearAllNewAttr);
+typedef struct MBLnk6 { struct MBk6 *next, *prev; } MBLnk6;
+typedef struct MBk6 { MBLnk6 l[6]; unsigned int attr; } MBk6;
+int I3dCacheManager__ClearAllNewAttr(cm)
+	char *cm;
+{
+	MBk6 *h = (MBk6 *)(cm + 0x18);
+	MBk6 *b = ((MBk6 *)(cm + 0x18))->l[4].prev;
+	MBk6 *n;
+	while (b != h) {
+		n = b->l[4].prev;
+		b->attr &= ~0x10000;
+		I3dMemBlock__RemoveList(b, 4);
+		b = n;
+	}
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dCacheManager__ClearAllMoveAttr);
+typedef struct MBLnk7 { struct MBk7 *next, *prev; } MBLnk7;
+typedef struct MBk7 { MBLnk7 l[6]; unsigned int attr; } MBk7;
+int I3dCacheManager__ClearAllMoveAttr(char *cm)
+{
+	MBk7 *h = (MBk7 *)(cm + 0x18);
+	MBk7 *b = ((MBk7 *)(cm + 0x18))->l[5].prev;
+	MBk7 *n;
+	while (b != h) {
+		n = b->l[5].prev;
+		b->attr &= ~0x100000;
+		I3dMemBlock__RemoveList(b, 5);
+		b = n;
+	}
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dCacheManager__ChangeGarbageToCache);
 
@@ -236,7 +277,21 @@ void I3dCacheManager__SetTotalMemSize(void *arg0, int arg1) {
     I3dCacheManager__PurgeAllCache();
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dCacheManager__PurgeAllCache);
+typedef struct MBLnk5 { struct MBk5 *next, *prev; } MBLnk5;
+typedef struct MBk5 { MBLnk5 l[6]; unsigned int attr; } MBk5;
+int I3dCacheManager__ClearAllKeepAttr();
+int I3dCacheManager__PurgeAllCache(char *cm)
+{
+	MBk5 *h = (MBk5 *)(cm + 0x18);
+	MBk5 *b, *n;
+	I3dCacheManager__ClearAllKeepAttr(cm);
+	for (b = h->l[0].prev; h != b; b = n) {
+		n = b->l[0].prev;
+		I3dCacheManager__RemoveMemBlock(cm, b);
+	}
+	I3dCacheManager__CreateOriginGarbage(cm);
+	return 0;
+}
 
 int I3dCacheManager__ResetProfile(char *c)
 {
