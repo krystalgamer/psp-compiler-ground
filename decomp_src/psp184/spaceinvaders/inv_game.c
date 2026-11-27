@@ -916,7 +916,53 @@ void boss_ufo_tex_anime(int *u)
 	u[4] = n;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", enemy_gp_init);
+typedef struct { u8 b[0xD8]; } ZAKO_W;
+typedef struct {
+	int f0, f4;
+	float x0, x1;
+	int n, f14;
+	float x[11];
+	ZAKO_W z[4][11];
+} EGP_T;
+extern EGP_T D_005A0D80[30];
+typedef struct { u8 p[0xEBD94]; int n; } GMEG_T;
+#define GMEG_N ((*(GMEG_T *)&gmain).n)
+void zako_init_once(void *z, int i, int type, int j, float x);
+void enemy_gp_init(void)
+{
+	int i, j, k, l, x;
+	EGP_T *e;
+	float x0, x1;
+
+	GMEG_N = 0;
+	for (i = 0; i < 30; i++)
+		D_005A0D80[i].f0 = 0;
+	if (gmain.f.f1088 == 0)
+		return;
+	GMEG_N = 0;
+	for (i = 0, x = 0; i < 30; i++, x += 90) {
+		x1 = x + 70;
+		x0 = x;
+		if (gmain.f.f10bc < x1)
+			return;
+		e = &D_005A0D80[i];
+		e->f0 = 1;
+		e->f4 = 1;
+		e->x0 = x0;
+		e->x1 = x1;
+		e->n = 0;
+		e->f14 = 0;
+		for (l = 0; l < 11; l++)
+			e->x[l] = (10 - l) * (e->x1 - e->x0) / 11.0f + e->x0;
+		for (j = 0; j < 4; j++) {
+			for (k = 0; k < 11; k++) {
+				zako_init_once(&e->z[j][k], i, (i + j) % 4, j, e->x[k]);
+				e->n++;
+			}
+		}
+		GMEG_N++;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", enemy_gp_control);
 
