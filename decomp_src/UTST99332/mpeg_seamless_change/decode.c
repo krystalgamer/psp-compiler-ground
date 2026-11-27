@@ -576,7 +576,38 @@ term:
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/decode", decode_audioDecode);
+SceInt32 decode_audioDecode(t_mpegStreamData *pStreamData, t_avSyncControl *pAvSync, SceInt32 audio_init_flag)
+{
+	SceInt32 ret;
+	SceChar8 *pSoundBuf;
+
+	ret = 1;
+	if (soundbuf_getCapacity(pAvSync->pSound) == 0) {
+		goto term;
+	}
+
+	ret = 0x80618001;
+	if (pStreamData->audioDemuxFlag[pStreamData->currentAudioStream] != 1) {
+		goto term;
+	}
+
+	soundbuf_getDrawbuf(pAvSync->pSound, &pSoundBuf);
+
+	ret = sceMpegAtracDecode(pStreamData->pMpeg, &pStreamData->pAudioAu[pStreamData->currentAudioStream], pSoundBuf, audio_init_flag);
+	if (ret != 0) {
+		printf("fatal error : sceMpegAtracDecode() 0x%x\n", ret);
+		goto term;
+	}
+
+	soundbuf_setPts(pAvSync->pSound, pStreamData->pAudioAu[pStreamData->currentAudioStream].pts.ts);
+
+	if (audio_init_flag == 0) {
+		soundbuf_setBuf(pAvSync->pSound);
+	}
+
+term:
+	return ret;
+}
 
 SceInt32 decode_getVideoAu(t_mpegStreamData *pStreamData, t_avSyncControl *pAvSync)
 {
