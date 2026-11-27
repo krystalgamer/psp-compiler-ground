@@ -1,39 +1,163 @@
 /* lang: c++ */
-/* cflags: -Os */
+/* cflags: -Os -fno-strength-reduce -fno-merge-constants -fno-exceptions */
 #include "common.h"
 extern "C" {
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _Z11GpPrim_Initv);
+} /* extern "C" */
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _Z15GpPrim_SetStartv);
+struct ScePspFMatrix4 { float m[16]; };
+struct tagGpTEXDESC;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _Z16GpPrim_DrawStartv);
+struct GpPrim {
+	int a, b, c, d;
+	float sx, sy, sz, sw;
+	ScePspFMatrix4 mtx;
+	tagGpTEXDESC *tex;
+	int w, h;
+	int cx, cy;
+	unsigned int col;
+	int pad[2];
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _Z13GpPrim_SetTexP12tagGpTEXDESC);
+extern "C" {
+extern GpPrim sample_anm_list[128];
+extern int GpPrim_cnt;
+extern int GpPrim_dcnt;
+extern const float D_00108F14;
+void *memset(void *, int, unsigned int);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _Z13GpPrim_SetColi);
+void GpPrim_Init()
+{
+	GpPrim *p;
+	int i;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _Z12GpPrim_SetWHii);
+	GpPrim_cnt = 0;
+	GpPrim_dcnt = 0;
+	memset(sample_anm_list, 0, sizeof(sample_anm_list));
+	p = sample_anm_list;
+	for (i = 128; i != 0; i--, p++) {
+		p->a = 0;
+		p->b = 0;
+		p->c = 0;
+		p->sx = D_00108F14;
+		p->sy = D_00108F14;
+		p->sz = D_00108F14;
+		p->mtx.m[0] = D_00108F14;
+		p->mtx.m[1] = 0;
+		p->mtx.m[2] = 0;
+		p->mtx.m[3] = 0;
+		p->mtx.m[4] = 0;
+		p->mtx.m[5] = D_00108F14;
+		p->mtx.m[6] = 0;
+		p->mtx.m[7] = 0;
+		p->mtx.m[8] = 0;
+		p->mtx.m[9] = 0;
+		p->mtx.m[10] = D_00108F14;
+		p->mtx.m[11] = 0;
+		p->mtx.m[12] = 0;
+		p->mtx.m[13] = 0;
+		p->mtx.m[14] = 0;
+		p->mtx.m[15] = D_00108F14;
+		p->w = 0;
+		p->h = 0;
+		p->cx = 0;
+		p->cy = 0;
+		p->col = 0x80808080;
+	}
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _Z16GpPrim_SetCenterff);
+extern "C" const float D_00108F14 = 1.0f;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _Z16GpPrim_SetMatrixP14ScePspFMatrix4);
+void GpPrim_SetStart()
+{
+	GpPrim_cnt = 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _Z17GpPrim_GetDrawTexv);
+void GpPrim_DrawStart()
+{
+	GpPrim_dcnt = 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _Z17GpPrim_GetDrawColv);
+void GpPrim_SetTex(tagGpTEXDESC *tex)
+{
+	sample_anm_list[GpPrim_cnt].tex = tex;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _Z20GpPrim_GetDrawCenterPfS_);
+void GpPrim_SetCol(int col)
+{
+	sample_anm_list[GpPrim_cnt].col = col;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _Z16GpPrim_GetDrawWHPiS_);
+void GpPrim_SetWH(int w, int h)
+{
+	GpPrim *p = &sample_anm_list[GpPrim_cnt];
+	p->w = w;
+	p->h = h;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _Z20GpPrim_GetDrawMatrixP14ScePspFMatrix4);
+void GpPrim_SetCenter(float x, float y)
+{
+	GpPrim *p = &sample_anm_list[GpPrim_cnt];
+	p->cx = (int)x;
+	p->cy = (int)y;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _Z14GpPrim_SetNextv);
+void GpPrim_SetMatrix(ScePspFMatrix4 *m)
+{
+	if (m) {
+		GpPrim *p = &sample_anm_list[GpPrim_cnt];
+		p->mtx = *m;
+	}
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _Z15GpPrim_DrawNextv);
+tagGpTEXDESC *GpPrim_GetDrawTex()
+{
+	return sample_anm_list[GpPrim_dcnt].tex;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _Z13GpPrim_GetMaxv);
+unsigned int GpPrim_GetDrawCol()
+{
+	return sample_anm_list[GpPrim_dcnt].col;
+}
+
+void GpPrim_GetDrawCenter(float *x, float *y)
+{
+	GpPrim *p = &sample_anm_list[GpPrim_dcnt];
+	*x = p->cx;
+	*y = p->cy;
+}
+
+void GpPrim_GetDrawWH(int *w, int *h)
+{
+	GpPrim *p = &sample_anm_list[GpPrim_dcnt];
+	*w = p->w;
+	*h = p->h;
+}
+
+void GpPrim_GetDrawMatrix(ScePspFMatrix4 *m)
+{
+	GpPrim *p = &sample_anm_list[GpPrim_dcnt];
+	if (m)
+		*m = p->mtx;
+}
+
+void GpPrim_SetNext()
+{
+	GpPrim_cnt++;
+}
+
+void GpPrim_DrawNext()
+{
+	GpPrim_dcnt++;
+}
+
+int GpPrim_GetMax()
+{
+	return GpPrim_cnt;
+}
+
+extern "C" {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A9CreateB2AEPNS_7B2aFileE);
 
