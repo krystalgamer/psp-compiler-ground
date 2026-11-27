@@ -1,3 +1,10 @@
+func_00000000 = 0x00000000; // type:func
+func_00000AB8 = 0x00000AB8; // type:func
+func_00000AE0 = 0x00000AE0; // type:func
+func_00000B48 = 0x00000B48; // type:func
+func_00000C18 = 0x00000C18; // type:func
+func_00000DE4 = 0x00000DE4; // type:func
+func_00000E7C = 0x00000E7C; // type:func
 module_start = 0x00000A88; // type:func
 module_stop = 0x00000A90; // type:func
 module_info = 0x00001090;
