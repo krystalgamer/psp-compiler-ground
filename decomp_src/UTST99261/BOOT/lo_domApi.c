@@ -34,6 +34,7 @@ extern unsigned char _DOMsize;
 void *Node_getAttributes(void *node);
 int NamedNodeMap_getLength(void *map);
 void *NamedNodeMap_item(void *map, int i);
+void *memset(void *p, int c, unsigned int n);
 void DomStringToUtf8(DOMString *s, char *buf, int size) {
     unsigned int n = (size - 1) / 3;
     unsigned int len = s->len;
@@ -160,7 +161,34 @@ void initNoneContent(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_domApi", initTextContent);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_domApi", initPreTextContent);
+void initPreTextContent(void *box, void *node) {
+    DOMString s;
+    int *t;
+    char *buf;
+    int size;
+    int n;
+    int len;
+    DOMChar *str;
+
+    t = MEM_malloc(0, 0x14);
+    t[0] = 0;
+    t[1] = 0;
+    t[2] = 0;
+    t[3] = 0;
+    t[4] = 0;
+    M2C_FIELD(box, int **, 0x20) = t;
+    M2C_FIELD(box, short *, 0x38) = 9;
+    CharacterData_getData(&s, node);
+    len = s.len;
+    str = s.str;
+    size = len * 3 + 1;
+    buf = MEM_malloc(0, size);
+    memset(buf, 0, size);
+    n = ucs2ToUtf8(buf, str, len);
+    buf[n] = 0;
+    t[0] = (int)buf;
+    t[3] = n;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

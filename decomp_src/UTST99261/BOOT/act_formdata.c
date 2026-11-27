@@ -15,7 +15,24 @@ M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
 extern unsigned char search;
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_formdata", URLencode);
+int sprintf(char *buf, const char *fmt, ...);
+char *URLencode(char *p, int c) {
+    char *dst = p;
+
+    if (c == ' ') {
+        *p++ = '+';
+    } else if (c == '-' || c == '_') {
+        *p++ = c;
+    } else if (c == '.' || c == '*') {
+        *p++ = c;
+    } else if (c < '0' || (c > '9' && c < 'A') || (c > 'z' || (c > 'Z' && c < 'a'))) {
+        p += sprintf(p, "%%%02X", c);
+    } else {
+        *p++ = c;
+    }
+    *p = 0;
+    return dst;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
