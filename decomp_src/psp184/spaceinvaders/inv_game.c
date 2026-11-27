@@ -162,6 +162,8 @@ void maingame_all_init(int net)
 	inv_scrdisp_tex_set(gmain.ff64[1], 2);
 }
 
+typedef struct { int f0; float f4; int f8, fc; float f10; int f14, f18, f1c, f20; } STAGE_FORMAT;
+extern STAGE_FORMAT stage_format[];
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", maingame_init);
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", D_0007DB9C);
@@ -953,8 +955,6 @@ void zako_normal_anime(ENEMY *e, int vis)
 	}
 }
 
-typedef struct { int f0; float f4; int f8, fc; float f10; int f14, f18, f1c, f20; } STAGE_FORMAT;
-extern STAGE_FORMAT stage_format[];
 unsigned long genrand_int32(void);
 int zako_shot_count(void)
 {
@@ -3358,7 +3358,81 @@ void inv_netgame_init(void)
 		gmain.fea8[k] = 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", inv_netgame_loop);
+extern int D_004B4F90;
+int net_mynumget(void);
+int net_entryget(void);
+int net_gamecomm_pack(void);
+int net_gamecomm_packend(void);
+int inv_netgame_loop()
+{
+	int me, i, j, k, sum, a, b, c, s, t, m;
+	NETPL *p;
+	NETDATA *n;
+
+	me = net_mynumget();
+	p = &gmain.netpl[me];
+	n = &((NETDATA *)&netdata)[me];
+	if (me == 0)
+		p->f4 = net_entryget() + 1;
+	p->score = D_004B4F90;
+	for (j = 0; j < 250; j++)
+		n->d[j] = 0;
+	n->d[0] = p->f4;
+	n->d[1] = p->score;
+	n->d[2] = p->st;
+	for (a = 3, b = 0; b < 38; b++) {
+		n->d[a++] = p->q[b].kind;
+		for (c = 0; c < 5; c++)
+			n->d[a++] = p->q[b].d[c];
+		if ((unsigned)(p->q[b].kind - 1) < 3) {
+			if (--p->q[b].d[3] < 0)
+				p->q[b].kind = 0;
+		} else {
+			p->q[b].kind = 0;
+		}
+	}
+	s = 0;
+	for (j = 0; j < 249; j++)
+		s += n->d[j];
+	n->d[249] = s;
+	p->n = 0;
+	net_gamecomm_pack();
+	if (net_gamecomm_packend() != 0)
+		return 1;
+	for (i = 0; i < 4; i++) {
+		if (me == i)
+			continue;
+		p = &gmain.netpl[i];
+		n = &((NETDATA *)&netdata)[i];
+		sum = 0;
+		for (j = 0; j < 249; j++)
+			sum += n->d[j];
+		if (sum != n->d[249])
+			continue;
+		p->f4 = n->d[0];
+		p->score = n->d[1];
+		p->st = n->d[2];
+		for (a = 3, b = 0; b < 38; b++) {
+			p->q[b].kind = n->d[a++];
+			for (c = 0; c < 5; c++)
+				p->q[b].d[c] = n->d[a++];
+		}
+		for (k = 0; k < 38; k++) {
+			if (p->q[k].kind == 1)
+				netgame_zako_damage_get(p, k);
+			else if (p->q[k].kind == 2)
+				netgame_zako_dead_get(p, k);
+			else if (p->q[k].kind == 3)
+				netgame_ufo_damage_get(p, k);
+			else if (p->q[k].kind == 4)
+				netgame_ufo_pos_get(p, k);
+			else if (p->q[k].kind >= 5)
+				netgame_ufo_life_get(p, k, p->q[k].kind - 5);
+		}
+	}
+	gmain.f20 = me;
+	return 0;
+}
 
 M2C_UNK inv_netgame_member_max(void)
 {

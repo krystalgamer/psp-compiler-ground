@@ -150,7 +150,7 @@ typedef struct { int f[0x58 / 4]; } TIMER_W;
 /* bgm (0x146784) */
 typedef struct { int no, mode, f8, fc, f10, f14, f18; } BGMWORK;
 
-typedef struct { int f0, f4; float f8, fc; int f10, f14, f18; } RISARJU;
+typedef struct { int f0; float f4, f8, fc; int f10, f14, f18; } RISARJU;
 typedef struct { int on, mode, cnt; } BHS_T;
 
 typedef struct GMAIN {
