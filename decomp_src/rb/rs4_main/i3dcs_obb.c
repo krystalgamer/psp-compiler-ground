@@ -99,7 +99,49 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_obb", I3dcs_IsIntersectRRayO
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_obb", I3dcs_IsIntersectCapOBBA);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_obb", I3dcs_IsIntersectSphereOBBA);
+float I3dVecDotA(const float *, const float *);
+int I3dcs_IsIntersectSphereOBBA(const float *sph, const float *ext, const float *obb)
+{
+	float d[4] __attribute__((aligned(16)));
+	float v[4] __attribute__((aligned(16)));
+	float m[4] __attribute__((aligned(16)));
+
+	I3dVecSubA(d, sph, obb + 12);
+	v[0] = I3dVecDotA(d, obb);
+	v[1] = I3dVecDotA(d, obb + 4);
+	v[2] = I3dVecDotA(d, obb + 8);
+	v[3] = sph[3];
+	__asm__ volatile(
+		"lv.q C010.q,0(%0)\n"
+		"vabs.q C000.q,C010.q\n"
+		"sv.q C000.q,0(%0)\n"
+		: : "r"(v) : "memory");
+	I3dVecSubA(v, v, ext);
+	__asm__ volatile(
+		"lv.q C010.q,0(%1)\n"
+		"lv.q C020.q,0(%1)\n"
+		"vmul.q C000.q,C010.q,C020.q\n"
+		"sv.q C000.q,0(%0)\n"
+		: : "r"(m), "r"(v) : "memory");
+	if (v[0] <= 0.0f) {
+		if (v[1] <= 0.0f) {
+			if (v[2] <= 0.0f)
+				return 1;
+			return v[2] <= v[3];
+		}
+		if (v[2] <= 0.0f)
+			return v[1] <= v[3];
+		return m[1] + m[2] <= m[3];
+	}
+	if (v[1] <= 0.0f) {
+		if (v[2] <= 0.0f)
+			return v[0] <= v[3];
+		return m[0] + m[2] <= m[3];
+	}
+	if (v[2] <= 0.0f)
+		return m[0] + m[1] <= m[3];
+	return m[0] + m[1] + m[2] <= m[3];
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_obb", I3dcs_IsIntersectOBBOBBA);
 

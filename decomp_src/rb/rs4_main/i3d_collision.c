@@ -298,7 +298,49 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_GetSqrDistRa
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_GetSqrDistSegSegA);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_IsIntersectSphereBoxA);
+int I3dcs_IsIntersectSphereBoxA(const float *sph, const float *unused, const float *ext)
+{
+	float a[4] __attribute__((aligned(16)));
+	float v[4] __attribute__((aligned(16)));
+	float m[4] __attribute__((aligned(16)));
+
+	__asm__ volatile(
+		"lv.q C010.q,0(%1)\n"
+		"vabs.q C000.q,C010.q\n"
+		"sv.q C000.q,0(%0)\n"
+		: : "r"(a), "r"(sph) : "memory");
+	I3dVecSubA(v, a, ext);
+#define SQ() \
+	v[3] = a[3]; \
+	__asm__ volatile( \
+		"lv.q C010.q,0(%1)\n" \
+		"lv.q C020.q,0(%1)\n" \
+		"vmul.q C000.q,C010.q,C020.q\n" \
+		"sv.q C000.q,0(%0)\n" \
+		: : "r"(m), "r"(v) : "memory")
+	if (v[0] <= 0.0f) {
+		if (v[1] <= 0.0f) {
+			if (v[2] <= 0.0f)
+				return 1;
+			return v[2] <= a[3];
+		}
+		if (v[2] <= 0.0f)
+			return v[1] <= a[3];
+		SQ();
+		return m[1] + m[2] <= m[3];
+	}
+	if (v[1] <= 0.0f) {
+		if (v[2] <= 0.0f)
+			return v[0] <= a[3];
+		SQ();
+		return m[0] + m[2] <= m[3];
+	}
+	SQ();
+	if (v[2] <= 0.0f)
+		return m[0] + m[1] <= m[3];
+	return m[0] + m[1] + m[2] <= m[3];
+#undef SQ
+}
 
 void I3dcs_IsIntersectSegBoxA()
 {
