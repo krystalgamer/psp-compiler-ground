@@ -63,7 +63,22 @@ void math::SphericalCoord::reset()
     sync_direction();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_SphericalCoord", _ZNK4math14SphericalCoord15transformMatrixEv);
+math::matrix math::SphericalCoord::transformMatrix() const
+{
+    matrix m = matrix::Identity();
+    vector_xyzw x(cosf(_phi), sinf(_phi), 0, 0);
+    float c = cosf(-_theta);
+    float s = sinf(-_theta);
+    vector_xyzw z(0, 0, 1, 0);
+    vector_xyzw nx = x * c + z * s;
+    vector_xyzw nz = x * -s + z * c;
+    m.r[0] = nx;
+    vector_xyzw &y = m.r[1];
+    y = cross(nz, nx);
+    vector_xyzw &z2 = m.r[2];
+    z2 = nz;
+    return m;
+}
 
 void math::SphericalCoord::sync_direction()
 {
