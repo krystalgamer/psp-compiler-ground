@@ -93,11 +93,32 @@ int I3dcs_IsIntersectRayOBBA(const float *org, const float *dir, const float *ex
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_obb", I3dcs_IsIntersectSegOBBA);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_obb", I3dcs_IsIntersectRLineOBBA);
+int I3dcs_IsIntersectRLineOBBA(const float *s, const float *d, const float *ext, const float *obb)
+{
+	float e[3];
+	e[0] = ext[0] + s[3];
+	e[1] = ext[1] + s[3];
+	e[2] = ext[2] + s[3];
+	return I3dcs_IsIntersectLineOBBA(s, d, e, obb);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_obb", I3dcs_IsIntersectRRayOBBA);
+int I3dcs_IsIntersectRRayOBBA(const float *s, const float *d, const float *ext, const float *obb)
+{
+	float e[3];
+	e[0] = ext[0] + s[3];
+	e[1] = ext[1] + s[3];
+	e[2] = ext[2] + s[3];
+	return I3dcs_IsIntersectRayOBBA(s, d, e, obb);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_obb", I3dcs_IsIntersectCapOBBA);
+int I3dcs_IsIntersectCapOBBA(const float *s, const float *d, const float *ext, const float *obb)
+{
+	float e[3];
+	e[0] = ext[0] + s[3];
+	e[1] = ext[1] + s[3];
+	e[2] = ext[2] + s[3];
+	return I3dcs_IsIntersectSegOBBA(s, d, e, obb);
+}
 
 float I3dVecDotA(const float *, const float *);
 int I3dcs_IsIntersectSphereOBBA(const float *sph, const float *ext, const float *obb)
