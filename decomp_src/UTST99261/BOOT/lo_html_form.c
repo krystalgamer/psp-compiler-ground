@@ -76,6 +76,9 @@ signed char getAreaIndex(void *map, void *area);
 void adaptArea(void *box, void *area, void *img, int idx);
 extern unsigned char _DOMshape;
 extern unsigned char _DOMcoords;
+void initBlockButtonContent(BOX *box, void *node);
+void *lfm_createPageRegion(BOX *box, int w);
+BOX *getParentBlockBox(BOX *box);
 int getTabindex(void *node) {
     char *s;
     s16 n = 0;
@@ -455,7 +458,62 @@ void html_TEXTAREA_after(int arg0, void *arg1) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", html_BUTTON);
+BOX *html_BUTTON(void *node, BOX *parent, BOX *prev) {
+    BOX *box;
+    BOX *pb;
+
+    if (getBoxByHTML(parent, 0x11) != NULL) {
+        return NULL;
+    }
+    box = createBox(node, 1);
+    if (box == NULL) {
+        return NULL;
+    }
+    linkBox(box, parent, prev);
+    box->display = 3;
+    box->html = 0x11;
+    initBoxProperty(box);
+    initBlockButtonContent(box, node);
+    box->region = lfm_createPageRegion(box, box->width);
+    pb = getParentBlockBox(box);
+    if (pb != NULL) {
+        box->width = pb->width - pb->style->unk26 - pb->style->unk36 - pb->style->unk2E - pb->style->unk2A - pb->style->unk32 - pb->style->unk22;
+    }
+    M2C_FIELD(box->style, u8 *, 0x10) = 1;
+    box->style->unk54 = colorValue(D_0013F0A4);
+    ((STYLE0 *)box->style)->color = colorValue(D_0013F0AC);
+    box->style->unk20 = 1;
+    box->style->unk22 = 1;
+    box->style->unk24 = 1;
+    box->style->unk26 = 1;
+    box->style->unk28 = 2;
+    box->style->unk2A = 2;
+    box->style->unk2C = 2;
+    box->style->unk2E = 2;
+    box->style->unk30 = 2;
+    box->style->unk32 = 2;
+    box->style->unk34 = 2;
+    box->style->unk36 = 2;
+    box->style->unk38 = colorValue("#eeeeee");
+    box->style->unk3C = colorValue("#444444");
+    box->style->unk40 = colorValue("#444444");
+    box->style->unk44 = colorValue("#eeeeee");
+    box->style->unk48 = 1;
+    box->style->unk4A = 1;
+    box->style->unk4C = 1;
+    box->style->unk4E = 1;
+    if (Element_hasAttribute(node, &_DOMdisabled) == 1) {
+        M2C_FIELD(box, s16 *, 0x3E) = 1;
+        box->style->unk54 = colorValue("#eeeeee");
+    } else {
+        attr_FOCUSCOLOR(node, box);
+        addFocusList(Node_getBox(Node_getOwnerDocument(node)), 0, box, getTabindex(node), 0);
+    }
+    addFormElementList(getBodyBox(box), 0, node);
+    applyCSSExtStyleSheetToBox(node, box);
+    applyCSSInlinePropertyToBox(node, box);
+    return box;
+}
 
 BOX *html_FIELDSET(void *node, BOX *parent, BOX *prev) {
     BOX *box;
