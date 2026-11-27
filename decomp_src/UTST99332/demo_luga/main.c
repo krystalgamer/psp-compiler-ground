@@ -247,11 +247,11 @@ extern geMODULE cmodule;
 
 int main(void);
 void light_ctrl(uint c);
-static void init(void);
+void init(void); /* static in the original; global here because asm .data refers to it */
 int pad(uint padd, uint cont, uchar *axis);
 static void fade_start(void);
 void draw(void); /* static in the original; global here because asm .data refers to it */
-static void pre(void);
+void pre(void); /* static in the original; global here because asm .data refers to it */
 void post(void);
 static void drawinit(void);
 
@@ -316,7 +316,40 @@ void light_ctrl(uint c)
 	l[1]->spec_col = c;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/main", init);
+void init(void)
+{
+	geSendProc(drawinit);
+
+	md->walkmode = 0;
+	md->nextgnd = 0;
+	md->count = 0;
+
+	md->world = (geWORLD){ { 0.0f, -10.0f, 10.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f } };
+
+	init_char();
+
+	init_ground();
+
+	init_fly();
+
+	init_bg();
+
+	init_logo();
+
+	geTexSet(0, &tex[0]);
+	geTexSet(1, &tex[1]);
+	geTexOption(1, 1, &tex[1]);
+	geTexOption(1, 8, &tex[1]);
+	geTexSet(2, &tex[2]);
+	geTexSet(3, &tex[3]);
+	geTexSet(4, &tex[4]);
+	geTexSet(5, &tex[5]);
+	geTexSet(6, &tex[6]);
+	geTexSet(7, &tex[7]);
+	geModelSetTexFunc(NULL);
+
+	geFadeSetup(2, 1, 0);
+}
 
 void term(void) {
     term_ground();
@@ -358,7 +391,22 @@ void cdraw(void) {
     draw_logo();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/main", pre);
+extern int D_001480D0;
+void pre(void)
+{
+	int old = D_001480D0;
+
+	D_001480D0 = geFadeState();
+	if (old != D_001480D0 && old == 1) {
+		if (D_001480D0 == 0) {
+			geFadeSetup(2, 2, 0xffe0f0f0);
+			md->walkmode ^= 1;
+			md->count = 0;
+			set_char_pos();
+			set_nextgnd();
+		}
+	}
+}
 
 void post(void)
 {
@@ -382,4 +430,3 @@ static void drawinit(void)
 	geSetCamera(-1, &camera);
 }
 
-INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/main", D_00020D00);
