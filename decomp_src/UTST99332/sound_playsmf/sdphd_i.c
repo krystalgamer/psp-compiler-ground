@@ -16,9 +16,37 @@ static __inline__ int checkHeader(unsigned int *pHd)
 }
 
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/sdphd_i", sdphd_getVagParam);
+int sdphd_getVagParam(void *pHd, unsigned int idx, void **ppParam)
+{
+	unsigned int *pChunk;
+	unsigned int *pParam;
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/sdphd_i", sdphd_getToneParam);
+	if (func_00008E84(pHd, &pChunk) < 0)
+		return -1;
+	if (idx < pChunk[4] || idx > pChunk[5])
+		return -1;
+	pParam = &pChunk[(idx - pChunk[4]) * 4 + 8];
+	*ppParam = pParam;
+	if (*pParam == 0xFFFFFFFF)
+		return -1;
+	return 0;
+}
+
+int sdphd_getToneParam(void *pHd, unsigned int idx, void **ppParam)
+{
+	unsigned int *pChunk;
+	unsigned int *pParam;
+
+	if (func_00008F08(pHd, &pChunk) < 0)
+		return -1;
+	if (idx < pChunk[4] || idx > pChunk[5])
+		return -1;
+	pParam = &pChunk[idx * 24 + 8];
+	*ppParam = pParam;
+	if (pParam[0] == 0xFFFFFFFF && pParam[3] == 0xFFFFFFFF)
+		return -1;
+	return 0;
+}
 
 int sdphd_getProgramParam(void *pHd, unsigned int idx, void **ppParam)
 {
