@@ -1,4 +1,9 @@
+/* cflags: -O2 -fno-merge-constants */
 #include "common.h"
+#include <libgu.h>
+void UtilsSpriteMode(int sw, int sh, int dw, int dh);
+void UtilsDrawSprite(int x, int y, int z, int u, int v, int flip, int rotate);
+void UtilsDrawSpriteF(float x, float y, float z, int u, int v, int flip, int rotate);
 
 /* declarations recovered from DWARF */
 typedef struct t_displayBuffer t_displayBuffer;
@@ -229,7 +234,118 @@ static void set_blink(void)
 	blinkalpha = c;
 }
 
-INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/display", draw_menu);
+typedef struct {
+	void *pix;
+	void *ipix;
+	int w;
+	int h;
+	int sw;
+	int sh;
+} PAL_NAME_ENV;
+extern unsigned int D_002733C0[];
+extern unsigned int D_002731C0[];
+extern GRID_ENV D_00273094[3];
+extern SPRT_ENV D_002A23E4;
+extern unsigned int D_00294FE0[];
+extern unsigned int D_00295FE0[];
+extern PAL_NAME_ENV D_002730AC[];
+extern unsigned int D_002931E0[];
+extern unsigned int D_002931C0[];
+
+static void draw_menu(void)
+{
+	MOVIE_LIST *pMv;
+	GRID_ENV *pg;
+	PAL_NAME_ENV *pn;
+	u_int32 col;
+	int i;
+	int n;
+	float x;
+	float y;
+
+	sceGuTexFunc(0, 1);
+	col = (blinkalpha << 24) | 0xFFFFFF;
+	sceGuColor(0xFFFFFFFF);
+	sceGuEnable(9);
+	sceGuDisable(4);
+	sceGuTexMode(5, 0, 0, 0);
+	sceGuTexImage(0, 512, 512, 480, D_002733C0);
+	sceGuClutMode(1, 0, 0xFF, 0);
+	sceGuClutLoad(16, D_002731C0);
+	UtilsSpriteMode(480, 272, 480, 272);
+	UtilsDrawSprite(0, 0, 0, 0, 0, 0, 0);
+
+	sceGuEnable(9);
+	sceGuEnable(4);
+	sceGuTexMode(3, 0, 0, 1);
+	UtilsSpriteMode(0x90, 0x50, 0x8F, 0x51);
+	pMv = &movie_list[menu_list.page * 6];
+	for (i = 0; i < 6; i++, pMv++) {
+		n = menu_list.page * 6 + i;
+		if (n >= 11)
+			break;
+		if (n != 0) {
+			sceGuTexImage(0, 256, 128, 144, pMv->texture);
+			UtilsDrawSprite(pMv->posx, pMv->posy, 0, 0, 0, 0, 0);
+		}
+	}
+
+	sceGuEnable(9);
+	sceGuEnable(4);
+	sceGuTexMode(3, 0, 0, 1);
+	pg = &D_00273094[menu_list.page];
+	sceGuTexImage(0, 512, 256, 480, pg->pix);
+	UtilsSpriteMode(pg->w, pg->h, pg->w, pg->h);
+	UtilsDrawSprite(0, 16, 0, 0, 0, 0, 0);
+
+	sceGuTexMode(3, 0, 0, 1);
+	sceGuEnable(9);
+	sceGuEnable(4);
+	UtilsSpriteMode(23, 23, D_002A23E4.lw - ablinkframe / 2, D_002A23E4.lh - ablinkframe / 2);
+	sceGuTexImage(0, 32, 32, 32, D_00294FE0);
+	if (menu_list.page > 0) {
+		x = D_002A23E4.lx + (ablinkframe * 2) * 0.125f;
+		y = D_002A23E4.ly + (ablinkframe * 2) * 0.125f;
+		UtilsDrawSpriteF(x, y, 0.0f, 1, 1, 1, 0);
+	}
+	if (menu_list.page <= 0) {
+		x = D_002A23E4.rx + (ablinkframe * 2) * 0.125f;
+		y = D_002A23E4.ry + (ablinkframe * 2) * 0.125f;
+		UtilsDrawSpriteF(x, y, 0.0f, 1, 1, 0, 0);
+	}
+
+	sceGuEnable(9);
+	sceGuEnable(4);
+	sceGuTexMode(3, 0, 0, 1);
+	sceGuTexImage(0, 512, 32, 392, D_00295FE0);
+	UtilsSpriteMode(392, 32, 392, 32);
+	UtilsDrawSprite(0, 198, 0, 0, 0, 0, 0);
+
+	sceGuColor(col);
+	sceGuEnable(9);
+	sceGuEnable(4);
+	sceGuTexMode(3, 0, 0, 1);
+	pn = &D_002730AC[menu_list.current];
+	sceGuTexImage(0, pn->w, pn->h, pn->sw, pn->pix);
+	UtilsSpriteMode(pn->sw, pn->sh, pn->sw, pn->sh);
+	UtilsDrawSprite(14, 200, 0, 0, 0, 0, 0);
+	if (pn->ipix != NULL) {
+		sceGuTexImage(0, 64, 64, 64, pn->ipix);
+		UtilsSpriteMode(64, 64, 64, 64);
+		UtilsDrawSprite(414, 202, 0, 0, 0, 0, 0);
+	}
+
+	sceGuColor(col);
+	sceGuEnable(9);
+	sceGuEnable(4);
+	sceGuTexMode(4, 0, 0, 0);
+	sceGuTexImage(0, 256, 128, 160, D_002931E0);
+	sceGuClutMode(1, 0, 0xFF, 0);
+	sceGuClutLoad(1, D_002931C0);
+	UtilsSpriteMode(160, 93, 160, 93);
+	pMv = &movie_list[menu_list.current];
+	UtilsDrawSprite(pMv->posx - 6, pMv->posy - 6, 0, 0, 0, 0, 0);
+}
 
 INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/display", draw_frame);
 
