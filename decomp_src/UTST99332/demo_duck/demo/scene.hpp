@@ -171,6 +171,15 @@ public:
         }
     }
     bool valid() const { return _bv != 0; }
+    void operator=(const BVdata &o)
+    {
+        if (o._bv) {
+            if (!_bv && !valid())
+                _bv = new sgl::BV, _bv->setType(sgl::BV::Type(0));
+            *_bv = *o._bv;
+        } else if (_bv)
+            delete _bv, _bv = 0;
+    }
     void create(sgl::BV::Type t) {
         SCENE_WARN(!valid(), scene_bvdata_warn, scene_bvdata_notvalid, scene_bvdata_file, scene_bvdata_create_name, 83,
                    scene_bvdata_created);
@@ -189,6 +198,11 @@ public:
 
 class HasBVdata {
 public:
+    HasBVdata &operator=(const HasBVdata &o)
+    {
+        _bvdata = o._bvdata;
+        return *this;
+    }
     bool frustumTest(sgl::Frustum &);
     static bool enabled;
     BVdata _bvdata;

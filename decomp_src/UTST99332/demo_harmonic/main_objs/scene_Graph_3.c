@@ -4,6 +4,12 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+extern const char D_001680F8[];
+extern const char D_0016812C[];
+extern const char D_00168380[];
+extern const char D_00168400[];
+extern const char D_00168414[];
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph_3", _Z41__static_initialization_and_destruction_0ii_7D97C);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph_3", _ZN5scene5Graph4saveEPKc);
@@ -29,7 +35,10 @@ void scene::Shape::save(std::ostream &) {
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph_3", _ZN5scene15StaticTransform4saveERSo);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph_3", _ZN5scene6Switch4saveERSo);
+void scene::Switch::save(std::ostream &os)
+{
+    os << D_00168414 << _selected << std::endl;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph_3", _ZN5scene7Texture4saveERSo);
 

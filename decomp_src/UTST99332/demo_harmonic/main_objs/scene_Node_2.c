@@ -4,6 +4,10 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+int Node_getParentCount(const scene::Node *) __asm__("_ZNK5scene4Node14getParentCountEv");
+void Node_decrParentCount(scene::Node *) __asm__("_ZN5scene4Node15decrParentCountEv");
+void Node_setName(scene::Node *, std::string) __asm__("_ZN5scene4Node7setNameESs");
+
 extern const char D_00169B44[];
 
 /* the strings stay in the module's .rodata (asm) */
@@ -115,5 +119,18 @@ const char *scene::Node::getTypeName() const
     return D_00169B44;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZNK5scene4Node5cloneESs);
+common::handle<scene::Node> scene::Node::clone(std::string suffix) const
+{
+    std::string name = getBasename();
+    name += suffix;
+    common::handle<Node> h(new Node(name.c_str(), false));
+    *h = *this;
+    Node_setName(h.operator->(), name.c_str());
+    h->_m._mapped = false;
+    /* clone is inline in the class (emitted with the vtable): these are
+       defined after the class, so it calls them */
+    while (Node_getParentCount(h.operator->()))
+        Node_decrParentCount(h.operator->());
+    return h;
+}
 

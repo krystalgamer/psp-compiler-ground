@@ -111,7 +111,18 @@ const char *scene::DefaultShader::getTypeName() const
     return D_00166174;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_DefaultShader", _ZNK5scene13DefaultShader5cloneESs);
+common::handle<scene::Node> scene::DefaultShader::clone(std::string suffix) const
+{
+    std::string name = getBasename();
+    name += suffix;
+    common::handle<DefaultShader> h(new DefaultShader(name.c_str(), false));
+    *h = *this;
+    h->setName(name.c_str());
+    h->_m._mapped = false;
+    while (h->getParentCount())
+        h->decrParentCount();
+    return h;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_DefaultShader", _ZN6common6handleIN5scene8MaterialEE10invalidateEv);
 

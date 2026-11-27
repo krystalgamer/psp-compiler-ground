@@ -4,6 +4,12 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+extern const char D_0016B020[];
+extern const char D_0016B054[];
+extern const char D_0016B2A8[];
+extern const char D_0016B328[];
+extern const char D_0016B33C[];
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph_3", _Z41__static_initialization_and_destruction_0ii_7FDA0);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph_3", _ZN5scene5Graph4saveEPKc);
@@ -29,7 +35,10 @@ void scene::Shape::save(std::ostream &) {
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph_3", _ZN5scene15StaticTransform4saveERSo);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph_3", _ZN5scene6Switch4saveERSo);
+void scene::Switch::save(std::ostream &os)
+{
+    os << D_0016B33C << _selected << std::endl;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph_3", _ZN5scene7Texture4saveERSo);
 

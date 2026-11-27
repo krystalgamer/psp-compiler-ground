@@ -9,6 +9,9 @@ extern const char scene_mesh_sp[] __asm__("D_00168C54");      /* " " */
 extern const char scene_mesh_getData_name[] __asm__("_ZZN5scene4Mesh7getDataEvE19__PRETTY_FUNCTION___168B84");
 #include "../main.hpp"
 
+/* called, not inlined, by format() in the original */
+void Mesh_destroy_mesh_data(scene::Mesh *) __asm__("_ZN5scene4Mesh17destroy_mesh_dataEv");
+
 extern const char D_00168AFC[];
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Mesh", _Z41__static_initialization_and_destruction_0ii_85568);
@@ -43,7 +46,17 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Mesh",
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Mesh", _ZN5scene4Mesh6calcbvEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Mesh", _ZN5scene4Mesh6formatEj);
+void scene::Mesh::format(unsigned int f)
+{
+    calcbv();
+    if (f & 2)
+        sgl::Mesh::calcStencilShadowData(*_stencil, getData());
+    getData().finish();
+    if (f & 1) {
+        _interleaved.convert(getData());
+        Mesh_destroy_mesh_data(this);
+    }
+}
 
 extern "C" {
 void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_85568");

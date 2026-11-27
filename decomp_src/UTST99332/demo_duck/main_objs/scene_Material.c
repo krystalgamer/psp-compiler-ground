@@ -62,5 +62,16 @@ const char *scene::Material::getTypeName() const
     return D_0016B99C;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Material", _ZNK5scene8Material5cloneESs);
+common::handle<scene::Node> scene::Material::clone(std::string suffix) const
+{
+    std::string name = getBasename();
+    name += suffix;
+    common::handle<Material> h(new Material(name.c_str(), false));
+    *h = *this;
+    h->setName(name.c_str());
+    h->_m._mapped = false;
+    while (h->getParentCount())
+        h->decrParentCount();
+    return h;
+}
 
