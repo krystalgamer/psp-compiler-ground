@@ -153,4 +153,31 @@ void SprAllDispSet(void) {
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_spr", SprDraw4Psp);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_spr", SprAnm4Psp);
+typedef struct { int u, v; } ANMTBL;
+typedef struct SPRAN { unsigned char p0[0xC]; int attr; unsigned char p10[8]; int idx; int wait; int cnt; unsigned char p24[0x24]; int f48, f4C; unsigned char p50[0x3C]; ANMTBL *anm; int f90; struct SPRAN *next; } SPRAN;
+void SprAnm4Psp(void)
+{
+	SPRAN *s;
+
+	for (s = (SPRAN *)spr_head; s != NULL; s = s->next) {
+		if (s->attr != 0) {
+			if (s->attr & 4) {
+				if (--s->cnt == 0) {
+					s->attr &= ~4;
+					s->attr &= ~2;
+				}
+			} else if (s->anm != NULL) {
+				if (s->cnt == 0) {
+					if (s->anm[s->idx].u == -1)
+						s->idx = 0;
+					s->f48 = s->anm[s->idx].u;
+					s->f4C = s->anm[s->idx].v;
+					s->idx++;
+					s->cnt = s->wait;
+				} else {
+					s->cnt--;
+				}
+			}
+		}
+	}
+}
