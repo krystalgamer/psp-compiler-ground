@@ -127,7 +127,7 @@ void sceGumRotateY(float angle);
 void sceGumRotateZ(float angle);
 void sceGumSetMatrixStack(void *stack, int proj, int view, int model, int texture);
 void sceGumTranslate(const ScePspFVector3 *v);
-int sceKernelDcacheWritebackAll(void);
+void sceKernelDcacheWritebackAll(void);
 
 #define MAXCTRL		16
 #define SCEGU_PRIM_RECTANGLES              6
@@ -268,7 +268,26 @@ static int get_knotflag(int s, int e)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_editspline/nonmatchings/main", draw_spline);
+
+static void draw_spline(void)
+{
+	int	knot_flag[2];
+
+	sceGuPatchDivide(16, 16);
+	sceGuPatchPrim(primflag[prim]);
+
+	sceGumPushMatrix();
+
+	knot_flag[0]=get_knotflag(knot[0], knot[1]);
+	knot_flag[1]=get_knotflag(knot[2], knot[3]);
+	sceGuColor(0xff6060ff);
+	sceGumDrawSpline(SCEGU_VERTEX_FLOAT, unum, vnum,
+		knot_flag[0], knot_flag[1],
+		0, control);
+	sceKernelDcacheWritebackAll();
+
+	sceGumPopMatrix();
+}
 
 static void draw_dot(void)
 {
