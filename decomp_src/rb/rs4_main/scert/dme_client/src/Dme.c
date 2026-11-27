@@ -692,7 +692,18 @@ int NetStreamMediaGetCurrentChannelState(int a0, int a1)
     return e;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetStreamMediaSetDefaultIgnoreParams);
+int NetStreamMediaSetDefaultIgnoreParams(int *p)
+{
+    int r;
+    if (p == NULL) return 0x17;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    p[0] = 1;
+    p[2] = 0;
+    p[3] = 0;
+    p[1] = 0;
+    return NetMapRtError(NetMutexUnlock());
+}
 
 int NetStreamMediaSetIgnoreState(int a0)
 {

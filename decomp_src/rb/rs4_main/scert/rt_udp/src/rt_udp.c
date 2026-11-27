@@ -199,7 +199,19 @@ int rt_udp_listen(void *arg0, int arg1) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_accept);
+int rt_udp_send_version_exchange();
+int rt_udp_accept(void *u, int *c)
+{
+    if (u == NULL) return 2;
+    if (c == NULL) return 0xD2F3;
+    if (c[0] != 8) return 0xD2F4;
+    c[0] = 9;
+    if (rt_udp_send_version_exchange(u, c) != 0) {
+        c[0] = 7;
+        return 0xD2F7;
+    }
+    return 0;
+}
 
 void rt_udp_send_reset();
 int rt_udp_deny(void *u, int *c)

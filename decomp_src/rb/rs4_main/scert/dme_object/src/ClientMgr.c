@@ -27,7 +27,14 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/ClientMgr", N
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/ClientMgr", NetFreeClient);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/ClientMgr", NetFreeClients);
+void NetFreeClient();
+void NetFreeClients(void *c)
+{
+    int i;
+    if (c != NULL && NetClientPointerList != NULL)
+        for (i = 0; i < 256; i++) NetFreeClient(c, i);
+    if (gObjectInterfacePtr != NULL) *(int *)((char *)gObjectInterfacePtr + 0x128) = 0;
+}
 
 void *NetGetConnInfo();
 void NetFreeClients();
