@@ -2,9 +2,22 @@
 #include "common.h"
 #include "mes_js.h"
 #include "m2c_macros.h"
+typedef struct ObjStr {
+    unsigned short *chars;            /* 0x0 */
+    int slen;                         /* 0x4 */
+} ObjStr;
+int mes_is_number(MesValue v);
+MesValue mes_eval_to_object(MesContext *ctx, MesValue v);
+extern MesObject *D_00585334;
+extern MesObject *D_00585350;
+extern MesObject *D_00585364;
+extern unsigned int D_005852E4;
+void mes_object_set(MesObject *obj, unsigned int id, int value, int flags);
+unsigned short *mes_util_strcp(unsigned short *d, const char *s);
+void mes_memory_copy(const void *src, void *dst, int n);
 extern unsigned int mes_ids[];
 extern void *mes_object_object_table;
-MesValue mes_object_object(MesContext *ctx);
+MesValue mes_object_object(MesContext *ctx, MesValue v);
 unsigned int mes_context_id2(void *ctx, const char *name);
 void *mes_native_new(MesContext *ctx, int a, void *fn, int nargs, int flags);
 void mes_native_setup(MesContext *ctx, MesObject *o, void *table, int n);
@@ -76,7 +89,23 @@ MesObject *mes_object_new(MesContext *ctx, int cls, MesObject *proto)
     return o;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_object", mes_object_search);
+MesProp *mes_object_search(MesObject *obj, unsigned int id)
+{
+    MesPage *pg;
+    unsigned int k;
+    int i;
+
+    for (pg = obj->props; pg != NULL; pg = pg->child[i]) {
+        for (i = 0; i < pg->n; i++) {
+            k = pg->items[i].id;
+            if (k == id)
+                return &pg->items[i];
+            if (id < k)
+                break;
+        }
+    }
+    return NULL;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -111,7 +140,18 @@ MesPage *mes_object_page_new(void)
     return MEM_malloc(0, sizeof(MesPage));
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_object", mes_object_insert_one);
+void mes_object_insert_one(MesPage *pg, MesProp *item, MesPage *child, int pos)
+{
+    int i;
+
+    for (i = pg->n; pos < i; i--) {
+        pg->items[i] = pg->items[i - 1];
+        pg->child[i + 1] = pg->child[i];
+    }
+    pg->items[pos] = *item;
+    pg->child[pos + 1] = child;
+    pg->n++;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_object", mes_object_insert_page);
 
@@ -195,7 +235,31 @@ void mes_object_delete(void *arg0) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_object", mes_object_prop_next);
+unsigned int mes_object_prop_next(MesObject *obj, unsigned int id)
+{
+    MesPage *pg;
+    MesProp *best;
+    int i;
+
+    best = NULL;
+    do {
+        if (best != NULL)
+            id = best->id;
+        best = NULL;
+        for (pg = obj->props; pg != NULL; pg = pg->child[i]) {
+                for (i = 0; i < pg->n; i++) {
+                if (id < pg->items[i].id) {
+                    if (best == NULL || pg->items[i].id < best->id)
+                        best = &pg->items[i];
+                    break;
+                }
+            }
+        }
+        if (best == NULL)
+            return 0;
+    } while (best->flags & 2);
+    return best->id;
+}
 
 void mes_object_setup(MesContext *ctx, MesObject *obj, const char *name, MesValue value, int flags, int fA)
 {
@@ -269,7 +333,35 @@ void mes_object_initialize(void) {
     mes_gc_register(&mes_object_method, 0x14, 0x64, 0x64);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_object", mes_object_object);
+MesValue mes_object_object(MesContext *ctx, MesValue v)
+{
+    MesObject *o;
+
+    if (ctx->frame->construct) {
+        o = ctx->frame->thisobj;
+        if (v == 0 || v == 4) {
+            o->proto = D_00585354;
+        } else if (v == 0xC || v == 8) {
+            o->cls = 1;
+            o->proto = D_00585334;
+            o->fC = v;
+        } else if (mes_is_number(v)) {
+            o->cls = 8;
+            o->proto = D_00585350;
+            o->fC = v;
+        } else if ((v & 3) == 3) {
+            o->cls = 13;
+            o->proto = D_00585364;
+            o->fC = v;
+            mes_object_set(o, D_005852E4, MES_INT(((ObjStr *)(v & ~3))->slen), 7);
+        } else
+            return v;
+        return (MesValue)o;
+    }
+    if (v == 0 || v == 4)
+        return (MesValue)mes_object_new(ctx, 9, D_00585354);
+    return mes_eval_to_object(ctx, v);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_object", mes_object_to_string);
 

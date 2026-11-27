@@ -127,7 +127,17 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_scope_get);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_scope_put);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_scope_canput);
+int mes_eval_scope_canput(EvCtx *ctx, EvScope *scope, unsigned int id)
+{
+    EvObj *o;
+
+    if (id == D_005852E4)
+        return 0;
+    o = scope->obj;
+    if (o->gc->kind == 3 && id == o->f14)
+        return 0;
+    return 1;
+}
 
 int mes_eval_type(unsigned int v)
 {
@@ -427,7 +437,21 @@ int mes_eval_object_canput(EvCtx *ctx, EvObj *o, unsigned int id)
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_object_delete);
+int mes_eval_object_delete(EvCtx *ctx, void *obj, unsigned int id)
+{
+    EvProp *p;
+
+    if (obj == NULL)
+        return 8;
+    if ((*(EvGc **)obj)->del != NULL)
+        return (*(EvGc **)obj)->del(ctx, obj, id);
+    p = mes_object_search(obj, id);
+    if (p != NULL && !(p->flags & 4)) {
+        mes_object_delete(obj, id);
+        return 12;
+    }
+    return 8;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_object_set);
 
@@ -452,7 +476,28 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", D_0013B3F4);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_abs_equal);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_strict_equal);
+int mes_eval_strict_equal(int a, int b)
+{
+    int t = mes_eval_type(a);
+
+    if (t == mes_eval_type(b)) {
+        switch (t) {
+        case 0x38:
+        case 0x42:
+            return 1;
+        case 0x39:
+            if (a == 0x1C || b == 0x1C)
+                return 0;
+            return mes_number_equal(a, b, 0);
+        case 0x3E:
+            return mes_string_compare((void *)(a & ~3), (void *)(b & ~3)) == 0;
+        case 0x24:
+        case 0x3A:
+            return a == b;
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_native);
 

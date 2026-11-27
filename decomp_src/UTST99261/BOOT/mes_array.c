@@ -2,6 +2,13 @@
 #include "common.h"
 #include "mes_js.h"
 #include "m2c_macros.h"
+typedef struct ArrStr {
+    unsigned short *chars;            /* 0x0 */
+    int slen;                         /* 0x4 */
+} ArrStr;
+int mes_util_digit(int c);
+void mes_eval_type_error(MesContext *ctx, MesValue v);
+extern const double D_0013B890;
 MesValue mes_eval_object_get(MesContext *ctx, MesValue o, unsigned int id);
 MesValue mes_eval_object_put(MesContext *ctx, MesValue o, unsigned int id, MesValue v);
 int mes_eval_object_delete(MesContext *ctx, MesValue o, unsigned int id);
@@ -84,9 +91,80 @@ unsigned int mes_array_number_index(MesContext *ctx, int n)
     return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_array", mes_array_length);
+unsigned int mes_array_length(MesContext *ctx, MesValue v)
+{
+    unsigned int n;
+    double x;
+    int i;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_array", mes_array_put);
+    if (MES_IS_OBJECT(v) && ((unsigned char *)v)[0x10] == 8)
+        v = ((MesValue *)v)[3];
+    if (v == 0x10)
+        return 0;
+    if ((v & 3) == 1 && (i = v >> 2) >= 0)
+        return i;
+    if ((v & 3) == 2 && *(double *)((v & ~3) + 8) >= 0) {
+        n = *(double *)((v & ~3) + 8);
+        x = (int)n;
+        if ((int)n < 0)
+            x = x + D_0013B890;
+        if (x == *(double *)((v & ~3) + 8))
+            return n;
+    }
+    mes_eval_type_error(ctx, v);
+    return 0;
+}
+
+void mes_array_put(MesContext *ctx, MesArray *a, unsigned int id, MesValue v)
+{
+    unsigned int n;
+    int i;
+    int d;
+    unsigned short *p;
+
+    if (id == D_005852E4) {
+        n = mes_array_length(ctx, v);
+        if (n < a->length) {
+            for (i = n; i < a->length; i++)
+                mes_object_delete(&a->obj, mes_array_number_index(ctx, i));
+        }
+        a->length = n;
+        return;
+    }
+    if ((id & 3) == 1) {
+        i = (int)id >> 2;
+        if (i >= 0) {
+            n = i;
+            goto check;
+        }
+        goto set;
+    }
+    i = ((ArrStr *)(id & ~3))->slen;
+    p = ((ArrStr *)(id & ~3))->chars;
+    if (i <= 0 || mes_util_digit(*p) < 0)
+        goto set;
+    n = 0;
+    if (*p == '0') {
+        mes_object_set(&a->obj, id, v, 8);
+        return;
+    }
+    while (i > 0 && (d = mes_util_digit(*p)) >= 0) {
+        if (n > 0x19999999)
+            break;
+        if (n == 0x19999999 && (unsigned int)(d + 1) >= 6)
+            break;
+        n = n * 10 + d;
+        p++;
+        i--;
+    }
+    if (i != 0)
+        goto set;
+check:
+    if (n >= a->length)
+        a->length = n + 1;
+set:
+    mes_object_set(&a->obj, id, v, 8);
+}
 
 int mes_array_canput(MesContext *ctx, MesArray *a, unsigned int id)
 {

@@ -214,7 +214,25 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", AstsRestartRes);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", DecodePacket);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", CheckSeqID);
+int CheckSeqID(unsigned short id, unsigned char *seq)
+{
+    int r = 0;
+    int i;
+    int set = 0;
+
+    for (i = 0; i < 6; i++) {
+        if (gSeqID[i] != 0) {
+            set = 1;
+            break;
+        }
+    }
+    if (set != 0) {
+        if (AOSS_Memcmp(gSeqID, seq, 6) != 0)
+            r = 1;
+    } else if (id != 0x1000)
+        r = 2;
+    return r;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", CheckRecvSeqID);
 
@@ -248,7 +266,21 @@ int GetSecurityType(int f)
     return t;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", SendMessage);
+int SendMessage(int type, int a, int b, int c)
+{
+    switch (type) {
+    case 0:
+        AOSS_StatusExclusion(2);
+        return AstsSetInitReq(a, b, c);
+    case 1:
+        AOSS_StatusExclusion(3);
+        return AstsSetSecureReq(a, b, c);
+    case 2:
+        AOSS_StatusExclusion(5);
+        return AstsRestartReq(a, b, c);
+    }
+    return -1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", AstsSetInitReq);
 

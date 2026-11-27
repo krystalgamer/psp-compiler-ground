@@ -1,6 +1,8 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+extern const double D_0013A450;
+void mes_memory_copy(const void *src, void *dst, int n);
 typedef unsigned short UCSChar;
 
 typedef struct UStr {
@@ -71,7 +73,28 @@ int mes_util_streq3(const UCSChar *a, const char *b, int n)
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_util", mes_util_streq4);
+int mes_util_streq4(const UCSChar *a, const UCSChar *b, int n, int ci)
+{
+    UCSChar c;
+
+    if (ci) {
+        while (n-- > 0) {
+            c = mes_util_to_lower(*a);
+            if (c != mes_util_to_lower(*b))
+                return 0;
+            a++;
+            b++;
+        }
+    } else {
+        while (n-- > 0) {
+            if (*a != *b)
+                return 0;
+            a++;
+            b++;
+        }
+    }
+    return 1;
+}
 
 UCSChar *mes_util_strcp(UCSChar *d, const char *s)
 {
@@ -141,7 +164,29 @@ void mes_util_string_free(M2C_UNK *arg0) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_util", mes_util_string_pos);
+int mes_util_string_pos(UString *s, int pos)
+{
+    UChunk *ch;
+
+    while (pos >= s->cap) {
+        ch = MEM_malloc(0, sizeof(UChunk));
+        if (ch == NULL)
+            return 0;
+        ch->next = NULL;
+        s->f4->next = ch;
+        s->f4 = ch;
+        s->cap += 100;
+    }
+    if (pos < s->base) {
+        s->base = 0;
+        s->cur = s->head;
+    }
+    while (pos >= s->base + 100) {
+        s->cur = s->cur->next;
+        s->base += 100;
+    }
+    return 1;
+}
 
 void mes_util_string_put(UString *s, UCSChar c)
 {
@@ -159,9 +204,40 @@ void mes_util_string_puts(UString *s, const char *str)
         mes_util_string_put(s, c);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_util", mes_util_string_puti);
+void mes_util_string_puti(UString *s, unsigned int n, unsigned int w, unsigned int base)
+{
+    unsigned int c;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_util", mes_util_string_put_string);
+    if (w > 1 || n >= base)
+        mes_util_string_puti(s, n / base, w ? w - 1 : 0, base);
+    c = (UCSChar)(n % base);
+    if (c < 10)
+        c += '0';
+    else
+        c += 'a' - 10;
+    mes_util_string_put(s, c);
+}
+
+void mes_util_string_put_string(UString *s, int v)
+{
+    int len, m;
+    UCSChar *p;
+
+    if (s != NULL) {
+        len = ((UStr *)(v & ~3))->len;
+        p = ((UStr *)(v & ~3))->str;
+        while (len > 0) {
+            mes_util_string_pos(s, s->len);
+            m = s->base - s->len + 100;
+            if (m > len)
+                m = len;
+            mes_memory_copy(p, &s->cur->data[s->len - s->base], m * 2);
+            len -= m;
+            p += m;
+            s->len += m;
+        }
+    }
+}
 
 UCSChar mes_util_string_get(UString *s, int pos)
 {
@@ -170,7 +246,31 @@ UCSChar mes_util_string_get(UString *s, int pos)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_util", mes_util_string_eq);
+int mes_util_string_eq(UString *s, int v)
+{
+    int n = ((UStr *)(v & ~3))->len;
+    UChunk *ch;
+    UCSChar *q, *p;
+    int m;
+
+    if (n != s->len)
+        return 0;
+    q = ((UStr *)(v & ~3))->str;
+    ch = s->head;
+    while (n > 0) {
+        m = n;
+        if (m > 100)
+            m = 100;
+        n -= m;
+        p = ch->data;
+        while (m-- > 0) {
+            if (*q++ != *p++)
+                return 0;
+        }
+        ch = ch->next;
+    }
+    return 1;
+}
 
 int mes_util_string_eq2(UString *s, const char *str)
 {
@@ -194,7 +294,19 @@ int mes_util_string_eq2(UString *s, const char *str)
     return *str == 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_util", mes_util_expt);
+double mes_util_expt(double x, int n)
+{
+    double r;
+
+    if (n == 0)
+        return D_0013A450;
+    if (n < 0)
+        return mes_util_expt(D_0013A450 / x, -n);
+    r = mes_util_expt(x * x, n / 2);
+    if (n / 2 * 2 == n - 1)
+        r = r * x;
+    return r;
+}
 
 int mes_util_is_white_space(UCSChar c)
 {
@@ -362,9 +474,67 @@ int mes_util_char_in(UCSChar c, const char *s)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_util", mes_util_to_upper);
+UCSChar mes_util_to_upper(UCSChar c)
+{
+    if (c >= 'a' && c <= 'z')
+        c = c - 0x20;
+    else if ((c >= 0xE0 && c <= 0xF6) || (c >= 0xF8 && c <= 0xFE))
+        c = c - 0x20;
+    else if (c == 0xFF)
+        c = 0x178;
+    else if (c == 0x131)
+        c = 0x49;
+    else if (((c >= 0x100 && c <= 0x137) || (c >= 0x14A && c <= 0x177)) && c % 2 == 1)
+        c = c - 1;
+    else if (((c >= 0x139 && c <= 0x148) || (c >= 0x179 && c <= 0x17E)) && c % 2 == 0)
+        c = c - 1;
+    else if (c == 0x17F)
+        c = 0x53;
+    else if (c >= 0x200 && c <= 0x217 && c % 2 == 1)
+        c = c - 1;
+    else if (c >= 0x430 && c <= 0x44F)
+        c = c - 0x20;
+    else if ((c >= 0x451 && c <= 0x45C) || (c >= 0x45E && c <= 0x45F))
+        c = c - 0x50;
+    else if (c >= 0x460 && c <= 0x47F && c % 2 == 1)
+        c = c - 1;
+    else if (c >= 0x561 && c <= 0x586)
+        c = c - 0x30;
+    else if (c >= 0xFF41 && c <= 0xFF5A)
+        c = c - 0x20;
+    return c;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_util", mes_util_to_lower);
+UCSChar mes_util_to_lower(UCSChar c)
+{
+    if (c >= 'A' && c <= 'Z')
+        c = c + 0x20;
+    else if ((c >= 0xC0 && c <= 0xD6) || (c >= 0xD8 && c <= 0xDE))
+        c = c + 0x20;
+    else if (c == 0x130)
+        c = 0x69;
+    else if (((c >= 0x100 && c <= 0x137) || (c >= 0x14A && c <= 0x177)) && c % 2 == 0)
+        c = c + 1;
+    else if (c == 0x178)
+        return 0xFF;
+    else if (((c >= 0x139 && c <= 0x148) || (c >= 0x179 && c <= 0x17E)) && c % 2 == 1)
+        c = c + 1;
+    else if (c >= 0x200 && c <= 0x217 && c % 2 == 0)
+        c = c + 1;
+    else if ((c >= 0x401 && c <= 0x40C) || (c >= 0x40E && c <= 0x40F))
+        c = c + 0x50;
+    else if (c >= 0x410 && c <= 0x42F)
+        c = c + 0x20;
+    else if (c >= 0x460 && c <= 0x47F && c % 2 == 0)
+        c = c + 1;
+    else if (c >= 0x531 && c <= 0x556)
+        c = c + 0x30;
+    else if (c >= 0x10A0 && c <= 0x10C5)
+        c = c + 0x30;
+    else if (c >= 0xFF21 && c <= 0xFF3A)
+        c = c + 0x20;
+    return c;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_util", D_0013A450);
 

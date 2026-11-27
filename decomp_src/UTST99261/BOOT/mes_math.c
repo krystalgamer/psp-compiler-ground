@@ -1,6 +1,9 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "mes_js.h"
+extern const double D_0013B9C8;
+extern const double D_0013B9D0;
+int mes_number_less(MesValue a, MesValue b, int f);
 extern unsigned int mes_ids[];
 extern void *mes_math_table;
 extern const double D_0013B9D8, D_0013B9E0, D_0013B9E8, D_0013B9F0;
@@ -49,9 +52,39 @@ MesValue mes_math_abs(MesContext *ctx, MesValue v)
     return mes_number_alloc(ctx, d);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_math", mes_math_acos);
+MesValue mes_math_acos(MesContext *ctx, MesValue v)
+{
+    MesValue n = mes_eval_to_number(ctx, v);
+    double d;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_math", mes_math_asin);
+    if (n == 0x1C || n == 0x14 || n == 0x18)
+        return 0x1C;
+    if (n == 0x10)
+        n = 1;
+    d = mes_num(n);
+    if (d > D_0013B928 || d < D_0013B930)
+        return 0x1C;
+    if (d == D_0013B928)
+        return 1;
+    return mes_number_alloc(ctx, acos(d));
+}
+
+MesValue mes_math_asin(MesContext *ctx, MesValue v)
+{
+    MesValue n = mes_eval_to_number(ctx, v);
+    double d;
+
+    if (n == 0x1C || n == 0x14 || n == 0x18)
+        return 0x1C;
+    if (n == 0x10)
+        return 0x10;
+    if (n == 1)
+        return 1;
+    d = mes_num(n);
+    if (d > D_0013B938 || d < D_0013B940)
+        return 0x1C;
+    return mes_number_alloc(ctx, asin(d));
+}
 
 MesValue mes_math_atan(MesContext *ctx, MesValue v)
 {
@@ -158,9 +191,45 @@ MesValue mes_math_log(MesContext *ctx, MesValue v)
     return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_math", mes_math_max);
+MesValue mes_math_max(MesContext *ctx, MesValue v)
+{
+    int argc = ctx->frame->args != NULL ? ctx->frame->args->argc : 0;
+    MesValue *argv = ctx->frame->args != NULL ? ctx->frame->args->argv : NULL;
+    MesValue x;
+    int i;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_math", mes_math_min);
+    if (argc <= 0)
+        return 0x18;
+    v = mes_eval_to_number(ctx, v);
+    for (i = 1; i < argc; i++) {
+        *--ctx->sp = v;
+        x = mes_eval_to_number(ctx, argv[i]);
+        ctx->sp++;
+        if (v != 0x1C && (x == 0x1C || mes_number_less(v, x, 1)))
+            v = x;
+    }
+    return v;
+}
+
+MesValue mes_math_min(MesContext *ctx, MesValue v)
+{
+    int argc = ctx->frame->args != NULL ? ctx->frame->args->argc : 0;
+    MesValue *argv = ctx->frame->args != NULL ? ctx->frame->args->argv : NULL;
+    MesValue x;
+    int i;
+
+    if (argc <= 0)
+        return 0x14;
+    v = mes_eval_to_number(ctx, v);
+    for (i = 1; i < argc; i++) {
+        *--ctx->sp = v;
+        x = mes_eval_to_number(ctx, argv[i]);
+        ctx->sp++;
+        if (v != 0x1C && (x == 0x1C || mes_number_less(x, v, 1)))
+            v = x;
+    }
+    return v;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_math", mes_math_pow);
 
@@ -173,7 +242,23 @@ MesValue mes_math_random(MesContext *ctx)
     return mes_number_alloc(ctx, rand() * D_0013B9C0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_math", mes_math_round);
+MesValue mes_math_round(MesContext *ctx, MesValue v)
+{
+    MesValue n = mes_eval_to_number(ctx, v);
+    MesValue ret;
+    double d;
+
+    if (n == 0x1C || n == 1 || n == 0x10 || n == 0x14 || n == 0x18)
+        return n;
+    d = mes_num(n);
+    if (d > 0 && d < D_0013B9C8)
+        ret = 1;
+    else if (d < 0 && d >= D_0013B9D0)
+        ret = 0x10;
+    else
+        ret = mes_number_alloc(ctx, floor(d + D_0013B9C8));
+    return ret;
+}
 
 MesValue mes_math_sin(MesContext *ctx, MesValue v)
 {

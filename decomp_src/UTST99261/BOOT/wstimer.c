@@ -36,7 +36,22 @@ extern int sema_id_timer;
 
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wstimer", timer_create);
+int timer_create(int *out)
+{
+    int sema = sceKernelCreateSema("pspBrowser-timer", 0, 0, 1, 0);
+    int a;
+
+    if (sema < 0)
+        return -1;
+    sema_id_timer = sema;
+    a = sceKernelSetAlarm(10000, timer_handler, 0);
+    if (a < 0) {
+        sceKernelDeleteSema(sema_id_timer);
+        return -1;
+    }
+    *out = a;
+    return 0;
+}
 
 int timer_delete(int id)
 {

@@ -209,7 +209,19 @@ void mes_regexp_initialize(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_charset_match);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_decimal_digits);
+int mes_regexp_decimal_digits(RxComp *c)
+{
+    int n = -1;
+    int d;
+
+    while (c->p < c->end && (d = mes_util_digit(*c->p)) >= 0) {
+        if (n < 0)
+            n = 0;
+        n = n * 10 + d;
+        c->p++;
+    }
+    return n;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_atom);
 
