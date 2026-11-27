@@ -50,7 +50,10 @@ sgl::MeshBuilder::extruded_var::extruded_var() : _slices(32), _start_angle(0), _
 }
 
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN3sgl11MeshBuilder12extruded_var5resetEv);
+void sgl::MeshBuilder::extruded_var::reset()
+{
+    *this = extruded_var();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN3sgl11MeshBuilder9begin_varC2ENS_9InputModeENS_9BeginModeE);
 
@@ -386,7 +389,22 @@ void sgl::MeshBuilder::end_sweep()
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN3sgl11MeshBuilder7revolveERKNS0_12extruded_varE);
+void sgl::MeshBuilder::revolve(const extruded_var &e)
+{
+    int n = e._slices;
+    if (e._start_angle == e._end_angle || n < 1)
+        return;
+    float step = (e._end_angle - e._start_angle) / n;
+    pushTransform();
+    loadIdentity();
+    transformListBegin();
+    for (int i = 0; i < n + 1; i++) {
+        transformListSnap();
+        rotate(step, 0, 0, 1);
+    }
+    popTransform();
+    sweep(e);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN3sgl11MeshBuilder5sweepERKNS0_12extruded_varE);
 
