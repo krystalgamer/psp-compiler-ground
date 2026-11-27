@@ -77,6 +77,8 @@ public:
     void step_size_t(unsigned int &);
     bool step_field(Field &);
     void skip(const Field &);
+    /* reads count / n vectors of n floats (instances in scene_GraphParser) */
+    template<class T> void step_xxxx_vector(std::vector<T> &, unsigned int, const Field &);
 };
 
 struct ABGR_FLOAT : public math::vector_xyzw {

@@ -319,6 +319,7 @@ public:
     void clearChildren(bool);
     std::list<common::handle<Node> > &children();
     const std::list<common::handle<Node> > &children() const;
+    template<class T> void find(common::handles_vector<Node> &, bool);
     static unsigned int _magic_number;
     std::list<common::handle<Node> > _children;   /* 0x2C */
 };
@@ -670,6 +671,47 @@ public:
     bool _finish_called;                /* 0xF4 */
 };
 }
+
+/* Graph::load's parser (../lib/scene/Graph.load.cpp, main_objs/scene_GraphParser) */
+namespace common {
+std::string GetPathLessFilename(std::string);
+std::string GetBasename(std::string);
+}
+namespace scene {
+class GraphParser : public FieldParser {
+public:
+    GraphParser(Graph &, std::string, unsigned int);
+    virtual ~GraphParser();
+    void parse_new_texture(FieldParser::Field &, const std::string &, bool);
+    void parse_new_switch(FieldParser::Field &, const std::string &, bool);
+    void parse_new_group(FieldParser::Field &, const std::string &, bool);
+    void parse_new_object(FieldParser::Field &, const std::string &, bool);
+    void parse_new_shape(FieldParser::Field &, const std::string &, bool);
+    void parse_new_default_shader(FieldParser::Field &, const std::string &, bool);
+    void parse_new_transform(FieldParser::Field &, const std::string &, bool);
+    void parse_new_static_transform(FieldParser::Field &, const std::string &, bool);
+    void parse_new_mesh(FieldParser::Field &, const std::string &, bool);
+    void parse_new_material(FieldParser::Field &, const std::string &, bool);
+    void parse_new_unknown(FieldParser::Field &, const std::string &, bool, const std::string &);
+    void parse_new(FieldParser::Field &);
+    void parse_push_child_cmd();
+    void parse_attach_texture_cmd();
+    void parse_attach_material_cmd();
+    void parse_attach_setup_cmd();
+    void parse(FieldParser::Field &);
+    void step_matrix(math::matrix &);
+    Graph &_graph;                      /* 0x54 */
+    std::string _path;                  /* 0x58 */
+    common::handle<Object> _object;     /* 0x5C */
+};
+}
+/* the destructors are inline (linkonce copies in scene_GraphParser.o, which defines SCENE_LINKONCE_GraphParser) */
+#if SCENE_LINKONCE_GraphParser
+SGL_LINKONCE_BEGIN
+inline FieldParser::~FieldParser() {}
+inline scene::GraphParser::~GraphParser() {}
+SGL_LINKONCE_END
+#endif
 
 /* scene::Graph's member templates (instances in scene_Graph*, scene_GraphParser) */
 #ifdef SCENE_GRAPH_TEMPLATE_DEFS

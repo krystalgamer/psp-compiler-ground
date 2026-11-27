@@ -5,6 +5,9 @@
 #define DEMO_TEMPLATE_DEFS
 #define SCENE_GRAPH_TEMPLATE_DEFS
 #define SGL_TEMPLATE_DEFS 1
+#define SCENE_LINKONCE_GraphParser 1
+extern const float D_00166FB8;
+#define SGL_POSITION_ONE D_00166FB8
 #include "../main.hpp"
 SCENE_ALLOC_FIRST_USE
 /* linkonce order: this object's .gnu.linkonce.t sections in Sony's link order */
@@ -92,6 +95,7 @@ extern const char scene_graph_h_name_expr[] __asm__("D_00167B68");  /* "_Name !=
 extern const char scene_graph_h_file[] __asm__("D_00167B74");       /* "../lib/scene/Graph.h" */
 extern const char scene_graph_h_sp[] __asm__("D_00167070");         /* " " */
 extern const char scene_graph_h_empty[] __asm__("D_0016701C");      /* "" */
+extern const char scene_graph_h_us[] __asm__("D_00167B04");         /* "_" */
 extern const char gmn_Node_name[] __asm__("_ZZN5scene5Graph13getMappedNodeINS_4NodeEEEN6common6handleIT_EERKSsE19__PRETTY_FUNCTION__");
 extern const char gmn_Material_name[] __asm__("_ZZN5scene5Graph13getMappedNodeINS_8MaterialEEEN6common6handleIT_EERKSsE19__PRETTY_FUNCTION__");
 extern const char gmn_Shape_name[] __asm__("_ZZN5scene5Graph13getMappedNodeINS_5ShapeEEEN6common6handleIT_EERKSsE19__PRETTY_FUNCTION__");
@@ -109,6 +113,41 @@ inline const char *scene_pf_getMappedNode(StaticTransform *) { return gmn_Static
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _Z41__static_initialization_and_destruction_0ii_731E4);
 
+/* Graph.load.cpp's asserts */
+extern const char gl_braces_expr[] __asm__("D_00167074");     /* "is_equal(\"}\")" */
+extern const char gl_file[] __asm__("D_00167084");            /* "../lib/scene/Graph.load.cpp" */
+extern const char gl_lbrace[] __asm__("D_00167018");          /* "{" */
+extern const char gl_rbrace[] __asm__("D_00167060");          /* "}" */
+extern const char gl_unknown[] __asm__("D_00167608");         /* "unknown node type " */
+extern const char gl_nl[] __asm__("D_0016761C");              /* "\n" */
+extern const char gl_yes[] __asm__("D_00167658");
+extern const char gl_mapped[] __asm__("D_0016765C");
+extern const char gl_no[] __asm__("D_00167664");
+extern const char gl_Texture[] __asm__("D_00167668");
+extern const char gl_Switch[] __asm__("D_00167670");
+extern const char gl_Group[] __asm__("D_00167678");
+extern const char gl_Object[] __asm__("D_00167680");
+extern const char gl_Scene[] __asm__("D_00167688");
+extern const char gl_Shape[] __asm__("D_00167690");
+extern const char gl_DefaultShader[] __asm__("D_00167698");
+extern const char gl_Transform[] __asm__("D_001676A8");
+extern const char gl_StaticTransform[] __asm__("D_001676B4");
+extern const char gl_Mesh[] __asm__("D_001676C4");
+extern const char gl_Material[] __asm__("D_001676CC");
+extern const char gl_yesno_expr[] __asm__("D_001676D8");
+extern const char pf_parse_new_group[] __asm__("_ZZN5scene11GraphParser15parse_new_groupERN11FieldParser5FieldERKSsbE19__PRETTY_FUNCTION__");
+extern const char pf_parse_new_unknown[] __asm__("_ZZN5scene11GraphParser17parse_new_unknownERN11FieldParser5FieldERKSsbS5_E19__PRETTY_FUNCTION__");
+extern const char pf_parse_new[] __asm__("_ZZN5scene11GraphParser9parse_newERN11FieldParser5FieldEE19__PRETTY_FUNCTION__");
+
+template common::handle<scene::Object>::~handle();
+extern template common::handle<scene::Group> scene::Graph::newNode<scene::Group>(std::string, bool);
+extern template void std::vector<common::handle<scene::Node> >::_M_insert_aux(std::vector<common::handle<scene::Node> >::iterator,
+                                                                              const common::handle<scene::Node> &);
+extern template common::handle<scene::Shape> scene::Graph::newNode<scene::Shape>(std::string, bool);
+extern template common::handle<scene::Switch> scene::Graph::newNode<scene::Switch>(std::string, bool);
+extern template common::handle<scene::StaticTransform> scene::Graph::newNode<scene::StaticTransform>(std::string, bool);
+extern template common::handle<scene::Material> scene::Graph::newNode<scene::Material>(std::string, bool);
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParserC2ERNS_5GraphESsj);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParserC1ERNS_5GraphESsj);
@@ -117,7 +156,17 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphP
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser16parse_new_switchERN11FieldParser5FieldERKSsb);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser15parse_new_groupERN11FieldParser5FieldERKSsb);
+namespace scene {
+void GraphParser::parse_new_group(FieldParser::Field &f, const std::string &name, bool mapped)
+{
+    _graph.newNode<Group>(name.c_str(), mapped);
+    step_assert(gl_lbrace);
+    while (step_field(f))
+        skip(f);
+    SCENE_ASSERT(is_equal(gl_rbrace), scene_graph_h_err, gl_braces_expr, gl_file, pf_parse_new_group, 243, scene_graph_h_sp);
+}
+}
+
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser16parse_new_objectERN11FieldParser5FieldERKSsb);
 
@@ -133,9 +182,53 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphP
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser18parse_new_materialERN11FieldParser5FieldERKSsb);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser17parse_new_unknownERN11FieldParser5FieldERKSsbS5_);
+namespace scene {
+void GraphParser::parse_new_unknown(FieldParser::Field &f, const std::string &name, bool mapped, const std::string &type)
+{
+    common::Log() << gl_unknown << type << gl_nl;
+    step_assert(gl_lbrace);
+    while (step_field(f))
+        skip(f);
+    SCENE_ASSERT(is_equal(gl_rbrace), scene_graph_h_err, gl_braces_expr, gl_file, pf_parse_new_unknown, 583, scene_graph_h_sp);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser9parse_newERN11FieldParser5FieldE);
+void GraphParser::parse_new(FieldParser::Field &f)
+{
+    step();
+    std::string type = c_str();
+    step();
+    std::string name = c_str();
+    step_assert(gl_mapped);
+    step();
+    SCENE_ASSERT(is_equal(gl_yes) || is_equal(gl_no), scene_graph_h_err, gl_yesno_expr, gl_file, pf_parse_new, 605, scene_graph_h_sp);
+    bool mapped = is_equal(gl_yes);
+    if (type == gl_Texture)
+        parse_new_texture(f, name, mapped);
+    else if (type == gl_Switch)
+        parse_new_switch(f, name, mapped);
+    else if (type == gl_Group)
+        parse_new_group(f, name, mapped);
+    else if (type == gl_Object || type == gl_Scene)
+        parse_new_object(f, name, mapped);
+    else if (type == gl_Shape)
+        parse_new_shape(f, name, mapped);
+    else if (type == gl_DefaultShader)
+        parse_new_default_shader(f, name, mapped);
+    else if (type == gl_Transform)
+        parse_new_transform(f, name, mapped);
+    else if (type == gl_StaticTransform)
+        parse_new_static_transform(f, name, mapped);
+    else if (type == gl_Mesh)
+        parse_new_mesh(f, name, mapped);
+    else if (type == gl_Material)
+        parse_new_material(f, name, mapped);
+    else
+        parse_new_unknown(f, name, mapped, type);
+}
+}
+
+
+
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser20parse_push_child_cmdEv);
 
@@ -165,6 +258,18 @@ void _GLOBAL__D__ZN5scene11GraphParserC2ERNS_5GraphESsj(void)
     static_init(0, 0xFFFF);
 }
 
+template<class T> void FieldParser::step_xxxx_vector(std::vector<T> &v, unsigned int n, const Field &f)
+{
+    v.resize(f.count / n);
+    for (typename std::vector<T>::iterator i = v.begin(); i != v.end(); ++i) {
+        float *p = (float *)&*i;
+        for (unsigned int k = 0; k != n; k++) {
+            step();
+            p[k] = get<float>();
+        }
+    }
+}
+
 /* instances that the (asm) methods above use, referenced from a discarded function so that cc1plus
    instantiates them at the end of the unit (see scene_Graph.c) */
 template<class V> static inline void scene_GraphParser_vec(V *v)
@@ -177,6 +282,10 @@ extern "C" void scene_GraphParser_uses(scene::Graph *g, common::handle<scene::No
 extern "C" void scene_GraphParser_uses(scene::Graph *g, common::handle<scene::Node> *hn, common::handle<scene::Group> *hg)
 {
     const std::string &s = *(std::string *)0;
+    ((FieldParser *)0)->step_xxxx_vector(*(std::vector<sgl::Position> *)0, 0, *(FieldParser::Field *)0);
+    ((FieldParser *)0)->step_xxxx_vector(*(std::vector<sgl::Normal> *)0, 0, *(FieldParser::Field *)0);
+    ((FieldParser *)0)->step_xxxx_vector(*(std::vector<sgl::TexCoord> *)0, 0, *(FieldParser::Field *)0);
+    ((FieldParser *)0)->step_xxxx_vector(*(std::vector<sgl::Color> *)0, 0, *(FieldParser::Field *)0);
     *(common::handle<scene::Object> *)0 = *(common::handle<scene::Object> *)0;
     g->getMappedNode<scene::Node>(s);
     g->getMappedNode<scene::Material>(s);
@@ -214,13 +323,9 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphP
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Graph7newNodeINS_15StaticTransformEEEN6common6handleIT_EESsb);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN11FieldParser16step_xxxx_vectorIN3sgl8PositionEEEvRSt6vectorIT_SaIS4_EEjRKNS_5FieldE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN11FieldParser16step_xxxx_vectorIN3sgl6NormalEEEvRSt6vectorIT_SaIS4_EEjRKNS_5FieldE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN11FieldParser16step_xxxx_vectorIN3sgl8TexCoordEEEvRSt6vectorIT_SaIS4_EEjRKNS_5FieldE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN11FieldParser16step_xxxx_vectorIN3sgl5ColorEEEvRSt6vectorIT_SaIS4_EEjRKNS_5FieldE);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Graph7newNodeINS_8MaterialEEEN6common6handleIT_EESsb);
 
@@ -228,12 +333,8 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphP
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Group4findINS_4MeshEEEvRN6common14handles_vectorINS_4NodeEEEb);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN11FieldParserD0Ev);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN11FieldParserD1Ev);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParserD0Ev);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParserD1Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser11step_matrixERN4math6matrixE);
