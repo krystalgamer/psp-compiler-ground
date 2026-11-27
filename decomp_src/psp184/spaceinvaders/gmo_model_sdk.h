@@ -1201,7 +1201,7 @@ void sceGmoModelSetEnableBits( SceGmoModel *model, int bits, int value ) ;
 int sceGmoModelGetEnableBits( SceGmoModel *model ) ;
 void sceGmoModelSetEnableMask( SceGmoModel *model, int mask, int value ) ;
 int sceGmoModelGetEnableMask( SceGmoModel *model ) ;
-const ScePspFVector3 *sceGmoModelGetBoundingBox( SceGmoModel *model ) ;
+const ScePspFVector4 *sceGmoModelGetBoundingBox( SceGmoModel *model ) ;
 const ScePspFMatrix4 *sceGmoModelGetVertexOffset( SceGmoModel *model ) ;
 const ScePspFRect *sceGmoModelGetTexcoordOffset( SceGmoModel *model ) ;
 int sceGmoModelGetBoneCount( SceGmoModel *model ) ;
@@ -1361,10 +1361,10 @@ struct SceGmoModel {
  int m_n_motions ;
  int m_current_motion ;
  float m_change_motion ;
- ScePspFMatrix4 m_world_matrix ;
  int m_enable_bits ;
  int m_enable_mask ;
- ScePspFVector3 m_bounding_box[ 2 ] ;
+ ScePspFMatrix4 m_world_matrix ;
+ ScePspFVector4 m_bounding_box[ 2 ] ;
  ScePspFMatrix4 m_vertex_offset ;
  ScePspFRect m_texcoord_offset ;
 } ;
@@ -1538,3 +1538,11 @@ static void change_motion( SceGmoModel *model, float step ) ;
 
 #define sceGmoMotionUpdate sceGmoMotionAnimate
 #define sceGmoTextureUpdate sceGmoTextureAnimate
+/* gmo_model 1.5.0 additions (material/primitive cache, gmo_math) */
+ScePspFMatrix4 *sceGmoMat4Set( ScePspFMatrix4 *m, float tx, float ty, float tz, float sx, float sy, float sz ) ;
+ScePspFVector4 *sceGmoVec3Set( ScePspFVector4 *v, float x, float y, float z ) ;
+ScePspFRect *sceGmoRectSet( ScePspFRect *r, float x, float y, float w, float h ) ;
+_Bool sceGmoPartLoadCache( SceGmoPart *part ) ;
+void sceGmoPartUnloadCache( SceGmoPart *part ) ;
+_Bool sceGmoMaterialLoadCache( SceGmoMaterial *material ) ;
+void sceGmoMaterialUnloadCache( SceGmoMaterial *material ) ;

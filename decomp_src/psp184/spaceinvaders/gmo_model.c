@@ -2,7 +2,44 @@
 #include "gmo_model_sdk.h"
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_model", D_0007EC44);
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_model", sceGmoModelCreate);
+SceGmoModel *sceGmoModelCreate( SceGmoChunk *chunk )
+{
+	SceGmoModel *model = (SceGmoModel *)sceGmoModelAllocMemory( sizeof( SceGmoModel ) ) ;
+	if ( model == 0 ) {
+		return 0 ;
+	}
+	sceGmoBaseConstruct( &( model->m_base ) ) ;
+	model->m_reference = 1 ;
+	model->m_flags = 0 ;
+
+	model->m_bones = 0 ;
+	model->m_parts = 0 ;
+	model->m_materials = 0 ;
+	model->m_textures = 0 ;
+	model->m_motions = 0 ;
+	model->m_n_bones = 0 ;
+	model->m_n_parts = 0 ;
+	model->m_n_materials = 0 ;
+	model->m_n_textures = 0 ;
+	model->m_n_motions = 0 ;
+
+	model->m_current_motion = -1 ;
+	model->m_change_motion = -1.0f ;
+	model->m_enable_bits = SCEGMO_ENABLE_ALL ;
+	model->m_enable_mask = 0 ;
+
+	sceGmoMat4Set( &( model->m_world_matrix ), 0, 0, 0, 1, 1, 1 ) ;
+	sceGmoVec3Set( &( model->m_bounding_box[ 0 ] ), 0, 0, 0 ) ;
+	sceGmoVec3Set( &( model->m_bounding_box[ 1 ] ), 0, 0, 0 ) ;
+	sceGmoMat4Set( &( model->m_vertex_offset ), 0, 0, 0, 1, 1, 1 ) ;
+	sceGmoRectSet( &( model->m_texcoord_offset ), 0, 0, 1, 1 ) ;
+
+	if ( chunk != 0 && !sceGmoModelLoad( model, chunk ) ) {
+		sceGmoModelDelete( model ) ;
+		return 0 ;
+	}
+	return model ;
+}
 
 void sceGmoModelDelete( SceGmoModel *model )
 {
@@ -68,9 +105,28 @@ void sceGmoModelUnload( SceGmoModel *model )
  model->m_flags = 0 ;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_model", sceGmoModelLoadCache);
+_Bool sceGmoModelLoadCache( SceGmoModel *model )
+{
+	if ( model == 0 ) return 0 ;
+	{ int i ; for ( i = 0 ; i < model->m_n_parts ; i ++ ) {
+		if ( !sceGmoPartLoadCache( model->m_parts[ i ] ) ) return 0 ;
+	} }
+	{ int i ; for ( i = 0 ; i < model->m_n_materials ; i ++ ) {
+		if ( !sceGmoMaterialLoadCache( model->m_materials[ i ] ) ) return 0 ;
+	} }
+	return 1 ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_model", sceGmoModelUnloadCache);
+void sceGmoModelUnloadCache( SceGmoModel *model )
+{
+	if ( model == 0 ) return ;
+	{ int i ; for ( i = 0 ; i < model->m_n_parts ; i ++ ) {
+		sceGmoPartUnloadCache( model->m_parts[ i ] ) ;
+	} }
+	{ int i ; for ( i = 0 ; i < model->m_n_materials ; i ++ ) {
+		sceGmoMaterialUnloadCache( model->m_materials[ i ] ) ;
+	} }
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_model", sceGmoModelAnimate);
 
@@ -87,7 +143,15 @@ void sceGmoModelUpdate( SceGmoModel *model )
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_model", sceGmoModelDraw);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_model", sceGmoModelSetWorldMatrix);
+void sceGmoModelSetWorldMatrix( SceGmoModel *model, const mat4 *m )
+{
+	if ( model == 0 ) return ;
+	if ( m == 0 ) {
+		sceGmoMat4Set( &( model->m_world_matrix ), 0, 0, 0, 1, 1, 1 ) ;
+	} else {
+		model->m_world_matrix = *m ;
+	}
+}
 
 const mat4 *sceGmoModelGetWorldMatrix( SceGmoModel *model )
 {
@@ -109,17 +173,49 @@ int sceGmoModelGetCurrentMotion( SceGmoModel *model )
  return model->m_current_motion ;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_model", sceGmoModelSetEnableBits);
+void sceGmoModelSetEnableBits( SceGmoModel *model, int bits, int value )
+{
+	if ( model == 0 ) return ;
+	model->m_enable_bits &= ~bits ;
+	model->m_enable_bits |= ( bits & value ) ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_model", sceGmoModelGetEnableBits);
+int sceGmoModelGetEnableBits( SceGmoModel *model )
+{
+	if ( model == 0 ) return 0 ;
+	return model->m_enable_bits ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_model", sceGmoModelSetEnableMask);
+void sceGmoModelSetEnableMask( SceGmoModel *model, int mask, int value )
+{
+	if ( model == 0 ) return ;
+	model->m_enable_mask &= ~mask ;
+	model->m_enable_mask |= ( mask & value ) ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_model", sceGmoModelGetEnableMask);
+int sceGmoModelGetEnableMask( SceGmoModel *model )
+{
+	if ( model == 0 ) return 0 ;
+	return model->m_enable_mask ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_model", sceGmoModelHasAnimation);
+_Bool sceGmoModelHasAnimation( SceGmoModel *model )
+{
+	if ( model == 0 ) return 0 ;
+	if ( model->m_n_motions > 0 ) return 1 ;
+	{ int i ; for ( i = 0 ; i < model->m_n_textures ; i ++ ) {
+		SceGmoTexture *texture = model->m_textures[ i ] ;
+		if ( texture != 0 && sceGmoTextureHasAnimation( texture ) ) return 1 ;
+	} }
+	return 0 ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_model", sceGmoModelGetBoundingBox);
+const ScePspFVector4 *sceGmoModelGetBoundingBox( SceGmoModel *model )
+{
+	if ( model == 0 ) return 0 ;
+	if ( !( model->m_flags & SCEGMO_MODEL_HAS_BOUNDING_BOX ) ) return 0 ;
+	return model->m_bounding_box ;
+}
 
 const mat4 *sceGmoModelGetVertexOffset( SceGmoModel *model )
 {
