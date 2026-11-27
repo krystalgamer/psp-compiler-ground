@@ -321,7 +321,28 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", game_cnt
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", game_cnt_hiscore_5710C);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", title_bg_star_start);
+typedef struct { int f0, f4, f8; float x, y, dx, dy; } STAR_T;
+
+double genrand_real2(void);
+double genrand_real3(void);
+extern const double D_0007EC00, D_0007EC08, D_0007EC10, D_0007EC18, D_0007EC20;
+void title_bg_star_start(void *star)
+{
+	STAR_T *s = star;
+	float z;
+
+	if (genrand_int32() % 50 == 0)
+		s->f0 = 4;
+	else
+		s->f0 = genrand_int32() & 3;
+	s->x = (genrand_real3() - D_0007EC00) * D_0007EC08 + D_0007EC08;
+	s->y = (genrand_real3() - D_0007EC00) * D_0007EC10 + D_0007EC10;
+	z = genrand_real2() * D_0007EC18 + D_0007EC20;
+	s->f8 = 0;
+	s->f4 = 0;
+	s->dx = (s->x - 240.0f) / z;
+	s->dy = (s->y - 136.0f) / z;
+}
 
 void title_bg_star_init(void)
 {
