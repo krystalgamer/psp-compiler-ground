@@ -647,9 +647,32 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", D_001355F4);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_HeadSend);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", cmpstr);
+int cmpstr(char *a, char *b) {
+    while (*a != 0 && ((*b != '\r') & (*b != '\n'))) {
+        if ((char)((u8)(*a - 'a') < 26 ? *a & ~0x20 : *a) != (char)((u8)(*b - 'a') < 26 ? *b & ~0x20 : *b)) {
+            return 0;
+        }
+        a++;
+        b++;
+    }
+    return 1;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", icmpstr);
+int icmpstr(char *a, char *b, int n) {
+    int i = 0;
+    while (*a != 0 && ((*b != '\r') & (*b != '\n'))) {
+        if ((char)((u8)(*a - 'a') < 26 ? *a & ~0x20 : *a) != (char)((u8)(*b - 'a') < 26 ? *b & ~0x20 : *b)) {
+            return 0;
+        }
+        i++;
+        if (i == n) {
+            return 1;
+        }
+        a++;
+        b++;
+    }
+    return 1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
