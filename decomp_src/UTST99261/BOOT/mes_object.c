@@ -2,9 +2,22 @@
 #include "common.h"
 #include "mes_js.h"
 #include "m2c_macros.h"
+typedef struct ObjStr {
+    unsigned short *chars;            /* 0x0 */
+    int slen;                         /* 0x4 */
+} ObjStr;
+int mes_is_number(MesValue v);
+MesValue mes_eval_to_object(MesContext *ctx, MesValue v);
+extern MesObject *D_00585334;
+extern MesObject *D_00585350;
+extern MesObject *D_00585364;
+extern unsigned int D_005852E4;
+void mes_object_set(MesObject *obj, unsigned int id, int value, int flags);
+unsigned short *mes_util_strcp(unsigned short *d, const char *s);
+void mes_memory_copy(const void *src, void *dst, int n);
 extern unsigned int mes_ids[];
 extern void *mes_object_object_table;
-MesValue mes_object_object(MesContext *ctx);
+MesValue mes_object_object(MesContext *ctx, MesValue v);
 unsigned int mes_context_id2(void *ctx, const char *name);
 void *mes_native_new(MesContext *ctx, int a, void *fn, int nargs, int flags);
 void mes_native_setup(MesContext *ctx, MesObject *o, void *table, int n);
@@ -320,7 +333,35 @@ void mes_object_initialize(void) {
     mes_gc_register(&mes_object_method, 0x14, 0x64, 0x64);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_object", mes_object_object);
+MesValue mes_object_object(MesContext *ctx, MesValue v)
+{
+    MesObject *o;
+
+    if (ctx->frame->construct) {
+        o = ctx->frame->thisobj;
+        if (v == 0 || v == 4) {
+            o->proto = D_00585354;
+        } else if (v == 0xC || v == 8) {
+            o->cls = 1;
+            o->proto = D_00585334;
+            o->fC = v;
+        } else if (mes_is_number(v)) {
+            o->cls = 8;
+            o->proto = D_00585350;
+            o->fC = v;
+        } else if ((v & 3) == 3) {
+            o->cls = 13;
+            o->proto = D_00585364;
+            o->fC = v;
+            mes_object_set(o, D_005852E4, MES_INT(((ObjStr *)(v & ~3))->slen), 7);
+        } else
+            return v;
+        return (MesValue)o;
+    }
+    if (v == 0 || v == 4)
+        return (MesValue)mes_object_new(ctx, 9, D_00585354);
+    return mes_eval_to_object(ctx, v);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_object", mes_object_to_string);
 
