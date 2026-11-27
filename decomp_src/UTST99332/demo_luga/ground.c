@@ -153,9 +153,78 @@ void geObjectDraw(geOBJECT *obj);
 int geTexSend(int n);
 void light_ctrl(uint c);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ground", post_ground);
+int post_ground(void)
+{
+	int i;
+	int ret = 0;
+	geOBJECT *obj;
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ground", set_nextgnd);
+	for (i = 0; i < 4; i++) {
+		obj = &md->obj[i + 2];
+
+		switch (md->walkmode) {
+		case 0:
+			obj->t.z += 2.0f;
+			if (obj->t.z >= 150.0f) {
+				obj->t.z -= 800.0f;
+				obj->model = md->nextgnd;
+				md->nextgnd++;
+				if (md->nextgnd >= 9)
+					md->nextgnd = 3;
+				ret = 1;
+			}
+			break;
+		case 1:
+			obj->t.z -= 2.0f;
+			if (obj->t.z <= -650.0f) {
+				obj->t.z += 800.0f;
+				obj->model = md->nextgnd;
+				md->nextgnd--;
+				if (md->nextgnd < 3)
+					md->nextgnd = 8;
+				ret = 1;
+			}
+			break;
+		}
+	}
+
+	for (i = 0; i < 4; i++) {
+		if (md->obj[i + 2].model == 8)
+			break;
+	}
+
+	if (i < 4) {
+		obj = &md->obj[i + 2];
+		light_ctrl(set_ground_light(obj->t.z));
+	} else {
+		light_ctrl(-1);
+	}
+
+	return ret;
+}
+
+void set_nextgnd(void)
+{
+	int lst[4];
+	int n;
+
+	__sort_gnd(lst);
+
+	switch (md->walkmode) {
+	case 0:
+		n = lst[0] + 2;
+		md->nextgnd = md->obj[n].model + 1;
+		if (md->nextgnd >= 9)
+			md->nextgnd = 3;
+		break;
+	case 1:
+		n = lst[3] + 2;
+		md->nextgnd = md->obj[n].model - 1;
+		if (md->nextgnd < 3)
+			md->nextgnd = 8;
+		break;
+	}
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/ground", D_00020E40);
 
