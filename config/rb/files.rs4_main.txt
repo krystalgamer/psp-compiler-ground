@@ -359,3 +359,5 @@ rodata 0x10F2F8 -
 rodata 0x110048 -
 rodata 0x1106E4 -
 rodata 0x110720 -
+rodata 0x10FCC0 -
+rodata 0x10FE40 newlib/libc/stdlib/dtoa
