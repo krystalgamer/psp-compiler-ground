@@ -420,7 +420,6 @@ void _GLOBAL__D___psp_moduleinfo(void)
     static_init_3E8(0, 0xFFFF);
 }
 
-extern template common::CmdLine::const_iterator std::find<common::CmdLine::const_iterator, const char *>(common::CmdLine::const_iterator, common::CmdLine::const_iterator, const char *const &, std::random_access_iterator_tag);
 
 SGL_LINKONCE_BEGIN
 inline common::CmdLine::const_iterator common::CmdLine::find_arg(const char *opts) const
@@ -1545,6 +1544,9 @@ extern "C" void CityApp_instance_refs(common::handle<scene::Node> &n, common::ha
     common::handle<scene::Transform> i(n);
     common::handle<scene::Object> j;
     ((scene::Graph::NodeMultiMap *)0)->find(*(const std::string *)0);
+    /* called by the asm vector<handle<Car> >::_M_insert_aux (near-miss: two registers swapped) */
+    typedef std::vector<common::handle<CityApp::Car> >::iterator CarIt;
+    std::__uninitialized_copy_aux(CarIt(), CarIt(), CarIt(), __false_type());
     std::ostringstream os;
     os.str();
     /* the first function that inlines streambuf::_M_out_cur_move is the only one (cc1plus 3.3): the original
@@ -1570,8 +1572,6 @@ CONT_INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", func_00
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN6common7CmdLine6OptionESt6vectorIS4_SaIS4_EEEES9_ET0_T_SB_SA_12__false_type);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN6common6handleIN7CityApp3CarEEESt6vectorIS6_SaIS6_EEEESB_ET0_T_SD_SC_12__false_type);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNSs12_S_constructIPcEES0_T_S1_RKSaIcESt20forward_iterator_tag);
 CONT_INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", func_000087B4, _ZNSs12_S_constructIPcEES0_T_S1_RKSaIcESt20forward_iterator_tag);
 
@@ -1590,8 +1590,6 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common7C
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN7CityApp3CarD1Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN7CityApp3CarD0Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZSt4findIN9__gnu_cxx17__normal_iteratorIPKSsSt6vectorISsSaISsEEEEPKcET_SA_SA_RKT0_St26random_access_iterator_tag);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNK6interp16KeyFrameSequenceIfE4dumpEPKc);
 CONT_INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", func_0000CD14, _ZNK6interp16KeyFrameSequenceIfE4dumpEPKc);
