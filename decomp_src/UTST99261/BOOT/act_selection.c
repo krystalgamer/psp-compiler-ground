@@ -629,7 +629,32 @@ void attr_VALIGN_trgroup(void *node, BOX *box) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_WIDTH_col);
+void attr_WIDTH_col(void *node, BOX *box) {
+    char *s;
+    int n;
+    BOX *p = box->parent;
+
+    if (p->html == 0x17) {
+        box->style->flags &= ~0x3;
+        box->style->flags |= p->style->flags & 3;
+        box->style->width = p->style->width;
+    }
+    s = getDOMAttributeValue(node, &_DOMwidth);
+    if (s != NULL) {
+        n = atoi(s);
+        if (n > 0) {
+            if (strchr(s, '%') == NULL) {
+                box->style->flags &= ~0x3;
+                box->style->flags |= 0x1;
+            } else {
+                box->style->flags &= ~0x3;
+                box->style->flags |= 0x2;
+            }
+            box->style->width = n;
+        }
+        MEM_free(0, s);
+    }
+}
 
 void attr_WIDTH_table(void *node, BOX *box) {
     char *s;
