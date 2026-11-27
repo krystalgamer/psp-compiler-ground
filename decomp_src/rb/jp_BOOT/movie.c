@@ -466,11 +466,6 @@ INCLUDE_RODATA("tmp/asm/rb/jp_BOOT/nonmatchings/movie", D_000163FC);
 
 INCLUDE_ASM("tmp/asm/rb/jp_BOOT/nonmatchings/movie", playMovie);
 
-#ifdef NON_MATCHING
-/* compiles to the original, but its strings are shared with functions still in asm
-   (merged constants), so it can only go in once the unit is all C */
-typedef long long SceOff_;
-SceOff_ strFileLseek(StrFile *file, SceOff_ offset, SceInt32 whence);
 static SceInt32 readHeader(SceMpeg *pMpeg, StrFile *pStrFile, SceInt32 *pFilesize, SceInt32 *strOffset)
 {
 	SceInt32 iReadSize;
@@ -480,19 +475,19 @@ static SceInt32 readHeader(SceMpeg *pMpeg, StrFile *pStrFile, SceInt32 *pFilesiz
 		return -1;
 	iReadSize = strFileRead(pStrFile, stream_buf, 2048);
 	if (iReadSize < 2048) {
-		printf("fatal error : strFileRead() %x\n", iReadSize);
+		printf(D_00016368, iReadSize);
 		return -1;
 	}
 	if (sceMpegQueryStreamOffset(pMpeg, stream_buf, strOffset) != 0) {
-		printf("fatal error : sceMpegQueryStreamOffset()\n");
+		puts(D_00016388);
 		return -1;
 	}
 	if (sceMpegQueryStreamSize(stream_buf, pFilesize) != 0) {
-		printf("fatal error : sceMpegQueryStreamSize()\n");
+		puts(D_000163B4);
 		return -1;
 	}
 	if (strFileLseek(pStrFile, 0, 0) < 0) {
-		printf("fatal error : strFileLseek()\n");
+		puts(D_000163DC);
 		return -1;
 	}
 	pHeader = malloc(*strOffset);
@@ -500,14 +495,11 @@ static SceInt32 readHeader(SceMpeg *pMpeg, StrFile *pStrFile, SceInt32 *pFilesiz
 		return -1;
 	iReadSize = strFileRead(pStrFile, pHeader, *strOffset);
 	if (iReadSize < *strOffset) {
-		printf("fatal error : strFileRead() %x\n", iReadSize);
+		printf(D_00016368, iReadSize);
 		return -1;
 	}
 	return 0;
 }
-#else
-INCLUDE_ASM("tmp/asm/rb/jp_BOOT/nonmatchings/movie", readHeader);
-#endif
 
 int printf(const char *fmt, ...);
 static int skip_data(ScePsmf *psm, SceUInt32 pts)
