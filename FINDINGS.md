@@ -1012,9 +1012,15 @@ the exact matches and lists the module code that nothing covers
     `-O3`, newlib's libm (`pow`, `__ieee754_pow`, `sqrt`, `fabs`, `finite`,
     `isnan`, `rint`, `scalbn`, `copysign`, `matherr`: `-O2 -fno-builtin`,
     a locfix build like 1.9.2's newlib) and libgcc's soft double.
-  - libjpeg: `-O2`, with configure's `jconfig.h`.  `jmemnobs.c` is replaced
-    by Sony's memory manager (user malloc/free hooks), and there is a
-    memory source manager (an unknown export).
+  - libjpeg: `-O2`, with configure's `jconfig.h`, plus two Sony objects.
+    Both match in C with 1.11.0, and with 1.9.2 too:
+    - `jmemnobs.c` with user hooks: `jpeg_get_small`/`jpeg_get_large`
+      call a stored `(cinfo, size)` allocator when it is set, and the
+      free functions call a stored `(cinfo, object, size)` free;
+    - a memory source manager, `jpeg_memory_src(cinfo, buffer, size)`
+      (named from its NID).  Its 28-byte `jpeg_source_mgr` is followed by
+      a 2-byte EOI buffer, and it sets `bytes_in_buffer` before
+      `next_input_byte`.
   - blowfish and RSA: `-O0` with no `ext`/`ins` at all (`-mno-ext`, or no
     `-mext`), and RSA with `-DNO_ERR`.
   - Headers: newlib's with `__DYNAMIC_REENT__` (`stderr` is
@@ -1032,9 +1038,9 @@ the exact matches and lists the module code that nothing covers
 
   - libgcc from the tree (its libgcc2.c, dp-bit.c and fp-bit.c members,
     preprocessed as `tools/libgcccpp.sh` does, `-O2 -mext`) matches all of libpng's 23 functions, libjpeg's 11 and librsa's 16.
-    crtbegin/crtend are the tree's crtstuff.c.  So only the libraries'
-    own glue code is not covered: libjpeg's memory manager and source,
-    and librsa's Sony `RAND_poll`.
+    crtbegin/crtend are the tree's crtstuff.c.  With that, libz, libpng,
+    libjpeg and libblowfish are covered completely.  librsa's Sony
+    `RAND_poll` is not.
   - RSA: 301 compiled functions match (282 distinct module functions;
     identical getters share one copy).  What is left is source-level:
     - stack.c and lhash.c pass `__LINE__` values one higher (Sony
