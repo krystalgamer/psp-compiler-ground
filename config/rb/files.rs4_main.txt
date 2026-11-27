@@ -355,3 +355,7 @@ bss 0x139F28 gcc-3.3.6/gcc/unwind-dw2-fde
 bss 0x139F38 -
 rodata 0x1109A0 -
 rodata 0x1109B8 gcc-3.3.6/gcc/unwind-dw2
+rodata 0x10F2F8 -
+rodata 0x110048 -
+rodata 0x1106E4 -
+rodata 0x110720 -

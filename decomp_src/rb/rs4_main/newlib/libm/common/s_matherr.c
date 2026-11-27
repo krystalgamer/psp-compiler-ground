@@ -1,5 +1,4 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/newlib/libm/common/s_matherr", matherr);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/newlib/libm/common/s_matherr", __fdlib_version);
+/* upstream: newlib-1.12.0/newlib/libm/common/s_matherr.c (Sony's psp-newlib build: _REENT is __getreent()) */
+/* cflags: -O2 -fno-builtin */
+#define __DYNAMIC_REENT__
+#include "libm/common/s_matherr.c"

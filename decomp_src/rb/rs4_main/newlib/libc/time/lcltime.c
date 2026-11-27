@@ -1,5 +1,4 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/newlib/libc/time/lcltime", localtime);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/newlib/libc/time/lcltime", D_0010F2F8);
+/* upstream: newlib-1.12.0/newlib/libc/time/lcltime.c (Sony's psp-newlib build: _REENT is __getreent()) */
+/* cflags: -O2 -fno-builtin */
+#define __DYNAMIC_REENT__
+#include "libc/time/lcltime.c"
