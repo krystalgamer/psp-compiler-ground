@@ -1,5 +1,6 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
+#include <stdarg.h>
 #include "m2c_macros.h"
 #ifndef NULL
 #define NULL ((void *)0)
@@ -35,7 +36,25 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/ez", D_00102AF4);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/ez", ezScxTask);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/ez", ezSprintfAllocUCS4);
+int vsprintf(char *, const char *, va_list);
+int *textASCIItoUCS4(char *);
+int *ezSprintfAllocUCS4(const char *fmt, ...)
+{
+	char buf[0x200];
+	va_list ap;
+	int *r, *p;
+	if (fmt == NULL)
+		return NULL;
+	memset(buf, 0, 0x200);
+	va_start(ap, fmt);
+	buf[0x1FF] = 0;
+	vsprintf(buf, fmt, ap);
+	r = textASCIItoUCS4(buf);
+	for (p = r; *p != -1; p++)
+		;
+	*p = 0;
+	return r;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/ez", ezTtrWrite);
 
