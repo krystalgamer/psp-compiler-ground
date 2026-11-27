@@ -421,7 +421,18 @@ void I3dMatScaleXYZA()
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_geom_a", I3dVecRotTransPersA_PS2);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_geom_a", I3dMatLookAtRHA);
+void I3dMatLookAtRHA(float *out, const float *eye, const float *dir, const float *up)
+{
+	float m[16] __attribute__((aligned(16)));
+	float x[4] __attribute__((aligned(16)));
+	I3dMatUnitA(m);
+	I3dVecCrossA(x, up, dir);
+	I3dVecNormalizeXYZA(&m[0], x);
+	I3dVecNormalizeXYZA(&m[8], dir);
+	I3dVecCrossA(&m[4], &m[8], &m[0]);
+	I3dMatTranslateA(m, m, eye);
+	I3dMatInverseA(out, m);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

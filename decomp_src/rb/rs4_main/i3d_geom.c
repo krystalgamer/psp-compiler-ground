@@ -846,7 +846,18 @@ void I3dMatScaleXYZ()
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_geom", I3dVecRotTransPers_PS2);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_geom", I3dMatLookAtRH);
+void I3dMatLookAtRH(float *out, const float *eye, const float *dir, const float *up)
+{
+	float m[16];
+	float x[4];
+	I3dMatUnit(m);
+	I3dVecCross(x, up, dir);
+	I3dVecNormalizeXYZ(&m[0], x);
+	I3dVecNormalizeXYZ(&m[8], dir);
+	I3dVecCross(&m[4], &m[8], &m[0]);
+	I3dMatTranslate(m, m, eye);
+	I3dMatInverse(out, m);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
