@@ -187,7 +187,23 @@ void attr_ALIGN_hr(void *node, void *box) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_ALIGN_image);
+void attr_ALIGN_image(void *node, BOX *box) {
+    DOMString str;
+    Element_getAttribute(&str, node, &_DOMalign);
+    if (str.len != 0) {
+        if (DOMStringcasecmpFast(&str, &_DOMleft) == 0) {
+            box->style->unk70[1] = 1;
+        } else if (DOMStringcasecmpFast(&str, &_DOMright) == 0) {
+            box->style->unk70[1] = 2;
+        } else if (DOMStringcasecmpFast(&str, &_DOMtop) == 0) {
+            box->style->unk70[0] = 3;
+        } else if (DOMStringcasecmpFast(&str, &_DOMmiddle) == 0 || DOMStringcasecmpFast(&str, &_DOMcenter) == 0) {
+            box->style->unk70[0] = 5;
+        } else {
+            box->style->unk70[0] = 6;
+        }
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
