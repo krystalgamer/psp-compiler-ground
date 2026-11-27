@@ -35,7 +35,22 @@ M2C_UNK rt_socket_initialize_stack_platform();      /* extern */
 M2C_UNK rt_socket_set_no_delay_tcp_platform();      /* extern */
 extern int gpszVersion_114A2C;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rt_socket_get_version);
+int sceNetInetRecv();
+int sceNetInetSend();
+int sceNetInetGetsockopt();
+int sceNetInetAccept();
+int sceNetInetBind();
+void *memset(void *, int, unsigned long);
+
+int rt_socket_get_version(unsigned char *maj, unsigned char *min, unsigned char *rev)
+{
+    if (maj == NULL || min == NULL) return 2;
+    if (rev == NULL) return 2;
+    *maj = 2;
+    *min = 10;
+    *rev = 5;
+    return 0;
+}
 
 int rt_socket_get_version_string(void) {
     return gpszVersion_114A2C;
@@ -51,6 +66,7 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket",
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", D_0010D0B8);
 
+typedef struct { unsigned char len; unsigned char family; unsigned short port; unsigned int addr; char zero[8]; } RtSockAddrIn;
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rt_socket_get_build_timestamp);
 
 void rt_socket_initialize_stack(void) {
@@ -73,7 +89,16 @@ void rt_socket_close(void) {
     rt_socket_close_platform();
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rt_socket_get_type);
+int rt_socket_get_type(int s, int *out)
+{
+    int v;
+    int len;
+    if (out == NULL) return 2;
+    len = 4;
+    if (sceNetInetGetsockopt(s, 0xFFFF, 0x1008, &v, &len) != 0) return rt_socket_get_err_platform();
+    *out = v;
+    return 0;
+}
 
 void rt_socket_set_non_blocking(void) {
     rt_socket_set_non_blocking_platform();
@@ -117,9 +142,29 @@ int rt_socket_set_receive_buffer_size(int s, int v)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rt_socket_get_receive_buffer_size);
+int rt_socket_get_receive_buffer_size(int s, int *out)
+{
+    int v;
+    int len = 4;
+    if (sceNetInetGetsockopt(s, 0xFFFF, 0x1002, &v, &len) != 0) {
+        *out = 0;
+        return rt_socket_get_err_platform();
+    }
+    *out = v;
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rt_socket_get_send_buffer_size);
+int rt_socket_get_send_buffer_size(int s, int *out)
+{
+    int v;
+    int len = 4;
+    if (sceNetInetGetsockopt(s, 0xFFFF, 0x1001, &v, &len) != 0) {
+        *out = 0;
+        return rt_socket_get_err_platform();
+    }
+    *out = v;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rt_socket_bind);
 
@@ -167,13 +212,84 @@ int rt_socket_listen_tcp(void) {
     return var_v1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rt_socket_accept_connection_tcp);
+int rt_socket_accept_connection_tcp(int s, int *out)
+{
+    RtSockAddrIn sa;
+    int len;
+    int r;
+    if (out == NULL) return 2;
+    len = 16;
+    r = sceNetInetAccept(s, &sa, &len);
+    if (r == -1) {
+        out[0] = r;
+        out[2] = 0;
+        return rt_socket_get_err_platform();
+    }
+    out[0] = r;
+    out[2] = sa.addr;
+    out[1] = (unsigned short)__builtin_allegrex_wsbh(sa.port);
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rt_socket_read_data_tcp);
+int rt_socket_read_data_tcp(int s, void *buf, int len, int *got)
+{
+    int r;
+    if (buf == NULL || got == NULL) {
+        *got = 0;
+        return 2;
+    }
+    if (len == 0) {
+        *got = 0;
+        return 0;
+    }
+    r = sceNetInetRecv(s, buf, len, 0);
+    if (r < 0) {
+        *got = 0;
+        return rt_socket_get_err_platform();
+    }
+    *got = r;
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rt_socket_send_data_tcp);
+int rt_socket_send_data_tcp(int s, void *buf, int len, int *got)
+{
+    int r;
+    if (buf == NULL || got == NULL) {
+        *got = 0;
+        return 2;
+    }
+    if (len == 0) {
+        *got = 0;
+        return 0;
+    }
+    r = sceNetInetSend(s, buf, len, 0);
+    if (r < 0) {
+        *got = 0;
+        return rt_socket_get_err_platform();
+    }
+    *got = r;
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rt_socket_peek_data_tcp);
+int rt_socket_peek_data_tcp(int s, void *buf, int len, int *got)
+{
+    int r;
+    if (buf == NULL || got == NULL) {
+        *got = 0;
+        return 2;
+    }
+    if (len == 0) {
+        *got = 0;
+        return 0;
+    }
+    r = sceNetInetRecv(s, buf, len, 2);
+    if (r < 0) {
+        *got = 0;
+        return rt_socket_get_err_platform();
+    }
+    *got = r;
+    return 0;
+}
 
 int rt_socket_create_udp(int *s)
 {
@@ -192,9 +308,45 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rt
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rt_socket_send_data_udp);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rt_socket_read_data_connected_udp);
+int rt_socket_read_data_connected_udp(int s, void *buf, int len, int *got)
+{
+    int r;
+    if (buf == NULL || got == NULL) {
+        *got = 0;
+        return 2;
+    }
+    if (len == 0) {
+        *got = 0;
+        return 0;
+    }
+    r = sceNetInetRecv(s, buf, len, 0);
+    if (r < 0) {
+        *got = 0;
+        return rt_socket_get_err_platform();
+    }
+    *got = r;
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rt_socket_send_data_connected_udp);
+int rt_socket_send_data_connected_udp(int s, void *buf, int len, int *got)
+{
+    int r;
+    if (buf == NULL || got == NULL) {
+        *got = 0;
+        return 2;
+    }
+    if (len == 0) {
+        *got = 0;
+        return 0;
+    }
+    r = sceNetInetSend(s, buf, len, 0);
+    if (r < 0) {
+        *got = 0;
+        return rt_socket_get_err_platform();
+    }
+    *got = r;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", in_cksum);
 
