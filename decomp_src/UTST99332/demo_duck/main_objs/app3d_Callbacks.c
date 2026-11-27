@@ -3,6 +3,7 @@
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
 #define DEMO_TEMPLATE_DEFS
+#define DEMO_LINKONCE_shared_object_base 1
 #include "../main.hpp"
 
 /* this object's .gnu.linkonce.t sections in the original's order */
@@ -129,6 +130,3 @@ extern "C" void app3d_Callbacks_instance_refs(common::handle<glutils::TurnTable>
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/app3d_Callbacks", _ZN5input9ButtonSetIN3psp4PadBEE3setEjb);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/app3d_Callbacks", _ZN6common18shared_object_baseD1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/app3d_Callbacks", _ZN6common18shared_object_baseD0Ev);

@@ -657,6 +657,88 @@ private:
 };
 }
 
+/* interp's path interface (apps.hpp's animations, glutils::PositioningInterface); linkonce copies of
+   ~VirtualQuickAnim: CityApp.o (harmonic, DEMO_LINKONCE_CityApp) / glutils_PositioningInterface.o (duck) */
+namespace interp {
+class VirtualQuickAnim {
+public:
+    virtual ~VirtualQuickAnim();
+    virtual void startRecordingPath() = 0;
+    virtual void addRecord() = 0;
+    virtual void deleteLastRecord() = 0;
+    virtual void finishRecordingPath() = 0;
+    virtual bool isRecordingPath() const = 0;
+    virtual void loadPath(std::string) = 0;
+    virtual void savePath(std::string) = 0;
+    virtual void evaluate(float) = 0;
+    virtual int pathSize() const = 0;
+};
+#if DEMO_LINKONCE_CityApp || DEMO_LINKONCE_VirtualQuickAnim
+_Pragma("implementation \"sgl_linkonce\"") _Pragma("interface \"sgl_linkonce\"")
+#endif
+inline VirtualQuickAnim::~VirtualQuickAnim() {}
+#if DEMO_LINKONCE_CityApp || DEMO_LINKONCE_VirtualQuickAnim
+_Pragma("interface")
+#endif
+/* P: the path (Path, VectorRGBAnim), T: its value */
+template<class P, class T> class HasPathInterface : public VirtualQuickAnim {
+public:
+    virtual ~HasPathInterface() {}
+    virtual void startRecordingPath();
+    virtual void addRecord();
+    virtual void deleteLastRecord();
+    virtual void finishRecordingPath();
+    virtual bool isRecordingPath() const;
+    virtual void loadPath(std::string);
+    virtual void savePath(std::string);
+    virtual void evaluate(float);
+    virtual int pathSize() const;
+    virtual void set(T) = 0;
+    virtual T get() const = 0;
+    P _path;                            /* 0x4 */
+};
+#ifdef DEMO_TEMPLATE_DEFS
+template<class P, class T> void HasPathInterface<P, T>::startRecordingPath()
+{
+    _path.startRecording();
+}
+template<class P, class T> void HasPathInterface<P, T>::addRecord()
+{
+    _path.addRecord(get());
+}
+template<class P, class T> void HasPathInterface<P, T>::deleteLastRecord()
+{
+    std::pair<bool, T> r = _path.deleteLastRecord();
+    if (r.first)
+        set(r.second);
+}
+template<class P, class T> void HasPathInterface<P, T>::finishRecordingPath()
+{
+    _path.finishRecording();
+}
+template<class P, class T> bool HasPathInterface<P, T>::isRecordingPath() const
+{
+    return _path.isRecording();
+}
+template<class P, class T> void HasPathInterface<P, T>::loadPath(std::string name)
+{
+    _path.load(name);
+}
+template<class P, class T> void HasPathInterface<P, T>::savePath(std::string name)
+{
+    _path.save(name);
+}
+template<class P, class T> void HasPathInterface<P, T>::evaluate(float t)
+{
+    set(_path.evaluate(t));
+}
+template<class P, class T> int HasPathInterface<P, T>::pathSize() const
+{
+    return _path.size();
+}
+#endif
+}
+
 namespace textures {
 class Texture;
 }
@@ -673,16 +755,25 @@ private:
     static unsigned int _name;
     static bool _init;
 };
-class PositioningInterface : public common::shared_object_base {
+class PositioningInterface : public common::shared_object_base, public interp::HasPathInterface<interp::Path, math::Frame> {
 public:
+    PositioningInterface();
+    virtual ~PositioningInterface();
     virtual void set_callback();
-    virtual void track();
-    virtual void reset();
+    virtual void track();               /* pure (vtable) */
+    virtual void reset();               /* pure (vtable) */
+    virtual void print(std::ostream &);
+    virtual void save(std::string);
+    virtual void load(std::string);
+    virtual void set(math::Frame);
+    virtual math::Frame get() const;
     const math::matrix &getTransform() const;
     const math::matrix &get_transform() const;
     const math::matrix &getTransformInverse() const;
     const math::matrix &get_inverse_transform() const;
-    char _p8[0xD0 - 8];                 /* 0x8: interp::HasPathInterface<Path, Frame> base, ... */
+    void set_transform(math::matrix);
+    void set_inverse_transform(math::matrix);
+    math::Frame _frame;                 /* 0xB0 */
     math::matrix _transform;            /* 0xD0 */
     math::matrix _inverse;              /* 0x110 */
 };

@@ -4,6 +4,9 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+extern "C" const char D_001627D0[]; /* "\n" */
+extern "C" const char D_001627E4[]; /* " " */
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_PositioningInterface", _Z41__static_initialization_and_destruction_0ii_306E8);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_PositioningInterface", _ZN7glutils20PositioningInterfaceC2Ev);
@@ -35,13 +38,29 @@ void glutils::PositioningInterface::set_callback() {
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_PositioningInterface", _ZN7glutils20PositioningInterface4saveESs);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_PositioningInterface", _ZN7glutils20PositioningInterface5printERSo);
+void glutils::PositioningInterface::print(std::ostream &os)
+{
+    const math::vector_xyz &p = _frame.pos;
+    const math::quaternion &q = _frame.rot;
+    os << p.x << D_001627E4;
+    os << p.y << D_001627E4;
+    os << p.z << D_001627E4;
+    os << q.x << D_001627E4;
+    os << q.y << D_001627E4;
+    os << q.z << D_001627E4;
+    os << q.w << D_001627E4;
+    os.flush();
+    os << D_001627D0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_PositioningInterface", _ZN7glutils20PositioningInterface4loadESs);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_PositioningInterface", _ZN7glutils20PositioningInterface3setEN4math5FrameE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_PositioningInterface", _ZNK7glutils20PositioningInterface3getEv);
+math::Frame glutils::PositioningInterface::get() const
+{
+    return _frame;
+}
 
 const math::matrix &glutils::PositioningInterface::getTransformInverse() const
 {
@@ -69,10 +88,19 @@ void _GLOBAL__D__ZN7glutils20PositioningInterfaceC2Ev(void)
     static_init(0, 0xFFFF);
 }
 
+/* the object's linkonce tail (thunks) in the original's order */
+DEMO_LINKONCE_ORDER(
+    DEMO_LINKONCE(_ZThn8_N7glutils20PositioningInterfaceD1Ev)
+    DEMO_LINKONCE(_ZThn8_N7glutils20PositioningInterfaceD0Ev)
+    DEMO_LINKONCE(_ZThn8_N7glutils20PositioningInterface3setEN4math5FrameE)
+    DEMO_LINKONCE(_ZThn8_NK7glutils20PositioningInterface3getEv)
+);
+
+#undef INCLUDE_ASM
+#define INCLUDE_ASM(FOLDER, NAME) INCLUDE_ASM_LINKONCE(FOLDER, NAME)
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_PositioningInterface", _ZThn8_N7glutils20PositioningInterfaceD1Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_PositioningInterface", _ZThn8_N7glutils20PositioningInterfaceD0Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_PositioningInterface", _ZThn8_N7glutils20PositioningInterface3setEN4math5FrameE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_PositioningInterface", _ZThn8_NK7glutils20PositioningInterface3getEv);
