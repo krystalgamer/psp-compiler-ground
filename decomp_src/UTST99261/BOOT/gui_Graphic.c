@@ -1610,7 +1610,47 @@ int GUI_List_deselect(GUIWIDGET *w, int idx) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_List_isIndexSelected);
+int GUI_List_isIndexSelected(GUIWIDGET *w, int idx) {
+    GUILISTITEM *p;
+    int i;
+
+    if (w == NULL) {
+        puts("[X1]GUI_List_isIndexSelected");
+        return -1;
+    }
+    if (w->type != 1) {
+        puts("[X2]GUI_List_isIndexSelected");
+        return -1;
+    }
+    if ((w->flags & 0xF) != 8) {
+        puts("[X3]GUI_List_isIndexSelected");
+        return -1;
+    }
+    if (w->unk4C == NULL) {
+        if (w->u.list.unk58 == idx) {
+            return 1;
+        }
+    } else {
+        p = w->unk50.p;
+        i = 0;
+        while (i++ != idx) {
+            if (p == NULL) {
+                return 0;
+            }
+            if (i >= w->u.list.count) {
+                return 0;
+            }
+            p = p->next;
+        }
+        if (p == NULL) {
+            return 0;
+        }
+        if (p->state == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
 
 int GUI_Choice_insert(GUIWIDGET *w_, char *text, int id) {
     GUIWIDGET *w;
