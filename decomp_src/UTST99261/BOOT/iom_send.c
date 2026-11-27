@@ -12,7 +12,54 @@ typedef struct { int len; char *str; } LOCD;
 typedef struct { int x0; int type; int x8; int xC; int code; int a1; int x18; int size; LOCD *data; } IMSGL;
 unsigned int strlen(const char *s);
 void *memcpy(void *d, const void *s, unsigned int n);
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_send", iom_sendRequestFailed);
+typedef struct { int code; char *msg; } IERRT;
+extern IERRT D_0013F41C[];
+extern IERRT D_0013F46C[];
+extern int G_sendflag;
+char *strcpy(char *d, const char *s);
+typedef struct { int x0; int type; int x8; int xC; int code; int a1; int x18; int size; char *data; } IMSGF;
+int iom_sendRequestFailed(IMSGF *msg, int err) {
+    unsigned int idx = -0x12C - err;
+    IERRT *t;
+    int mq;
+    int code;
+    IMSGF *m;
+
+    if (idx >= 10) {
+        return 0;
+    }
+    if (msg->type == 2) {
+        t = D_0013F41C;
+        mq = D_00585108;
+        code = 0x22;
+    } else if (msg->type == 4) {
+        t = D_0013F41C;
+        mq = D_0058510C;
+        code = 0x504;
+    } else if (iom_translateMsg(msg) == 0xF || iom_translateMsg(msg) == 0x10 || iom_translateMsg(msg) == 0x11) {
+        t = D_0013F46C;
+        mq = D_00585108;
+        code = 0x22;
+    } else {
+        return 0;
+    }
+    m = iom_newMsg(msg);
+    if (m == NULL) {
+        return -0x12D;
+    }
+    m->code = code;
+    m->a1 = t[idx].code;
+    m->size = strlen(t[idx].msg);
+    m->data = iom_malloc(m->size + 1);
+    if (m->data == NULL) {
+        iom_freeMsg(m);
+        return -0x12D;
+    }
+    strcpy(m->data, t[idx].msg);
+    iom_sendMsg(m, mq);
+    G_sendflag = 1;
+    return 0;
+}
 
 int iom_sendRequestComplete(void *msg) {
     int mq;
