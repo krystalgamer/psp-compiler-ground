@@ -153,17 +153,71 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", inv_matchup
 void inv_matchup_fade(void) {
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", inv_matchup_menu_start);
+extern int matchup_menu_choice, RT_END;
+extern unsigned char D_0007CD20, D_0007CD18;
+extern const float D_0007CE04, D_0007CE08, D_0007CE0C, D_0007CE10;
+int ASC_StringRen(void *s);
+float sinf(float);
+void inv_matchup_menu_start(void)
+{
+	int a, w;
+
+	if (pad_sw() & pad_ret_button()) {
+		se_start(1);
+		switch (matchup_menu_choice) {
+		case 0:
+			RT = 2;
+			break;
+		case 1:
+			RT = 12;
+			matchup_menu_choice = 0;
+			break;
+		case 2:
+			RT_END = 1;
+			break;
+		}
+	} else if (pad_sw() & 0x100010) {
+		se_start(0);
+		matchup_menu_choice--;
+		if (matchup_menu_choice < 0)
+			matchup_menu_choice = 2;
+	} else if (pad_sw() & 0x200040) {
+		se_start(0);
+		matchup_menu_choice++;
+		if (matchup_menu_choice >= 3)
+			matchup_menu_choice = 0;
+	}
+	w = ASC_StringRen(&D_0007CCD8);
+	ASC_SetStringRGBA(1, &D_0007CCD8, (480 - w) / 2, 40, 255, 255, 255, 255);
+	a = sinf(gcnt_28FC04 % 45 * 4 / D_0007CE04 * D_0007CE08) * D_0007CE0C + D_0007CE10;
+	switch (matchup_menu_choice) {
+	case 0:
+		w = ASC_StringRen("START");
+		ASC_SetStringRGBA(1, "START", (480 - w) / 2, 128, 64, 255, 255, a);
+		break;
+	case 1:
+		w = ASC_StringRen(&D_0007CD18);
+		ASC_SetStringRGBA(1, &D_0007CD18, (480 - w) / 2, 152, 64, 255, 255, a);
+		break;
+	case 2:
+		w = ASC_StringRen(&D_0007CD20);
+		ASC_SetStringRGBA(1, &D_0007CD20, (480 - w) / 2, 176, 64, 255, 255, a);
+		break;
+	}
+	w = ASC_StringRen("START");
+	ASC_SetStringRGBA(1, "START", (480 - w) / 2, 128, 255, 255, 255, 255);
+	w = ASC_StringRen(&D_0007CD18);
+	ASC_SetStringRGBA(1, &D_0007CD18, (480 - w) / 2, 152, 255, 255, 255, 255);
+	w = ASC_StringRen(&D_0007CD20);
+	ASC_SetStringRGBA(1, &D_0007CD20, (480 - w) / 2, 176, 255, 255, 255, 255);
+	poly_set(0, 0, 480, 272, 0, 16, 16, 16, 160, 16, 16, 16, 160, 16, 16, 16, 160, 16, 16, 16, 160, 10, 2, 1, 255);
+}
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", D_0007CD18);
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", D_0007CD20);
 
-extern int matchup_menu_choice, RT_END;
-extern unsigned char D_0007CD20;
 extern const float D_0007CE14, D_0007CE18, D_0007CE1C, D_0007CE20;
-int ASC_StringRen(void *s);
-float sinf(float);
 void inv_matchup_menu_pause(void)
 {
 	int a, w;
