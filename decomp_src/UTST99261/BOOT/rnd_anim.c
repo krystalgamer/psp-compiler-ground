@@ -47,6 +47,16 @@ typedef struct UWNODE { struct UWNODE *next; void *pane; RRECT *rect; } UWNODE;
 void GUI_ScrollPane_getViewportSize(void *pane, int *w, int *h);
 typedef struct MARQUEE { int dir; int pos; int start; int len; int amount; int x14; int interval; RPOS t; int x24; } MARQUEE;
 typedef struct MARQATTR { int behavior; int direction; int amount; } MARQATTR;
+typedef struct RDOMSTR { void *p; int len; int x8; int xC; } RDOMSTR;
+extern unsigned char _DOMid;
+extern unsigned char _DOMname;
+int Node_getNodeType(int node);
+void Element_getTagName(RDOMSTR *ret, int node);
+void Element_getAttribute(RDOMSTR *ret, int node, void *name);
+int DOMStringcasecmpFast(RDOMSTR *a, void *b);
+char *DOMStringtoUTF8(RDOMSTR *s);
+int strcmp(const char *, const char *);
+int Util_Node_TraceNode(int node, int root);
 int checkParentBox(M2C_UNK *arg0, int arg1) {
     M2C_UNK *var_a0;
     int var_v0;
@@ -420,7 +430,35 @@ void freeScroll(int arg0, int arg1) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_anim", searchDestinationAnchor);
+int searchDestinationAnchor(int root, char *name) {
+    int node;
+    RDOMSTR tag;
+    RDOMSTR attr;
+    char *s;
+
+    node = root;
+    do {
+        if (Node_getNodeType(node) == 1) {
+            Element_getTagName(&tag, node);
+            if (DOMStringcasecmpFast(&tag, &_DOMa) == 0) {
+                Element_getAttribute(&attr, node, &_DOMname);
+                if (attr.len == 0)
+                    Element_getAttribute(&attr, node, &_DOMid);
+            } else {
+                Element_getAttribute(&attr, node, &_DOMid);
+            }
+            if (attr.len != 0) {
+                s = DOMStringtoUTF8(&attr);
+                if (strcmp(s, name) == 0 || (*s == '#' && strcmp(s + 1, name) == 0)) {
+                    MEM_free(0, s);
+                    return node;
+                }
+                MEM_free(0, s);
+            }
+        }
+    } while ((node = Util_Node_TraceNode(node, root)) != 0);
+    return 0;
+}
 
 void *getAncestorLink(void *node) {
     while (node != NULL) {
