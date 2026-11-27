@@ -203,7 +203,51 @@ u16 *ParseBackgroundRepeat(CSSVALUE *v, u16 *p) {
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", ParseCSSBackground);
+u16 *ParseCSSBackground(void *decl, u16 *p) {
+    CSSVALUE *v;
+    u16 *r;
+    int flags;
+    v = newCSSValue();
+    if (v == NULL) {
+        return CSS_SkipProperty(p);
+    }
+    p = CSS_SkipBlanksAndComments(p);
+    if ((r = ParseCSSIdent(v, p, 0x4D)) != NULL) {
+        addCSSValue(decl, v);
+        p = r;
+    } else {
+        flags = 0;
+        while (*p != 0 && *p != ';' && *p != '}' && *p != '!') {
+            if (v == NULL && (v = newCSSValue()) == NULL) {
+                return p;
+            }
+            if (!(flags & 1) && (r = ParseBackgroundImage(v, p)) != NULL) {
+                flags |= 1;
+            } else if (!(flags & 2) && (r = ParseBackgroundAttachment(v, p)) != NULL) {
+                flags |= 2;
+            } else if (!(flags & 4) && (r = ParseBackgroundRepeat(v, p)) != NULL) {
+                flags |= 4;
+            } else if (!(flags & 8) && (r = ParseBackgroundPosition(v, p)) != NULL) {
+            } else if (!(flags & 0x10) && (r = ParseBackgroundColor(v, p)) != NULL) {
+                flags |= 0x10;
+            } else {
+                freeCSSValue(v);
+                return CSS_SkipProperty(p);
+            }
+            addCSSValue(decl, v);
+            v = NULL;
+            p = CSS_SkipBlanksAndComments(r);
+            if (*p == ',') {
+                p++;
+                p = CSS_SkipBlanksAndComments(p);
+            }
+            if (flags == 0x1F) {
+                break;
+            }
+        }
+    }
+    return p;
+}
 
 u16 *ParseCSSBackgroundAttachment(void *decl, u16 *p) {
     CSSVALUE *v;
@@ -355,9 +399,91 @@ u16 *ParseBorderWidth(CSSVALUE *v, u16 *p) {
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", ParseCSSBorder);
+u16 *ParseCSSBorder(void *decl, u16 *p) {
+    CSSVALUE *v;
+    u16 *r;
+    int flags;
+    v = newCSSValue();
+    if (v == NULL) {
+        return CSS_SkipProperty(p);
+    }
+    p = CSS_SkipBlanksAndComments(p);
+    if ((r = ParseCSSIdent(v, p, 0x4D)) != NULL) {
+        addCSSValue(decl, v);
+        p = r;
+    } else {
+        flags = 0;
+        while (*p != 0 && *p != ';' && *p != '}' && *p != '!') {
+            if (v == NULL && (v = newCSSValue()) == NULL) {
+                return p;
+            }
+            if (!(flags & 1) && (r = ParseBorderWidth(v, p)) != NULL) {
+                flags |= 1;
+            } else if (!(flags & 2) && (r = ParseBorderStyle(v, p)) != NULL) {
+                flags |= 2;
+            } else if (!(flags & 4) && (r = ParseCSSColor(v, p)) != NULL) {
+                flags |= 4;
+            } else {
+                freeCSSValue(v);
+                return CSS_SkipProperty(p);
+            }
+            addCSSValue(decl, v);
+            v = NULL;
+            p = CSS_SkipBlanksAndComments(r);
+            if (*p == ',') {
+                p++;
+                p = CSS_SkipBlanksAndComments(p);
+            }
+            if (flags == 7) {
+                break;
+            }
+        }
+    }
+    return p;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", ParseCSSBorderBottom);
+u16 *ParseCSSBorderBottom(void *decl, u16 *p) {
+    CSSVALUE *v;
+    u16 *r;
+    int flags;
+    v = newCSSValue();
+    if (v == NULL) {
+        return CSS_SkipProperty(p);
+    }
+    p = CSS_SkipBlanksAndComments(p);
+    if ((r = ParseCSSIdent(v, p, 0x4D)) != NULL) {
+        addCSSValue(decl, v);
+        p = r;
+    } else {
+        flags = 0;
+        while (*p != 0 && *p != ';' && *p != '}' && *p != '!') {
+            if (v == NULL && (v = newCSSValue()) == NULL) {
+                return p;
+            }
+            if (!(flags & 1) && (r = ParseBorderWidth(v, p)) != NULL) {
+                flags |= 1;
+            } else if (!(flags & 2) && (r = ParseBorderStyle(v, p)) != NULL) {
+                flags |= 2;
+            } else if (!(flags & 4) && (r = ParseBorderColor(v, p)) != NULL) {
+                flags |= 4;
+            } else {
+                freeCSSValue(v);
+                return CSS_SkipProperty(p);
+            }
+            addCSSValue(decl, v);
+            v = NULL;
+            p = CSS_SkipBlanksAndComments(r);
+            if (*p == ',') {
+                p++;
+                p = CSS_SkipBlanksAndComments(p);
+            }
+            if (flags == 7) {
+                break;
+            }
+        }
+    }
+    return p;
+}
 
 u16 *ParseCSSBorderBottomColor(void *decl, u16 *p) {
     CSSVALUE *v;
@@ -1181,7 +1307,48 @@ u16 *ParseListStyleType(CSSVALUE *v, u16 *p) {
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", ParseCSSListStyle);
+u16 *ParseCSSListStyle(void *decl, u16 *p) {
+    CSSVALUE *v;
+    u16 *r;
+    int flags;
+    v = newCSSValue();
+    if (v == NULL) {
+        return CSS_SkipProperty(p);
+    }
+    p = CSS_SkipBlanksAndComments(p);
+    if ((r = ParseCSSIdent(v, p, 0x4D)) != NULL) {
+        addCSSValue(decl, v);
+        p = r;
+    } else {
+        flags = 0;
+        while (*p != 0 && *p != ';' && *p != '}' && *p != '!') {
+            if (v == NULL && (v = newCSSValue()) == NULL) {
+                return CSS_SkipProperty(p);
+            }
+            if (!(flags & 1) && (r = ParseListStyleType(v, p)) != NULL) {
+                flags |= 1;
+            } else if (!(flags & 2) && (r = ParseListStylePosition(v, p)) != NULL) {
+                flags |= 2;
+            } else if (!(flags & 4) && (r = ParseListStyleImage(v, p)) != NULL) {
+                flags |= 4;
+            } else {
+                freeCSSValue(v);
+                return CSS_SkipProperty(p);
+            }
+            addCSSValue(decl, v);
+            v = NULL;
+            p = CSS_SkipBlanksAndComments(r);
+            if (*p == ',') {
+                p++;
+                p = CSS_SkipBlanksAndComments(p);
+            }
+            if (flags == 7) {
+                break;
+            }
+        }
+    }
+    return p;
+}
 
 u16 *ParseCSSListStyleImage(void *decl, u16 *p) {
     CSSVALUE *v;
@@ -1426,7 +1593,51 @@ u16 *ParseCSSOrphans(void *decl, u16 *p) {
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", ParseCSSOutline);
+u16 *ParseCSSOutline(void *decl, u16 *p) {
+    CSSVALUE *v;
+    u16 *r;
+    int flags;
+    v = newCSSValue();
+    if (v == NULL) {
+        return CSS_SkipProperty(p);
+    }
+    p = CSS_SkipBlanksAndComments(p);
+    if ((r = ParseCSSIdent(v, p, 0x4D)) != NULL) {
+        addCSSValue(decl, v);
+        p = r;
+    } else {
+        flags = 0;
+        while (*p != 0 && *p != ';' && *p != '}' && *p != '!') {
+            p = CSS_SkipBlanksAndComments(p);
+            if (v == NULL && (v = newCSSValue()) == NULL) {
+                return CSS_SkipProperty(p);
+            }
+            if (!(flags & 1) && (r = ParseBorderWidth(v, p)) != NULL) {
+                flags |= 1;
+            } else if (!(flags & 2) && (r = ParseBorderStyle(v, p)) != NULL && v->type == 2 && v->unit == 0x15 && v->ident != 0x46) {
+                flags |= 2;
+            } else if (!(flags & 4) && (r = ParseCSSIdent(v, p, 0x52)) != NULL) {
+                flags |= 4;
+            } else if (!(flags & 4) && (r = ParseCSSColor(v, p)) != NULL) {
+                flags |= 4;
+            } else {
+                freeCSSValue(v);
+                return CSS_SkipProperty(p);
+            }
+            addCSSValue(decl, v);
+            v = NULL;
+            p = CSS_SkipBlanksAndComments(r);
+            if (*p == ',') {
+                p++;
+                p = CSS_SkipBlanksAndComments(p);
+            }
+            if (flags == 7) {
+                break;
+            }
+        }
+    }
+    return p;
+}
 
 u16 *ParseCSSOutlineColor(void *decl, u16 *p) {
     CSSVALUE *v;
