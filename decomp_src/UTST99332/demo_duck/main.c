@@ -191,7 +191,67 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZNK6common7CmdLine
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN6common7CmdLine6defArgESsjPKc);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN2sh4Args3Env7getArgsERN6common7CmdLineE);
+extern "C" const char D_0015E0CC[];
+extern "C" const char D_0015E110[];
+extern "C" const char D_0015E1A8[];
+extern "C" const char D_0015E1EC[];
+extern "C" const char D_0015E20C[];
+extern "C" const char D_0015E24C[];
+extern "C" const char D_0015E28C[];
+extern "C" const char D_0015E2BC[];
+extern "C" const char D_0015E2F4[];
+extern "C" const char D_0015E32C[];
+extern "C" const char D_0015E35C[];
+extern "C" const char D_0015E394[];
+extern "C" const char D_0015E3AC[];
+extern "C" const char D_0015E3C8[];
+extern "C" const char D_0015E3E4[];
+extern "C" const char D_0015E69C[];
+extern "C" const char D_0015DCF4[];
+
+static inline void get_arg(common::CmdLine &cl, const char *opt, std::string &s)
+{
+    common::CmdLine::const_iterator it = cl.find_arg(opt);
+    if (it != cl.end())
+        s = *it;
+}
+
+static inline void get_arg(common::CmdLine &cl, const char *opt, float &f)
+{
+    common::CmdLine::const_iterator it = cl.find_arg(opt);
+    if (it != cl.end())
+        f = libc_fix::AtoF(it->c_str());
+}
+
+static inline void get_arg(common::CmdLine &cl, const char *opt, int &i)
+{
+    common::CmdLine::const_iterator it = cl.find_arg(opt);
+    if (it != cl.end())
+        i = libc_fix::AtoI(it->c_str());
+}
+
+void sh::Args::Env::getArgs(common::CmdLine &cl)
+{
+    std::string t;
+    get_arg(cl, D_0015E0CC, t);
+    type = GetEnvType(t.c_str());
+    get_arg(cl, D_0015E110, name);
+    get_arg(cl, D_0015E1A8, exposure);
+    get_arg(cl, D_0015E1EC, _fC);
+    get_arg(cl, D_0015E20C, _f14);
+    get_arg(cl, D_0015E24C, _f10);
+    get_arg(cl, D_0015E28C, _f18);
+    get_arg(cl, D_0015E2BC, _f20);
+    get_arg(cl, D_0015E2F4, _f1C);
+    get_arg(cl, D_0015E32C, dir);
+    _f28 = cl.inList(D_0015E35C);
+    get_arg(cl, D_0015E394, cube_size);
+    get_arg(cl, D_0015E3AC, _f30);
+    get_arg(cl, D_0015E3C8, _f34);
+    get_arg(cl, D_0015E3E4, _f38);
+    if (dir == D_0015E69C)
+        dir = D_0015DCF4;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN3psp11DisplayList6finishEb);
 

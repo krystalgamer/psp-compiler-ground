@@ -382,6 +382,15 @@ template<class T> const T &t_array2d<T>::at(int x, int y) const
 }
 
 namespace common {
+class CmdLine {
+public:
+    typedef std::vector<std::string>::const_iterator const_iterator;
+    const_iterator find_arg(const char *) const;
+    bool inList(const char *) const;
+    const_iterator end() const { return _args.end(); }
+    std::vector<std::string> _args;     /* 0x0 */
+};
+
 template<class T> class safe_ptr {
 public:
     safe_ptr(T q = 0) : p(q) {}

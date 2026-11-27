@@ -277,7 +277,67 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNK6common7
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common7CmdLine6defArgESsjPKc);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN2sh4Args3Env7getArgsERN6common7CmdLineE);
+extern "C" const char D_00159BF8[];
+extern "C" const char D_00159C3C[];
+extern "C" const char D_00159CD4[];
+extern "C" const char D_00159D18[];
+extern "C" const char D_00159D38[];
+extern "C" const char D_00159D78[];
+extern "C" const char D_00159DB8[];
+extern "C" const char D_00159DE8[];
+extern "C" const char D_00159E20[];
+extern "C" const char D_00159E58[];
+extern "C" const char D_00159E88[];
+extern "C" const char D_00159BE8[];
+extern "C" const char D_00159ED0[];
+extern "C" const char D_00159EEC[];
+extern "C" const char D_00159F08[];
+extern "C" const char D_0015A1D0[];
+extern "C" const char D_00159808[];
+
+static inline void get_arg(common::CmdLine &cl, const char *opt, std::string &s)
+{
+    common::CmdLine::const_iterator it = cl.find_arg(opt);
+    if (it != cl.end())
+        s = *it;
+}
+
+static inline void get_arg(common::CmdLine &cl, const char *opt, float &f)
+{
+    common::CmdLine::const_iterator it = cl.find_arg(opt);
+    if (it != cl.end())
+        f = libc_fix::AtoF(it->c_str());
+}
+
+static inline void get_arg(common::CmdLine &cl, const char *opt, int &i)
+{
+    common::CmdLine::const_iterator it = cl.find_arg(opt);
+    if (it != cl.end())
+        i = libc_fix::AtoI(it->c_str());
+}
+
+void sh::Args::Env::getArgs(common::CmdLine &cl)
+{
+    std::string t;
+    get_arg(cl, D_00159BF8, t);
+    type = GetEnvType(t.c_str());
+    get_arg(cl, D_00159C3C, name);
+    get_arg(cl, D_00159CD4, exposure);
+    get_arg(cl, D_00159D18, _fC);
+    get_arg(cl, D_00159D38, _f14);
+    get_arg(cl, D_00159D78, _f10);
+    get_arg(cl, D_00159DB8, _f18);
+    get_arg(cl, D_00159DE8, _f20);
+    get_arg(cl, D_00159E20, _f1C);
+    get_arg(cl, D_00159E58, dir);
+    _f28 = cl.inList(D_00159E88);
+    get_arg(cl, D_00159BE8, cube_size);
+    get_arg(cl, D_00159ED0, _f30);
+    get_arg(cl, D_00159EEC, _f34);
+    get_arg(cl, D_00159F08, _f38);
+    if (dir == D_0015A1D0)
+        dir = D_00159808;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp12SHLAnimationD0Ev);
 
