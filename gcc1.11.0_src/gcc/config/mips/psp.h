@@ -43,7 +43,7 @@ Boston, MA 02111-1307, USA.  */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "\
 -DMIPSEL -DR3000 -D_MIPSEL -D_R3000 \
--D__SCE__ -D__psp__ -D__psp_gcc__=0x010902"
+-D__SCE__ -D__psp__ -D__psp_gcc__=0x010b00"
 
 #undef LIB_SPEC
 #define LIB_SPEC "-lc"
@@ -107,4 +107,4 @@ Boston, MA 02111-1307, USA.  */
    directory; the environment variable overrides the default location.  */
 #define PSP_SDK_HOME_ENV	"SCE_PSP_SDK_HOME"
 #define PSP_SDK_HOME_DEFAULT	"/usr/local/psp/devkit"
-#define PSP_SDK_SPECS_FILE	"/lib/pspspecs_1_9_2"
+#define PSP_SDK_SPECS_FILE	"/lib/pspspecs_1_11_0"
