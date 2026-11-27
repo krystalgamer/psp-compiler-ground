@@ -3,6 +3,7 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+typedef struct { unsigned int ip; unsigned int port; } RtLinkAddr;
 int rt_comm_echo_is_enabled(void);
 int rt_comm_get_version_string_ptr(void);
 int rt_comm_is_valid_channel();
@@ -15,7 +16,12 @@ void rt_comm_get_dns_servers(void);
 void rt_comm_get_host_by_name(void);
 void rt_comm_get_local_ip(void);
 void rt_comm_linkaddress_toint(void);
-M2C_UNK rt_comm_release_channel_id(void *);         /* extern */
+int rt_comm_release_channel_id(void *);
+int rt_memory_free(void **);
+void *memcpy(void *, const void *, unsigned int);
+void *memset(void *, int, unsigned int);
+extern char gMetricData[];
+void rt_comm_metric_update();
 extern void *gCommPlatformInterfacePtr;
 extern int gpszVersion_11536C;
 extern int gEchoInfo;
@@ -45,7 +51,13 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_com
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_update);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_set_default_options);
+void rt_comm_set_default_options(int *o)
+{
+    o[1] = 0;
+    o[2] = 0;
+    o[3] = 0;
+    o[0] = 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_create);
 
@@ -124,7 +136,12 @@ int rt_isdigit(int arg0) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_get_new_channel_id);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_release_channel_id);
+int rt_comm_release_channel_id(void *p)
+{
+    void *q = p;
+
+    return rt_memory_free(&q);
+}
 
 
 int rt_comm_is_valid_channel(arg0)
@@ -145,15 +162,30 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_com
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_metric_update_single);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_linkaddress_setnull);
+void rt_comm_linkaddress_setnull(RtLinkAddr *a)
+{
+    M2C_FIELD(gCommPlatformInterfacePtr, void (**)(RtLinkAddr *), 0x50)(a);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_linkaddress_isnull);
+int rt_comm_linkaddress_isnull(RtLinkAddr a)
+{
+    return M2C_FIELD(gCommPlatformInterfacePtr, int (**)(RtLinkAddr), 0x54)(a);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_linkaddress_isequal);
+int rt_comm_linkaddress_isequal(RtLinkAddr a, RtLinkAddr b)
+{
+    return M2C_FIELD(gCommPlatformInterfacePtr, int (**)(RtLinkAddr, RtLinkAddr), 0x58)(a, b);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_linkaddress_tostr);
+int rt_comm_linkaddress_tostr(char *out, RtLinkAddr a)
+{
+    return M2C_FIELD(gCommPlatformInterfacePtr, int (**)(char *, RtLinkAddr), 0x5C)(out, a);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_linkaddress_toext);
+int rt_comm_linkaddress_toext(char *out, RtLinkAddr a)
+{
+    return M2C_FIELD(gCommPlatformInterfacePtr, int (**)(char *, RtLinkAddr), 0x60)(out, a);
+}
 
 void rt_comm_linkaddress_toint(void) {
     M2C_FIELD(gCommPlatformInterfacePtr, M2C_UNK (**)(), 0x64)();
