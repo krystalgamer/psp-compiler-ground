@@ -487,6 +487,8 @@ segments:
       - [0x177B68, .rodata, gcc-3.3.3/gcc/unwind-dw2]
       - [0x177F00, .rodata, gcc-3.3.3/gcc/unwind-dw2-fde]
       - [0x177F34, rodata, asm/rodata_177EB4]
+      - [0x178034, .rodata, kernel_bridge]
+      - [0x178040, rodata, asm/rodata_177FC0]
       - [0x17820C, .rodata, newlib/libc/stdio/puts]
       - [0x178210, .rodata, newlib/libc/time/strftime]
       - [0x178518, .rodata, newlib/libc/stdlib/strtod]

@@ -54,6 +54,9 @@ rodata 0x17B1E4 -
 bss 0x19E8E0 gcc-3.3.3/gcc/unwind-dw2
 bss 0x19E998 gcc-3.3.3/gcc/unwind-dw2-fde
 bss 0x19E9A8 -
+# kernel_bridge (Sony's newlib glue, C): its "UserSbrk"
+rodata 0x17B2E4 kernel_bridge
+rodata 0x17B2F0 -
 # newlib/libgcc units built from upstream sources (tools/libsrc.py): their .rodata
 rodata 0x1781C0 newlib/libm/math/sf_atan
 rodata 0x17825C newlib/libm/math/sf_cos
