@@ -2,6 +2,12 @@
 #include "common.h"
 #include "mes_js.h"
 #include "m2c_macros.h"
+typedef struct MesTimeval {
+    int sec;
+    int usec;
+} MesTimeval;
+int CLIB_gettimeofday(MesTimeval *tv, void *tz);
+int mes_eval_to_int32(MesContext *ctx, MesValue v);
 extern unsigned int mes_ids[];
 extern MesObject *D_00585354;
 extern void *mes_date_table;
@@ -99,7 +105,27 @@ int mes_date_month_days(int year, int month)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_date", mes_date_normalize);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_date", mes_date_now);
+MesDate *mes_date_now(MesContext *ctx)
+{
+    MesDate *d = mes_date_new(ctx);
+    MesTimeval tv;
+
+    if (d != NULL) {
+        CLIB_gettimeofday(&tv, NULL);
+        d->valid = 1;
+        d->year = 1970;
+        d->month = 1;
+        d->mday = tv.sec / 86400 + 1;
+        d->hours = 0;
+        d->minutes = 0;
+        d->seconds = tv.sec % 86400;
+        d->ms = tv.usec / 1000;
+        d->gmtoff = 0;
+        d->zone = 0;
+        mes_date_normalize(d);
+    }
+    return d;
+}
 
 void mes_date_set_gmtoff(MesDate *d, int gmtoff)
 {
@@ -240,7 +266,17 @@ MesValue mes_date_get_full_year(MesContext *ctx)
     return mes_number_alloc_int32(ctx, d->year);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_date", mes_date_get_year);
+MesValue mes_date_get_year(MesContext *ctx)
+{
+    MesDate *d = (MesDate *)ctx->frame->thisobj;
+
+    if (MES_DATE_BAD(d))
+        return mes_eval_type_error(ctx, d);
+    if (!d->valid)
+        return 0x1C;
+    mes_date_set_gmtoff(d, mes_date_local_gmtoff);
+    return mes_number_alloc_int32(ctx, d->year - 1900);
+}
 
 MesValue mes_date_get_utc_full_year(MesContext *ctx)
 {
@@ -422,7 +458,16 @@ MesValue mes_date_get_utc_ms(MesContext *ctx)
     return MES_INT(d->ms);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_date", mes_date_get_timezone_offset);
+MesValue mes_date_get_timezone_offset(MesContext *ctx)
+{
+    MesDate *d = (MesDate *)ctx->frame->thisobj;
+
+    if (MES_DATE_BAD(d))
+        return mes_eval_type_error(ctx, d);
+    if (!d->valid)
+        return 0x1C;
+    return MES_INT(-mes_date_local_gmtoff / 60);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_date", mes_date_set_time);
 
@@ -462,7 +507,23 @@ MesValue mes_date_set_utc_ms(MesContext *ctx, int ms)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_date", mes_date_set_full_year);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_date", mes_date_set_year);
+MesValue mes_date_set_year(MesContext *ctx, MesValue v)
+{
+    MesDate *d = (MesDate *)ctx->frame->thisobj;
+    int y;
+
+    if (MES_DATE_BAD(d))
+        return mes_eval_type_error(ctx, d);
+    mes_date_set_gmtoff(d, mes_date_local_gmtoff);
+    if (v != 0) {
+        y = mes_eval_to_int32(ctx, v);
+        if ((unsigned int)y < 100)
+            d->year = y + 1900;
+        else
+            d->year = y;
+    }
+    return mes_date_to_value(ctx, d);
+}
 
 MesValue mes_date_set_month(MesContext *ctx, int m, int v)
 {
