@@ -231,7 +231,30 @@ CookieDom *iom_domainCookie(char *domain) {
     return NULL;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_cookie", iom_subdomainCookie);
+CookieDom *iom_subdomainCookie(char *host, CookieDom *d) {
+    int len = strlen(host);
+    int n;
+    char c;
+
+    if (d == NULL)
+        return NULL;
+    while (d != NULL) {
+        c = d->name[0];
+        if (c == '.') {
+            n = len - strlen(d->name);
+            if (n > 0 && host[n] == c)
+                if (strcasecmp(d->name, host + n) == 0)
+                    return d;
+        } else {
+            n = len - strlen(d->name);
+            if (n > 0 && host[n - 1] == '.')
+                if (strcasecmp(d->name, host + n) == 0)
+                    return d;
+        }
+        d = UTL_peekqueue(iomCookie + 0xC, d);
+    }
+    return NULL;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_cookie", D_00139CB4);
 
