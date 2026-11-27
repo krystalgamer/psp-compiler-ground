@@ -45,6 +45,24 @@
     template void NAME##_i<0>();
 #endif
 
+/* the object's .gnu.linkonce.t sections in the original's order */
+DEMO_LINKONCE_ORDER(
+    DEMO_LINKONCE(_ZN6interp20KeyFrameSequenceBaseIfEC2Ev)
+    DEMO_LINKONCE(_ZN6interp20KeyFrameSequenceBaseIN4math10quaternionEEC2Ev)
+    DEMO_LINKONCE(_ZN6interp20KeyFrameSequenceBaseIfE11setKeyValueEif)
+    DEMO_LINKONCE(_ZN6interp20KeyFrameSequenceBaseIN4math10quaternionEE11setKeyValueEiS2_)
+    DEMO_LINKONCE(_ZNSt6vectorIN6interp8KeyFrameIfEESaIS2_EEaSERKS4_)
+    DEMO_LINKONCE(_ZNSt6vectorIN6interp8KeyFrameIN4math10quaternionEEESaIS4_EEaSERKS6_)
+    DEMO_LINKONCE(_ZSt13__destroy_auxIPN6interp8KeyFrameIfEEEvT_S4_12__false_type)
+    DEMO_LINKONCE(_ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPKN6interp8KeyFrameIfEESt6vectorIS4_SaIS4_EEEEPS4_ET0_T_SD_SC_12__false_type)
+    DEMO_LINKONCE(_ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPKN6interp8KeyFrameIN4math10quaternionEEESt6vectorIS6_SaIS6_EEEEPS6_ET0_T_SF_SE_12__false_type)
+    DEMO_LINKONCE(_ZN6interp17KeyFrameSequenceAIfED1Ev)
+    DEMO_LINKONCE(_ZN6interp17KeyFrameSequenceAIfED0Ev)
+    DEMO_LINKONCE(_ZN6interp17KeyFrameSequenceAIfE2opEff)
+    DEMO_LINKONCE(_ZN6interp17KeyFrameSequenceAIfE6op_invEff)
+    DEMO_LINKONCE(_ZNK6interp17KeyFrameSequenceAIfE11op_identityEv)
+);
+
 /* interp's assert (common/assert) */
 #define INTERP_ASSERT(c, text, fn, line) \
     if (!(c)) { \
@@ -92,34 +110,41 @@ template<class T> T interp::KeyFrameSequenceA<T>::op_identity() const
     return 0;
 }
 
+
+typedef std::vector<interp::KeyFrame<float> > VKf;
+typedef std::vector<interp::KeyFrame<math::quaternion> > VKq;
+/* uses the instances this object holds from a function in a discarded section (implicit instantiations, as in the original) */
+void interp_Path_instances() __attribute__((section(".discard.instances")));
+void interp_Path_instances()
+{
+    ((interp::KeyFrameSequenceBase<float> *)0)->interp::KeyFrameSequenceBase<float>::setKeyValue(*(int *)0, *(float *)0);
+    ((interp::KeyFrameSequenceBase<math::quaternion> *)0)->interp::KeyFrameSequenceBase<math::quaternion>::setKeyValue(*(int *)0, *(math::quaternion *)0);
+    *(VKf *)0 = *(const VKf *)0;
+    *(VKq *)0 = *(const VKq *)0;
+    ((interp::KeyFrameSequenceA<float> *)0)->interp::KeyFrameSequenceA<float>::op(*(float *)0, *(float *)0);
+    ((interp::KeyFrameSequenceA<float> *)0)->interp::KeyFrameSequenceA<float>::op_inv(*(float *)0, *(float *)0);
+    ((const interp::KeyFrameSequenceA<float> *)0)->interp::KeyFrameSequenceA<float>::op_identity();
+}
+
 /* the object's template instances (.gnu.linkonce.t), explicitly instantiated in the original's order */
 INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIfEC2Ev, 41)
 
 INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIN4math10quaternionEEC2Ev, 59)
 
-template void interp::KeyFrameSequenceBase<float>::setKeyValue(int, float);
 
-template void interp::KeyFrameSequenceBase<math::quaternion>::setKeyValue(int, math::quaternion);
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _ZNSt6vectorIN6interp8KeyFrameIfEESaIS2_EEaSERKS4_, 52)
-
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _ZNSt6vectorIN6interp8KeyFrameIN4math10quaternionEEESaIS4_EEaSERKS6_, 70)
-
+ 
+ 
 INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _ZSt13__destroy_auxIPN6interp8KeyFrameIfEEEvT_S4_12__false_type, 65)
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPKN6interp8KeyFrameIfEESt6vectorIS4_SaIS4_EEEEPS4_ET0_T_SD_SC_12__false_type, 140)
-
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPKN6interp8KeyFrameIN4math10quaternionEEESt6vectorIS6_SaIS6_EEEEPS6_ET0_T_SF_SE_12__false_type, 158)
-
+ 
+ 
 INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _ZN6interp17KeyFrameSequenceAIfED1Ev, 38)
 
 INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _ZN6interp17KeyFrameSequenceAIfED0Ev, 38)
 
-template float interp::KeyFrameSequenceA<float>::op(float, float);
 
-template float interp::KeyFrameSequenceA<float>::op_inv(float, float);
 
-template float interp::KeyFrameSequenceA<float>::op_identity() const;
 
 extern const float D_00160F70;      /* 1.0f: deleteLastRecord's identity rotation */
 extern const float D_00160F74;      /* 1.0f: finishRecording's closing dt */
