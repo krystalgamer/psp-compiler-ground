@@ -426,7 +426,12 @@ char mips_reg_names[][8] =
  "$c3r0", "$c3r1", "$c3r2", "$c3r3", "$c3r4", "$c3r5", "$c3r6", "$c3r7",
  "$c3r8", "$c3r9", "$c3r10","$c3r11","$c3r12","$c3r13","$c3r14","$c3r15",
  "$c3r16","$c3r17","$c3r18","$c3r19","$c3r20","$c3r21","$c3r22","$c3r23",
- "$c3r24","$c3r25","$c3r26","$c3r27","$c3r28","$c3r29","$c3r30","$c3r31"
+ "$c3r24","$c3r25","$c3r26","$c3r27","$c3r28","$c3r29","$c3r30","$c3r31",
+ "C000", "C010", "C020", "C030", "C100", "C110", "C120", "C130",
+ "C200", "C210", "C220", "C230", "C300", "C310", "C320", "C330",
+ "C400", "C410", "C420", "C430", "C500", "C510", "C520", "C530",
+ "C600", "C610", "C620", "C630", "C700", "C710", "C720", "C730",
+ "vrnd", "vcc"
 };
 
 /* Mips software names for the registers, used to overwrite the
@@ -455,7 +460,12 @@ char mips_sw_reg_names[][8] =
   "$c3r0", "$c3r1", "$c3r2", "$c3r3", "$c3r4", "$c3r5", "$c3r6", "$c3r7",
   "$c3r8", "$c3r9", "$c3r10","$c3r11","$c3r12","$c3r13","$c3r14","$c3r15",
   "$c3r16","$c3r17","$c3r18","$c3r19","$c3r20","$c3r21","$c3r22","$c3r23",
-  "$c3r24","$c3r25","$c3r26","$c3r27","$c3r28","$c3r29","$c3r30","$c3r31"
+  "$c3r24","$c3r25","$c3r26","$c3r27","$c3r28","$c3r29","$c3r30","$c3r31",
+  "C000", "C010", "C020", "C030", "C100", "C110", "C120", "C130",
+  "C200", "C210", "C220", "C230", "C300", "C310", "C320", "C330",
+  "C400", "C410", "C420", "C430", "C500", "C510", "C520", "C530",
+  "C600", "C610", "C620", "C630", "C700", "C710", "C720", "C730",
+  "vrnd", "vcc"
 };
 
 /* Map hard register number to register class */
@@ -504,7 +514,16 @@ const enum reg_class mips_regno_to_class[] =
   COP3_REGS,	COP3_REGS,	COP3_REGS,	COP3_REGS,
   COP3_REGS,	COP3_REGS,	COP3_REGS,	COP3_REGS,
   COP3_REGS,	COP3_REGS,	COP3_REGS,	COP3_REGS,
-  COP3_REGS,	COP3_REGS,	COP3_REGS,	COP3_REGS
+  COP3_REGS,	COP3_REGS,	COP3_REGS,	COP3_REGS,
+  VFPU_REGS,	VFPU_REGS,	VFPU_REGS,	VFPU_REGS,
+  VFPU_REGS,	VFPU_REGS,	VFPU_REGS,	VFPU_REGS,
+  VFPU_REGS,	VFPU_REGS,	VFPU_REGS,	VFPU_REGS,
+  VFPU_REGS,	VFPU_REGS,	VFPU_REGS,	VFPU_REGS,
+  VFPU_REGS,	VFPU_REGS,	VFPU_REGS,	VFPU_REGS,
+  VFPU_REGS,	VFPU_REGS,	VFPU_REGS,	VFPU_REGS,
+  VFPU_REGS,	VFPU_REGS,	VFPU_REGS,	VFPU_REGS,
+  VFPU_REGS,	VFPU_REGS,	VFPU_REGS,	VFPU_REGS,
+  VFPU_SRAND,	VFPU_CC
 };
 
 /* Map register constraint character to register class.  */
@@ -5650,6 +5669,16 @@ override_options ()
 
 	  else if (ALL_COP_REG_P (regno))
 	    temp = (class == MODE_INT && size <= UNITS_PER_WORD);
+
+	  /* A VFPU vector register holds a single or a vector; a matrix
+	     takes four of them, starting at a matrix's first column.  */
+	  else if (VFPU_REG_P (regno))
+	    temp = (mode == SFmode || mode == V4SFmode
+		    || (mode == V16SFmode
+			&& ((regno - VFPU_REG_FIRST) & 3) == 0));
+
+	  else if (regno == VFPU_SRAND_REGNUM || regno == VFPU_CC_REGNUM)
+	    temp = (mode == SImode);
 	  else
 	    temp = 0;
 
@@ -10837,6 +10866,8 @@ mips_hard_regno_nregs (regno, mode)
     int regno;
     enum machine_mode mode;
 {
+  if (VFPU_REG_P (regno))
+    return ((GET_MODE_SIZE (mode) + 15) / 16);
   if (! FP_REG_P (regno))
     return ((GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD);
   else
