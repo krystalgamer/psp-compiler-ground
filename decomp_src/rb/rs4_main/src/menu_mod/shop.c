@@ -1,7 +1,6 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
-M2C_UNK _AniFrameSet(int, int);                     /* extern */
 void consPrintf(const char *, ...);
 extern unsigned char D_0010473C;
 extern unsigned char D_00104758;
@@ -42,7 +41,15 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _ShopAniSet);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _AniInfoSet_3CB84);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _AniFrameSet);
+void bxAnmSetFrame(int, float);
+void bxAnmSetSpeed(int, float);
+void bxAnmExec(int);
+void _AniFrameSet(int anm, int frame)
+{
+	bxAnmSetFrame(anm, (float)frame);
+	bxAnmSetSpeed(anm, 0.0f);
+	bxAnmExec(anm);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _ShopCursorInitSet);
 
@@ -118,7 +125,14 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _TtrFontPutSet
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _Salbum2CardListSet);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _SwapCardWorkSet);
+typedef struct { unsigned char b[4]; } CardWork4;
+void _SwapCardWorkSet(CardWork4 *a, CardWork4 *b)
+{
+	CardWork4 t;
+	t = *a;
+	*a = *b;
+	*b = t;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
