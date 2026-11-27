@@ -26,7 +26,44 @@ extern MOD_INFO minfo[5];
 extern StrFile strFile;
 extern SceUID th_id;
 
-INCLUDE_ASM("tmp/asm/rb/jp_BOOT/nonmatchings/system", load_module);
+static int load_module(void)
+{
+	SceKernelLMOption kMode;
+	SceKernelLMOption uMode;
+	SceKernelLMOption *pMode;
+	int mresult;
+	int ret;
+	int i;
+
+	kMode.size = sizeof(kMode);
+	kMode.mpidtext = 1;
+	kMode.mpiddata = 1;
+	kMode.position = 0;
+	kMode.access = 1;
+	uMode.size = sizeof(uMode);
+	uMode.mpidtext = 2;
+	uMode.mpiddata = 2;
+	uMode.position = 0;
+	uMode.access = 1;
+
+	for (i = 0; i < sizeof(minfo) / sizeof(MOD_INFO); i++) {
+		if (minfo[i].mode == 0)
+			pMode = &kMode;
+		else
+			pMode = &uMode;
+		minfo[i].mid = sceKernelLoadModule(minfo[i].path, 0, pMode);
+		if (minfo[i].mid < 0) {
+			printf("Error: Load Module(%s)\n", minfo[i].name);
+			return -1;
+		}
+		ret = sceKernelStartModule(minfo[i].mid, 0, NULL, &mresult, NULL);
+		if (ret < 0) {
+			printf("Error: Start Module(%x)\n", ret);
+			return -1;
+		}
+	}
+	return 0;
+}
 
 static int unload_module(void)
 {
