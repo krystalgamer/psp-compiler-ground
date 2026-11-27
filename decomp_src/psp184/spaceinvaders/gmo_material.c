@@ -277,9 +277,24 @@ SceGmoMaterial *sceGmoMaterialCreate(const SceGmoChunk *chunk);
 void sceGmoMaterialDelete(SceGmoMaterial *material);
 SceGmoMaterial *sceGmoMaterialDuplicate(SceGmoMaterial *material, int flags);
 _Bool sceGmoMaterialLoad(SceGmoMaterial *material, const SceGmoChunk *chunk);
-static SceGmoChunk *SCEGMO_CHUNK_NEXT(SceGmoChunk *chunk);
-static SceGmoChunk *SCEGMO_CHUNK_CHILD(SceGmoChunk *chunk);
-static void *SCEGMO_CHUNK_ARGS(SceGmoChunk *chunk);
+static __inline__ int SCEGMO_CHUNK_TYPE( const SceGmoChunk *chunk )
+{
+ return ( ~0x8000 & chunk->type ) ;
+}
+static __inline__ SceGmoChunk *SCEGMO_CHUNK_NEXT( const SceGmoChunk *chunk )
+{
+ return (SceGmoChunk *)( (char *)chunk + chunk->next_offs ) ;
+}
+static __inline__ SceGmoChunk *SCEGMO_CHUNK_CHILD( const SceGmoChunk *chunk )
+{
+ if ( 0x8000 & chunk->type ) return SCEGMO_CHUNK_NEXT( chunk ) ;
+ return (SceGmoChunk *)( (char *)chunk + chunk->child_offs ) ;
+}
+static __inline__ void *SCEGMO_CHUNK_ARGS( const SceGmoChunk *chunk )
+{
+ if ( 0x8000 & chunk->type ) return (char *)chunk + 8 ;
+ return (char *)chunk + chunk->args_offs ;
+}
 void sceGmoMaterialUnload(SceGmoMaterial *material);
 void sceGmoMaterialUpdate(SceGmoMaterial *material, SceGmoModel *model);
 int sceGmoMaterialActivate(SceGmoMaterial *material, SceGmoModel *model, int idx);
@@ -309,6 +324,9 @@ static float *float_lerp(float *dst, const float *src1, const float *src2, int d
 void sceGmoLayerUnloadCache( SceGmoLayer *layer ) ;
 ScePspFRect *sceGmoRectSet( ScePspFRect *r, float x, float y, float w, float h ) ;
 void sceGuCallList( const void *list ) ;
+ScePspFRect *sceGmoRectLoad( ScePspFRect *dst, const void *src ) ;
+void sceGmoBaseConstruct( SceGmoBase *base ) ;
+unsigned int *sceGmoCol4Set( unsigned int *dst, float r, float g, float b, float a ) ;
 SceGmoTexture *sceGmoModelGetTexture( SceGmoModel *model, int index ) ;
 void sceGmoContextSetTexture( SceGmoTexture *texture, SceGmoModel *model ) ;
 void sceGmoContextSetTexCrop( const rect *crop ) ;
@@ -322,7 +340,41 @@ void sceGuMaterial( int mode, unsigned int color ) ;
 void sceGuSpecular( float power ) ;
 void sceGuBlendFunc( int op, int src, int dst, unsigned int srcfix, unsigned int destfix ) ;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_material", sceGmoMaterialCreate);
+extern const signed char D_000836FC[] ;
+SceGmoMaterial *sceGmoMaterialCreate( const SceGmoChunk *chunk )
+{
+	SceGmoMaterial *material = (SceGmoMaterial *)sceGmoModelAllocMemory( sizeof( SceGmoMaterial ) ) ;
+	if ( material == 0 ) {
+		return 0 ;
+	}
+	sceGmoBaseConstruct( &( material->m_base ) ) ;
+	material->m_initial = 0 ;
+	material->m_reference = 1 ;
+	material->m_flags = 0 ;
+
+	material->m_n_layers = 0 ;
+
+	material->m_enable_mask = 0 ;
+	material->m_enable_bits = 0 ;
+	sceGmoCol4Set( (unsigned int *)&( material->m_colors[ 0 ] ), 0, 0, 0, 1 ) ;
+	sceGmoCol4Set( (unsigned int *)&( material->m_colors[ 2 ] ), 0, 0, 0, 1 ) ;
+	sceGmoCol4Set( (unsigned int *)&( material->m_colors[ 3 ] ), 0, 0, 0, 1 ) ;
+	sceGmoCol4Set( (unsigned int *)&( material->m_colors[ 1 ] ), 1, 1, 1, 1 ) ;
+	sceGmoCol4Set( (unsigned int *)&( material->m_colors[ 4 ] ), 1, 1, 1, 1 ) ;
+	sceGmoCol4Set( (unsigned int *)&( material->m_colors[ 5 ] ), 1, 1, 1, 0 ) ;
+	material->m_shininess = 0.0f ;
+	material->m_refraction = 1.0f ;
+	material->m_bump = 0.0f ;
+
+	material->m_anim_flags = 0 ;
+	memset( material->m_anim_weights, 0, sizeof( material->m_anim_weights ) ) ;
+
+	if ( chunk != 0 && !sceGmoMaterialLoad( material, chunk ) ) {
+		sceGmoMaterialDelete( material ) ;
+		return 0 ;
+	}
+	return material ;
+}
 
 void sceGmoMaterialDelete( SceGmoMaterial *material )
 {
@@ -498,7 +550,49 @@ SceGmoLayer *sceGmoLayerDuplicate( SceGmoLayer *layer, int flags )
  return layer2 ;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_material", sceGmoLayerLoad);
+_Bool sceGmoLayerLoad( SceGmoLayer *layer, const SceGmoChunk *chunk )
+{
+ if ( layer == 0 ) return 0 ;
+ if ( chunk == 0 ) return 0 ;
+
+ sceGmoLayerUnload( layer ) ;
+
+ SceGmoChunk *end = SCEGMO_CHUNK_NEXT( chunk ) ;
+ for ( chunk = SCEGMO_CHUNK_CHILD( chunk ) ; chunk < end ; chunk = SCEGMO_CHUNK_NEXT( chunk ) ) {
+  void *args = SCEGMO_CHUNK_ARGS( chunk ) ;
+
+  switch ( SCEGMO_CHUNK_TYPE( chunk ) ) {
+      case 0x0091 : {
+   SceGmoSetTexture *cmd = (SceGmoSetTexture *)args ;
+   layer->m_texture = cmd->texture ;
+   break ;
+      }
+      case 0x0092 : {
+   SceGmoMapType *cmd = (SceGmoMapType *)args ;
+   sceGmoLayerSetMapType( layer, cmd->type ) ;
+   break ;
+      }
+      case 0x0094 : {
+      SceGmoBlendFunc *cmd = (SceGmoBlendFunc *)args ;
+   layer->m_blend_func[ 0 ] = cmd->mode ;
+   layer->m_blend_func[ 1 ] = D_000836FC[ cmd->src ] ;
+   layer->m_blend_func[ 2 ] = D_000836FC[ cmd->dst ] ;
+   layer->m_blend_func[ 3 ] = ( cmd->src == 0 ) ? 0 : 0xffffffff ;
+   layer->m_blend_func[ 4 ] = ( cmd->dst == 0 ) ? 0 : 0xffffffff ;
+   break ;
+      }
+      case 0x0098 : {
+   SceGmoTexCrop *cmd = (SceGmoTexCrop *)args ;
+   sceGmoRectLoad( &( layer->m_tex_crop ), &( cmd->crop ) ) ;
+   layer->m_flags |= 1 ;
+   break ;
+      }
+  }
+ }
+
+ layer->m_initial = sceGmoLayerDuplicate( layer, 0x0200 ) ;
+ return ( layer->m_initial != 0 ) ;
+}
 
 void sceGmoLayerUnload( SceGmoLayer *layer )
 {
