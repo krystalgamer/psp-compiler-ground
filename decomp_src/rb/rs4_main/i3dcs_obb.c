@@ -407,13 +407,51 @@ void I3dMatMulA()
 		: : : "memory");
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_obb", I3dMatRotateXA);
+float sinf(float);
+float cosf(float);
+void I3dMatRotateXA(float *out, float *in, float ang)
+{
+	float m[16];
+	I3dMatUnitA(m);
+	m[5] = cosf(ang);
+	m[6] = -sinf(ang);
+	m[9] = sinf(ang);
+	m[10] = cosf(ang);
+	I3dMatMulA(out, m, in);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_obb", I3dMatRotateYA);
+float sinf(float);
+float cosf(float);
+void I3dMatRotateYA(float *out, float *in, float ang)
+{
+	float m[16];
+	I3dMatUnitA(m);
+	m[0] = cosf(ang);
+	m[8] = sinf(ang);
+	m[2] = -sinf(ang);
+	m[10] = cosf(ang);
+	I3dMatMulA(out, m, in);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_obb", I3dMatRotateZA);
+float sinf(float);
+float cosf(float);
+void I3dMatRotateZA(float *out, float *in, float ang)
+{
+	float m[16];
+	I3dMatUnitA(m);
+	m[0] = cosf(ang);
+	m[1] = -sinf(ang);
+	m[4] = sinf(ang);
+	m[5] = cosf(ang);
+	I3dMatMulA(out, m, in);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_obb", I3dMatRotateZYXA);
+void I3dMatRotateZYXA(float *out, float *in, float *ang)
+{
+	I3dMatRotateZA(out, in, ang[2]);
+	I3dMatRotateYA(out, out, ang[1]);
+	I3dMatRotateXA(out, out, ang[0]);
+}
 
 void I3dMatScaleA()
 {
@@ -497,9 +535,21 @@ void I3dVecClearW1()
 		: : : "memory");
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_obb", I3dVecSet);
+void I3dVecSet(float *v, float x, float y, float z, float w)
+{
+	v[0] = x;
+	v[1] = y;
+	v[2] = z;
+	v[3] = w;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_obb", I3dColSet);
+void I3dColSet(float *v, float x, float y, float z, float w)
+{
+	v[0] = x;
+	v[1] = y;
+	v[2] = z;
+	v[3] = w;
+}
 
 void I3dMatClear()
 {
