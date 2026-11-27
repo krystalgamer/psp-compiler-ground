@@ -2,6 +2,10 @@
 #include "common.h"
 #include "mes_js.h"
 #include "m2c_macros.h"
+MesValue mes_number_alloc_int32(MesContext *ctx, int n);
+MesValue mes_number_alloc_uint32(MesContext *ctx, unsigned int n);
+unsigned int mes_eval_to_uint32(MesContext *ctx, MesValue v);
+MesValue mes_eval_to_integer(MesContext *ctx, MesValue v);
 extern MesObject *D_00585364;
 extern unsigned int D_005852E4;       /* "length" */
 int mes_eval_to_int32(MesContext *ctx, MesValue v);
@@ -141,7 +145,23 @@ MesValue mes_string_constructor(MesContext *ctx, MesValue v)
     return s;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_from_char_code);
+MesValue mes_string_from_char_code(MesContext *ctx)
+{
+    MesArgs *a = ctx->frame->args;
+    MesValue s;
+    UCSChar *p;
+    unsigned int i;
+
+    if (a == NULL)
+        return mes_empty;
+    s = mes_string_new(ctx, NULL, a->argc);
+    p = ((MesStr *)(s & ~3))->str;
+    *--ctx->sp = s;
+    for (i = 0; i < a->argc; i++)
+        *p++ = mes_eval_to_uint32(ctx, a->argv[i]);
+    ctx->sp++;
+    return s;
+}
 
 MesValue mes_string_value_of(MesContext *ctx)
 {
@@ -169,7 +189,25 @@ MesValue mes_string_char_at(MesContext *ctx, MesValue pos)
     return s;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_char_code_at);
+MesValue mes_string_char_code_at(MesContext *ctx, MesValue pos)
+{
+    MesValue s = mes_eval_to_string(ctx, (MesValue)ctx->frame->thisobj);
+    MesValue r = 0x1C;
+    MesValue n;
+    int i;
+
+    *--ctx->sp = s;
+    n = mes_eval_to_integer(ctx, pos);
+    if (n != 0x1C && n != 0x14 && n != 0x18) {
+        *--ctx->sp = n;
+        i = mes_eval_to_int32(ctx, n);
+        if (i >= 0 && (unsigned int)i < ((MesStr *)(s & ~3))->len)
+            r = mes_number_alloc_uint32(ctx, ((MesStr *)(s & ~3))->str[i]);
+        ctx->sp++;
+    }
+    ctx->sp++;
+    return r;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_concat);
 
@@ -177,7 +215,18 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_index_o
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_last_index_of);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_locale_compare);
+MesValue mes_string_locale_compare(MesContext *ctx, MesValue that)
+{
+    MesValue s;
+
+    if (ctx->frame->args == NULL)
+        return 1;
+    s = mes_eval_to_string(ctx, (MesValue)ctx->frame->thisobj);
+    *--ctx->sp = s;
+    that = mes_eval_to_string(ctx, that);
+    ctx->sp++;
+    return mes_number_alloc_int32(ctx, mes_string_compare((MesStr *)(s & ~3), (MesStr *)(that & ~3)));
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_match);
 
@@ -187,7 +236,34 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_replace
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_search);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_slice);
+MesValue mes_string_slice(MesContext *ctx, MesValue a, MesValue b)
+{
+    MesStr *s = (MesStr *)(mes_eval_to_string(ctx, (MesValue)ctx->frame->thisobj) & ~3);
+    int len = s->len;
+    UCSChar *str = s->str;
+    int start, end;
+
+    start = mes_eval_to_int32(ctx, a);
+    if (start < 0) {
+        start += len;
+        if (start < 0)
+            start = 0;
+    } else
+        start = len < start ? len : start;
+    end = len;
+    if (b != 0) {
+        end = mes_eval_to_int32(ctx, b);
+        if (end < 0) {
+            end += len;
+            if (end < 0)
+                end = 0;
+        } else
+            end = len < end ? len : end;
+    }
+    if (start >= end)
+        return mes_empty;
+    return mes_string_new(ctx, str + start, end - start);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_split);
 
