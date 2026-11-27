@@ -596,9 +596,9 @@ bss 0x19072C main_objs/sgl_Mesh_2
 bss 0x190830 -
 bss 0x18D4A4 main_objs/psp_GetKernelErrName
 bss 0x18D4A8 -
-# math_matrix_eigenVectors: static-init float pool, eigenVectors float pool + strings (tred2/tqli doubles stay asm: splat does not migrate lw-pair doubles)
+# math_matrix_eigenVectors: static-init float pool, eigenVectors float pool, strings, tred2/tqli doubles (nosplit labels)
 rodata 0x168910 main_objs/math_matrix_eigenVectors
-rodata 0x1689E8 -
+rodata 0x1689F8 -
 # math_matrix_eigenVectors: the header statics (.bss)
 bss 0x18ED6C main_objs/math_matrix_eigenVectors
 bss 0x18EDEC -

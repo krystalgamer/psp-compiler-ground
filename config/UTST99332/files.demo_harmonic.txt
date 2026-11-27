@@ -585,9 +585,9 @@ bss 0x18A030 -
 # math_matrix_eigenVectors: the header statics (.bss)
 bss 0x18B8EC main_objs/math_matrix_eigenVectors
 bss 0x18B96C -
-# math_matrix_eigenVectors: static-init float pool, eigenVectors float pool + strings (tred2/tqli doubles stay asm: splat does not migrate lw-pair doubles)
+# math_matrix_eigenVectors: static-init float pool, eigenVectors float pool, strings, tred2/tqli doubles (nosplit labels)
 rodata 0x1659F0 main_objs/math_matrix_eigenVectors
-rodata 0x165AC8 -
+rodata 0x165AD8 -
 # psp_vram: psp::vram (.bss)
 bss 0x18A358 main_objs/psp_vram
 bss 0x18A3DC -
