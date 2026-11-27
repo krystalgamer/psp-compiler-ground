@@ -447,6 +447,8 @@ segments:
       - [0x16A75C, rodata, asm/rodata_16A6DC]
       - [0x16ACAC, .rodata, main_objs/BVH]
       - [0x16ACC8, rodata, asm/rodata_16AC48]
+      - [0x16BE80, .rodata, main_objs/sgl_Mesh_3]
+      - [0x16BE9C, rodata, asm/rodata_16BE1C]
       - [0x16D040, .rodata, main_objs/sgl_Mesh_4]
       - [0x16D050, rodata, asm/rodata_16CFD0]
       - [0x16DBE8, .rodata, main_objs/sgl_MeshBuilder_extruded_var_extruded_var]
@@ -608,6 +610,8 @@ segments:
       - { start: 0x189CE4, type: bss, vram: 0x18CE04, name: bss_18CE04 }
       - { start: 0x189CE4, type: .bss, vram: 0x18CE94, name: main_objs/BVH }
       - { start: 0x189CE4, type: bss, vram: 0x18CF18, name: bss_18CF18 }
+      - { start: 0x189CE4, type: .bss, vram: 0x18D3B0, name: main_objs/sgl_Mesh_3 }
+      - { start: 0x189CE4, type: bss, vram: 0x18D4B4, name: bss_18D4B4 }
       - { start: 0x189CE4, type: .bss, vram: 0x18D6BC, name: main_objs/sgl_MeshParams }
       - { start: 0x189CE4, type: bss, vram: 0x18D7C0, name: bss_18D7C0 }
       - { start: 0x189CE4, type: .bss, vram: 0x18D8C4, name: main_objs/sgl_TransformSet_Transform }

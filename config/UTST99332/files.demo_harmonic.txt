@@ -432,3 +432,8 @@ rodata 0x168684 main_objs/scene_Node
 rodata 0x1687C4 -
 bss 0x18C230 main_objs/scene_Node
 bss 0x18C334 -
+# sgl_Mesh_3: C++ static initializer; .rodata: its float pool (save()'s strings stay in the blob: splat doesn't give the first one, "  ", to save()'s .s here); .bss: the header statics
+rodata 0x16BE00 main_objs/sgl_Mesh_3
+rodata 0x16BE1C -
+bss 0x18D3B0 main_objs/sgl_Mesh_3
+bss 0x18D4B4 -
