@@ -448,7 +448,7 @@ int func_0000A314(unsigned char *data, SmfData *p)
 		if (*(unsigned short *)fmt == 0) {
 			s = data + 12;
 			i = 0;
-		d = &div[1];
+			d = &div[1];
 			for (; i < 2; i++)
 				*d-- = *s++;
 			sig[0] = data[14];
@@ -459,7 +459,7 @@ int func_0000A314(unsigned char *data, SmfData *p)
 			ret = 0x80540005;
 			if (smf_chk(sig, D_00017EB4)) {
 				i = 0;
-		d = &len[3];
+				d = &len[3];
 				for (; i < 4; i++)
 					*d-- = *s++;
 				p->ptr = data + 22;
