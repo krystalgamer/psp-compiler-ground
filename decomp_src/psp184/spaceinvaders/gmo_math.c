@@ -1,3 +1,4 @@
+/* data-align: 16 */
 #include "common.h"
 #include "gmo_math_sdk.h"
 

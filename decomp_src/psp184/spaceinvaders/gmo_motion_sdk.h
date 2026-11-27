@@ -1543,3 +1543,5 @@ void sceGmoBoneControl( SceGmoBone *bone, int type, int idx, const float *val, i
 void sceGmoMaterialControl( SceGmoMaterial *material, int type, int idx, const float *val, int cnt, float weight ) ;
 void sceGmoMotionAnimate( SceGmoMotion *motion, SceGmoModel *model, float step ) ;
 float fmodf( float x, float y ) ;
+static float extrap_frame( float frame, float start, float end, int extrap ) ;
+quat *sceGmoQuatSlerp( quat *dst, const quat *src1, const quat *src2, float rate ) ;

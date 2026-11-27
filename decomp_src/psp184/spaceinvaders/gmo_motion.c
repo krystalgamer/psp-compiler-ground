@@ -294,7 +294,102 @@ SceGmoChunk *sceGmoMotionGetFcurve( SceGmoMotion *motion, int index )
  return motion->m_fcurves[ index ] ;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", eval_fcurve_5E514);
+extern const signed char D_00083708[] ;
+
+static int eval_fcurve( SceGmoChunk *chunk, float frame, float *output )
+{
+	SceGmoFCurveHeader *fcurve = (SceGmoFCurveHeader *)SCEGMO_CHUNK_ARGS( chunk ) ;
+	int format = fcurve->format & 0x000f ;
+	int n_dims = fcurve->n_dims ;
+	int n_elems = D_00083708[ format ] ;
+	int stride = n_elems * n_dims + 1 ;
+
+	float *data = (float *)( fcurve + 1 ) ;
+	int lower = 0 ;
+	int upper = fcurve->n_keys - 1 ;
+	int extrap = fcurve->format & 0xff00 ;
+	if ( extrap != 0 ) {
+		frame = extrap_frame( frame, data[ 0 ], data[ stride * upper ], extrap ) ;
+	}
+	while ( upper - lower > 1 ) {
+		int index = ( upper + lower ) / 2 ;
+		float frame2 = data[ stride * index ] ;
+		if ( frame < frame2 ) {
+			upper = index ;
+		} else {
+			lower = index ;
+		}
+	}
+
+	float *k1 = data + stride * lower ;
+	float *k2 = data + stride * upper ;
+	float f1 = *( k1 ++ ) ;
+	float f2 = *( k2 ++ ) ;
+	float t = f2 - f1 ;
+	if ( t != 0.0f ) t = ( frame - f1 ) / t ;
+	if ( t <= 0.0f ) {
+		format = 0 ;
+	} else if ( t >= 1.0f ) {
+		format = 0 ;
+		k1 = k2 ;
+	}
+
+	switch ( format ) {
+	    case 0 : {
+		{ int i ; for ( i = 0 ; i < n_dims ; i ++ ) {
+			*( output ++ ) = *k1 ;
+			k1 += n_elems ;
+		} }
+		break ;
+	    }
+	    case 1 : {
+		{ int i ; for ( i = 0 ; i < n_dims ; i ++ ) {
+			float v1 = *( k1 ++ ) ;
+			float v2 = *( k2 ++ ) ;
+			*( output ++ ) = ( v2 - v1 ) * t + v1 ;
+		} }
+		break ;
+	    }
+	    case 2 : {
+		float s = 1.0f - t ;
+		float t2 = t * t ;
+		float s2 = s * s ;
+		float b1 = s2 * t * 3.0f ;
+		float b2 = t2 * s * 3.0f ;
+		float b0 = s2 * s + b1 ;
+		float b3 = t2 * t + b2 ;
+		{ int i ; for ( i = 0 ; i < n_dims ; i ++ ) {
+			*( output ++ ) = k1[ 0 ] * b0 + k1[ 2 ] * b1 + k2[ 1 ] * b2 + k2[ 0 ] * b3 ;
+			k1 += 3 ;
+			k2 += 3 ;
+		} }
+		break ;
+	    }
+	    case 3 : {
+		{ int i ; for ( i = 0 ; i < n_dims ; i ++ ) {
+			float fa = f1 + k1[ 3 ] ;
+			float fb = f2 + k2[ 1 ] ;
+			float t = find_root( f1, fa, fb, f2, frame ) ;
+			float s = 1.0f - t ;
+			float t2 = t * t ;
+			float s2 = s * s ;
+			float b1 = s2 * t * 3.0f ;
+			float b2 = t2 * s * 3.0f ;
+			float b0 = s2 * s + b1 ;
+			float b3 = t2 * t + b2 ;
+			*( output ++ ) = k1[ 0 ] * b0 + k1[ 4 ] * b1 + k2[ 2 ] * b2 + k2[ 0 ] * b3 ;
+			k1 += 5 ;
+			k2 += 5 ;
+		} }
+		break ;
+	    }
+	    case 4 : {
+		sceGmoQuatSlerp( (quat *)output, (quat *)k1, (quat *)k2, t ) ;
+		break ;
+	    }
+	}
+	return fcurve->n_dims ;
+}
 
 float find_root( float f0, float f1, float f2, float f3, float f )
 {
@@ -383,4 +478,3 @@ static float extrap_frame( float frame, float start, float end, int extrap )
 	return start + frame ;
 }
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", D_0007F040);
