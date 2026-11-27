@@ -2,18 +2,36 @@
 #include "common.h"
 #include "m2c_macros.h"
 typedef unsigned short UCSChar;
+
 typedef struct UStr {
     UCSChar *str;
     int len;
 } UStr;
+
+typedef struct UChunk {
+    struct UChunk *next;
+    UCSChar data[100];
+} UChunk;
+
+typedef struct UString {
+    UChunk *head;
+    UChunk *f4;
+    UChunk *cur;
+    int cap;
+    int base;
+    int len;
+} UString;
+
+int mes_util_string_pos(UString *s, int pos);
+UCSChar mes_util_to_lower(UCSChar c);
+
 typedef struct UVals {
     unsigned int n;
     int v[1];
 } UVals;
+
 int mes_util_is_white_space(UCSChar c);
 int mes_util_is_line_terminator(UCSChar c);
-M2C_UNK MEM_free(M2C_UNK, M2C_UNK *);               /* extern */
-M2C_UNK *MEM_malloc(M2C_UNK, M2C_UNK);              /* extern */
 
 
 
@@ -39,7 +57,19 @@ int mes_util_streq2(const UCSChar *a, const char *b, int n)
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_util", mes_util_streq3);
+int mes_util_streq3(const UCSChar *a, const char *b, int n)
+{
+    UCSChar c;
+
+    while (n-- > 0) {
+        c = mes_util_to_lower(*a);
+        if (c != mes_util_to_lower(*b))
+            return 0;
+        a++;
+        b++;
+    }
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_util", mes_util_streq4);
 
@@ -113,9 +143,21 @@ void mes_util_string_free(M2C_UNK *arg0) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_util", mes_util_string_pos);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_util", mes_util_string_put);
+void mes_util_string_put(UString *s, UCSChar c)
+{
+    if (s != NULL && mes_util_string_pos(s, s->len) != 0) {
+        s->cur->data[s->len - s->base] = c;
+        s->len++;
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_util", mes_util_string_puts);
+void mes_util_string_puts(UString *s, const char *str)
+{
+    UCSChar c;
+
+    while ((c = *str++) != 0)
+        mes_util_string_put(s, c);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_util", mes_util_string_puti);
 
@@ -125,11 +167,38 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_util", mes_util_string_get)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_util", mes_util_string_eq);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_util", mes_util_string_eq2);
+int mes_util_string_eq2(UString *s, const char *str)
+{
+    int n = s->len;
+    UChunk *ch = s->head;
+    int m;
+    UCSChar *p;
+
+    while (n > 0) {
+        m = n;
+        if (m > 100)
+            m = 100;
+        n -= m;
+        p = ch->data;
+        while (m-- > 0) {
+            if (*str++ != *p++)
+                return 0;
+        }
+        ch = ch->next;
+    }
+    return *str == 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_util", mes_util_expt);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_util", mes_util_is_white_space);
+int mes_util_is_white_space(UCSChar c)
+{
+    int ret = 0;
+
+    if (c == 9 || c == 0xB || c == 0xC || c == 0x20 || c == 0xA0 || c == 0x2000 || c == 0x2001)
+        ret = 1;
+    return ret;
+}
 
 int mes_util_is_line_terminator(UCSChar c)
 {
