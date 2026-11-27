@@ -879,7 +879,20 @@ void parseBase(PCtx *c) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseForm);
+int parseForm(PCtx *c) {
+    int r;
+    r = M2C_FIELD(c, u16 *, 0x92) < 2;
+    r &= 1;
+    if (!r) {
+        while (**M2C_FIELD(c, u16 ***, 0x18) != '>') {
+            if (parseNextChar(c) == 1) {
+                break;
+            }
+        }
+        M2C_FIELD(c, u16 *, 0x92) = 1;
+    }
+    return r;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseFrame);
 
