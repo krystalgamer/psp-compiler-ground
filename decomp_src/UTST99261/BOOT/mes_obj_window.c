@@ -2,6 +2,31 @@
 #include "common.h"
 #include "mes_js.h"
 #include "m2c_macros.h"
+typedef struct WinPriv {
+    void *dom;                        /* 0x0 */
+    MesValue f4;                      /* 0x4 */
+    MesValue f8;                      /* 0x8 */
+} WinPriv;
+typedef struct WinRec {
+    short f0, f2, f4, f6, f8, fA, fC, fE, f10;
+} WinRec;
+int mes_class_property_get(void *ctx, void *obj, const char *name);
+char *HST_getTargetName(void *node);
+void JSI_getWindowRec(void *dom, WinRec *rec);
+int strncmp(const char *a, const char *b, int n);
+unsigned int strlen(const char *s);
+DOMString *JSI_newDOMString(const char *s, int len);
+typedef struct WinDomStr {
+    int f0;
+    int len;                          /* 0x4 */
+    unsigned short *str;              /* 0x8 */
+} WinDomStr;
+int mes_window_dialog_inner_sub(int kind, int sid, void *s, unsigned short *out, unsigned int d);
+void *mes_obj_common_to_string(MesContext *ctx, MesValue v);
+void *JSWaitMail(int cmd, int sid);
+WinDomStr *JSI_getBrowserHomeURL(void);
+void JSI_freeDOMString(WinDomStr *s);
+void *memcpy(void *d, const void *s, unsigned int n);
 extern char D_0013C28C[];
 extern int *g_JS_PAGECHANGED_;
 unsigned int mes_context_id2(void *ctx, const char *name);
@@ -14,6 +39,8 @@ void mes_window_scroll_inner(void *dom, int kind, int x, int y, int sid);
 extern MesClassDef mes_window_def;
 extern MesClass *mes_window_class;
 extern char D_0013C294[];
+extern char D_0013C2A0[];
+extern char D_0013C2A8[];
 int mes_window_history_move_inner(MesContext *ctx, int n);
 void js_delTimerID(int id, int kind, int b);
 MesValue mes_window_set_interval_inner(MesContext *ctx, MesValue *argv, int argc, int kind);
@@ -45,7 +72,30 @@ void mes_window_check_validate(MesContext *ctx, void **a, void **b, int *sid, vo
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_dialog_inner_sub);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_dialog_inner);
+void *mes_window_dialog_inner(MesContext *ctx, int kind, MesValue msg, void *out, int d)
+{
+    struct {
+        void *a;
+        void *b;
+        int sid;
+        void *node;
+    } v;
+    void *r;
+    void *s;
+
+    mes_window_check_validate(ctx, &v.a, &v.b, &v.sid, &v.node);
+    r = NULL;
+    if (v.node != NULL) {
+        s = NULL;
+        if (msg != 0)
+            s = mes_obj_common_to_string(ctx, msg);
+        if (mes_window_dialog_inner_sub(kind, v.sid, s, out, d) == 0)
+            r = JSWaitMail(0x407, v.sid);
+        if (msg != 0)
+            ctx->sp++;
+    }
+    return r;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_history_move_inner);
 
@@ -161,7 +211,36 @@ int mes_window_handle_event(MesContext *ctx, MesObject *obj)
     return 12;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_home);
+MesValue mes_window_home(MesContext *ctx)
+{
+    IpcMsg msg;
+    struct {
+        void *a;
+        void *b;
+        int sid;
+        void *node;
+    } v;
+    WinDomStr *url;
+    int len, n, size;
+    int *buf;
+
+    mes_window_check_validate(ctx, &v.a, &v.b, &v.sid, &v.node);
+    if (v.node != NULL && (url = JSI_getBrowserHomeURL()) != NULL) {
+        len = url->len;
+        n = len * 2;
+        size = n + 16;
+        buf = MEM_malloc(0, size);
+        buf[0] = 0;
+        buf[1] = 0;
+        buf[2] = len;
+        memcpy(buf + 3, url->str, n);
+        JSI_freeDOMString(url);
+        SetIpcMember(&msg, 8, v.sid, 0, 0x805, 0, size, buf);
+        if (JSSendMail(&msg, D_0013C294) == 0)
+            *g_JS_PAGECHANGED_ = 1;
+    }
+    return 0;
+}
 
 MesValue mes_window_scroll_by(MesContext *ctx, MesValue x, MesValue y)
 {
@@ -246,7 +325,72 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", D_0013C2A0)
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", D_0013C2A8);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_get);
+
+
+MesValue mes_window_get(MesContext *ctx, MesObject *obj, WinPriv *priv, int id)
+{
+    char *node;
+    char *name;
+    DOMString *s;
+    MesValue r;
+    int v;
+
+    if (priv == NULL)
+        return MES_UNDEFINED;
+    switch (id) {
+    case 1:
+        node = HST_searchSessionIDHistoryNode(Node_getSid(priv->dom));
+        return *(void **)(node + 0x6C) == NULL ? MES_TRUE : MES_FALSE;
+    case 2:
+        return priv->f4;
+    case 7:
+        v = mes_class_property_get(ctx, obj, D_0013C2A0);
+        *--ctx->sp = v;
+        r = mes_class_property_get(ctx, (void *)v, D_0013C2A8);
+        ctx->sp++;
+        goto ret;
+    case 9:
+        node = HST_searchSessionIDHistoryNode(Node_getSid(priv->dom));
+        name = HST_getTargetName(node);
+        if (name == NULL || strncmp(name, "__", 2) == 0) {
+            r = MES_NULL;
+            goto ret;
+        }
+        s = JSI_newDOMString(name, strlen(name));
+        r = mes_string_new(ctx, s->str, s->len);
+        JSI_freeDOMString((void *)s);
+        return r;
+    case 5: case 6: case 12: case 13: case 14: case 15: case 18: case 19:
+        node = HST_searchSessionIDHistoryNode(Node_getSid(priv->dom));
+        if (*(void **)(node + 0x6C) == NULL) {
+            r = MES_NULL;
+            goto ret;
+        }
+        {
+            WinRec rec = {0};
+        JSI_getWindowRec(HST_getDomObject(node), &rec);
+        switch (id) {
+        case 6: r = MES_INT(rec.fE); break;
+        case 5: r = MES_INT(rec.f10); break;
+        case 13: r = MES_INT(rec.f6); break;
+        case 12: r = MES_INT(rec.f8); break;
+        case 14: r = MES_INT(rec.fA); break;
+        case 15: r = MES_INT(rec.fC); break;
+        case 18: r = MES_INT(rec.f2); break;
+        case 19: r = MES_INT(rec.f4); break;
+        default: r = MES_NULL; break;
+        }
+        }
+    ret:
+        return r;
+    case 8:
+        return priv->f8;
+    case 22:
+    default:
+        break;
+    }
+    return MES_UNDEFINED;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_put);
 
