@@ -33,7 +33,17 @@ int atoi(const char *);
 void *memset(void *, int, unsigned int);
 char *sgxNextToken(char *, char *, const char *, const char *);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxPrintfPref);
+int sprintf(char *, const char *, ...);
+void sgxPrintfPref(const char *a, const char *b, int line, const char *fmt, ...)
+{
+	char f[0x400];
+	char buf[0x400];
+	va_list ap;
+	sprintf(f, "%s %s(%d) : %s", a, b, line, fmt);
+	va_start(ap, fmt);
+	vsprintf(buf, f, ap);
+	sgxPrintf(buf);
+}
 
 void sgxPrintf(const char *fmt, ...)
 {
