@@ -99,7 +99,65 @@ void ScoreAddInit(int a, int b, int c, int d)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", ScoreAddDisp);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", ScoreAdd);
+typedef struct { int f0, f4, f8, fc; u8 pad[0x24 - 0x10]; int f24, f28, f2c, f30; u8 pad2[0x48 - 0x34]; int f48, f4c; } CLSA_T;
+extern CLSA_T classicwork_a __asm__("classicwork");
+#define CWA classicwork_a
+typedef struct { int v[15]; } SCTBL_T;
+extern const SCTBL_T D_0007C1E8;
+extern int demo3flg, D_005FB828;
+void ScoreAdd(SPR_T *s)
+{
+	SCTBL_T tbl = D_0007C1E8;
+	int ext, add;
+
+	ext = 0;
+	if (demo3flg)
+		return;
+	if (s->f14 == 0) {
+		if (s->f10 == 1)
+			CWA.f0 += 30;
+		else if (s->f10 == 2 || s->f10 == 3)
+			CWA.f0 += 20;
+		else if (s->f10 == 4 || s->f10 == 5)
+			CWA.f0 += 10;
+		else if (s->f10 == 6) {
+			se_start(3);
+			se_start(6);
+			add = tbl.v[CWA.f2c % 15];
+			CWA.f24 = add;
+			CWA.f0 += add;
+		}
+	} else if (s->f14 == 1) {
+		if (s->f10 == 1)
+			CWA.f4 += 30;
+		else if (s->f10 == 2 || s->f10 == 3)
+			CWA.f4 += 20;
+		else if (s->f10 == 4 || s->f10 == 5)
+			CWA.f4 += 10;
+		else if (s->f10 == 6) {
+			se_start(3);
+			se_start(6);
+			add = tbl.v[CWA.f30 % 15];
+			CWA.f4 += add;
+			CWA.f28 = add;
+		}
+	}
+	if (D_005FB828 == 0)
+		ext = 1500;
+	else if (D_005FB828 == 1)
+		ext = 1000;
+	if (nowplay == 0) {
+		if (CWA.f0 >= ext && CWA.f8 == 0) {
+			CWA.f8 = 1;
+			CWA.f48++;
+		}
+	} else {
+		if (CWA.f4 >= ext && CWA.fc == 0) {
+			CWA.fc = 1;
+			CWA.f4c++;
+		}
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", BoxAtari_z);
 
