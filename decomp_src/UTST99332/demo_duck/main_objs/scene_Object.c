@@ -4,6 +4,8 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+extern const char D_0016CBD4[];
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Object", _Z41__static_initialization_and_destruction_0ii_915F8);
 
 scene::Object::Object(std::string name, bool b) : Group(name, b)
@@ -36,7 +38,10 @@ void _GLOBAL__D__ZN5scene6ObjectC2ESsb(void)
     static_init(0, 0xFFFF);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Object", _ZNK5scene6Object11getTypeNameEv);
+const char *scene::Object::getTypeName() const
+{
+    return D_0016CBD4;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Object", _ZNK5scene6Object5cloneESs);
 

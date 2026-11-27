@@ -6,8 +6,17 @@
 
 #include <list>
 #include <deque>
+#include <map>
 
 namespace common {
+/* std::map comparator on strings (scene::Graph's multimap) */
+struct LessStr {
+    bool operator()(const std::string &a, const std::string &b) const;
+};
+template<class T> class handles_list : public std::list<handle<T> > {
+};
+template<class T> class handles_vector : public std::vector<handle<T> > {
+};
 /* flag set indexed by an enum (only scene::Node uses it) */
 template<class E, class V> class VarSetFunc {
 public:
@@ -95,6 +104,16 @@ template<class T> inline bool hvalid(const common::handle<T> &h)
 template<class T> inline bool hnull(const common::handle<T> &h)
 {
     return !hvalid(h);
+}
+/* deletes the object (Graph::deleteNode): set_data is called virtually */
+template<class T> inline void hdelete(common::handle<T> &h)
+{
+    if (hget(h)) {
+        common::shared_object_base *o = h.d->obj;
+        h.d->count--;
+        delete o;
+        h.set_data(0);
+    }
 }
 
 /* GL calls (HouseKeeping_AttribStack.c defines them as C stubs `(void)`) */
@@ -481,10 +500,47 @@ public:
     char _p168[0x170 - 0x168];
 };
 
+/* sizeof 0xF8 (TestApp holds one at 0xF08, the next member is at 0x1000) */
 class Graph {
 public:
+    typedef std::map<const std::string, common::handle<Node> > NodeMap;
+    typedef std::multimap<const std::string, common::handle<Node>, common::LessStr> NodeMultiMap;
+    Graph();
+    ~Graph();
     static bool disable_pass0;
     static bool disable_reflection_mapping;
+    static bool disable_sh_calculation;
+    void clear();
+    void deleteNode(common::handle<Node>);
+    void deleteBranch(common::handle<Node>);
+    common::handle<Node> cloneNode(common::handle<Node>, std::string);
+    common::handle<Group> cloneBranch(common::handle<Group>, std::string);
+    common::handle<Group> cloneGroup(std::string, std::string);
+    common::handle<Group> cloneObject(std::string, std::string);
+    common::handle<Object> newObject(std::string);
+    common::handle<Mesh> newMesh(std::string, const sgl::Mesh &, unsigned int);
+    common::handle<Object> getObject(std::string);
+    common::handle<Texture> newTexture(std::string, bool, std::string);
+    void flattenTransforms(common::handle<Group>);
+    void flattenMaterials(bool);
+    void cleanUp();
+    void tag_identity_transforms();
+    void attachPass1ToAll();
+    void assertFlat();
+    void finish();
+    sgl::BV &getBV();
+    void add_node(common::handle<Node>);
+    void pushNamespace(std::string);
+    void popNamespace();
+    void loadNamespace(std::string);
+    const std::string &getNamespace() const;
+    std::string translatedName(std::string) const;
+    template<class T> common::handle<T> newNode(std::string, bool);
+    template<class T> common::handle<T> getMappedNode(const std::string &);
+    template<class T> void getSublist(common::handles_list<T> &);
+    void load(std::string, unsigned int, std::string);
+    void save(const char *);
+    void dot_output(std::string);
     void calcbv();
     void printMapA();
     void printMapU();
@@ -492,10 +548,13 @@ public:
     void save_vrml(std::string);
     void traverse(TraversalType, sgl::Frustum &, const math::matrix &, const math::matrix &, const math::matrix &,
                   float);
-    char _p0[0x70];
+    math::TransformStack _ts;           /* 0x0 */
     sh::VectorRGB _light;               /* 0x70 */
     common::handle<Group> _root;        /* 0xA0 */
-    char _pA8[0xF4 - 0xA8];
+    NodeMap _mapA;                      /* 0xA8 */
+    NodeMap _mapU;                      /* 0xB4 */
+    NodeMultiMap _mapO;                 /* 0xC0 */
+    std::stack<std::string> _namespace_stack;   /* 0xCC */
     bool _finish_called;                /* 0xF4 */
 };
 }

@@ -3,6 +3,8 @@
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
+
+extern const char D_0016B99C[];
 #include "../gl.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Material", _Z41__static_initialization_and_destruction_0ii_87014);
@@ -55,7 +57,10 @@ void _GLOBAL__D__ZN5scene8MaterialC2ESsb(void)
     static_init(0, 0xFFFF);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Material", _ZNK5scene8Material11getTypeNameEv);
+const char *scene::Material::getTypeName() const
+{
+    return D_0016B99C;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Material", _ZNK5scene8Material5cloneESs);
 

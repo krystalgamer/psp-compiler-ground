@@ -4,6 +4,8 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+extern const char D_0016D070[];
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Transform", _Z41__static_initialization_and_destruction_0ii_95D10);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Transform", _ZN5scene9TransformC2ESsb);
@@ -116,7 +118,10 @@ void _GLOBAL__D__ZN5scene9Transform11angle_rangeE(void)
     static_init(0, 0xFFFF);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Transform", _ZNK5scene9Transform11getTypeNameEv);
+const char *scene::Transform::getTypeName() const
+{
+    return D_0016D070;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Transform", _ZNK5scene9Transform5cloneESs);
 

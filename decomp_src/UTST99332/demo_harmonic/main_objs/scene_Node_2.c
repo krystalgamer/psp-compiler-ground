@@ -4,6 +4,8 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+extern const char D_00169B44[];
+
 /* the strings stay in the module's .rodata (asm) */
 extern const char D_00169B8C[];     /* " *** error " */
 extern const char D_00169B98[];     /* "_m._parent_count == 0" */
@@ -108,7 +110,10 @@ void _GLOBAL__D__ZN5scene4Node19constructor_counterE(void)
     static_init(0, 0xFFFF);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZNK5scene4Node11getTypeNameEv);
+const char *scene::Node::getTypeName() const
+{
+    return D_00169B44;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZNK5scene4Node5cloneESs);
 

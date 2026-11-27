@@ -9,6 +9,8 @@ extern const char scene_mesh_sp[] __asm__("D_0016BB7C");      /* " " */
 extern const char scene_mesh_getData_name[] __asm__("_ZZN5scene4Mesh7getDataEvE19__PRETTY_FUNCTION___16BAAC");
 #include "../main.hpp"
 
+extern const char D_0016BA24[];
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Mesh", _Z41__static_initialization_and_destruction_0ii_8798C);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Mesh", _ZN5scene4MeshC2ESsb);
@@ -59,11 +61,17 @@ void _GLOBAL__D__ZN5scene4MeshC2ESsb(void)
     static_init(0, 0xFFFF);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Mesh", _ZNK5scene4Mesh11getTypeNameEv);
+const char *scene::Mesh::getTypeName() const
+{
+    return D_0016BA24;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Mesh", _ZNK5scene4Mesh5cloneESs);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Mesh", _ZNK5scene4Mesh10isClonableEv);
+bool scene::Mesh::isClonable() const
+{
+    return true;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Mesh", _ZN6common6handleIN5scene19MeshDataInterleaved10SharedDataEE10invalidateEv);
 

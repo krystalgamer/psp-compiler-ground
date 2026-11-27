@@ -4,6 +4,8 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+extern const char D_00169EF0[];
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_StaticTransform", _Z41__static_initialization_and_destruction_0ii_914B8);
 
 scene::StaticTransform::StaticTransform(std::string name, bool b) : Group(name, b)
@@ -53,7 +55,10 @@ void _GLOBAL__D__ZN5scene15StaticTransformC2ESsb(void)
     static_init(0, 0xFFFF);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_StaticTransform", _ZNK5scene15StaticTransform11getTypeNameEv);
+const char *scene::StaticTransform::getTypeName() const
+{
+    return D_00169EF0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_StaticTransform", _ZNK5scene15StaticTransform5cloneESs);
 

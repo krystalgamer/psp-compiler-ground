@@ -4,15 +4,29 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+/* weak instances still asm in this object */
+extern template class std::_Deque_base<std::string, std::allocator<std::string> >;
+extern template class std::_Rb_tree<const std::string, std::pair<const std::string, common::handle<scene::Node> >,
+                                    std::_Select1st<std::pair<const std::string, common::handle<scene::Node> > >,
+                                    std::less<const std::string>,
+                                    std::allocator<std::pair<const std::string, common::handle<scene::Node> > > >;
+extern template class std::_Rb_tree<const std::string, std::pair<const std::string, common::handle<scene::Node> >,
+                                    std::_Select1st<std::pair<const std::string, common::handle<scene::Node> > >,
+                                    common::LessStr,
+                                    std::allocator<std::pair<const std::string, common::handle<scene::Node> > > >;
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _Z41__static_initialization_and_destruction_0ii_5DF00);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN5scene5GraphC2Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN5scene5GraphC1Ev);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN5scene5GraphD2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN5scene5GraphD1Ev);
+namespace scene {
+Graph::~Graph()
+{
+    popNamespace();
+}
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph10deleteNodeEN6common6handleINS_4NodeEEE);
 

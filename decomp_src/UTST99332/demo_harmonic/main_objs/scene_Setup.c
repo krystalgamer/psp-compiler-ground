@@ -4,6 +4,8 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+extern const char D_00169D5C[];
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Setup", _Z41__static_initialization_and_destruction_0ii_8FAB8);
 
 scene::Setup::Setup(std::string name, bool b) : Node(name, b)
@@ -34,7 +36,10 @@ void _GLOBAL__D__ZN5scene5SetupC2ESsb(void)
     static_init(0, 0xFFFF);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Setup", _ZNK5scene5Setup11getTypeNameEv);
+const char *scene::Setup::getTypeName() const
+{
+    return D_00169D5C;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Setup", _ZNK5scene5Setup5cloneESs);
 

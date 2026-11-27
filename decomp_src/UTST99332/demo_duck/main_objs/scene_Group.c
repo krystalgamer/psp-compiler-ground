@@ -4,6 +4,8 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+extern const char D_0016B744[];
+
 /* the strings stay in the module's .rodata (asm) */
 extern const char D_0016B7D0[];     /* " " */
 extern const char D_0016B7D4[];     /* " *** error " */
@@ -88,13 +90,22 @@ void _GLOBAL__D__ZN5scene5Group13_magic_numberE(void)
     static_init(0, 0xFFFF);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Group", _ZNK5scene5Group11getTypeNameEv);
+const char *scene::Group::getTypeName() const
+{
+    return D_0016B744;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Group", _ZNK5scene5Group5cloneESs);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Group", _ZNK5scene5Group7isGroupEv);
+bool scene::Group::isGroup() const
+{
+    return true;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Group", _ZNK5scene5Group10isClonableEv);
+bool scene::Group::isClonable() const
+{
+    return true;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Group", _ZNSt4listIN6common6handleIN5scene4NodeEEESaIS4_EEaSERKS6_);
 

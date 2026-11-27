@@ -4,6 +4,8 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+extern const char D_00169094[];     /* "DefaultShader" */
+
 /* these template instances are still asm below */
 namespace common {
 extern template class handle<scene::Material>;
@@ -93,11 +95,21 @@ void _GLOBAL__D__ZN5scene13DefaultShaderC2ESsb(void)
     static_init(0, 0xFFFF);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_DefaultShader", _ZNK5scene4Node7isGroupEv);
+/* inline in the original (emitted with the vtable): out of line here, at their place */
+bool scene::Node::isGroup() const
+{
+    return false;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_DefaultShader", _ZNK5scene4Node10isClonableEv);
+bool scene::Node::isClonable() const
+{
+    return false;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_DefaultShader", _ZNK5scene13DefaultShader11getTypeNameEv);
+const char *scene::DefaultShader::getTypeName() const
+{
+    return D_00169094;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_DefaultShader", _ZNK5scene13DefaultShader5cloneESs);
 

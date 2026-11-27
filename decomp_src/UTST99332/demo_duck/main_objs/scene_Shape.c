@@ -10,6 +10,8 @@ extern const char scene_bvdata_created[] __asm__("D_0016CD6C");      /* "boundin
 extern const char scene_bvdata_create_name[] __asm__("_ZZN5scene6BVdata6createEN3sgl2BV4TypeEE19__PRETTY_FUNCTION___16CD0C");
 #include "../main.hpp"
 
+extern const char D_0016CD04[];
+
 /* these template instances are still asm below */
 namespace common {
 extern template class handle<scene::Setup>;
@@ -117,7 +119,10 @@ void _GLOBAL__D__ZN5scene5ShapeC2ESsb(void)
     static_init(0, 0xFFFF);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Shape", _ZNK5scene5Shape11getTypeNameEv);
+const char *scene::Shape::getTypeName() const
+{
+    return D_0016CD04;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Shape", _ZNK5scene5Shape5cloneESs);
 
