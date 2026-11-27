@@ -49,6 +49,9 @@ int GUI_Choice_select(void *w, int idx);
 void GUI_List_select(void *w, int idx);
 void GUI_List_deselect(void *w, int idx);
 unsigned int Util_HTMLSelectElement_getLength(void *node);
+typedef struct JSRAD { void *prev; struct JSRAD *next; void *x8; char *name; } JSRAD;
+void GUI_RadioButton_setState(void *w, int state);
+int strcmp(const char *a, const char *b);
 DOMStr *newDOMString_4B5FC(const char *utf8, int len) {
     DOMStr *s = MEM_malloc(0, sizeof(DOMStr));
 
@@ -373,7 +376,39 @@ int JSI_getRadioState(int arg0) {
     return GUI_RadioButton_getState(M2C_FIELD(temp_v0, int *, 0x2C)) != 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setRadioState);
+int JSI_setRadioState(void *node, int state) {
+    LayoutBox *box;
+    JSRAD *p;
+    if (node == NULL || (box = Node_getBox(node)) == NULL) {
+        return 0;
+    }
+    if (box->type != 15 || box->widget == NULL) {
+        return 0;
+    }
+    if (state != 0) {
+        for (p = M2C_FIELD(((LayoutBox *)Node_getBox(Node_getOwnerDocument(node)))->data, JSRAD **, 0x80); p != NULL; p = p->next) {
+            if (strcmp(p->name, *(char **)box->data) == 0) {
+                break;
+            }
+        }
+        if (p == NULL) {
+            return 0;
+        }
+        for (p = p->x8; p != NULL; p = p->next) {
+            if (M2C_FIELD(((LayoutBox *)p->x8)->data, int *, 8) != 0) {
+                GUI_RadioButton_setState(((LayoutBox *)p->x8)->widget, 0);
+                OS_thread_mutex_lock(M2C_FIELD(gESPRIT_LO_GLOBAL_NDA, void **, 0x3C));
+                M2C_FIELD(((LayoutBox *)p->x8)->data, int *, 8) = 0;
+                OS_thread_mutex_unlock(M2C_FIELD(gESPRIT_LO_GLOBAL_NDA, void **, 0x3C));
+            }
+        }
+    }
+    GUI_RadioButton_setState(box->widget, state != 0);
+    OS_thread_mutex_lock(M2C_FIELD(gESPRIT_LO_GLOBAL_NDA, void **, 0x3C));
+    M2C_FIELD(box->data, int *, 8) = state;
+    OS_thread_mutex_unlock(M2C_FIELD(gESPRIT_LO_GLOBAL_NDA, void **, 0x3C));
+    return 1;
+}
 
 int JSI_getSelectedIndex(void *node) {
     LayoutBox *box;
