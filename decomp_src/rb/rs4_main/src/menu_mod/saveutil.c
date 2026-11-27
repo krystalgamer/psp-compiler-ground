@@ -244,7 +244,22 @@ void Copy_SecureFileId(int arg0) {
     } while (var_a1 < 0x10);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", MakeMode);
+void MakeMode(int m, char *s, int n)
+{
+	if (n >= 11) {
+		s[0] = '-';
+		s[1] = (m & 0x100) ? 'r' : '-';
+		s[2] = (m & 0x80) ? 'w' : '-';
+		s[3] = (m & 0x40) ? 'x' : '-';
+		s[4] = (m & 0x20) ? 'r' : '-';
+		s[5] = (m & 0x10) ? 'w' : '-';
+		s[6] = (m & 0x8) ? 'x' : '-';
+		s[7] = (m & 0x4) ? 'r' : '-';
+		s[8] = (m & 0x2) ? 'w' : '-';
+		s[9] = (m & 0x1) ? 'x' : '-';
+		s[10] = 0;
+	}
+}
 
 typedef struct { const char *name[23]; } SaveTypeNames;
 extern const SaveTypeNames D_00103B98;
