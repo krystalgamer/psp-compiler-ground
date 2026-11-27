@@ -160,8 +160,12 @@ static void init_map(void)
 #define p D_00012748	/* draw_cursor's static short p[6] */
 extern short p[6];
 
-#ifdef NON_MATCHING
-/* store scheduling of p[] differs */
+void sceKernelDcacheWritebackAll(void);
+void sceGuDisable(int state);
+void sceGuColor(unsigned int color);
+void sceGuDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+void sceGuEnable(int state);
+
 static void draw_cursor(void)
 {
 	BGDATA *bg;
@@ -179,9 +183,6 @@ static void draw_cursor(void)
 	sceGuDrawArray(6, 0x800100, 2, NULL, p);
 	sceGuEnable(9);
 }
-#else
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_map/nonmatchings/main", draw_cursor);
-#endif
 #undef p
 
 static void draw_frame(void)
