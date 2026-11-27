@@ -99,9 +99,56 @@ int sceSsUnbindSoundData(unsigned int hd)
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libsndp", sceSsNoteOn);
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libsndp", sceSsNoteOff);
+typedef struct { unsigned char ch; unsigned char note; } SsMidiKey;
+unsigned int voice_getVoiceByMidi(SsMidiKey *key, int a1);
+int sceSsNoteOff(unsigned int ch, unsigned int note, int id)
+{
+	SsMidiKey key;
+	unsigned int voices;
+	unsigned int i;
+	int ret = 0;
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libsndp", sceSsSetSustainHold);
+	if (g_state == -1)
+		return 0;
+	if (ch >= 16 || note >= 128)
+		return 0;
+	key.ch = ch;
+	key.note = note;
+	voices = voice_getVoiceByMidi(&key, id);
+	if (voices != 0) {
+		for (i = 0; i < g_maxvoice; i++) {
+			if ((voices >> i) & 1) {
+				if (voice_noteOff(i) == 0)
+					ret |= 1 << i;
+			}
+		}
+	}
+	return ret;
+}
+
+int sceSsSetSustainHold(unsigned int ch, unsigned int on, int id)
+{
+	unsigned int voices;
+	unsigned int i;
+	int ret = 0;
+
+	if (g_state == -1)
+		return 0;
+	if (ch >= 16)
+		return 0;
+	if (on >= 2)
+		return 0;
+	voices = voice_getVoiceByChannel(ch, id);
+	if (voices != 0) {
+		for (i = 0; i < g_maxvoice; i++) {
+			if ((voices >> i) & 1) {
+				if (voice_setSustain(i, on) == 0)
+					ret |= 1 << i;
+			}
+		}
+	}
+	return ret;
+}
 
 int sceSsKeyOffByID(int id)
 {
