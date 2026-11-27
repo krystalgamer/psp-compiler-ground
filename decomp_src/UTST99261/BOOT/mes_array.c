@@ -525,7 +525,68 @@ MesValue mes_array_sort(MesContext *ctx, MesValue fn)
     return t;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_array", mes_array_splice);
+MesValue mes_array_splice(MesContext *ctx, MesValue start, MesValue count)
+{
+    MesArray *a;
+    MesArgs *args;
+    MesValue t;
+    MesValue v;
+    unsigned int n;
+    unsigned int nitems;
+    unsigned int i;
+    int s;
+    int c;
+    int d;
+
+    a = mes_array_new(ctx, 0);
+    *--ctx->sp = (MesValue)a;
+    args = ctx->frame->args;
+    t = (MesValue)ctx->frame->thisobj;
+    if (args != NULL && (unsigned int)args->argc >= 3)
+    {
+        nitems = args->argc;
+        nitems -= 2;
+    }
+    else
+        nitems = 0;
+    v = mes_eval_object_get(ctx, t, D_005852E4);
+    n = 0;
+    if (v != 0x20)
+        n = mes_eval_to_uint32(ctx, v);
+    s = mes_eval_to_int32(ctx, start);
+    if (s < 0) {
+        s += n;
+        if (s < 0)
+            s = 0;
+    } else if (s > n)
+        s = n;
+    c = mes_eval_to_int32(ctx, count);
+    if (c < 0)
+        c = 0;
+    else if (c > n - s)
+        c = n - s;
+    for (i = 0; i < c; i++)
+        mes_array_set(ctx, a, mes_eval_object_get(ctx, t, MES_INT(s + i)));
+    d = nitems - c;
+    if (d < 0) {
+        for (i = s + c; i < n; i++) {
+            v = mes_eval_object_get(ctx, t, MES_INT(i));
+            mes_eval_object_put(ctx, t, MES_INT(i + d), v);
+        }
+    } else if (d > 0) {
+        for (i = n; i > s + c; ) {
+            i--;
+            v = mes_eval_object_get(ctx, t, MES_INT(i));
+            mes_eval_object_put(ctx, t, MES_INT(i + d), v);
+        }
+    }
+    n += d;
+    for (i = 0; i < nitems; i++)
+        mes_eval_object_put(ctx, t, MES_INT(s + i), args->argv[i + 2]);
+    mes_eval_object_put(ctx, t, D_005852E4, MES_INT(n));
+    ctx->sp++;
+    return (MesValue)a;
+}
 
 MesValue mes_array_unshift(MesContext *ctx)
 {
