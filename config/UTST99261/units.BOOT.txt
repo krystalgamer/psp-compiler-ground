@@ -226,6 +226,7 @@ mes_obj_submit                               1.5.1           mes_obj_submit.c
 mes_obj_text                                 1.5.1           mes_obj_text.c
 mes_obj_textarea                             1.5.1           mes_obj_textarea.c
 mes_obj_input                                1.5.1           mes_obj_input.c
+CSSImportRule                                1.5.1           CSSImportRule.c
 wsfileio                                     1.5.1           wsfileio.c
 http_attach                                  1.5.1           http_attach.c
 http_connect                                 1.5.1           http_connect.c

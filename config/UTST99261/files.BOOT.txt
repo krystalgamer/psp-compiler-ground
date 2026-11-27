@@ -177,6 +177,7 @@
 0xDDCDC mes_obj_text    1.5.1           mes_obj_text.c
 0xDDE1C mes_obj_textarea 1.5.1           mes_obj_textarea.c
 0xDDF5C mes_obj_input   1.5.1           mes_obj_input.c
+0xDEC48 CSSImportRule   1.5.1           CSSImportRule.c  # "\n" literal not merged with CSSCharsetRule_getCssText
 0xDEFC0 wsfileio        1.5.1           wsfileio.c
 0xDFB4C http_attach     1.5.1           http_attach.c
 0xDFC64 http_connect    1.5.1           http_connect.c
