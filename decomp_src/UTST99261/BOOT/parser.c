@@ -45,6 +45,8 @@ M2C_UNK parseHST_deleteHistoryNode(M2C_UNK, M2C_UNK); /* extern */
 
 typedef struct { PChar s[7]; } PS7;
 extern const PS7 D_00137E48;
+extern unsigned char NoTargetNameNumber;
+char *DOMStringEncode(PDStr *s, int enc);
 void parseReleaseResource(void) {
     parseDeleteMultiBuffer();
     parseHST_deleteHistoryNode(0, 0);
@@ -1125,7 +1127,79 @@ int parseForm(PCtx *c) {
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseFrame);
+void parseFrame(PCtx *c)
+{
+    void *map;
+    int n;
+    int i;
+    void *attr;
+    PDStr name;
+    PDStr val;
+    int found;
+    int len;
+    char *src;
+    char *target;
+    void *h;
+    char *base;
+    char *url;
+    void *node;
+
+    found = 0;
+    len = 0;
+    src = NULL;
+    target = NULL;
+    if (c->x00[5] == 1)
+        return;
+    map = Node_getAttributes(CF(c, 0x11C));
+    n = NamedNodeMap_getLength(map);
+    for (i = 0; i < n; i++) {
+        attr = NamedNodeMap_item(map, i);
+        name = Attr_getName(attr);
+        if (parseDStrEqual(D_00137E60, &name)) {
+            val = Attr_getValue(attr);
+            src = DOMStringEncode(&val, 5);
+        }
+        if (parseDStrEqual("name", &name)) {
+            val = Attr_getValue(attr);
+            target = DOMStringEncode(&val, 5);
+            len = 0;
+            if (target != NULL)
+                len = strlen(target);
+            found = 1;
+        }
+    }
+    if (found == 0) {
+        target = MEM_malloc(0, 4);
+        len = 3;
+        target[0] = '_';
+        target[1] = '_';
+        target[2] = NoTargetNameNumber;
+        target[3] = 0;
+        NoTargetNameNumber++;
+    }
+    if (src != NULL && *src != 0) {
+        h = HST_searchSessionIDHistoryNode(c->x00[4]);
+        if (h != NULL) {
+            base = HST_getBaseURI(h);
+            if (base == NULL)
+                base = HST_getCurURI(h);
+            url = URL_toAbsoluteURL(base, src);
+            if (checkFileStrage(base, url)) {
+                node = HST_createHistoryNode();
+                HST_setCurURI(node, url, strlen(url));
+                HST_setRefURI(node, base, strlen(base));
+                HST_setTargetName(node, target, len);
+                HST_setRequestFlag(node, 0);
+                HST_setCharSet(node, 100);
+                HST_setSourceType(node, HST_getSourceType(HST_getHeadHistoryNode()));
+                HST_addChildHistoryNode(h, node);
+                MEM_free(0, url);
+            }
+        }
+    }
+    MEM_free(0, src);
+    MEM_free(0, target);
+}
 
 int parseJSEventHandler(PDStr *s) {
     if ((unsigned)s->len >= 2 && (s->data[0] == 'O' || s->data[0] == 'o') && (s->data[1] == 'N' || s->data[1] == 'n')) {
