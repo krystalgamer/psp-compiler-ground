@@ -7,6 +7,110 @@ extern "C" void menuInit(void);
 void run_city();
 void run_ahiru();
 
+/* demo_harmonic's animations (CityApp.o holds the instances / linkonce copies: DEMO_LINKONCE_CityApp) */
+namespace interp {
+class VirtualQuickAnim {
+public:
+    virtual ~VirtualQuickAnim();
+    virtual void startRecordingPath() = 0;
+    virtual void addRecord() = 0;
+    virtual void deleteLastRecord() = 0;
+    virtual void finishRecordingPath() = 0;
+    virtual bool isRecordingPath() const = 0;
+    virtual void loadPath(std::string) = 0;
+    virtual void savePath(std::string) = 0;
+    virtual void evaluate(float) = 0;
+    virtual int pathSize() const = 0;
+};
+#if DEMO_LINKONCE_CityApp
+SGL_LINKONCE_BEGIN
+#endif
+inline VirtualQuickAnim::~VirtualQuickAnim() {}
+#if DEMO_LINKONCE_CityApp
+SGL_LINKONCE_END
+#endif
+/* P: the path (Path, VectorRGBAnim), T: its value */
+template<class P, class T> class HasPathInterface : public VirtualQuickAnim {
+public:
+    virtual ~HasPathInterface() {}
+    virtual void startRecordingPath();
+    virtual void addRecord();
+    virtual void deleteLastRecord();
+    virtual void finishRecordingPath();
+    virtual bool isRecordingPath() const;
+    virtual void loadPath(std::string);
+    virtual void savePath(std::string);
+    virtual void evaluate(float);
+    virtual int pathSize() const;
+    virtual void set(T) = 0;
+    virtual T get() const = 0;
+    P _path;                            /* 0x4 */
+};
+#ifdef DEMO_TEMPLATE_DEFS
+template<class P, class T> void HasPathInterface<P, T>::startRecordingPath()
+{
+    _path.startRecording();
+}
+template<class P, class T> void HasPathInterface<P, T>::addRecord()
+{
+    _path.addRecord(get());
+}
+template<class P, class T> void HasPathInterface<P, T>::deleteLastRecord()
+{
+    std::pair<bool, T> r = _path.deleteLastRecord();
+    if (r.first)
+        set(r.second);
+}
+template<class P, class T> void HasPathInterface<P, T>::finishRecordingPath()
+{
+    _path.finishRecording();
+}
+template<class P, class T> bool HasPathInterface<P, T>::isRecordingPath() const
+{
+    return _path.isRecording();
+}
+template<class P, class T> void HasPathInterface<P, T>::loadPath(std::string name)
+{
+    _path.load(name);
+}
+template<class P, class T> void HasPathInterface<P, T>::savePath(std::string name)
+{
+    _path.save(name);
+}
+template<class P, class T> void HasPathInterface<P, T>::evaluate(float t)
+{
+    set(_path.evaluate(t));
+}
+template<class P, class T> int HasPathInterface<P, T>::pathSize() const
+{
+    return _path.size();
+}
+#endif
+class SHLAnimation : public HasPathInterface<VectorRGBAnim, sh::VectorRGB> {
+public:
+    virtual ~SHLAnimation();
+    virtual void set(sh::VectorRGB v);
+    virtual sh::VectorRGB get() const;
+    VectorRGBAnim _anim;                /* 0x1BC */
+    sh::VectorRGB _value;               /* 0x374 */
+};
+#if DEMO_LINKONCE_CityApp
+SGL_LINKONCE_BEGIN
+#endif
+inline SHLAnimation::~SHLAnimation() {}
+inline void SHLAnimation::set(sh::VectorRGB v)
+{
+    _value = v;
+}
+inline sh::VectorRGB SHLAnimation::get() const
+{
+    return _value;
+}
+#if DEMO_LINKONCE_CityApp
+SGL_LINKONCE_END
+#endif
+}
+
 /* demo_harmonic's application */
 class CityApp : public app3d::Callbacks {
 public:

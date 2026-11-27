@@ -9,6 +9,7 @@ extern const float D_0015B668;
 #define INTERP_LINKONCE_VKFS
 #define DEMO_LINKONCE_data_owner 1
 #define DEMO_LINKONCE_shared_object_base 1
+#define DEMO_LINKONCE_CityApp 1
 #include "main.hpp"
 
 /* this object's .gnu.linkonce.t sections in the original's order */
@@ -539,6 +540,10 @@ inline sh::Args::Env::Type sh::Args::Env::GetEnvType(std::string s)
 }
 SGL_LINKONCE_END
 
+/* inline (KeyFrameSequence.h; interp_KeyFrameSequence.o holds its copy) */
+inline interp::KeyFrameSequence<math::quaternion>::~KeyFrameSequence()
+{
+}
 /* interp:: template bodies (as in demo_duck's interp_Path) */
 /* interp's assert (common/assert) */
 #define INTERP_ASSERT(c, text, fn, line) \
@@ -741,7 +746,9 @@ template<class T> interp::KeyFrame<T>::KeyFrame() : _time(0), _value(0)
     _tangent[1] = 0;
 }
 
-template<class T> inline interp::KeyFrameSequenceBase<T>::~KeyFrameSequenceBase()
+/* not inline (the original calls its D2 from the inline destructors of KeyFrameSequence<quaternion> and
+   HasPathInterface<>) */
+template<class T> interp::KeyFrameSequenceBase<T>::~KeyFrameSequenceBase()
 {
 }
 
@@ -1312,6 +1319,28 @@ extern template VKq &VKq::operator=(const VKq &);
 void CityApp_interp_instances() __attribute__((section(".discard.instances")));
 void CityApp_interp_instances()
 {
+    typedef interp::HasPathInterface<interp::Path, math::Frame> HPf;
+    typedef interp::HasPathInterface<interp::VectorRGBAnim, sh::VectorRGB> HPv;
+    ((HPf *)0)->HPf::startRecordingPath();
+    ((HPf *)0)->HPf::addRecord();
+    ((HPf *)0)->HPf::deleteLastRecord();
+    ((HPf *)0)->HPf::finishRecordingPath();
+    ((const HPf *)0)->HPf::isRecordingPath();
+    ((HPf *)0)->HPf::loadPath(*(std::string *)0);
+    ((HPf *)0)->HPf::savePath(*(std::string *)0);
+    ((HPf *)0)->HPf::evaluate(0);
+    ((const HPf *)0)->HPf::pathSize();
+    ((HPf *)0)->HPf::~HasPathInterface();
+    ((HPv *)0)->HPv::startRecordingPath();
+    ((HPv *)0)->HPv::addRecord();
+    ((HPv *)0)->HPv::deleteLastRecord();
+    ((HPv *)0)->HPv::finishRecordingPath();
+    ((const HPv *)0)->HPv::isRecordingPath();
+    ((HPv *)0)->HPv::loadPath(*(std::string *)0);
+    ((HPv *)0)->HPv::savePath(*(std::string *)0);
+    ((HPv *)0)->HPv::evaluate(0);
+    ((const HPv *)0)->HPv::pathSize();
+    ((HPv *)0)->HPv::~HasPathInterface();
     /* called by the asm _M_fill_insert<quaternion> */
     std::__uninitialized_copy_aux((KFq *)0, (KFq *)0, (KFq *)0, __false_type());
     std::fill(VKq::iterator(), VKq::iterator(), *(const KFq *)0);
@@ -1475,8 +1504,6 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN5scene5Gr
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNSt6vectorIN6common7CmdLine6OptionESaIS2_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS2_S4_EERKS2_);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp20KeyFrameSequenceBaseIfED2Ev);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNSt6vectorIN6common6handleIN7CityApp3CarEEESaIS4_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS4_S6_EERKS4_);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN5scene5Graph13getMappedNodeINS_9TransformEEEN6common6handleIT_EERKSs);
@@ -1494,12 +1521,6 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZSt24__unin
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNSs12_S_constructIPcEES0_T_S1_RKSaIcESt20forward_iterator_tag);
 CONT_INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", func_000087B4, _ZNSs12_S_constructIPcEES0_T_S1_RKSaIcESt20forward_iterator_tag);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp20KeyFrameSequenceBaseIN4math10quaternionEED2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp16VirtualQuickAnimD1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp16VirtualQuickAnimD0Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN3psp11DisplayList6finishEb);
 
@@ -1521,14 +1542,6 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common7C
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common7CmdLine6defArgESsjPKc);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp12SHLAnimationD0Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp12SHLAnimationD1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNK6interp12SHLAnimation3getEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp12SHLAnimation3setEN2sh9VectorRGBE);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN7CityApp3CarD1Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN7CityApp3CarD0Ev);
@@ -1541,27 +1554,11 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNSt19basic
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZTv0_n12_NSt19basic_ostringstreamIcSt11char_traitsIcESaIcEED1Ev);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp16HasPathInterfaceINS_4PathEN4math5FrameEE8evaluateEf);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp16HasPathInterfaceINS_13VectorRGBAnimEN2sh9VectorRGBEE8evaluateEf);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp16HasPathInterfaceINS_4PathEN4math5FrameEED1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp16HasPathInterfaceINS_4PathEN4math5FrameEED0Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp16HasPathInterfaceINS_13VectorRGBAnimEN2sh9VectorRGBEED1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp16HasPathInterfaceINS_13VectorRGBAnimEN2sh9VectorRGBEED0Ev);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNSt19basic_ostringstreamIcSt11char_traitsIcESaIcEED0Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZTv0_n12_NSt19basic_ostringstreamIcSt11char_traitsIcESaIcEED0Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZSt4findIN9__gnu_cxx17__normal_iteratorIPKSsSt6vectorISsSaISsEEEEPKcET_SA_SA_RKT0_St26random_access_iterator_tag);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp16KeyFrameSequenceIfED1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp16KeyFrameSequenceIfED0Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNSt15basic_stringbufIcSt11char_traitsIcESaIcEE14_M_really_syncEjj);
 
@@ -1576,38 +1573,6 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNSt15basic
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNSt15basic_stringbufIcSt11char_traitsIcESaIcEE9pbackfailEi);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNSt15basic_stringbufIcSt11char_traitsIcESaIcEE8overflowEi);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp16HasPathInterfaceINS_13VectorRGBAnimEN2sh9VectorRGBEE18startRecordingPathEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp16HasPathInterfaceINS_13VectorRGBAnimEN2sh9VectorRGBEE9addRecordEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp16HasPathInterfaceINS_13VectorRGBAnimEN2sh9VectorRGBEE16deleteLastRecordEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp16HasPathInterfaceINS_13VectorRGBAnimEN2sh9VectorRGBEE19finishRecordingPathEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNK6interp16HasPathInterfaceINS_13VectorRGBAnimEN2sh9VectorRGBEE15isRecordingPathEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp16HasPathInterfaceINS_13VectorRGBAnimEN2sh9VectorRGBEE8loadPathESs);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp16HasPathInterfaceINS_13VectorRGBAnimEN2sh9VectorRGBEE8savePathESs);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNK6interp16HasPathInterfaceINS_13VectorRGBAnimEN2sh9VectorRGBEE8pathSizeEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp16HasPathInterfaceINS_4PathEN4math5FrameEE18startRecordingPathEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp16HasPathInterfaceINS_4PathEN4math5FrameEE9addRecordEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp16HasPathInterfaceINS_4PathEN4math5FrameEE16deleteLastRecordEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp16HasPathInterfaceINS_4PathEN4math5FrameEE19finishRecordingPathEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNK6interp16HasPathInterfaceINS_4PathEN4math5FrameEE15isRecordingPathEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp16HasPathInterfaceINS_4PathEN4math5FrameEE8loadPathESs);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp16HasPathInterfaceINS_4PathEN4math5FrameEE8savePathESs);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNK6interp16HasPathInterfaceINS_4PathEN4math5FrameEE8pathSizeEv);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNK6interp16KeyFrameSequenceIfE4dumpEPKc);
 CONT_INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", func_0000CD14, _ZNK6interp16KeyFrameSequenceIfE4dumpEPKc);
