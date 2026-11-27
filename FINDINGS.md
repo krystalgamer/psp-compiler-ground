@@ -952,8 +952,12 @@ libgcc/libsupc++ DWARF names `gcc-3.3.6/` paths.
   and aggregates in one `.rodata` in emission order (ys_fx_fade_cif:
   `"src/ys/ys_object.h"`, two `1.0f`, then the vtable); with this repo's
   link order that needs `-fno-merge-constants` per unit, as for 1.8.4's
-  mixed units.  All the C++ is `-Os -fno-strength-reduce -fno-exceptions`
-  like the C game code.
+  mixed units.  The C++ is `-Os -fno-exceptions` with strength reduction
+  per object (counted over each whole object): on in ys_anim_task,
+  saru_netlib_controller(_set), network_data_transfer_client,
+  saru_network_lobby_menu(_view), vfs_tartefs, vfs_internal, network_lobby,
+  network_object_daemon, network_lobby_message_queue and bx/b2a (objects
+  whose loops use pointer or down-counting counters); off in the rest.
 - Rechecked with much more C (libgu at `-O3`, the game's libxu, 208
   functions of the stripped SCERT network library at `-O2`): all 179 C
   units of rs4_main still compile to the same assembly with `cc1-184ins`
