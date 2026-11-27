@@ -425,7 +425,31 @@ void zWindDrawLineW(int x, int y, int len, short color) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindDrawLineH);
+void zWindDrawLineH(int x, int y, int len, short color) {
+    u16 *p;
+    int y2;
+    int w;
+
+    if (y > _zWindDrawTexClipY2 || y + len <= _zWindDrawTexClipY || x < _zWindDrawTexClipX || x >= _zWindDrawTexClipX2) {
+        return;
+    }
+    if (y < _zWindDrawTexClipY) {
+        len -= _zWindDrawTexClipY - y;
+        y = _zWindDrawTexClipY;
+    }
+    if (y + len >= _zWindDrawTexClipY2) {
+        len = _zWindDrawTexClipY2 - y - 1;
+    }
+    y2 = y + len;
+    p = (u16 *)_zWindDrawTexdata;
+    p += x + y * _zWindDrawTexWidth;
+    w = _zWindDrawTexWidth;
+    color |= 0x8000;
+    for (; y <= y2; y++) {
+        *p = color;
+        p += w;
+    }
+}
 
 void zWindLineBox(int x, int y, int w, int h, short color) {
     x -= _zWindDrawTexClipOffX;
