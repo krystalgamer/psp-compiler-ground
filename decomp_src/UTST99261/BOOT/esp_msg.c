@@ -10,6 +10,11 @@
 void *memset(void *s, int c, unsigned int n);
 void *memcpy(void *d, const void *s, unsigned int n);
 
+int OS_mq_open(const char *name, int flags, ...);
+int OS_mq_receive(int q, void *buf, int len, void *prio);
+int OS_mq_close(int q);
+void OS_thread_exit(void *r);
+int GUI_Toolkit_postEvent(void *w, int ev, void *p);
 void *cnvExtSchemeSelected(void *arg0) {
     void *temp_s1;
     void *temp_v0;
@@ -28,7 +33,161 @@ void *cnvExtSchemeSelected(void *arg0) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_msg", esp_msgThread);
+int esp_msgThread(void *arg) {
+    EspMsg m;
+    int q;
+    int *spare;
+    int *err;
+    int *p;
+    void *w;
+    int run;
+
+    run = 1;
+    q = OS_mq_open("/tmp/mq_ui", 2);
+    if (q < 0) {
+        return 0;
+    }
+    spare = MEM_malloc(0, 0x20);
+    if (spare == NULL) {
+        return 0;
+    }
+    err = MEM_malloc(0, 8);
+    if (err == NULL) {
+        if (spare != NULL) {
+            MEM_free(0, spare);
+        }
+        return 0;
+    }
+    while (run == 1) {
+        if (OS_mq_receive(q, &m, 0x24, NULL) < 0) {
+            return 0;
+        }
+        p = MEM_malloc(0, 0x20);
+        if (p == NULL) {
+            if (m.cmd != 0xFFFF || spare == NULL) {
+                return 0;
+            }
+            p = spare;
+            spare = NULL;
+        }
+        p[0] = m.src;
+        p[1] = m.x08;
+        p[2] = m.x0C;
+        p[3] = m.cmd;
+        p[4] = m.arg;
+        p[5] = m.x18;
+        p[6] = m.len;
+        p[7] = (int)m.data;
+        w = M2C_FIELD(arg, void **, 0x78);
+        switch (p[3]) {
+        case 0:
+            GUI_Toolkit_postEvent(w, 9, p);
+            break;
+        case 1:
+            MEM_free(0, p);
+            GUI_Toolkit_postEvent(w, 0xA, NULL);
+            run = 0;
+            break;
+        case 2:
+            GUI_Toolkit_postEvent(w, 0xB, p);
+            break;
+        case 4:
+            GUI_Toolkit_postEvent(w, 0xC, p);
+            break;
+        case 5:
+            GUI_Toolkit_postEvent(w, 0xD, p);
+            break;
+        case 6:
+            GUI_Toolkit_postEvent(w, 0xE, p);
+            break;
+        case 9:
+            p = cnvExtSchemeSelected(p);
+            if (p == NULL) {
+                goto nomem;
+            }
+            GUI_Toolkit_postEvent(w, 0xF, p);
+            break;
+        case 0xA:
+            GUI_Toolkit_postEvent(w, 0x10, p);
+            break;
+        case 0xB:
+            GUI_Toolkit_postEvent(w, 0x17, p);
+            break;
+        case 0xC:
+            GUI_Toolkit_postEvent(w, 0x11, p);
+            break;
+        case 0xE:
+            GUI_Toolkit_postEvent(w, 0x12, p);
+            break;
+        case 0x14:
+            GUI_Toolkit_postEvent(w, 0x15, p);
+            break;
+        case 0x15:
+            GUI_Toolkit_postEvent(w, 0x16, p);
+            break;
+        case 0x16:
+            GUI_Toolkit_postEvent(w, 0x18, p);
+            break;
+        case 0x11:
+            GUI_Toolkit_postEvent(w, 0x19, p);
+            break;
+        case 0xFFFF:
+            GUI_Toolkit_postEvent(w, 0x20, p);
+            break;
+        case 0x17:
+            GUI_Toolkit_postEvent(w, 0x1B, p);
+            break;
+        case 0x18:
+            GUI_Toolkit_postEvent(w, 0x1C, p);
+            break;
+        case 0x19:
+            GUI_Toolkit_postEvent(w, 0x1D, p);
+            break;
+        case 0x1A:
+            GUI_Toolkit_postEvent(w, 0x1E, p);
+            break;
+        case 0x1B:
+            GUI_Toolkit_postEvent(w, 0x1F, p);
+            break;
+        default:
+            MEM_free(0, p);
+            p = NULL;
+            break;
+        nomem:
+            if (spare != NULL) {
+                void *w2 = M2C_FIELD(arg, void **, 0x78);
+                spare[0] = 0;
+                spare[1] = 0;
+                spare[2] = 0;
+                spare[3] = 0;
+                spare[4] = 0;
+                spare[5] = 0;
+                spare[6] = 0;
+                spare[7] = 0;
+                spare[0] = M2C_FIELD(esp_context, int *, 0x100);
+                spare[3] = 0xFFFF;
+                spare[7] = (int)err;
+                if (err != NULL) {
+                    err[0] = -1;
+                    err[1] = (int)"AllocationError(API_MSG)";
+                }
+                GUI_Toolkit_postEvent(w2, 0x20, spare);
+                spare = NULL;
+                err = NULL;
+            }
+            break;
+        }
+    }
+    if (spare != NULL) {
+        MEM_free(0, spare);
+    }
+    if (err != NULL) {
+        MEM_free(0, err);
+    }
+    OS_mq_close(q);
+    OS_thread_exit(NULL);
+    return 0;
+}
 
 int esp_setupPointerDeviceMessage(EspMsg *m, int type, int x, int y, int btn, int time) {
     EspDevEvent *e;
