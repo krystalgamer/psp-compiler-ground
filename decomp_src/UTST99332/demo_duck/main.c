@@ -47,8 +47,8 @@ void TestApp::draw_sink_background()
 {
     math::matrix m = _trackball.getTransform();
     math::matrix cam = getCamera()->getTransformInverse();
-    apps_ext::Group_traverse(_sink_background.operator->(), (scene::TraversalType)0, frustum(), m,
-                             math::matrix::Identity(), cam, _graph_light, _f1538);
+    _sink_background->traverse((scene::TraversalType)0, frustum(), m, math::matrix::Identity(), cam, _graph._light,
+                               _f1538);
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN7TestApp12draw_objectsEb);
@@ -61,7 +61,7 @@ void TestApp::draw_environment()
     math::matrix m = _trackball.getTransform();
     glMultMatrixf(&m.r[0].x);
     if (!_vertex_color_env)
-        apps_ext::TestEnvSet_draw(&_env, _f1638);
+        _env.draw(_f1638);
     else
         _vce.draw(D_0015E750);
     glPopMatrix();

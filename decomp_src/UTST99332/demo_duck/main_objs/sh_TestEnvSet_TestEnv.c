@@ -1,26 +1,85 @@
 /* lang: c++ */
-/* cflags: -O3 -fno-exceptions */
+/* cflags: -O3 -fno-exceptions -fno-merge-constants */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+namespace {
+extern "C" const char D_00174178[], D_00174190[], D_001741A8[], D_001741C0[], D_001741CC[], D_001741D4[], D_001741DC[];
+extern "C" const char D_00174200[], D_0017420C[], D_00174228[], D_00174244[], D_00174248[], D_00174270[];
+}
+extern const char load_name[] __asm__("_ZZN2sh10TestEnvSet4loadEvE19__PRETTY_FUNCTION__");
+extern const char draw_name[] __asm__("_ZZN2sh10TestEnvSet4drawEbE19__PRETTY_FUNCTION__");
+/* weak instances stay asm */
+extern template class common::handle<sh::TestEnvSet::TestEnv>;
+extern template class std::vector<common::handle<sh::TestEnvSet::TestEnv> >;
+
+#define TES_ASSERT(c, text, fn, line) SGL_ASSERT(c, D_00174200, text, D_00174228, fn, line, D_00174244)
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_TestEnvSet_TestEnv", _Z41__static_initialization_and_destruction_0ii_F2B2C);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_TestEnvSet_TestEnv", _ZN2sh10TestEnvSet7TestEnvC2ENS0_7EnvEnumENS_4Args3EnvE);
+sh::TestEnvSet::TestEnv::TestEnv(EnvEnum type, Args::Env args) : _env(args), _type(type), _loaded(false)
+{
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_TestEnvSet_TestEnv", _ZN2sh10TestEnvSet7TestEnvC1ENS0_7EnvEnumENS_4Args3EnvE);
+void sh::TestEnvSet::TestEnv::load()
+{
+    _env.load(!_loaded);
+    _loaded = true;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_TestEnvSet_TestEnv", _ZN2sh10TestEnvSet7TestEnv4loadEv);
+sh::TestEnvSet::TestEnvSet(Args::Env args, EnvEnum e) : _current_light(e)
+{
+    _lights.resize(MAX_ENV);
+    args.type = (Args::Env::Type)3;
+    args.name = D_00174178;
+    args.exposure = 350;
+    common::setAt(2, _lights, new TestEnv((EnvEnum)2, args));
+    args.type = (Args::Env::Type)3;
+    args.name = D_00174190;
+    args.exposure = 0.9f;
+    common::setAt(3, _lights, new TestEnv((EnvEnum)3, args));
+    args.type = (Args::Env::Type)3;
+    args.name = D_001741A8;
+    args.exposure = 0.6f;
+    common::setAt(4, _lights, new TestEnv((EnvEnum)4, args));
+    args.type = (Args::Env::Type)2;
+    args.name = D_001741C0;
+    args.exposure = -1;
+    common::setAt(5, _lights, new TestEnv((EnvEnum)5, args));
+    args.type = (Args::Env::Type)0;
+    args.name = D_001741CC;
+    args.exposure = 0;
+    common::setAt(6, _lights, new TestEnv((EnvEnum)6, args));
+    args.type = (Args::Env::Type)1;
+    args.name = D_001741D4;
+    args.exposure = 2.5f;
+    common::setAt(1, _lights, new TestEnv((EnvEnum)1, args));
+    args.type = (Args::Env::Type)1;
+    args.name = D_001741DC;
+    args.exposure = 100;
+    common::setAt(0, _lights, new TestEnv((EnvEnum)0, args));
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_TestEnvSet_TestEnv", _ZN2sh10TestEnvSetC2ENS_4Args3EnvENS0_7EnvEnumE);
+void sh::TestEnvSet::load()
+{
+    TES_ASSERT(_current_light < MAX_ENV, D_0017420C, load_name, 88);
+    TES_ASSERT(_current_light < (int)_lights.size(), D_00174248, load_name, 89);
+    TES_ASSERT(0 <= _current_light, D_00174270, load_name, 90);
+    _lights[_current_light]->load();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_TestEnvSet_TestEnv", _ZN2sh10TestEnvSetC1ENS_4Args3EnvENS0_7EnvEnumE);
+void sh::TestEnvSet::next()
+{
+    _current_light = _current_light + 1 < MAX_ENV ? _current_light + 1 : 0;
+    load();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_TestEnvSet_TestEnv", _ZN2sh10TestEnvSet4loadEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_TestEnvSet_TestEnv", _ZN2sh10TestEnvSet4nextEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_TestEnvSet_TestEnv", _ZN2sh10TestEnvSet4drawEb);
+void sh::TestEnvSet::draw(bool b)
+{
+    TES_ASSERT(_current_light < MAX_ENV, D_0017420C, draw_name, 109);
+    _lights[_current_light]->_env.draw(!b);
+}
 
 extern "C" {
 void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_F2B2C");

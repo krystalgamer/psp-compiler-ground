@@ -1,37 +1,120 @@
 /* lang: c++ */
-/* cflags: -O3 -fno-exceptions */
+/* cflags: -O3 -fno-exceptions -fno-merge-constants */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+/* weak instances stay asm */
+extern template class std::vector<vector_font::Console::Line>;
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/vector_font_Console", _Z41__static_initialization_and_destruction_0ii_28E88);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/vector_font_Console", _ZN11vector_font7ConsoleC2Ejj);
+vector_font::Console::Console(unsigned int w, unsigned int h)
+    : vx(0.5f), vy(0.5f), sx(1), sy(1), r(1), g(1), b(1), enabled(true)
+{
+    resize(w, h);
+    sx = 1.0f / _num_columns;
+    sy = 1.0f / _num_lines;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/vector_font_Console", _ZN11vector_font7ConsoleC1Ejj);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/vector_font_Console", _ZN11vector_font7Console6resizeEjj);
+void vector_font::Console::resize(unsigned int w, unsigned int h)
+{
+    _num_columns = w;
+    _num_lines = h;
+    _lines.resize(h);
+    for (std::vector<Line>::iterator l = _lines.begin(); l != _lines.end(); ++l) {
+        l->_text.resize(w);
+        l->_pos = 0;
+    }
+    clear();
+}
 
 void vector_font::Console::enable(bool e)
 {
     enabled = e;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/vector_font_Console", _ZN11vector_font7Console5clearEv);
+void vector_font::Console::clear()
+{
+    if (!enabled)
+        return;
+    _cur = _lines.begin();
+    for (std::vector<Line>::iterator l = _cur; l != _lines.end(); ++l) {
+        for (std::string::iterator c = l->_text.begin(); c != l->_text.end(); ++c) {
+            *c = '@';
+            l->_pos = 0;
+        }
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/vector_font_Console", _ZN11vector_font7ConsolelsEf);
+vector_font::Console &vector_font::Console::operator<<(float f)
+{
+    if (enabled) {
+        char buf[64];
+        libc_fix::FtoA(f, buf);
+        *this << buf;
+    }
+    return *this;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/vector_font_Console", _ZN11vector_font7ConsolelsEi);
+vector_font::Console &vector_font::Console::operator<<(int i)
+{
+    if (enabled) {
+        char buf[64];
+        libc_fix::ItoA(buf, sizeof(buf), i);
+        *this << buf;
+    }
+    return *this;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/vector_font_Console", _ZN11vector_font7ConsolelsEj);
+vector_font::Console &vector_font::Console::operator<<(unsigned int i)
+{
+    if (enabled) {
+        char buf[64];
+        libc_fix::ItoA(buf, sizeof(buf), i);
+        *this << buf;
+    }
+    return *this;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/vector_font_Console", _ZN11vector_font7ConsolelsEPKc);
+vector_font::Console &vector_font::Console::operator<<(const char *s)
+{
+    if (enabled) {
+        for (; *s; s++)
+            put(*s);
+    }
+    return *this;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/vector_font_Console", _ZN11vector_font7ConsolelsESs);
+vector_font::Console &vector_font::Console::operator<<(const std::string s)
+{
+    if (enabled) {
+        for (std::string::const_iterator c = s.begin(); c != s.end(); ++c)
+            put(*c);
+    }
+    return *this;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/vector_font_Console", _ZN11vector_font7ConsolelsEc);
+vector_font::Console &vector_font::Console::operator<<(char c)
+{
+    if (enabled)
+        put(c);
+    return *this;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/vector_font_Console", _ZN11vector_font7Console3putEc);
+void vector_font::Console::put(char c)
+{
+    if (_num_columns && _num_lines) {
+        if (c == '\n' || _cur->full()) {
+            ++_cur;
+            if (_cur == _lines.end())
+                _cur = _lines.begin();
+            _cur->_pos = 0;
+        }
+        if (c != '\n')
+            _cur->put(c);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/vector_font_Console", _ZNK11vector_font7Console4drawEv);
 

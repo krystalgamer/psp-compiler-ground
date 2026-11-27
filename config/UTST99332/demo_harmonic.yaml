@@ -383,6 +383,8 @@ segments:
       - { start: 0x15717C, type: rodata, name: gcc_except_table, linker_section: .gcc_except_table }
       - { start: 0x159838, type: prxpad, order: .rodata }
       - [0x159840, rodata, asm/rodata_1597C0]
+      - [0x160D2C, .rodata, main_objs/vector_font_Console]
+      - [0x160D3C, rodata, asm/rodata_160CBC]
       - [0x165678, .rodata, main_objs/math_SphericalCoord]
       - [0x1656A8, .rodata, main_objs/math_ZYZ]
       - [0x1656C8, rodata, asm/rodata_165648]
@@ -392,6 +394,8 @@ segments:
       - [0x16FDE4, rodata, asm/rodata_16FD64]
       - [0x171218, .rodata, main_objs/sh_SquareMap]
       - [0x171268, rodata, asm/rodata_1711E8]
+      - [0x1712A0, .rodata, main_objs/sh_TestEnvSet_TestEnv]
+      - [0x1712D0, rodata, asm/rodata_171250]
       - [0x1776F0, .rodata, gcc-3.3.3/libstdc__-v3/libsupc__/eh_personality]
       - [0x177724, rodata, asm/rodata_1776A4]
       - [0x17775C, .rodata, gcc-3.3.3/libstdc__-v3/libsupc__/pure]

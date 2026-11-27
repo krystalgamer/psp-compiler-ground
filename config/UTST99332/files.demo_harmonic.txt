@@ -36,6 +36,12 @@ bss 0x18DED0 main_objs/sh_Matrix
 bss 0x18DFA8 -
 bss 0x18E468 main_objs/sh_SquareMap
 bss 0x18E4EC -
+# vector_font_Console: the float pools of Console::Console (C2, C1)
+rodata 0x160CAC main_objs/vector_font_Console
+rodata 0x160CBC -
+# sh_TestEnvSet_TestEnv: the float pools of TestEnvSet::TestEnvSet (C2, C1)
+rodata 0x171220 main_objs/sh_TestEnvSet_TestEnv
+rodata 0x171250 -
 0x135B4 glut_ReshapeFunc         1.6.1.internal  main_objs/glut_ReshapeFunc.cpp
 0x13E64 app3d_Callbacks          1.6.1.internal  main_objs/app3d_Callbacks.cpp
 0x163B4 common_Date              1.6.1.internal  main_objs/common_Date.cpp   # no static init

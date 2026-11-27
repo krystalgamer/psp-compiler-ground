@@ -37,6 +37,7 @@ extern Vram vram;
 
 namespace psp {
 void StartMainThread();
+const char *GetKernelErrName(unsigned int);
 }
 namespace app {
 class Callbacks;
@@ -216,6 +217,18 @@ namespace common {
 /* defined as { T t = a; a = b; b = t; } (byte-exact); only declared while
    units still have its instances as asm (else: duplicate symbols) */
 template<class T> void Swap(T &a, T &b);
+/* v[i] = x, growing v as needed */
+template<class V, class T> void setAt(unsigned int i, V &v, T x);
+#ifdef DEMO_TEMPLATE_DEFS
+template<class V, class T> void setAt(unsigned int i, V &v, T x)
+{
+    /* near-miss (sh_TestEnvSet_TestEnv's instance: register allocation differs) */
+    unsigned int n = i + 1;
+    if (i >= v.size())
+        v.resize(n);
+    v[i] = x;
+}
+#endif
 
 template<class T> class t_array {
 public:
@@ -405,9 +418,20 @@ extern bool no_crash;
 void NoCrash(bool);
 class File {
 public:
+    enum Pos { };
     File();
-    bool is_open() const;
+    ~File();
+    unsigned int write(const void *, unsigned int, unsigned int);
+    unsigned int read(void *, unsigned int, unsigned int);
+    bool open(const char *, const char *);
     int flush();
+    bool close();
+    bool puts(const char *);
+    bool getc(char &);
+    long bytesize();
+    long tell();
+    bool seek(long, Pos);
+    bool is_open() const;
 private:
     struct Handle {
         Handle() : fd(-1), pos(0) {}
@@ -451,6 +475,12 @@ public:
     static Log &get(Channel);
     ~Log();
     Log &operator<<(const char *);
+    Log &operator<<(const unsigned char *);
+    Log &operator<<(const std::string &);
+    Log &operator<<(bool);
+    Log &operator<<(int);
+    Log &operator<<(unsigned int);
+    Log &operator<<(float);
     void useHexa(bool);
 private:
     bool flags[3];
@@ -486,6 +516,7 @@ void DepthBlurToggleSpread();
 
 namespace libc_fix {
 float AtoF(const char *);
+void FtoA(float, char *);
 void ItoA(char *, unsigned int, int);
 void ItoAX(char *, unsigned int, int);
 int AtoI(const char *);
@@ -498,46 +529,43 @@ template<class T, class F> T convert(const F &);
 namespace vector_font {
 class Console {
 public:
+    struct Line {
+        bool full() const { return _pos >= _text.size(); }
+        void put(char c)
+        {
+            if (!full()) {
+                _text[_pos] = c;
+                _pos++;
+            }
+        }
+        std::string _text;
+        unsigned int _pos;
+    };
+    Console(unsigned int, unsigned int);
+    void resize(unsigned int, unsigned int);
+    void enable(bool e);
+    void clear();
+    Console &operator<<(float);
+    Console &operator<<(int);
+    Console &operator<<(unsigned int);
+    Console &operator<<(const char *);
+    Console &operator<<(const std::string);
+    Console &operator<<(char);
+    void put(char);
+    void draw() const;
     void setViewport(float, float);
     void setColor(float, float, float);
 private:
-    char _pad0[0x18];
-    float vx, vy;       /* 0x18 */
-    char _pad20[8];
-    float r, g, b;      /* 0x28 */
-    bool enabled;       /* 0x34 */
-public:
-    void enable(bool e);
+    unsigned int _num_columns;          /* 0x00 */
+    unsigned int _num_lines;            /* 0x04 */
+    std::vector<Line> _lines;           /* 0x08 */
+    std::vector<Line>::iterator _cur;   /* 0x14 */
+    float vx, vy;                       /* 0x18 */
+    float sx, sy;                       /* 0x20 */
+    float r, g, b;                      /* 0x28 */
+    bool enabled;                       /* 0x34 */
 };
 }
-
-class CubeMap {
-public:
-    enum FaceEnum { };
-    struct Face {
-        char _pad0[0x58];
-        void init(FaceEnum f) { id = f; }
-        FaceEnum id;            /* 0x58 */
-        char _pad5c[0x8];
-    };
-    void draw_face_w(FaceEnum);
-    void draw_cube_w();
-    void init_face(FaceEnum);
-    void setCubeSize(float);
-    void setLinear(bool);
-    void setResize(int);
-    const std::string &getBasename() const;
-    void toggleTextures();
-    void toggleFiltering();
-    void toggleWireframe();
-    Face faces[6];              /* 0x000 */
-    std::string basename;       /* 0x258 */
-    bool linear;                /* 0x25C */
-    float cube_size;            /* 0x260 */
-    int resize;                 /* 0x264 */
-    bool textures;              /* 0x268 */
-    bool wireframe;             /* 0x269 */
-};
 
 namespace textures {
 class Texture;
@@ -684,13 +712,22 @@ public:
 namespace common {
 class FileDump {
 public:
+    FileDump(unsigned int);
+    virtual ~FileDump();
+    void reference_owned_data();
+    void setArray(const unsigned char *, unsigned int);
+    void failed(const char *, const char *, const char *);
+    int save(const char *);
+    int load(const char *);
     void binary();
     void text();
     void blocking(bool);
     /* data */
-    char _p0[0x20];
-    bool _f20;
-    bool _f21;
+    t_array<unsigned char> _data;       /* 0x04 */
+    const unsigned char *_ptr;          /* 0x18 */
+    unsigned int _size;                 /* 0x1C */
+    bool _f20;                          /* 0x20: binary */
+    bool _f21;                          /* 0x21: blocking (assert on failure) */
 };
 }
 
@@ -876,5 +913,44 @@ void TgaSnapshot(const char *);
 void TgaAutoNamedSnapshot(const char *);
 int closestPow2(int, bool);
 }
+
+class CubeMap {
+public:
+    enum FaceEnum { };
+    struct Face {
+        class Texture : public ::textures::Texture {
+        public:
+            Texture();
+            ~Texture();
+            int _f50;
+            unsigned int name;  /* 0x54: GL texture name */
+        };
+        void init(FaceEnum f) { id = f; }
+        Texture tex;            /* 0x00 */
+        FaceEnum id;            /* 0x58 */
+        char _pad5c[0x8];
+    };
+    CubeMap();
+    void setBasename(const char *);
+    void load();
+    void draw(bool);
+    void draw_face_w(FaceEnum);
+    void draw_cube_w();
+    void init_face(FaceEnum);
+    void setCubeSize(float);
+    void setLinear(bool);
+    void setResize(int);
+    const std::string &getBasename() const;
+    void toggleTextures();
+    void toggleFiltering();
+    void toggleWireframe();
+    Face faces[6];              /* 0x000 */
+    std::string basename;       /* 0x258 */
+    bool linear;                /* 0x25C */
+    float cube_size;            /* 0x260 */
+    int resize;                 /* 0x264 */
+    bool textures;              /* 0x268 */
+    bool wireframe;             /* 0x269 */
+};
 
 #endif

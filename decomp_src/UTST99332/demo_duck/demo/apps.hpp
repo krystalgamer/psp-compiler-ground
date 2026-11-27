@@ -30,17 +30,9 @@ private:
     ControledObject _control;   /* 0x11EC */
     char _pad11f0[0x1244 - 0x11F0];
     sh::TestEnvSet _env;        /* 0x1244 */
-    char _pad1245[0x1258 - 0x1245];
+    char _pad1254[0x1258 - 0x1254];
     float _anim_time;           /* 0x1258 */
 };
-
-/* stand-ins until the owners' headers declare them (asm-labelled) */
-namespace apps_ext {
-void Group_traverse(scene::Group *, scene::TraversalType, sgl::Frustum &, const math::matrix &, const math::matrix &,
-                    const math::matrix &, const sh::VectorRGB &, float)
-    __asm__("_ZN5scene5Group8traverseENS_13TraversalTypeERN3sgl7FrustumERKN4math6matrixES8_S8_RKN2sh9VectorRGBEf");
-void TestEnvSet_draw(sh::TestEnvSet *, bool) __asm__("_ZN2sh10TestEnvSet4drawEb");
-}
 
 class VertexColorEnv {
 public:
@@ -86,9 +78,7 @@ private:
     /* app3d::Callbacks' view frustum (0x34; sgl::Frustum is declared after base.hpp) */
     sgl::Frustum &frustum() { return *(sgl::Frustum *)((char *)this + 0x34); }
     char _pad[0xF08 - 0xEE8];
-    char _graph[0xF78 - 0xF08];                         /* 0xF08 scene::Graph */
-    sh::VectorRGB _graph_light;                         /* 0xF78 (in the Graph) */
-    char _pad_fa8[0x1000 - 0xFA8];
+    scene::Graph _graph;                                /* 0xF08 */
     common::handle<scene::Group> _kitchen;              /* 0x1000 */
     common::handle<scene::Group> _sink_background;      /* 0x1008 */
     common::handle<scene::Group> _sink_objects;         /* 0x1010 */
@@ -107,7 +97,7 @@ private:
     char _pad153c[0x1550 - 0x153C];
     WaterPatch _water;                                  /* 0x1550 */
     bool _f1638;                                        /* 0x1638 */
-    sh::TestEnvSet _env __attribute__((aligned(4)));    /* 0x163C */
+    sh::TestEnvSet _env;                                /* 0x163C */
 };
 
 #endif
