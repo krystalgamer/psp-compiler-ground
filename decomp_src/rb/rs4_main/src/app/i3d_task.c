@@ -50,7 +50,36 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", i3dTask_EzModel
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", i3dTask_Model);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", i3dTask_Stage);
+extern unsigned char D_000FD5C4, D_000FD608;
+int taskDefaultMsg();
+typedef struct { unsigned char b0; char p[3]; int f4; int f8; int fC; } StageArg;
+typedef struct { char p[0x24]; unsigned char b24; char p25[3]; int f28; int f2C; char p30[0x10]; int f40; int f44; char p48[8]; float f50; } StageTask;
+int i3dMakeStage(int, int, float);
+int i3dTask_Stage(StageTask *t, unsigned int msg, StageArg *a, int d)
+{
+	switch (msg) {
+	case 0:
+		if (t == NULL)
+			consPrintf(&D_000FD5C4, &D_000FD5E0, 0x172, "i3dTask_Stage", &D_000FD608);
+		t->f28 = -1;
+		t->b24 = a->b0;
+		t->f2C = 0;
+		t->f50 = a->f4 * 5000;
+		t->f40 = a->f8;
+		t->f44 = a->fC;
+		return (int)t;
+	case 1:
+	case 2:
+		return 0;
+	case 4:
+		return (int)t;
+	case 3:
+		i3dMakeStage(t->f40, t->f44, 0.0f);
+		return 0;
+	default:
+		return taskDefaultMsg(t, msg, a, d);
+	}
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD750);
 
