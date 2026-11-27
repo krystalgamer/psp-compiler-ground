@@ -326,3 +326,12 @@ rodata 0x16CF68 main_objs/scene_Texture
 rodata 0x16CFD0 -
 bss 0x18FEEC main_objs/scene_Texture
 bss 0x18FF70 -
+# scene_Graph_5, sh_PolarFunction: the header statics' float pools; .bss: the header statics
+rodata 0x16B590 main_objs/scene_Graph_5
+rodata 0x16B5AC -
+bss 0x18F5AC main_objs/scene_Graph_5
+bss 0x18F6B0 -
+rodata 0x1734A0 main_objs/sh_PolarFunction
+rodata 0x1734BC -
+bss 0x19152C main_objs/sh_PolarFunction
+bss 0x1915B0 -

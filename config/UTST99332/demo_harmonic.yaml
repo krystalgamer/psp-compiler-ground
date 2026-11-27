@@ -406,6 +406,8 @@ segments:
       - [0x165BA4, rodata, asm/rodata_165B24]
       - [0x165F44, .rodata, main_objs/math_quaternion_quaternion]
       - [0x165F50, rodata, asm/rodata_165ED0]
+      - [0x1686E8, .rodata, main_objs/scene_Graph_5]
+      - [0x168704, rodata, asm/rodata_168684]
       - [0x169A60, .rodata, main_objs/draw_mesh_enabled]
       - [0x169A70, rodata, asm/rodata_1699F0]
       - [0x16A0C0, .rodata, main_objs/scene_Texture]
@@ -430,6 +432,8 @@ segments:
       - [0x16FDE4, rodata, asm/rodata_16FD64]
       - [0x16FE34, .rodata, main_objs/sh_PRT]
       - [0x16FE4C, rodata, asm/rodata_16FDCC]
+      - [0x1705F8, .rodata, main_objs/sh_PolarFunction]
+      - [0x170614, rodata, asm/rodata_170594]
       - [0x171218, .rodata, main_objs/sh_SquareMap]
       - [0x171268, rodata, asm/rodata_1711E8]
       - [0x1712A0, .rodata, main_objs/sh_TestEnvSet_TestEnv]
@@ -521,6 +525,8 @@ segments:
       - { start: 0x189CE4, type: .bss, vram: 0x18B6EC, name: main_objs/math_SphericalCoord }
       - { start: 0x189CE4, type: .bss, vram: 0x18B76C, name: main_objs/math_ZYZ }
       - { start: 0x189CE4, type: bss, vram: 0x18B7EC, name: bss_18B7EC }
+      - { start: 0x189CE4, type: .bss, vram: 0x18C12C, name: main_objs/scene_Graph_5 }
+      - { start: 0x189CE4, type: bss, vram: 0x18C230, name: bss_18C230 }
       - { start: 0x189CE4, type: .bss, vram: 0x18CA6C, name: main_objs/scene_Texture }
       - { start: 0x189CE4, type: bss, vram: 0x18CAF0, name: bss_18CAF0 }
       - { start: 0x189CE4, type: .bss, vram: 0x18D9C4, name: main_objs/math_TransformStackFunc }
@@ -529,6 +535,8 @@ segments:
       - { start: 0x189CE4, type: bss, vram: 0x18DCA0, name: bss_18DCA0 }
       - { start: 0x189CE4, type: .bss, vram: 0x18DED0, name: main_objs/sh_Matrix }
       - { start: 0x189CE4, type: bss, vram: 0x18DFA8, name: bss_18DFA8 }
+      - { start: 0x189CE4, type: .bss, vram: 0x18E0AC, name: main_objs/sh_PolarFunction }
+      - { start: 0x189CE4, type: bss, vram: 0x18E130, name: bss_18E130 }
       - { start: 0x189CE4, type: .bss, vram: 0x18E468, name: main_objs/sh_SquareMap }
       - { start: 0x189CE4, type: bss, vram: 0x18E4EC, name: bss_18E4EC }
       - { start: 0x189CE4, type: .bss, vram: 0x19740C, name: gcc-3.3.3/libstdc__-v3/src/ios }

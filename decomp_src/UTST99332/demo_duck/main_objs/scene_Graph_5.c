@@ -2,26 +2,14 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
+#define DEMO_STATICS_SGL
 #include "../main.hpp"
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph_5", _Z41__static_initialization_and_destruction_0ii_84AF0);
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN5scene5Graph9save_vrmlESs");
+__asm__(".globl _GLOBAL__D__ZN5scene5Graph9save_vrmlESs");
 
 void scene::Graph::save_vrml(std::string) {
 }
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_84AF0");
-void _GLOBAL__I__ZN5scene5Graph9save_vrmlESs(void);
-void _GLOBAL__D__ZN5scene5Graph9save_vrmlESs(void);
-}
-
-void _GLOBAL__I__ZN5scene5Graph9save_vrmlESs(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN5scene5Graph9save_vrmlESs(void)
-{
-    static_init(0, 0xFFFF);
-}
-
