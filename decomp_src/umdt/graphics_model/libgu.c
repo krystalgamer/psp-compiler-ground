@@ -549,6 +549,7 @@ int sceGuFinishId(unsigned int id)
 {
 	GuContext *context;
 	int size;
+
 	id &= 0xffff;
 	if (__aw_list_mode == 0 || __aw_list_mode == 2) {
 		send_commandi(15, id);
