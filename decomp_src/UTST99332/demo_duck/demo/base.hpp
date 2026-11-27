@@ -1013,6 +1013,7 @@ public:
     void sparse(unsigned char);
     void checker(unsigned char, unsigned char);
     void checker(unsigned char);
+    void diagonal(unsigned char, bool);
     unsigned char _mask[ROWS][ROW_BYTES];
 };
 class TurnTable : public PositioningInterface {
