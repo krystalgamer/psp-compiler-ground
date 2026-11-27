@@ -46,6 +46,9 @@ int mes_array_sort_compare(MesContext *ctx, MesValue fn, MesValue x, MesValue y)
 int *mes_util_vals(int n, int a);
 MesValue mes_eval(MesContext *ctx, MesValue fn, int *args, MesObject *thisobj, int f);
 int mes_string_compare(void *a, void *b);
+void mes_util_string_put(void *s, unsigned short c);
+void mes_util_string_put_string(void *s, MesValue v);
+MesValue mes_eval_to_object(MesContext *ctx, MesValue v);
 MesArray *mes_array_new(MesContext *ctx, unsigned int len)
 {
     MesArray *a = mes_gc_alloc(ctx, 6);
@@ -190,14 +193,84 @@ void mes_array_initialize(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_array", mes_array_constructor);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_array", mes_array_join);
+MesValue mes_array_join(MesContext *ctx, int sep)
+{
+    MesValue t = (MesValue)ctx->frame->thisobj;
+    MesValue v;
+    unsigned int n;
+    unsigned int i;
+    void *s;
+
+    v = mes_eval_object_get(ctx, t, D_005852E4);
+    n = 0;
+    if (v != 0x20)
+        n = mes_eval_to_uint32(ctx, v);
+    if (sep != 0)
+        sep = mes_eval_to_string(ctx, sep);
+    *--ctx->sp = sep;
+    s = mes_util_string_new();
+    for (i = 0; i < n; i++) {
+        if (i != 0) {
+            if ((sep & 3) == 3)
+                mes_util_string_put_string(s, sep);
+            else
+                mes_util_string_put(s, ',');
+        }
+        v = mes_eval_object_get(ctx, t, MES_INT(i));
+        if (v != 0 && v != 0x20) {
+            if (v != 4)
+                v = mes_eval_to_string(ctx, v);
+        }
+        if ((v & 3) == 3)
+            mes_util_string_put_string(s, v);
+    }
+    ctx->sp++;
+    v = mes_string_new3(ctx, s);
+    mes_util_string_free(s);
+    return v;
+}
 
 MesValue mes_array_to_string(MesContext *ctx)
 {
     return mes_array_join(ctx, 0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_array", mes_array_to_locale_string);
+MesValue mes_array_to_locale_string(MesContext *ctx)
+{
+    MesValue t = (MesValue)ctx->frame->thisobj;
+    MesValue v;
+    MesValue f;
+    unsigned int n;
+    unsigned int i;
+    void *s;
+
+    v = mes_eval_object_get(ctx, t, D_005852E4);
+    n = 0;
+    if (v != 0x20)
+        n = mes_eval_to_uint32(ctx, v);
+    s = mes_util_string_new();
+    for (i = 0; i < n; i++) {
+        if (i != 0)
+            mes_util_string_put(s, ',');
+        v = mes_eval_object_get(ctx, t, MES_INT(i));
+        if (v != 0 && v != 0x20 && v != 4) {
+            v = mes_eval_to_object(ctx, v);
+            *--ctx->sp = v;
+            f = mes_eval_object_get(ctx, v, mes_ids[0xFC / 4]);
+            if (MES_IS_OBJECT(f) && (((MesObject *)f)->gc->kind == 3 || ((MesObject *)f)->gc->kind == 4)) {
+                *--ctx->sp = f;
+                f = mes_eval(ctx, f, NULL, (MesObject *)v, 0);
+                ctx->sp++;
+                if ((f & 3) == 3)
+                    mes_util_string_put_string(s, f);
+            }
+            ctx->sp++;
+        }
+    }
+    v = mes_string_new3(ctx, s);
+    mes_util_string_free(s);
+    return v;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_array", mes_array_concat);
 
