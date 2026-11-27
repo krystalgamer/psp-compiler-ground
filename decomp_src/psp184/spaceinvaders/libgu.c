@@ -271,17 +271,45 @@ void sceGuTerm(void)
 	sceGeUnsetCallback(intrCode);
 }
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", D_0007F9FC);
+extern const float D_0007FB1C;
+void sceGuSpecular(float power);
+void sceGuTexScale(float u, float v);
+void sceGuStart(int type, void *list, int size)
+{
+	GuContext *context = &_ctx[type];
+	GuDrawBuffer *fb = &FBuf;
+	unsigned int *local_list = (unsigned int *)(((unsigned int)list) | 0x40000000);
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", D_0007FA3C);
+	context->parent_context = __aw_list_mode;
+	context->start = local_list;
+	context->current = local_list;
+	pList = context;
+	__aw_list_mode = type;
+	if (!type) {
+		intrParam.index = 0;
+		queid[0] = sceGeListEnQueue(local_list, local_list, intrCode, 0);
+	}
+	if (!gu_init_34A318) {
+		int dither_matrix[16] = { -4, 0, -3, 1, 2, -2, 3, -1, -3, 1, -4, 0, 3, -1, 2, -2 };
+		float one;
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", D_0007FA50);
+		sceGuSetDither(dither_matrix);
+		sceGuPatchDivide(16, 16);
+		sceGuColorMaterial(7);
+		one = D_0007FB1C;
+		sceGuSpecular(one);
+		sceGuTexScale(one, one);
+		gu_init_34A318 = 1;
+	}
+	if (!__aw_list_mode) {
+		int width = fb->frame_width;
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", D_0007FAA8);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", D_0007FB00);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuStart);
+		if (width) {
+			send_commandi(156, (*(unsigned int *)&fb->frame_buffer) & 0xffffff);
+			send_commandi(157, (((*(unsigned int *)&fb->frame_buffer) & 0xff000000) >> 8) | width);
+		}
+	}
+}
 
 void sceGuSetDither(const int *matrix)
 {
@@ -357,7 +385,29 @@ int sceGuCheckList(void)
 	return (int)pList->current - (int)pList->start;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuSync);
+int sceGuSync(int mode, int what)
+{
+	switch (mode) {
+	case 0:
+		return sceGeDrawSync(what);
+	case 1:
+	case 2:
+	default:
+		return 0;
+	case 3:
+		return sceGeListSync(queid[0], what);
+	case 4:
+		return sceGeListSync(queid[1], what);
+	}
+}
+
+INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", D_0007FA50);
+
+INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", D_0007FAA8);
+
+INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", D_0007FB00);
+
+const float D_0007FB1C = 1.0f;
 
 void sceGuSignalSync(int signal)
 {
