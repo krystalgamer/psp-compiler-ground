@@ -93,7 +93,31 @@ void mes_gc_register(GcMethod *m, int objsize, int perpage, int threshold)
     t->threshold = threshold;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_gc", mes_gc_mark);
+void mes_gc_mark(unsigned int v)
+{
+    GcMethod *m;
+
+    switch (v & 3) {
+    case 0:
+        if (v > 0x20 && !(*(unsigned int *)v & 1)) {
+            m = *(GcMethod **)v;
+            if (m->mark != NULL) {
+                m->mark((void *)v);
+            } else {
+                *(unsigned int *)v |= 1;
+            }
+        }
+        break;
+    case 1:
+        break;
+    case 2:
+        *(unsigned int *)(v & ~3) |= 1;
+        break;
+    case 3:
+        *(unsigned int *)(v & ~3) |= 1;
+        break;
+    }
+}
 
 void mes_gc_gc(void)
 {
@@ -148,7 +172,48 @@ void mes_gc_gc(void)
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_gc", mes_gc_alloc);
+int *mes_gc_alloc(GcCtx *ctx, int kind)
+{
+    GcTable *t = &mes_gc_table[kind];
+    GcPage *page;
+    int *o;
+    int i;
+
+    o = t->freelist;
+    if (o == NULL) {
+        if (mes_gc_enabled && t->nalloc >= t->threshold) {
+            mes_gc_gc();
+            o = t->freelist;
+        }
+        if (o == NULL) {
+            page = MEM_malloc(0, t->objsize * t->perpage + 8);
+            if (page != NULL) {
+                mes_memory_zero(page, t->objsize * t->perpage + 8);
+                page->next = t->pages;
+                t->pages = page;
+                o = (int *)(page + 1);
+                for (i = 0; i < t->perpage; i++) {
+                    *o = (int)t->freelist | 2;
+                    t->freelist = o;
+                    o = (int *)((char *)o + t->objsize);
+                }
+                t->nfree += t->perpage;
+            }
+            o = t->freelist;
+        }
+    }
+    if (o != NULL) {
+        t->freelist = (int *)(*o & ~2);
+        t->nfree--;
+        t->nalloc++;
+        *o = (int)t->method;
+        return o;
+    }
+    if (ctx != NULL) {
+        ctx->error = D_00585288;
+    }
+    return NULL;
+}
 
 void mes_gc_free(void)
 {
