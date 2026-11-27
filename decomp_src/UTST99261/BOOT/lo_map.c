@@ -20,10 +20,10 @@ extern int D_001F5E20;
 int DOMStringcasecmpCharFast(DOMString *s, char *name);
 void *Node_getBox(void *node);
 typedef struct { double x; double y; double angle; int pad[2]; } MAPPT;
-typedef struct { MAPPT *pts; int n; int u8_; int uC; double maxx; double maxy; double minx; double miny; int center; } MAPPOLY;
+typedef struct { MAPPT *pts; int n; int cap; int uC; double maxx; double maxy; double minx; double miny; int center; } MAPPOLY;
 double atan2(double y, double x);
 typedef struct MAPAREA { s16 type; s16 u2; void *x4; void *x8; struct MAPAREA *next; MAPPOLY poly; } MAPAREA;
-void parseCoords(int type, char *coords, MAPPOLY *p);
+void parseCoords(s16 type, char *coords, void *p);
 int strcasecmp(const char *a, const char *b);
 typedef struct { char *name; int (*func)(void *node, void *box, void *a2); } TagBranch;
 extern TagBranch jt[];
@@ -35,6 +35,10 @@ int DOMStringcasecmpChar(DOMString *s, char *str);
 typedef struct { s8 kind; int x; int y; int w; int h; MAPAREA *area; } MAPINFO;
 typedef struct { int x; int y; double r; } MAPCIRCLE;
 extern const double D_00139300;
+void *MEM_realloc(void *pool, void *p, unsigned int size);
+int atoi(const char *s);
+char *strchr(const char *s, int c);
+extern const double D_001392D8;
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", parseCoords);
 
 #ifndef NULL
@@ -59,7 +63,33 @@ void initAreaBuffer(void *arg0) {
     M2C_FIELD(arg0, int *, 0) = MEM_malloc(0, 0x140);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", insertBuffer_90298);
+int insertBuffer_90298(int x, int y, MAPPOLY *p) {
+    if (p->n >= p->cap) {
+        p->cap = p->cap * 2;
+        p->pts = MEM_realloc(NULL, p->pts, p->cap * sizeof(MAPPT));
+    }
+    p->pts[p->n].x = x;
+    p->pts[p->n].y = y;
+    if (p->n == 0) {
+        p->maxx = x;
+        p->maxy = y;
+        p->minx = x;
+        p->miny = y;
+    }
+    if (x > p->maxx) {
+        p->maxx = x;
+    } else if (x < p->minx) {
+        p->minx = x;
+        p->center = p->n;
+    }
+    if (y > p->maxy) {
+        p->maxy = y;
+    } else if (y < p->miny) {
+        p->miny = y;
+    }
+    p->n++;
+    return 0;
+}
 
 void calcAngle(MAPPOLY *a) {
     int i;
