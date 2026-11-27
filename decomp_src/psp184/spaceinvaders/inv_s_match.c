@@ -428,7 +428,58 @@ static int SprMoveEnemyChk(int a, int b)
 	return 1;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", SprMoveEnemyNomal);
+void SprMoveEnemyNomal(int *pi, int *pd)
+{
+	int d = *pd;
+	int x;
+	int i = *pi;
+	INV_W *w;
+
+	if (d & 0x10) {
+		w = &((INV_W *)&inv)[i];
+		if (w->f4 == 1) {
+			x = w->fC - 1;
+			if (SprMoveEnemyChk(x, w->f10))
+				w->fC -= 2;
+			else
+				w->fC -= 1;
+		} else {
+			x = w->fC + 1;
+			if (SprMoveEnemyChk(x, w->f10))
+				w->fC += 2;
+			else
+				w->fC += 1;
+		}
+		i--;
+		*pi = i;
+	} else if (d & 0x20) {
+		w = &((INV_W *)&inv)[i];
+		if (w->f4 == 2) {
+			x = w->fC + 1;
+			if (SprMoveEnemyChk(x, w->f10))
+				w->fC += 2;
+			else
+				w->fC += 1;
+		} else {
+			x = w->fC - 1;
+			if (SprMoveEnemyChk(x, w->f10))
+				w->fC -= 2;
+			else
+				w->fC -= 1;
+		}
+		i--;
+		*pi = i;
+	} else {
+		if (((INV_W *)&inv)[i].spr) {
+			if (d == 0)
+				((INV_W *)&inv)[i].f10++;
+			else if (d == 1)
+				((INV_W *)&inv)[i].f10--;
+			i--;
+		*pi = i;
+		}
+	}
+}
 
 void SprMoveEnemySub(void)
 {
