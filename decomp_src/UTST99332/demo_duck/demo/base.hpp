@@ -154,6 +154,8 @@ class shared_object_base : public handle_internal::data_owner {
 public:
     shared_object_base() { d = new handle_internal::data(this); }
     virtual ~shared_object_base();
+    /* the data block is the object's identity: assignment keeps it (Frustum's operator= copies from 0x8) */
+    shared_object_base &operator=(const shared_object_base &) { return *this; }
 };
 /* linkonce copies: app3d_Callbacks.o (duck) / CityApp.o (harmonic) defines DEMO_LINKONCE_shared_object_base */
 #if DEMO_LINKONCE_shared_object_base
@@ -839,13 +841,16 @@ public:
     const common::handle<glutils::PositioningInterface> &getCamera() const;
     void replaceCamera(common::handle<glutils::PositioningInterface>);
     void setCameraFilename(const char *);
+    void setFrustum(const sgl::Frustum &);
+    void resetCamera();
 protected:
     /* the view frustum (0x34; sgl::Frustum is declared after base.hpp) */
     sgl::Frustum &frustum() { return *(sgl::Frustum *)((char *)this + 0x34); }
 private:
     std::string _camera_filename;                           /* 0x8 */
     common::handle<glutils::PositioningInterface> _camera;  /* 0xC */
-    char _pad14[0xEE1 - 0x14];
+    math::Frame _initial_frame;                             /* 0x14 */
+    char _pad34[0xEE1 - 0x34];
     bool grid;          /* 0xEE1 */
     bool pivot;         /* 0xEE2 */
     float scene_scale;  /* 0xEE4 */

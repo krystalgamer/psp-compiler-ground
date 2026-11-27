@@ -39,7 +39,10 @@ void app3d::Callbacks::setCameraFilename(const char *name)
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/app3d_Callbacks", _ZN5app3d9Callbacks10loadCameraEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/app3d_Callbacks", _ZN5app3d9Callbacks11resetCameraEv);
+void app3d::Callbacks::resetCamera()
+{
+    getCamera()->set(_initial_frame);
+}
 
 common::handle<glutils::PositioningInterface> app3d::Callbacks::getCamera()
 {
@@ -85,7 +88,10 @@ void app3d::Callbacks::togglePivot()
     pivot = !pivot;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/app3d_Callbacks", _ZN5app3d9Callbacks10setFrustumERKN3sgl7FrustumE);
+void app3d::Callbacks::setFrustum(const sgl::Frustum &f)
+{
+    frustum() = f;
+}
 
 extern "C" {
 void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_13E64");

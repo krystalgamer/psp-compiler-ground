@@ -1016,7 +1016,6 @@ public:
     float getTop() const;
     /* data */
     bool _f8;
-    char _p9[0x3];
     float _fC;
     float _f10;
     float _f14;
@@ -1028,6 +1027,11 @@ public:
     float _f2C;
     float _f30;
     float _f34;
+    float _f38;
+    float _f3C;
+    struct Data40 {
+        int w[0x1C8 / 4];
+    } _f40;
 };
 #if SGL_LINKONCE_Frustum
 SGL_LINKONCE_BEGIN
