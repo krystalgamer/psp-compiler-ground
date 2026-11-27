@@ -131,6 +131,9 @@ M2C_UNK HST_flushHistoryGarbageList();              /* extern */
 void *HST_getHistoryGarbageList();                  /* extern */
 
 
+int getPreferredFontSize();
+void setBoxSize(RBOX *b, int w, int h);
+typedef struct UIFTBL { int v[1][7]; } UIFTBL;
 int restoreSpaceText(RBOX *box) {
     char *old;
     char *p;
@@ -554,7 +557,20 @@ void resizeTextSize(RBOX *box) {
     TXT(box)->merge = 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", resizeImageSize);
+void resizeImageSize(RBOX *box) {
+    int size;
+    int w;
+    int h;
+
+    if (lo_global.unk68 != lo_global.unk6C) {
+        size = getPreferredFontSize();
+        box->style->unk64 = ((UIFTBL *)ui_global)->v[box->style->unk6A][size];
+    }
+    w = box->geom->unk4;
+    h = box->geom->unk8;
+    setBoxSize(box, w, h);
+    box->flags40 &= ~4;
+}
 
 void resizeButtonSize(RBOX *box) {
     if (lo_global.unk68 != lo_global.unk6C) {
