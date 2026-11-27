@@ -23,6 +23,13 @@ M2C_UNK addCSSRule();                               /* extern */
 typedef struct CSSSELN { s16 type; s16 pad; int pad2[5]; struct CSSSELN *next; } CSSSELN;
 typedef struct CSSSELLIST { s16 type; s16 pad; int x4; int n; CSSSELN *head; } CSSSELLIST;
 char *CSSSelectorList_getCssText(void *s);
+typedef struct CSSPV {
+    short type;
+    short pad;
+    int x4;
+    void *v[4];
+} CSSPV;
+void *UCS_strdup(void *);
 void *CSSStyleDeclaration_getPropertyDeclaration(void *d, u16 *name) {
     void *p;
     for (p = d; p != NULL; p = M2C_FIELD(p, void **, 0x18)) {
@@ -1213,7 +1220,113 @@ void freeCSSPrimitiveValue(void *v, int all) {
         MEM_free(0, v);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", duplicateCSSPrimitiveValue);
+CSSPV *duplicateCSSPrimitiveValue(CSSPV *s) {
+    CSSPV *d;
+
+    d = MEM_calloc(0, 0x18);
+    if (d == NULL)
+        return NULL;
+    d->type = s->type;
+    switch (s->type) {
+    case 0x13:
+    case 0x14:
+    case 0x16:
+    case 0x1A:
+        if (s->v[0] != NULL) {
+            d->v[0] = UCS_strdup(s->v[0]);
+            if (d->v[0] == NULL)
+                goto fail;
+        }
+        break;
+    case 0x17:
+        if (s->v[0] != NULL) {
+            d->v[0] = UCS_strdup(s->v[0]);
+            if (d->v[0] == NULL)
+                goto fail;
+        }
+        if (s->v[1] != NULL) {
+            d->v[1] = UCS_strdup(s->v[1]);
+            if (d->v[1] == NULL)
+                goto fail;
+        }
+        if (s->v[2] != NULL) {
+            d->v[2] = UCS_strdup(s->v[2]);
+            if (d->v[2] == NULL)
+                goto fail;
+        }
+        break;
+    case 0x18:
+        if (s->v[0] != NULL) {
+            d->v[0] = duplicateCSSPrimitiveValue(s->v[0]);
+            if (d->v[0] == NULL)
+                goto fail;
+        }
+        if (s->v[1] != NULL) {
+            d->v[1] = duplicateCSSPrimitiveValue(s->v[1]);
+            if (d->v[1] == NULL) {
+                if (d->v[0] != NULL)
+                    MEM_free(0, d->v[0]);
+                goto fail;
+            }
+        }
+        if (s->v[2] != NULL) {
+            d->v[2] = duplicateCSSPrimitiveValue(s->v[2]);
+            if (d->v[2] == NULL) {
+                if (d->v[0] != NULL)
+                    MEM_free(0, d->v[0]);
+                if (d->v[1] != NULL)
+                    MEM_free(0, d->v[1]);
+                goto fail;
+            }
+        }
+        if (s->v[3] != NULL) {
+            d->v[3] = duplicateCSSPrimitiveValue(s->v[3]);
+            if (d->v[3] == NULL) {
+                if (d->v[0] != NULL)
+                    MEM_free(0, d->v[0]);
+                if (d->v[1] != NULL)
+                    MEM_free(0, d->v[1]);
+                if (d->v[2] != NULL)
+                    MEM_free(0, d->v[2]);
+                goto fail;
+            }
+        }
+        break;
+    case 0x19:
+        if (s->v[0] != NULL) {
+            d->v[0] = duplicateCSSPrimitiveValue(s->v[0]);
+            if (d->v[0] == NULL)
+                goto fail;
+        }
+        if (s->v[1] != NULL) {
+            d->v[1] = duplicateCSSPrimitiveValue(s->v[1]);
+            if (d->v[1] == NULL) {
+                if (d->v[0] != NULL)
+                    MEM_free(0, d->v[0]);
+                goto fail;
+            }
+        }
+        if (s->v[2] != NULL) {
+            d->v[2] = duplicateCSSPrimitiveValue(s->v[2]);
+            if (d->v[2] == NULL) {
+                if (d->v[0] != NULL)
+                    MEM_free(0, d->v[0]);
+                if (d->v[1] != NULL)
+                    MEM_free(0, d->v[1]);
+                goto fail;
+            }
+        }
+        break;
+    case 0x15:
+    default:
+        *d = *s;
+        break;
+    }
+    return d;
+fail:
+    MEM_free(0, d);
+    return NULL;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSValue_getCssText);
 
