@@ -307,6 +307,7 @@ static unsigned int col32_vec4(const vec4 *src);
 static unsigned int col32_lerp(unsigned int src1, unsigned int src2, float rate);
 static float *float_lerp(float *dst, const float *src1, const float *src2, int dim, float rate);
 void sceGmoLayerUnloadCache( SceGmoLayer *layer ) ;
+ScePspFRect *sceGmoRectSet( ScePspFRect *r, float x, float y, float w, float h ) ;
 _Bool sceGmoLayerLoadCache( SceGmoLayer *layer, SceGmoMaterial *material ) ;
 void sceGmoModelFreeMemory2( void *addr ) ;
 void *sceGmoModelAllocUncachedBuffer( void *ptr_ptr, int size ) ;
@@ -419,7 +420,40 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_material", complement
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_material", reconfigure_material);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_material", sceGmoLayerCreate);
+SceGmoLayer *sceGmoLayerCreate( const SceGmoChunk *chunk )
+{
+	SceGmoLayer *layer = (SceGmoLayer *)sceGmoModelAllocMemory( sizeof( SceGmoLayer ) ) ;
+	if ( layer == 0 ) {
+		return 0 ;
+	}
+	layer->m_initial = 0 ;
+	layer->m_reference = 1 ;
+	layer->m_flags = 0 ;
+	layer->m_cache = 0 ;
+
+	layer->m_map_type = 0x82 ;
+	layer->m_map_factor = 1.0f ;
+	layer->m_blend_func[ 0 ] = 0 ;
+	layer->m_blend_func[ 1 ] = 2 ;
+	layer->m_blend_func[ 2 ] = 3 ;
+	layer->m_blend_func[ 3 ] = 0x00000000 ;
+	layer->m_blend_func[ 4 ] = 0x00000000 ;
+	layer->m_texture = -1 ;
+
+	layer->m_enable_mask = 0 ;
+	layer->m_enable_bits = 0 ;
+	layer->m_diffuse = 1 ;
+	layer->m_specular = 0 ;
+	layer->m_ambient = 0 ;
+
+	sceGmoRectSet( &( layer->m_tex_crop ), 0, 0, 1, 1 ) ;
+
+	if ( chunk != 0 && !sceGmoLayerLoad( layer, chunk ) ) {
+		sceGmoLayerDelete( layer ) ;
+		return 0 ;
+	}
+	return layer ;
+}
 
 void sceGmoLayerDelete( SceGmoLayer *layer )
 {
@@ -430,7 +464,34 @@ void sceGmoLayerDelete( SceGmoLayer *layer )
  }
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_material", sceGmoLayerDuplicate);
+SceGmoLayer *sceGmoLayerDuplicate( SceGmoLayer *layer, int flags )
+{
+
+ if ( layer == 0 ) return 0 ;
+ if ( !( 0x0001 & flags )
+   && !( 0x0200 & flags ) ) {
+  layer->m_reference ++ ;
+  return layer ;
+ }
+
+ SceGmoLayer *layer2 = sceGmoLayerCreate( 0 ) ;
+ if ( layer2 == 0 ) return 0 ;
+ layer2->m_initial = sceGmoLayerDuplicate( layer->m_initial, 0 ) ;
+ layer2->m_flags = layer->m_flags ;
+
+ layer2->m_map_type = layer->m_map_type ;
+ layer2->m_map_factor = layer->m_map_factor ;
+ memcpy( layer2->m_blend_func, layer->m_blend_func, sizeof( layer->m_blend_func ) ) ;
+ layer2->m_texture = layer->m_texture ;
+ layer2->m_tex_crop = layer->m_tex_crop ;
+
+ layer2->m_enable_mask = layer->m_enable_mask ;
+ layer2->m_enable_bits = layer->m_enable_bits ;
+ layer2->m_diffuse = layer->m_diffuse ;
+ layer2->m_specular = layer->m_specular ;
+ layer2->m_ambient = layer->m_ambient ;
+ return layer2 ;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_material", sceGmoLayerLoad);
 
@@ -506,4 +567,56 @@ INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_material", D_0007E
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_material", D_0007EF98);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_material", reconfigure_layer);
+static _Bool reconfigure_layer( SceGmoLayer *layer )
+{
+	layer->m_blend_func[ 0 ] = 0 ;
+	layer->m_blend_func[ 1 ] = 2 ;
+	layer->m_blend_func[ 2 ] = 3 ;
+	layer->m_blend_func[ 3 ] = 0xffffffff ;
+	layer->m_blend_func[ 4 ] = 0xffffffff ;
+
+	layer->m_diffuse = 0 ;
+	layer->m_specular = 0 ;
+	layer->m_ambient = 0 ;
+
+	layer->m_enable_mask = 0x00010000 ;
+	layer->m_enable_bits = 0 ;
+
+	switch ( layer->m_map_type ) {
+	    case 0x82 : {
+		layer->m_blend_func[ 1 ] = 2 ;
+		layer->m_blend_func[ 2 ] = 3 ;
+		layer->m_diffuse = 1 ;
+		break ;
+	    }
+	    case 0x83 : {
+		layer->m_blend_func[ 1 ] = 2 ;
+		layer->m_blend_func[ 2 ] = 10 ;
+		layer->m_specular = 2 ;
+		break ;
+	    }
+	    case 0x84 : {
+		layer->m_blend_func[ 1 ] = 10 ;
+		layer->m_blend_func[ 2 ] = 10 ;
+		layer->m_ambient = 3 ;
+		layer->m_enable_mask |= 0x0001 ;
+		layer->m_enable_bits &= ~0x0001 ;
+		break ;
+	    }
+	    case 0x85 : {
+		layer->m_blend_func[ 1 ] = 2 ;
+		layer->m_blend_func[ 2 ] = 10 ;
+		layer->m_ambient = 4 ;
+		break ;
+	    }
+	    case 0x86 : {
+		layer->m_ambient = 5 ;
+		layer->m_enable_mask |= 0x0001 ;
+		layer->m_enable_bits &= ~0x0001 ;
+		layer->m_enable_mask |= 0x00020000 ;
+		layer->m_enable_bits |= 0x00020000 ;
+		break ;
+	    }
+	}
+	return 1 ;
+}
