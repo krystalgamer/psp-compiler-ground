@@ -478,7 +478,8 @@ segments:
       - [0x175B58, .rodata, main_objs/basic_parser_basic_parser]
       - [0x175DC4, rodata, asm/rodata_175D44]
       - [0x175E20, .rodata, main_objs/float_basic_parser_get]
-      - [0x175ECC, rodata, asm/rodata_175E4C]
+      - [0x175ECC, .rodata, main_objs/sys_timer_Push]
+      - [0x175EE4, rodata, asm/rodata_175E64]
       - [0x175EE8, .rodata, main_objs/sys_timer_GetDeltaTime]
       - [0x175EF8, rodata, asm/rodata_175E78]
       - [0x1762F8, .rodata, main_objs/FloatImage]
@@ -619,7 +620,7 @@ segments:
       - { start: 0x18CFCC, type: .bss, vram: 0x191C40, name: main_objs/basic_file_parser_basic_file_parser }
       - { start: 0x18CFCC, type: .bss, vram: 0x191C44, name: main_objs/basic_parser_basic_parser }
       - { start: 0x18CFCC, type: .bss, vram: 0x191C48, name: main_objs/float_basic_parser_get }
-      - { start: 0x18CFCC, type: bss, vram: 0x191C4C, name: bss_191C4C }
+      - { start: 0x18CFCC, type: .bss, vram: 0x191C4C, name: main_objs/sys_timer_Push }
       - { start: 0x18CFCC, type: .bss, vram: 0x191C78, name: main_objs/sys_timer_GetDeltaTime }
       - { start: 0x18CFCC, type: bss, vram: 0x191CE0, name: bss_191CE0 }
       - { start: 0x18CFCC, type: .bss, vram: 0x19A88C, name: gcc-3.3.3/libstdc__-v3/src/ios }

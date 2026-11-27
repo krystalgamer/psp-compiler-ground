@@ -2,8 +2,13 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_IOSTREAM
 #define DEMO_TEMPLATE_DEFS
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN3sys5timer4PushEv");
+__asm__(".globl _GLOBAL__D__ZN3sys5timer4PushEv");
 
 /* this object's .gnu.linkonce.t sections in the original's order */
 DEMO_LINKONCE_ORDER(
@@ -17,38 +22,35 @@ DEMO_LINKONCE_ORDER(
     DEMO_LINKONCE(_ZSt6__copyISt15_Deque_iteratorIfRKfPS1_ES0_IfRfPfEET0_T_S9_S8_St26random_access_iterator_tag)
 );
 #include <deque>
+#include <stack>
 
 namespace sys {
 namespace timer {
-extern std::deque<float> time_stack;
+static std::stack<float> time_stack;
 float GetTime();
+float Pop(const char *);
 void Push();
 }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sys_timer_Push", _Z41__static_initialization_and_destruction_0ii_FA3B4);
-
 void sys::timer::Push()
 {
-    time_stack.push_back(GetTime());
+    time_stack.push(GetTime());
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sys_timer_Push", _ZN3sys5timer3PopEPKc);
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_FA3B4");
-void _GLOBAL__I__ZN3sys5timer4PushEv(void);
-void _GLOBAL__D__ZN3sys5timer4PushEv(void);
-}
-
-void _GLOBAL__I__ZN3sys5timer4PushEv(void)
+float sys::timer::Pop(const char *name)
 {
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN3sys5timer4PushEv(void)
-{
-    static_init(0, 0xFFFF);
+    if (time_stack.empty())
+        return -1;
+    float t = time_stack.top();
+    time_stack.pop();
+    t = GetTime() - t;
+    if (t > 60) {
+        int m = (int)t / 60;
+        std::cout << name << " " << m << "'" << (int)((t - m * 60) * 100) / 100 << "\"" << std::endl;
+    } else
+        std::cout << name << " " << t << std::endl;
+    return t;
 }
 
 /* out-of-line inline members / instances that stay asm */

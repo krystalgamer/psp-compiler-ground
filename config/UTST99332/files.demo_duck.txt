@@ -352,9 +352,7 @@ rodata 0x175828 main_objs/common_FileDump
 rodata 0x1759D8 -
 bss 0x191C3C main_objs/common_FileDump
 rodata 0x175DA0 main_objs/float_basic_parser_get
-rodata 0x175E4C -
 bss 0x191C48 main_objs/float_basic_parser_get
-bss 0x191C4C -
 rodata 0x166BAC main_objs/glutils_RectanglePicking
 rodata 0x166C34 -
 bss 0x18E42C main_objs/glutils_RectanglePicking
@@ -411,3 +409,7 @@ rodata 0x171BB8 main_objs/sgl_TransformSet_Transform
 rodata 0x171BE4 -
 bss 0x190D44 main_objs/sgl_TransformSet_Transform
 bss 0x190DC4 -
+# sys_timer_Push: C++ static initializer (file static time_stack) and Pop(); .rodata: Pop's strings and float pool; .bss
+rodata 0x175E4C main_objs/sys_timer_Push
+rodata 0x175E64 -
+bss 0x191C4C main_objs/sys_timer_Push
