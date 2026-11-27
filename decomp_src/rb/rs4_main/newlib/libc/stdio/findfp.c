@@ -1,13 +1,6 @@
-#include "common.h"
+/* upstream: newlib-1.12.0/newlib/libc/stdio/findfp.c (Sony's 1.8.x psp-newlib build: _REENT is __getreent()) */
+/* cflags: -O2 -fno-builtin -fdata-sections */
+#define __DYNAMIC_REENT__
+#include "libc/stdio/findfp.c"
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/newlib/libc/stdio/findfp", std);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/newlib/libc/stdio/findfp", __sfmoreglue);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/newlib/libc/stdio/findfp", __sfp);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/newlib/libc/stdio/findfp", _cleanup_r);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/newlib/libc/stdio/findfp", _cleanup);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/newlib/libc/stdio/findfp", __sinit);
+/* its static lock (.data.lock.0) is discarded: the module's .data (asm) has it */
