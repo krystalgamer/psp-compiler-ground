@@ -347,7 +347,41 @@ static void draw_menu(void)
 	UtilsDrawSprite(pMv->posx - 6, pMv->posy - 6, 0, 0, 0, 0, 0);
 }
 
-INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/display", draw_frame);
+static void draw_frame(t_displayBuffer *pDisp, SceChar8 *buffer)
+{
+	sceGuStart(0, disp_list, sizeof(disp_list));
+	if (not_ready == 1 || menu_list.selected == 0)
+	{
+		set_blink();
+		draw_menu();
+	}
+	sceGuEnable(4);
+	sceGuColor((blinkalpha << 24) | 0xFFFFFF);
+	sceGuTexFunc(0, 0);
+	sceGuTexMode(3, 0, 0, 0);
+	if (not_ready == 1) {
+		if (menu_list.current == menu_list.saved && menu_list.current != 0) {
+			sceGuTexImage(0, 512, 512, 512, pDisp->buf[1]);
+			UtilsSpriteMode(0x90, 0x50, 0x8F, 0x51);
+			UtilsDrawSprite(*pDisp->posx, *pDisp->posy, 0, 0, 0, 0, 0);
+		}
+	} else {
+		sceGuTexImage(0, 512, 512, 512, buffer);
+		if (*pDisp->scale == 0) {
+			if (menu_list.current != 0) {
+				UtilsSpriteMode(0x90, 0x50, 0x8F, 0x51);
+				UtilsDrawSprite(*pDisp->posx, *pDisp->posy, 0, 0, 0, 0, 0);
+				sceGuCopyImage(3, 0, 0, 0x90, 0x50, 512, pDisp->buf[0], 0, 0, 512, pDisp->buf[1]);
+				menu_list.saved = menu_list.current;
+			}
+		} else {
+			UtilsSpriteMode(0x1E0, 0x110, 0x1E0, 0x110);
+			UtilsDrawSprite(0, 0, 0, 0, 0, 0, 0);
+		}
+	}
+	sceGuFinish();
+	sceGuSync(0, 0);
+}
 
 int sceKernelCreateSema(const char *name, unsigned int attr, int init, int max, void *option);
 void *malloc(unsigned int size);
