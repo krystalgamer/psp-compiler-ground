@@ -43,6 +43,7 @@ M2C_UNK HST_getCurrentIndex();                      /* extern */
 M2C_UNK esp_setDialogReply();                       /* extern */
 
 
+void *HST_getHttpHeader(void *h);
 DOMStr *newDOMString_4B5FC(const char *utf8, int len) {
     DOMStr *s = MEM_malloc(0, sizeof(DOMStr));
 
@@ -194,7 +195,27 @@ int JSI_setDocumentCookie(void *doc, DOMStr *s) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getDocumentLastModified);
+DOMStr *JSI_getDocumentLastModified(void *node) {
+    void *h;
+    if (node == NULL) {
+        return NULL;
+    }
+    if (attached == 0) {
+        JSI_init();
+    }
+    h = HST_searchSessionIDHistoryNode(Node_getSid(node));
+    if (h == NULL) {
+        return NULL;
+    }
+    node = HST_getHttpHeader(h);
+    if (node == NULL) {
+        return NULL;
+    }
+    if (M2C_FIELD(node, char **, 0x20) == NULL) {
+        return NULL;
+    }
+    return newDOMString_4B5FC(M2C_FIELD(node, char **, 0x20), strlen(M2C_FIELD(node, char **, 0x20)));
+}
 
 DOMStr *JSI_getDocumentReferrer(void *node) {
     void *h;
