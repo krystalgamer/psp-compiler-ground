@@ -39,7 +39,10 @@ math::vector_xyzw glutils::TurnTable::getPivot() const
     return _pivot;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_TurnTable", _ZNK7glutils9TurnTable13getPivotFrameEv);
+math::matrix glutils::TurnTable::getPivotFrame() const
+{
+    return _pivot_frame;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_TurnTable", _ZN7glutils9TurnTable5trackEbbbii);
 

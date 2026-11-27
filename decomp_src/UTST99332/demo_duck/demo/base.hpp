@@ -843,9 +843,10 @@ public:
     bool isYUp() const;
     void speed(Speed, float);
     math::vector_xyzw getPivot() const;
+    math::matrix getPivotFrame() const;
     /* data */
     math::vector_xyzw _pivot;   /* 0x150 */
-    char _p160[0x1A0 - 0x160];
+    math::matrix _pivot_frame;  /* 0x160 */
     bool _f1A0;
     float _speed[NUM_SPEEDS];   /* 0x1A4 */
 };
