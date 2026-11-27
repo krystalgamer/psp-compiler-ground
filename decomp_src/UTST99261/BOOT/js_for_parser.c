@@ -3,7 +3,7 @@
 #include "m2c_macros.h"
 int js_setChildOfDocument(int a, int b, int c, int d, int type);
 int js_setChildOfForm(int a, int b, int c, int d, int type);
-int js_setChildOfWindow(int a, int b, int c, int type);
+void *js_setChildOfWindow(void *ctx, int b, int c, int type);
 int JSObjSetEventHandler(int a, int b, int c);
 typedef unsigned short UCSChar;
 int mes_event_new();                                /* extern */
@@ -35,6 +35,10 @@ M2C_UNK js_setChildOfSelect();                      /* extern */
 void *WindowSetInternal(int a, int b, void *hist);
 int DocumentSetInternal(int a, int b, void *dom, int c);
 void *HST_getDomObject(void *hist);
+void *mes_history_new(void *ctx, int a);
+void *mes_location_new(void *ctx, int a);
+void *mes_screen_new(void *ctx, int a);
+void mes_class_property_set(void *ctx, int parent, char *name, void *o);
 int JSObjGetCharsLength(const UCSChar *s)
 {
     int n = 0;
@@ -96,7 +100,38 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", D_0013C964);
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", D_0013C970);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", js_setChildOfWindow);
+void *js_setChildOfWindow(void *ctx, int parent, int a, int type)
+{
+    void *o;
+    char *name;
+    void *sp;
+
+    switch (type) {
+    case 5:
+        o = mes_history_new(ctx, a);
+        name = "history";
+        mes_class_property_setup(ctx, parent, name, o, 7);
+        break;
+    case 6:
+        o = mes_location_new(ctx, a);
+        name = "location";
+        mes_class_property_set(ctx, parent, name, o);
+        break;
+    case 7:
+        o = mes_screen_new(ctx, a);
+        name = "screen";
+        mes_class_property_setup(ctx, parent, name, o, 7);
+        break;
+    default:
+        return NULL;
+    }
+    sp = M2C_FIELD(ctx, void **, 0x18);
+    M2C_FIELD(ctx, void **, 0x18) = (void *) ((char *)sp - 4);
+    M2C_FIELD(sp, void **, -4) = o;
+    mes_object_setup(ctx, M2C_FIELD(ctx, int *, 0xC), name, o, 7, 0);
+    M2C_FIELD(ctx, void **, 0x18) = (void *) ((char *)M2C_FIELD(ctx, void **, 0x18) + 4);
+    return o;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", js_setChildOfDocument);
 
@@ -143,17 +178,17 @@ int EventSetInternal(void *arg0) {
 
 int HistoryObjSetInternal(int a, int b)
 {
-    return js_setChildOfWindow(a, b, 0, 5);
+    return (int)js_setChildOfWindow((void *)a, b, 0, 5);
 }
 
 int LocationSetInternal(int a, int b, int c)
 {
-    return js_setChildOfWindow(a, b, c, 6);
+    return (int)js_setChildOfWindow((void *)a, b, c, 6);
 }
 
 int ScreenSetInternal(int a, int b)
 {
-    return js_setChildOfWindow(a, b, 0, 7);
+    return (int)js_setChildOfWindow((void *)a, b, 0, 7);
 }
 
 int EventHandlerSetInternal(int a, int b, int c, int d)
