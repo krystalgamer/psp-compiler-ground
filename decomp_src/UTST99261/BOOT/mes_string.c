@@ -52,6 +52,8 @@ extern unsigned char mes_string_method;
 int mes_util_streq(const UCSChar *a, const UCSChar *b, int n);
 MesValue mes_eval_to_number(MesContext *ctx, MesValue v);
 extern MesValue D_00585288;
+MesValue mes_regexp_constructor(MesContext *ctx, MesValue pattern, MesValue flags);
+void *mes_regexp_pattern_exec(MesContext *ctx, MesValue re, MesValue s, int i);
 MesValue mes_string_new(MesContext *ctx, const void *str, int len)
 {
     MesStr *s;
@@ -428,7 +430,27 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_replace
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_replace);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_search);
+MesValue mes_string_search(MesContext *ctx, MesValue re)
+{
+    MesValue s;
+    int len;
+    int i;
+
+    if (!MES_IS_OBJECT(re) || ((MesObject *)re)->gc->kind != 8)
+        re = mes_regexp_constructor(ctx, re, 0);
+    *--ctx->sp = re;
+    s = mes_eval_to_string(ctx, (MesValue)ctx->frame->thisobj);
+    *--ctx->sp = s;
+    len = ((MesStr *)(s & ~3))->len;
+    for (i = 0; i <= len; i++) {
+        if (mes_regexp_pattern_exec(ctx, re, s, i) != NULL)
+            break;
+    }
+    ctx->sp += 2;
+    if (i <= len)
+        return MES_INT(i);
+    return -3;
+}
 
 MesValue mes_string_slice(MesContext *ctx, MesValue a, MesValue b)
 {
@@ -499,7 +521,39 @@ MesValue mes_string_substring(MesContext *ctx, MesValue a, MesValue b)
     return s;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_substr);
+MesValue mes_string_substr(MesContext *ctx, MesValue a, MesValue b)
+{
+    MesValue s = mes_eval_to_string(ctx, (MesValue)ctx->frame->thisobj);
+    int len;
+    UCSChar *str;
+    int start, n;
+
+    *--ctx->sp = s;
+    len = ((MesStr *)(s & ~3))->len;
+    str = ((MesStr *)(s & ~3))->str;
+    start = len;
+    if (a != 0x14)
+        start = mes_eval_to_int32(ctx, a);
+    n = len;
+    if (b != 0) {
+        if (b != 0x14)
+            n = mes_eval_to_int32(ctx, b);
+        n = n < 0 ? 0 : n;
+    }
+    if (start < 0) {
+        start += len;
+        start = start < 0 ? 0 : start;
+    }
+    if (start >= len) {
+        s = mes_empty;
+        goto out;
+    }
+    n = len - start < n ? len - start : n;
+    s = mes_string_new(ctx, str + start, n);
+out:
+    ctx->sp++;
+    return s;
+}
 
 MesValue mes_string_to_lower_case(MesContext *ctx)
 {
