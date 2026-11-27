@@ -1124,7 +1124,24 @@ PsLocation *ps_SetLocation(int id, int b, int c, int len, char *url) {
     return D_0025B5C8;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_GetLocation);
+PsLocation *ps_GetLocation(int id) {
+    PsLocation *p;
+    if (PS_LOCATION_HEAD == NULL)
+        return NULL;
+    D_0025B5CC = PS_LOCATION_HEAD;
+    if (D_0025B5CC->id == id)
+        return D_0025B5CC;
+    while (1) {
+        p = D_0025B5CC->next;
+        if (p == NULL)
+            break;
+        D_0025B5CC = p;
+        if (p->id != id)
+            continue;
+        return p;
+    }
+    return NULL;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_FreeLocation);
 
