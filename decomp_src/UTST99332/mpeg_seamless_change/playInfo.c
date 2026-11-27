@@ -372,7 +372,83 @@ term:
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/playInfo", playInfo_videoDecode);
+SceInt32 playInfo_videoDecode(t_playInfo *pPlayInfo, t_avSyncControl *pAvSync)
+{
+	SceInt32 ret;
+	SceUInt32 timestamp;
+
+	ret = decode_getVideoAu(&pPlayInfo->streamData);
+	if (ret != 0) {
+		if (ret == 1) {
+			goto term;
+		}
+		printf("fatal error : decode_getAvcAu() 0x%x\n", ret);
+		goto term;
+	}
+
+	if (pPlayInfo->videoChangeMode == 1) {
+		ret = decode_checkReservedVideoGetAu(&pPlayInfo->streamData);
+		if (ret != 0) {
+			ret = 0;
+			goto term;
+		}
+
+		ret = decode_getReservedVideoAuTimestamp(&pPlayInfo->streamData, &timestamp);
+		if (ret != 0) {
+			goto term;
+		}
+
+		if (timestamp != 0xFFFFFFFF && pPlayInfo->nextIdrTimestamp < timestamp) {
+			SceUInt32 nextTimestamp;
+
+			ret = sInfo_getNextEPTimestamp(&pPlayInfo->sInfo, timestamp, &nextTimestamp);
+			if (ret != 0) {
+				printf("fatal error : sInfo_getNextEPTimestamp() 0x%x\n", ret);
+				goto term;
+			}
+
+			pPlayInfo->nextIdrTimestamp = nextTimestamp;
+		}
+
+		if (timestamp == pPlayInfo->nextIdrTimestamp) {
+			playInfo_flushDecoder(pPlayInfo);
+
+			decode_changeCurrentStreamGetAuMode(&pPlayInfo->streamData, 1);
+
+			ret = decode_reservedVideoDecode(&pPlayInfo->streamData, pAvSync);
+			if (ret != 0) {
+				if (ret != 1) {
+					printf("fatal error : decode_reservedVideoDecode() 0x%x\n", ret);
+				}
+				goto term;
+			}
+
+			sInfo_setCurrentStream(&pPlayInfo->sInfo, 0, decode_getCurrentReservedStream(&pPlayInfo->streamData));
+
+			decode_setCurrentStream(&pPlayInfo->streamData, 0, decode_getCurrentReservedStream(&pPlayInfo->streamData));
+
+			decode_setReservedVideoStream(&pPlayInfo->streamData, -1);
+
+			decode_initAu(&pPlayInfo->streamData, 0, decode_getCurrentStream(&pPlayInfo->streamData, 0), 0);
+
+			pPlayInfo->videoChangeMode = 0;
+
+			goto term;
+		}
+	}
+
+	ret = decode_videoDecode(&pPlayInfo->streamData, pAvSync);
+	if (ret != 0) {
+		if (ret != 1) {
+			if (ret != (SceInt32)0x80618001) {
+				printf("fatal error : decode_videoDecode() 0x%x\n", ret);
+			}
+		}
+	}
+
+term:
+	return ret;
+}
 
 int playInfo_videoDecodeEnd(t_playInfo *pPlayInfo, t_avSyncControl *pAvSync) {
     return decode_videoDecodeEnd(&pPlayInfo->streamData);
