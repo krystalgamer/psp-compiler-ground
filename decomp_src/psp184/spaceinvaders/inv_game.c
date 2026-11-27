@@ -1725,7 +1725,19 @@ void inv_nowloading_disp2(void) {
     sprite_set(D_004B4D04, 0x19E, 0x107, 0x40, 8, 0, 0, 0x64, 0x64, 0, 0, 0xFF, 0xFF, 0xFF, 0xFF, 0xA, 2, 1, 0xFF);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", inv_nowloading_disp);
+typedef struct { int tex, f4, f8; float x, y, dx, dy; int tex2, state; } LOADDISP_T;
+#define LD (*(LOADDISP_T *)&load_disp)
+void inv_nowloading_disp(int mode)
+{
+	sprite_set(LD.tex2, 0x19E, 0x107, 64, 8, 0, 0, 100, 100, 0, 0, 255, 255, 255, 255, 10, 2, 1, 255);
+	if (LD.state == 14)
+		return;
+	if (mode == 1) {
+		LD.x += LD.dx;
+		LD.y += LD.dy;
+	}
+	sprite_set(LD.tex, 240.0f - LD.x, 136.0f - LD.y, 512, 256, 0, LD.f8 << 8, 100, 100, 0, 0, 255, 255, 255, 255, 0, 2, 0, 255);
+}
 
 extern char text_buf[];
 extern char D_0007DF88[];
