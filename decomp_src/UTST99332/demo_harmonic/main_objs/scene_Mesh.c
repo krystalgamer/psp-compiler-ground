@@ -10,6 +10,12 @@ extern const char scene_mesh_expr[] __asm__("D_00168C38");    /* "_mesh" */
 extern const char scene_mesh_file[] __asm__("D_00168C40");    /* "../lib/scene/Mesh.h" */
 extern const char scene_mesh_sp[] __asm__("D_00168C54");      /* " " */
 extern const char scene_mesh_getData_name[] __asm__("_ZZN5scene4Mesh7getDataEvE19__PRETTY_FUNCTION___168B84");
+/* BVdata::create's strings in this object */
+extern const char scene_bvdata_warn[] __asm__("D_00168B74");         /* " *** warning " */
+extern const char scene_bvdata_notvalid[] __asm__("D_00168B30");     /* "! valid()" */
+extern const char scene_bvdata_file[] __asm__("D_00168B3C");         /* "../lib/scene/BVdata.h" */
+extern const char scene_bvdata_created[] __asm__("D_00168B54");      /* "bounding box already created" */
+extern const char scene_bvdata_create_name[] __asm__("_ZZN5scene6BVdata6createEN3sgl2BV4TypeEE19__PRETTY_FUNCTION___168B04");
 #define DEMO_TEMPLATE_DEFS
 #include "../main.hpp"
 
@@ -39,9 +45,11 @@ extern const char D_00168AFC[];
 /* called, not inlined, by format() in the original */
 void Mesh_destroy_mesh_data(scene::Mesh *) __asm__("_ZN5scene4Mesh17destroy_mesh_dataEv");
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Mesh", _ZN5scene4MeshC2ESsb);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Mesh", _ZN5scene4MeshC1ESsb);
+scene::Mesh::Mesh(std::string name, bool b) : Node(name, b), _mesh(new MeshData), _stencil(new sgl::StencilShadowData)
+{
+    set_default_name();
+    _bvdata.create(sgl::BV::Type(0));
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Mesh", _ZN5scene4MeshD2Ev);
 

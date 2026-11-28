@@ -35,9 +35,12 @@ float scene::Transform::angle_range;
 math::matrix scene::Transform::tmp_viewer_transform = math::matrix::Identity();
 math::matrix scene::Transform::tmp_parent_transform = math::matrix::Identity();
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Transform", _ZN5scene9TransformC2ESsb);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Transform", _ZN5scene9TransformC1ESsb);
+scene::Transform::Transform(std::string name, bool b)
+    : Group(name, b), _matrix(math::matrix::Identity()), _dirty(false), _translation(0, 0, 0), _scale(1, 1, 1), _euler(0, 0, 0)
+{
+    set_default_name();
+    setIdentity();
+}
 
 scene::Transform::~Transform()
 {
