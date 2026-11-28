@@ -1199,7 +1199,20 @@ void udp_resolve_cb(int a, int err, DmeLinkAddr addr, int port, char *ci)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", p2p_peer_update_cb);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", p2p_incoming_data_cb);
+void p2p_incoming_data_cb(unsigned short peer, void *data, int len, int flag, char *ci)
+{
+    long idx = (long)-1;
+    char *c;
+
+    if ((*(int (**)(int, int, long *))((char *)gP2PInterfacePtr + 8))(*(int *)(ci + 0x474), peer, &idx) != 0) return;
+    if ((*(int (**)(int, int, long, char *, char *))((char *)gP2PInterfacePtr + 0xC))(*(int *)(ci + 0x474), peer, idx, (char *)gDmeGlobals + 0x18, (char *)gDmeGlobals + 0x20) != 0) return;
+    if (flag != 0) {
+        c = ((char **)ci)[peer];
+        if (c == NULL) return;
+        if (*(int *)(c + 0x20) == 0) return;
+    }
+    ParseMessageList((void *)NetGetMyWorldID(), ci, peer, (int)data, len);
+}
 
 int NetGetMyWorldID(void) {
     int var_v0;
