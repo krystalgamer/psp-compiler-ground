@@ -39,6 +39,18 @@ void math::TransformStack::pop()
     _dirty = true;
 }
 
+namespace math {
+inline matrix operator*(const matrix &a, const matrix &b)
+{
+    matrix r;
+    r.r[0] = a.r[0] * b;
+    r.r[1] = a.r[1] * b;
+    r.r[2] = a.r[2] * b;
+    r.r[3] = a.r[3] * b;
+    return r;
+}
+}
+/* mult: m = M * m gives 0x5c8 vs 0x5bc (tmp/cxx/drafts/s31/ts_*.c) */
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_TransformStack", _ZN4math14TransformStack4multERKNS_6matrixE);
 
 void math::TransformStack::load(const matrix &m)
@@ -53,19 +65,61 @@ void math::TransformStack::identity()
     _dirty = true;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_TransformStack", _ZN4math14TransformStack6rotateEffff);
+void math::TransformStack::rotate(float a, float x, float y, float z)
+{
+    matrix &m = top();
+    matrix t = matrix::Rotation(a, x, y, z);
+    m = t * m;
+    _dirty = true;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_TransformStack", _ZN4math14TransformStack7rotateXEf);
+void math::TransformStack::rotateX(float a)
+{
+    matrix &m = top();
+    matrix t = matrix::RotationX(a);
+    m = t * m;
+    _dirty = true;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_TransformStack", _ZN4math14TransformStack7rotateYEf);
+void math::TransformStack::rotateY(float a)
+{
+    matrix &m = top();
+    matrix t = matrix::RotationY(a);
+    m = t * m;
+    _dirty = true;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_TransformStack", _ZN4math14TransformStack7rotateZEf);
+void math::TransformStack::rotateZ(float a)
+{
+    matrix &m = top();
+    matrix t = matrix::RotationZ(a);
+    m = t * m;
+    _dirty = true;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_TransformStack", _ZN4math14TransformStack5scaleEfff);
+void math::TransformStack::scale(float x, float y, float z)
+{
+    matrix &m = top();
+    matrix t = matrix::Scale(x, y, z);
+    m = t * m;
+    _dirty = true;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_TransformStack", _ZN4math14TransformStack5scaleEf);
+void math::TransformStack::scale(float s)
+{
+    matrix &m = top();
+    matrix t = matrix::Scale(s, s, s);
+    m = t * m;
+    _dirty = true;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_TransformStack", _ZN4math14TransformStack9translateEfff);
+void math::TransformStack::translate(float x, float y, float z)
+{
+    matrix &m = top();
+    matrix t = matrix::Translation(x, y, z);
+    m = t * m;
+    _dirty = true;
+}
 
 const math::matrix &math::TransformStack::top() const
 {

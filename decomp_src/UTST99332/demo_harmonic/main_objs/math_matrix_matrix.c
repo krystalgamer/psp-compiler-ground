@@ -96,7 +96,21 @@ math::matrix math::matrix::Rotation(float a, const vector_xyz &v)
     return Rotation(a, v.x, v.y, v.z);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_matrix_matrix", _ZN4math6matrix11PointNormalENS_11vector_xyzwES1_);
+static inline math::vector_xyzw pn_normalize(const math::vector_xyzw &v)
+{
+    float l = math::length(v);
+    float s = l == 0 ? 0 : 1.0f / l;
+    return v * s;
+}
+math::matrix math::matrix::PointNormal(vector_xyzw p, vector_xyzw n)
+{
+    vector_xyzw up(0, 0, 1.0f, 0);
+    if (dot(n, up) > 0.9f)
+        up = vector_xyzw(1.0f, 0, 0, 0);
+    vector_xyzw x = pn_normalize(cross(up, n));
+    vector_xyzw y = cross(n, x);
+    return matrix(x, y, n, p);
+}
 
 const math::matrix math::matrix::Perspective(float fovy, float aspect, float n, float f)
 {
@@ -336,7 +350,15 @@ math::vector_xyz math::matrix::eulerAnglesZYX() const
     return v;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_matrix_matrix", _ZNK4math6matrix10isCoordSysEf);
+bool math::matrix::isCoordSys(float eps) const
+{
+    bool res = false;
+    if (0 < dot(cross(r[0], r[1]), r[2]) && fabsf(length(r[0]) - 1.0f) < eps && fabsf(length(r[1]) - 1.0f) < eps
+        && fabsf(length(r[2]) - 1.0f) < eps && fabsf(dot(r[0], r[1])) < eps && fabsf(dot(r[1], r[2])) < eps
+        && fabsf(dot(r[2], r[0])) < eps && r[3].w == 1.0f)
+        res = true;
+    return res;
+}
 
 static inline math::vector_xyzw fcs_normalize(const math::vector_xyzw &v)
 {
