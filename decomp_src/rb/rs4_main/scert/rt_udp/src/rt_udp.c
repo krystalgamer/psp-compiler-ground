@@ -334,7 +334,38 @@ int rt_udp_get_buffer_stats(void *u, unsigned int *c, int dir, unsigned int *use
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_resolve_address);
+int rt_upnp_create(); int rt_upnp_set_memory_ceiling(); int rt_upnp_uber_resolve(); void rt_udp_uber_resolve_cb();
+int rt_udp_resolve_address(char *u, int *addr)
+{
+    int r;
+    int cb;
+
+    r = 0xD2F2;
+    if (u != NULL) {
+        r = 2;
+        cb = addr[3];
+        if (cb != 0) {
+            r = 0xD2F4;
+            if (*(int *)(u + 0x84) == 0) {
+                *(int *)(u + 0xB4) = addr[4];
+                *(int *)(u + 0xB0) = cb;
+                if (*(void **)(u + 0x10) == NULL) {
+                    int r2 = rt_upnp_create(u + 0x10, *(int *)u, *(int *)(u + 0x9C));
+                    if (r2 != 0) return r2;
+                    r2 = rt_upnp_set_memory_ceiling(*(int *)(u + 0x10), *(int *)(u + 0x74));
+                    if (r2 != 0) return r2;
+                }
+                {
+                    int r3 = rt_upnp_uber_resolve(*(int *)(u + 0x10), addr, addr[2], rt_udp_uber_resolve_cb, u);
+                    if (r3 != 0) return r3;
+                }
+                *(int *)(u + 0x84) = 1;
+                r = 0;
+            }
+        }
+    }
+    return r;
+}
 
 int rt_upnp_get_external_address();
 int rt_udp_get_resolved_address(char *u, void *addr, int *port)
