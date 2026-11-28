@@ -113,7 +113,26 @@ int IsNullRCKey(unsigned char *k) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", NewKeyChain);
+typedef struct { int next, prev, id, used, f10, f14, f18, f1c; } KeyChainT;
+char *NewKeyChain(void)
+{
+    KeyChainT *kc;
+    KeyChainT *p;
+
+    rt_memory_allocate(&kc, 0x20);
+    p = kc;
+    if (p != NULL) {
+        p->next = 0;
+        p->prev = 0;
+        p->f10 = 0;
+        p->f14 = 0;
+        p->f18 = 0;
+        p->f1c = 0;
+        p->id = 0;
+        p->used = 1;
+    }
+    return (char *)kc;
+}
 
 void DeleteKeyChain(int *kc)
 {
@@ -156,6 +175,8 @@ void *GetKeyChain(char *km, unsigned int id)
 
 typedef struct KmKey { struct KmKey *prev; struct KmKey *next; } KmKey;
 typedef struct { int a, b; KmKey *head; KmKey *tail; } KmMaster;
+typedef struct KmEnt2 { struct KmEnt2 *next; struct KmEnt2 *prev; int a; KmKey *chains; int id; int type; int c; void *k1C; void *k20; void *k24; void *k28; void *k2C; } KmEnt2;
+extern char *gCryptGlobals;
 void RemoveKeyChain(KmMaster *km, KmKey *k)
 {
     if (km != NULL && k != NULL) {
@@ -217,7 +238,34 @@ void KM_Salted_SHA1(void *salt, int slen, void *data, int len, void *out, int ou
     SHAFinal(ctx, out, outlen);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_Create);
+int KM_Create(int id, int type)
+{
+    KmEnt2 *km;
+    KmEnt2 *mem;
+
+    if (GetKeyMaster(id) != NULL) return 0;
+    rt_memory_allocate(&mem, sizeof(KmEnt2));
+    km = mem;
+    memset(km, 0, sizeof(KmEnt2));
+    km->type = type;
+    km->id = id;
+    km->c = 0;
+    if (*(KmEnt2 **)gCryptGlobals != NULL) {
+        km->next = (*(KmEnt2 **)gCryptGlobals)->next;
+        km->next->prev = km;
+    } else {
+        *(KmEnt2 **)gCryptGlobals = km;
+    }
+    (*(KmEnt2 **)gCryptGlobals)->next = km;
+    km->prev = *(KmEnt2 **)gCryptGlobals;
+    if (id == -1)
+        KM_SetLocalKeyPair(id, gCryptGlobals + 0x104);
+    else if (id < 0)
+        KM_SetLocalKeyPair(id, gCryptGlobals + 4);
+    else
+        KM_SetLocalKeyPair(id, gCryptGlobals + 0x84);
+    return 0;
+}
 
 void KM_SetLocalClientID(int a, int id) {
     char *km = GetKeyMaster(a);
@@ -422,9 +470,6 @@ void KM_DeleteKeys(int a, int id)
     }
 }
 
-typedef struct KmEnt2 { struct KmEnt2 *next; struct KmEnt2 *prev; int a; KmKey *chains; int id; int type; int c; void *k1C; void *k20; void *k24; void *k28; void *k2C; } KmEnt2;
-
-extern char *gCryptGlobals;
 void KM_Destroy(int id)
 {
     KmEnt2 *km;
