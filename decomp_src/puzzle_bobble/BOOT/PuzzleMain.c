@@ -35,8 +35,8 @@ typedef struct {
 } SPRDATA;
 extern const SPRDATA SCORE_NUMERIC_PARTZ[];
 extern const SPRDATA NUMERIC_PARTZ[];
-extern const SPRDATA D_0002DEB4[];
-extern const SPRDATA D_0002E0F4[];
+extern const SPRDATA PUZZLE_PARTZ[];
+extern const SPRDATA NUMERIC_PARTZ[];
 extern const SPRDATA LIGHT_PARTZ[];
 extern int D_00038A8C[];
 int GetRound(void);
@@ -86,7 +86,6 @@ extern const BCPOS BallCollisionPosition[8];
 int CvtBallPos2MapPosLocal(PZL_STAT *st, int x, int y);
 int CheckNext(PZL_STAT *st);
 int rand(void);
-
 
 int SysTimeIncrement(void)
 {
@@ -167,57 +166,75 @@ void SetMonitor(PZL_STAT *st, int mon)
 	st->monitor_anim = 0;
 }
 
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", ChNamePos);
+const int ChNamePos[] = { 0, 32, 64, 16, 48, 80 };
 
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", mx);
+const int mx[] = { 0, -8, 8, -16, 16, -8, 8 };
 
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", my);
+const int my[] = { 0, -14, -14, 0, 0, 14, 14 };
 
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", MapXBeginPos);
+const s16 MapXBeginPos[] = { 104, 32, 176, 32, 0, 0, 80, 0, 0 };
 
 const u16 BallXPos[] = { 160, 88, 232 };
 
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", PAUSE_PARTZ);
+const SPRDATA PAUSE_PARTZ[] = { 200, 96, 200, 48, 27, 0 };
 
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", SAVE_PARTZ);
+const SPRDATA SAVE_PARTZ[] = { 0, 0, 480, 104, 49, 0 };
 
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", NEW_RECORD_PARTZ);
+const SPRDATA NEW_RECORD_PARTZ[] = { 0, 0, 336, 56, 24, 0 };
 
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", PUZZLE_PARTZ);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", D_0002DE0C);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", D_0002DE9C);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", D_0002DEB4);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", D_0002DFD4);
+const SPRDATA PUZZLE_PARTZ[] = {
+	{ 0, 336, 88, 64, 2, 0 },
+	{ 88, 336, 88, 64, 2, 0 },
+	{ 0, 400, 88, 56, 2, 0 },
+	{ 88, 400, 88, 56, 2, 0 },
+	{ 0, 400, 88, 56, 2, 1 },
+	{ 88, 400, 88, 56, 2, 1 },
+	{ 288, 224, 104, 112, 2, 0 },
+	{ 288, 224, 104, 112, 2, 1 },
+	{ 184, 336, 104, 112, 2, 0 },
+	{ 288, 336, 104, 112, 2, 0 },
+	{ 368, 0, 16, 224, 2, 0 },
+	{ 160, 224, 128, 56, 2, 0 },
+	{ 0, 224, 160, 56, 2, 0 },
+	{ 0, 0, 88, 64, 38, 0 },
+	{ 88, 0, 88, 64, 38, 0 },
+	{ 0, 64, 88, 64, 38, 0 },
+	{ 88, 64, 88, 64, 38, 0 },
+	{ 0, 0, 88, 64, 39, 0 },
+	{ 88, 0, 88, 64, 39, 0 },
+	{ 0, 64, 88, 64, 39, 0 },
+	{ 88, 64, 88, 64, 39, 0 },
+	{ 0, 0, 88, 64, 40, 0 },
+	{ 88, 0, 88, 64, 40, 0 },
+	{ 0, 64, 88, 64, 40, 0 },
+	{ 88, 64, 88, 64, 40, 0 },
+	{ 0, 312, 288, 24, 2, 0 },
+	{ 0, 288, 192, 24, 2, 0 },
+};
 
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", NUMERIC_PARTZ);
 
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", D_0002E0F4);
+const SPRDATA ATTACK_PARTZ[] = {
+	{ 0, 32, 16, 16, 15, 0 },
+	{ 18, 32, 12, 16, 15, 0 },
+};
 
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", ATTACK_PARTZ);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", D_0002E124);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", WINLOSE_PARTZ);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", D_0002E16C);
+const SPRDATA WINLOSE_PARTZ[] = {
+	{ 0, 136, 176, 48, 23, 0 },
+	{ 0, 72, 176, 48, 25, 0 },
+	{ 0, 0, 328, 72, 25, 0 },
+};
 
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", SCORE_NUMERIC_PARTZ);
 
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", GAMEMODE_PARTZ);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", D_0002E28C);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", D_0002E2A4);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", D_0002E2BC);
+const SPRDATA GAMEMODE_PARTZ[] = {
+	{ 0, 0, 112, 16, 3, 0 },
+	{ 0, 16, 112, 16, 3, 0 },
+	{ 0, 32, 112, 16, 3, 0 },
+	{ 0, 48, 112, 16, 3, 0 },
+};
 
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", LIGHT_PARTZ);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", D_0002E334);
 
 extern SPRDATA D_00038A30;
 void DoMonitor(PZL_STAT *st)
@@ -459,11 +476,9 @@ void SetBubCrushEz(PZL_STAT *st, int x, int y, int col)
 	SetBubCrush(x + MapXBeginPos[st->mapno * 3 + st->mapsub] - 8, y + st->ofs_y + st->scroll * 14 + 32, col);
 }
 
-
-
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", bgmsort);
 
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", BallCollisionPosition);
+const BCPOS BallCollisionPosition[] = { -2, -5, 2, -5, -5, -2, 6, -2, -5, 2, 6, 2, -2, 5, 2, 5 };
 
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", D_0002E508);
 
@@ -862,7 +877,6 @@ int GetMapRight(int no)
 {
 	return GetMapWidth(no) * 8 + 160;
 }
-
 
 void GameValueInit(int pl, int stage, int flag)
 {
@@ -1967,7 +1981,6 @@ end:
 	}
 }
 
-
 void TermChain(PZL_STAT *st)
 {
 	int i;
@@ -2373,8 +2386,8 @@ void PutTime(int z, int x, int y, int t)
 	PutNumeric(z, x, y, t % 60, 2);
 	t /= 60;
 	PutNumeric(z, x - 54, y, t % 60, 2);
-	SpriteDrawC(z, x + 28, y, D_0002E0F4);
-	SpriteDrawC(z, x - 28, y, D_0002E0F4);
+	SpriteDrawC(z, x + 28, y, &NUMERIC_PARTZ[10]);
+	SpriteDrawC(z, x - 28, y, &NUMERIC_PARTZ[10]);
 }
 
 #ifdef NON_MATCHING
@@ -2409,7 +2422,6 @@ void SetBubStat(PZL_STAT *st)
 
 	st->bubline = line < 7 ? 0 : line < 9 ? 1 : 2;
 }
-
 
 void DriveWarning(void) {
 }
@@ -2470,7 +2482,7 @@ extern PARTZ ChrData_Count[];
 extern const SPRDATA PUZZLE_PARTZ[];
 extern const SPRDATA GAMEMODE_PARTZ[];
 extern const SPRDATA PAUSE_PARTZ[];
-extern const SPRDATA D_0002E16C[];
+extern const SPRDATA WINLOSE_PARTZ[];
 extern const int ChNamePos[];
 int GetKeyStat(void);
 void DrawBubble(float scale, int x, int y, int col, int frame);
@@ -2950,7 +2962,7 @@ int PuzzleBody(void)
 			PollShutter(0);
 			if (st->unk42A >= 46 && st->unk42A < 300 && (st->key_rep & 0x2000))
 				st->unk42A = 300;
-			SpriteDrawC(0, 240, (int)(Get2Dim(st->unk42A, 0, 45, 300, 345) * 0.8f) + 136, D_0002E16C);
+			SpriteDrawC(0, 240, (int)(Get2Dim(st->unk42A, 0, 45, 300, 345) * 0.8f) + 136, &WINLOSE_PARTZ[2]);
 			if (st->unk42A > 300)
 				SpriteSetFader((345 - st->unk42A) / 45.0f);
 			if (st->unk42A >= 346) {
@@ -3256,7 +3268,7 @@ extern PARTZ ChrData_Count[];
 extern const SPRDATA PUZZLE_PARTZ[];
 extern const SPRDATA GAMEMODE_PARTZ[];
 extern const SPRDATA PAUSE_PARTZ[];
-extern const SPRDATA D_0002E16C[];
+extern const SPRDATA WINLOSE_PARTZ[];
 extern const int ChNamePos[];
 int GetKeyStat(void);
 void DrawBubble(float scale, int x, int y, int col, int frame);
@@ -3892,7 +3904,7 @@ int VSModeBody(int pl)
 			PollShutter(0);
 			if (st->unk42A >= 46 && st->unk42A < 300 && (st->key_rep & 0x2000))
 				st->unk42A = 300;
-			SpriteDrawC(0, 240, (int)(Get2Dim(st->unk42A, 0, 45, 300, 345) * 0.8f) + 136, D_0002E16C);
+			SpriteDrawC(0, 240, (int)(Get2Dim(st->unk42A, 0, 45, 300, 345) * 0.8f) + 136, &WINLOSE_PARTZ[2]);
 			if (st->unk42A > 300)
 				SpriteSetFader((345 - st->unk42A) / 45.0f);
 			if (st->unk42A >= 346) {
@@ -4136,7 +4148,7 @@ extern PARTZ ChrData_Count[];
 extern const SPRDATA PUZZLE_PARTZ[];
 extern const SPRDATA GAMEMODE_PARTZ[];
 extern const SPRDATA PAUSE_PARTZ[];
-extern const SPRDATA D_0002E16C[];
+extern const SPRDATA WINLOSE_PARTZ[];
 extern const int ChNamePos[];
 int GetKeyStat(void);
 void DrawBubble(float scale, int x, int y, int col, int frame);
@@ -4546,7 +4558,7 @@ int EndressBody(int pl)
 			PollShutter(0);
 			if (st->unk42A >= 46 && st->unk42A < 300 && (st->key_rep & 0x2000))
 				st->unk42A = 300;
-			SpriteDrawC(0, 240, (int)(Get2Dim(st->unk42A, 0, 45, 300, 345) * 0.8f) + 136, D_0002E16C);
+			SpriteDrawC(0, 240, (int)(Get2Dim(st->unk42A, 0, 45, 300, 345) * 0.8f) + 136, &WINLOSE_PARTZ[2]);
 			if (st->unk42A > 300)
 				SpriteSetFader((345 - st->unk42A) / 45.0f);
 			if (st->unk42A >= 346) {
@@ -4687,8 +4699,8 @@ void MonitorPut(PZL_STAT *st)
 {
 	if (st->mapsub < 2) {
 		D_0014E92C = (D_0014E92C + 3) % 60;
-		SpriteDrawC(1.0f, 50, 241, &D_0002DEB4[D_0014E92C / 20]);
-		SpriteDrawC(1.0f, 430, 241, &D_0002DEB4[4 + D_0014E92C / 15]);
+		SpriteDrawC(1.0f, 50, 241, &PUZZLE_PARTZ[13 + D_0014E92C / 20]);
+		SpriteDrawC(1.0f, 430, 241, &PUZZLE_PARTZ[13 + 4 + D_0014E92C / 15]);
 	}
 }
 
