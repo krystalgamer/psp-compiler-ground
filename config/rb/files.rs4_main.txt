@@ -51,6 +51,7 @@ cst4 0xFD9B0-0xFDA34 src/app/i3d_task
 0x1C1E0 src_app_movie    1.9.2           src/app/movie.c
 0x1D110 src_app_part     1.9.2           src/app/part.c
 0x1DA34 src_app_particle 1.9.2           src/app/particle.c
+cst4 0xFE260-0xFE2C8 src/app/particle
 0x2008C src_app_profile  1.9.2           src/app/profile.c
 0x20480 src_app_rand     1.9.2           src/app/rand.c
 0x20894 src_app_save     1.9.2           src/app/save.c

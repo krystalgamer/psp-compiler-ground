@@ -7,7 +7,6 @@
 M2C_UNK _memFree(void *, M2C_UNK *, M2C_UNK);       /* extern */
 
 float cusGetFloat(int, M2C_UNK, M2C_UNK *, float);      /* extern */
-extern float D_000FE260;
 
 M2C_UNK copLetMat(int, int);
 extern unsigned char D_000FE0C4;
@@ -77,7 +76,7 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FDE6C);
 int _PartCusConvPart_c(void *arg0, int arg1) {
     float temp_f0;
 
-    temp_f0 = cusGetFloat(arg1, 0, "AgeMax", D_000FE260);
+    temp_f0 = cusGetFloat(arg1, 0, "AgeMax", -1.0f);
     M2C_FIELD(arg0, float *, 4) = temp_f0;
     if (temp_f0 < 0.0f) {
         return 0;
@@ -191,24 +190,23 @@ int _partFree3DBaseCntx(void *p)
 }
 
 extern unsigned char D_000FE100;
-extern const float D_000FE28C;
 int _partEzEnvelope(float *out, float a, float b, float c, float d, float w)
 {
 	if (!(0.0f <= w))
 		consPrintf(&D_000FE100, &D_000FE0C4, 0x21A, "_partEzEnvelope", "0.0f<= w");
 	if (w < b) {
-		*out = (a - D_000FE28C) * (D_000FE28C - w / b) + D_000FE28C;
+		*out = (a - 1.0f) * (1.0f - w / b) + 1.0f;
 		return 0;
 	}
-	if (D_000FE28C <= w) {
+	if (1.0f <= w) {
 		*out = d;
-		return D_000FE28C < w;
+		return 1.0f < w;
 	}
 	if (c < w) {
-		*out = (d - D_000FE28C) * (w - c) / (D_000FE28C - c) + D_000FE28C;
+		*out = (d - 1.0f) * (w - c) / (1.0f - c) + 1.0f;
 		return 0;
 	}
-	*out = D_000FE28C;
+	*out = 1.0f;
 	return 0;
 }
 
@@ -250,41 +248,6 @@ int partFreeEmitCntx(void *arg0) {
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FE210);
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FE220);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FE234);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FE240);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FE254);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FE260);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FE264);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FE268);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FE26C);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FE270);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FE274);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FE278);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FE27C);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FE280);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FE284);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FE288);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FE28C);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FE290);
-
-extern const float D_000FE294, D_000FE298;
 void i3dPosture2Mat(int arg0, int arg1);
 int _partEzEnvelope(float *out, float a, float b, float c, float d, float t);
 int partEmitAnimate(char *e)
@@ -294,15 +257,13 @@ int partEmitAnimate(char *e)
 
 	i3dPosture2Mat((int)e, (int)(e + 0x40));
 	old = *(float *)(e + 0x70);
-	*(float *)(e + 0x70) = old + *(float *)(e + 0x78) * D_000FE294;
-	v = D_000FE298;
+	*(float *)(e + 0x70) = old + *(float *)(e + 0x78) * 0.01668335125f;
+	v = 1.0f;
 	if (*(float *)(env + 4) > 0.0f)
 		_partEzEnvelope(&v, *(float *)(env + 0x3C), *(float *)(env + 0x40), *(float *)(env + 0x44), *(float *)(env + 0x48), *(float *)(e + 0x70) / *(float *)(env + 4));
 	s = v * *(float *)(e + 0x74);
 	return (int)(s * *(float *)(e + 0x70)) - (int)(s * old);
 }
-const float D_000FE294 = 0.01668335125f;
-const float D_000FE298 = 1.0f;
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partInitPart2DCntx);
 
@@ -314,26 +275,23 @@ int partFree2DCntx(void *p)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", _partPartCommonAnimate);
 
-extern const float D_000FE2A8, D_000FE2AC;
 int _partPartCommonAnimate(void *p, float *dt, float *a, float *b);
 int partPart2DAnimate(char *p)
 {
 	float dt, sx, sy;
 
-	dt = *(float *)(p + 0x28) * D_000FE2A8;
+	dt = *(float *)(p + 0x28) * 0.01668335125f;
 	if (_partPartCommonAnimate(p, &dt, &sx, &sy))
 		return 1;
 	*(float *)(p + 0x74) += *(float *)(p + 0x78) * dt;
 	while (*(float *)(p + 0x74) < 0.0f)
-		*(float *)(p + 0x74) += D_000FE2AC;
-	while (*(float *)(p + 0x74) > D_000FE2AC)
-		*(float *)(p + 0x74) -= D_000FE2AC;
+		*(float *)(p + 0x74) += 6.283185482f;
+	while (*(float *)(p + 0x74) > 6.283185482f)
+		*(float *)(p + 0x74) -= 6.283185482f;
 	*(float *)(p + 0x5C) = *(float *)(p + 0x34) * sx;
 	*(float *)(p + 0x48) = *(float *)(p + 0x38) * sy;
 	return 0;
 }
-const float D_000FE2A8 = 0.01668335125f;
-const float D_000FE2AC = 6.283185482f;
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partDrawPart2D);
 
@@ -345,7 +303,6 @@ int partFree3DCntx(void *p)
 	return 1;
 }
 
-extern const float D_000FE2BC, D_000FE2C0;
 int _partPartCommonAnimate(void *p, float *dt, float *a, float *b);
 void *memset(void *, int, unsigned int);
 void copInterQuat(float *dst, void *src, float *q, float t);
@@ -355,19 +312,17 @@ int partPart3DAnimate(char *p)
 	float dt, sx, sy;
 	float q[4];
 
-	dt = *(float *)(p + 0x28) * D_000FE2BC;
+	dt = *(float *)(p + 0x28) * 0.01668335125f;
 	if (_partPartCommonAnimate(p, &dt, &sx, &sy))
 		return 1;
 	memset(q, 0, sizeof(q));
-	q[3] = D_000FE2C0;
+	q[3] = 0.1f;
 	copInterQuat(q, p + 0x90, q, dt);
 	copMulQuat(p + 0x80, q, p + 0x80);
 	*(float *)(p + 0x5C) = *(float *)(p + 0x34) * sx;
 	*(float *)(p + 0x48) = *(float *)(p + 0x38) * sy;
 	return 0;
 }
-const float D_000FE2BC = 0.01668335125f;
-const float D_000FE2C0 = 0.1f;
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partDrawPart3D);
 
