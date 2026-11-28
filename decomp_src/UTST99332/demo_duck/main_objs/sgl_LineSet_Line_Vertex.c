@@ -37,7 +37,18 @@ bool sgl::LineSet::Line::zero_length() const
     return sqrtf(math::dot(d, d)) < D_0016E00C;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_LineSet_Line_Vertex", _ZN3sgl7LineSet21invert_normal_vectorsEv);
+/* STAND-IN: float pointer views: the original orders each first component's load/store before the other loads
+   (its vector_xyzw has x()/y()/w() accessors over an array, cf. the "_p.y()"/"light.w()" assert texts) */
+static inline void ls_scale(math::vector_xyzw &v, float s) { float *p = &v.x; p[0] *= s; p[1] *= s; p[2] *= s; p[3] *= s; }
+static inline void ls_neg(math::vector_xyzw &v) { float *p = &v.x; p[0] = -p[0]; p[1] = -p[1]; p[2] = -p[2]; p[3] = -p[3]; }
+void sgl::LineSet::invert_normal_vectors()
+{
+    for (std::vector<Line>::iterator i = _lines.begin(); i != _lines.end(); ++i) {
+        ls_scale(i->c, D_0016E010);
+        ls_neg(i->b.m);
+        ls_neg(i->a.m);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_LineSet_Line_Vertex", _ZN3sgl7LineSet19calc_normal_vectorsEf);
 
