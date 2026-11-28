@@ -1147,7 +1147,43 @@ int NetIGetNetUpdateErrors(void *a)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIDisconnect);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIClose);
+extern int gbUDPEnabled; extern void *gStreamMediaInterfacePtr; void rt_parse_shutdown();
+typedef int (*DmeFn0)();
+int NetIClose(void)
+{
+    int i;
+    char *ci;
+
+    NetDisablePingIPs();
+    if (gObjectInterfacePtr != NULL) {
+        if (*(int *)((char *)gObjectInterfacePtr + 0x138) != 0)
+            (*(DmeFn0 *)((char *)gObjectInterfacePtr + 0x1C))(*(int *)((char *)gObjectInterfacePtr + 0x138));
+        (*(DmeFn0 *)((char *)gObjectInterfacePtr + 0xA4))();
+        (*(DmeFn0 *)((char *)gObjectInterfacePtr + 0x58))();
+        (*(DmeFn0 *)((char *)gObjectInterfacePtr + 0x60))();
+        if (*(int *)((char *)gObjectInterfacePtr + 0x130) != 0)
+            DmeFree((void **)((char *)gObjectInterfacePtr + 0x130));
+        (*(DmeFn0 *)((char *)gObjectInterfacePtr + 0xF4))();
+    }
+    rt_parse_shutdown();
+    for (i = 0; i < 4; i++) {
+        ci = NetGetConnInfo(i);
+        if (ci != NULL) {
+            if (gStreamMediaInterfacePtr != NULL && (*(DmeFn0 *)((char *)gStreamMediaInterfacePtr + 0x18))(ci) != 0)
+                (*(DmeFn0 *)((char *)gStreamMediaInterfacePtr + 0x8))(ci);
+            NetCleanupConnInfo(ci);
+        }
+    }
+    NetCleanupClientPingInfoArray();
+    if (gbUDPEnabled) {
+        (*(DmeFn0 *)((char *)gUDPInterfacePtr + 0x70))();
+        gbUDPEnabled = 0;
+    }
+    if (gMsgClientInterfacePtr != NULL)
+        (*(DmeFn0 *)((char *)gMsgClientInterfacePtr + 0x10))();
+    gbTimebaseEnabled = 0;
+    return 0;
+}
 
 int NetMapRtError(unsigned int e)
 {
