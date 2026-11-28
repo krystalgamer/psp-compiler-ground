@@ -137,7 +137,8 @@ extern PsUri *SaveTRAGETURI_p __asm__("SaveTRAGETURI");
 extern SubmitNote *RECIEVE_MSG_p __asm__("RECIEVE_MSG");
 void ps_freeRecvInfo(void);
 int UTL_guessMIMETypeFromName(char *name);
-void ps_HeadSend(int len1, char *p1, int len2, char *p2, int a, int b, int id);
+typedef struct PsAuth { int x0; char *user; char *pass; } PsAuth;
+void ps_HeadSend(int len1, char *p1, int len2, char *p2, PsAuth *a, int b, int id);
 void ps_postsend(int len1, char *p1, int len2, char *p2, int a, int hdrlen, char *hdr, int bodylen, char *body, int z, int id);
 char *strcat(char *d, const char *s);
 int OS_mq_send(int id, const char *buf, int len, unsigned int prio);
@@ -178,6 +179,17 @@ int ps_freeExMsgBox(int id);
 void initMPL_REQ_ABORT_PAGE(void *arg0);
 int HST_getRequestFlag(void *arg0);
 void *HST_searchTargetNameHistoryNode(void *a, void *b);
+typedef struct PsHdr { int x0; int x4; int x8; int unitId; int len; char *uri; int hlen; char *hdr; int x20; int x24; } PsHdr;
+typedef struct PsSave { int len; char *p; } PsSave;
+extern PsSave *SaveURI_p __asm__("SaveURI");
+extern PsSave *SaveREF_p __asm__("SaveREF");
+extern char D_00135408[];
+extern char D_001353FC[];
+/* shared with ps_postsend (still asm) */
+extern char D_001355A0[], D_001355BC[], D_001355D8[], D_001355F4[];
+char *parseSetAuthData(char *, int);
+PsAuth *HST_searchAuthorizationDB(char *);
+int sprintf(char *, const char *, ...);
 unsigned short UDomiString_ToLower(unsigned short c) {
     if (c < 0x80) {
         return tolower(c);
@@ -708,7 +720,154 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", D_001355D8);
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", D_001355F4);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_HeadSend);
+void ps_HeadSend(int len, char *uri, int reflen, char *ref, PsAuth *auth, int sid, int unitId) {
+    PsIpc m;
+    char *ref2;
+    int ulen;
+    char *user;
+    int plen;
+    char *pass;
+    char *uri2;
+    int n;
+    int r;
+    char *p;
+    int reflen2;
+    int size;
+    PsHdr *h;
+    PsSave *old;
+    PsSave *oldref;
+
+    ulen = 0;
+    user = NULL;
+    plen = 0;
+    pass = NULL;
+    if (PageGetType == 1 && RECIEVE_MSG_p != NULL && RECIEVE_MSG_p->method == PageGetType) {
+        RECIEVE_MSG_p->method = 0;
+    }
+    uri2 = uri;
+    n = len;
+    r = ps_SendIOMChk(len, uri);
+    if (r != 0) {
+        n = r;
+    }
+    ref2 = ref;
+    reflen2 = reflen;
+    p = parseSetAuthData(uri2, n);
+    if (p == uri) {
+        if (auth == NULL) {
+            auth = HST_searchAuthorizationDB(uri);
+        }
+    } else {
+        auth = HST_searchAuthorizationDB(p);
+        uri2 = p;
+        n = strlen(p);
+    }
+    if (auth != NULL) {
+        user = auth->user;
+        pass = auth->pass;
+        if (user != NULL) {
+            ulen = strlen(user);
+        }
+        if (pass != NULL) {
+            plen = strlen(pass);
+        }
+    }
+    size = 0;
+    if (ulen + plen > 0) {
+        size = ulen + plen + 0x17;
+    }
+    if (reflen2 > 0) {
+        size += 2;
+        size += reflen2;
+        size += 10;
+    }
+    size = size + n + 1;
+    h = (PsHdr *)MEM_malloc(0, size + 0x28);
+    if (h == NULL) {
+        ps_halt(D_00135408);
+    }
+    h->x0 = 0;
+    h->x4 = 0;
+    h->x8 = 0;
+    h->hlen = 0;
+    h->hdr = NULL;
+    h->x20 = 0;
+    h->x24 = 0;
+    p = (char *)(h + 1);
+    h->unitId = unitId;
+    h->len = n;
+    h->uri = p;
+    memcpy(p, uri2, n);
+    p += n;
+    *p++ = 0;
+    if (ulen + plen + reflen2 > 0) {
+        h->hdr = p;
+        if (ulen + plen > 0) {
+            if (ulen > 0 && plen > 0) {
+                sprintf(p, D_001355A0, user, pass);
+            } else if (ulen > 0) {
+                sprintf(p, D_001355BC, user);
+            } else {
+                sprintf(p, D_001355D8, pass);
+            }
+            p += strlen(p);
+        }
+        if (reflen2 > 0) {
+            if (ulen + plen > 0) {
+                memcpy(p, D_001355F4, 2);
+                p += 2;
+            }
+            /* STAND-IN: strcpy(p, "Referer: ") - the literal is ps_getsend's (still asm) */
+            memcpy(p, D_001353FC, 10);
+            p += strlen(p);
+            memcpy(p, ref2, reflen2);
+            p += reflen2;
+        }
+        *p = 0;
+        h->hlen = strlen(h->hdr);
+    }
+    m.type = 2;
+    m.x04 = sid;
+    if (sid == 0) {
+        m.x04 = ps_sessionGen();
+    }
+    m.x08 = 1;
+    m.cmd = 2;
+    m.x10 = psCacheMode;
+    m.x14 = 0;
+    m.x18 = size;
+    m.x1C = (int)h;
+    ps_sndmsg(&m, 5);
+    GET_HEAD_SESSIONID = m.x04;
+    SaveUnitId = unitId;
+    old = SaveURI_p;
+    SaveURI_p = (PsSave *)MEM_malloc(0, len + 9);
+    if (SaveURI_p == NULL) {
+        ps_halt("Parser : E_malloc(ps_HeadSend) failed");
+    }
+    memset(SaveURI_p, 0, len + 9);
+    SaveURI_p->len = len;
+    SaveURI_p->p = (char *)SaveURI_p + 8;
+    memcpy(SaveURI_p->p, uri, len);
+    oldref = SaveREF_p;
+    SaveREF_p = (PsSave *)MEM_malloc(0, reflen + 9);
+    if (SaveREF_p == NULL) {
+        ps_halt("Parser : E_malloc(ps_HeadSend) failed");
+    }
+    memset(SaveREF_p, 0, reflen + 9);
+    SaveREF_p->len = reflen;
+    SaveREF_p->p = (char *)SaveREF_p + 8;
+    memcpy(SaveREF_p->p, ref, reflen);
+    if (old != NULL) {
+        MEM_free(0, (int)old);
+    }
+    if (oldref != NULL) {
+        MEM_free(0, (int)oldref);
+    }
+    REQ_FAILD = 0;
+    GET_HEAD_STAT = 0;
+    ps_freeExMsgBox(M2C_FIELD(&EX_MSG_BOX_NO, int *, 4));
+}
 
 int cmpstr(char *a, char *b) {
     while (*a != 0 && ((*b != '\r') & (*b != '\n'))) {
