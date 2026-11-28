@@ -150,23 +150,106 @@ int refloadReleaseAll2(int inst, int arg, RefEnt *tbl, int n)
 	return rel;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/refload", refloadReadTask);
+void copUnitMat(void *);
+void copInitAttr(void *);
+void copLetMat(void *, void *);
+int taskKill(void *, int, int);
+int taskProc(void *, int, int, int);
+int taskDefaultMsg(void *, int, void *, int);
+int resReleaseRefer(int, int);
+int resReadReferThr(int, int, int, int);
+int mainGetThrBack(void);
+int thrState(int);
+void drawPrintf(const char *, ...);
+typedef struct {
+	char pad0[0x28];
+	int f28;
+	int f2C;
+	RefEnt *ent;
+	char pad34[0x40 - 0x34];
+	int st;
+	char pad44[0x60 - 0x44];
+	char attr[0x30];
+	char m0[0x40];
+	char m1[0x40];
+} RdTask;
+#define cassert(e, l) if (!(e)) consPrintf(&D_0010357C, &D_00103564, l, "refloadReadTask", #e)
+int refloadReadTask(RdTask *Tp, unsigned int msg, RefEnt *a, int arg)
+{
+	RefEnt *e;
+	switch (msg) {
+	case 0:
+		cassert(Tp, 0xF1);
+		Tp->f28 = -1;
+		Tp->f2C = 0;
+		copUnitMat(Tp->m0);
+		copUnitMat(Tp->m1);
+		copInitAttr(Tp->attr);
+		Tp->ent = a;
+		Tp->st = 0;
+		taskProc(Tp, 2, 0, 0);
+		return (int)Tp;
+	case 4:
+		{
+		RefEnt *p = Tp->ent;
+		if (p->fC >= 0) {
+			consPrintf("%s :: Warning :: Loading is not completed yet.\n", "refloadReadTask");
+			resReleaseRefer(p->type, p->local);
+			p->fC = -1;
+		}
+		if (p->f10) {
+			consPrintf("%s :: Warning :: Release is not completed yet.\n", "refloadReadTask");
+			resReleaseRefer(p->type, p->local);
+			p->f10 = 0;
+		}
+		}
+		return (int)Tp;
+	case 2:
+		e = Tp->ent;
+		switch (Tp->st) {
+		case 0:
+			if (resReadReferThr(mainGetThrBack(), e->type, e->fC, e->local) == 0) {
+				Tp->st = 1;
+				consPrintf("%s : read card start %d->%d\n", "refloadReadTask", e->fC, e->local);
+			}
+			break;
+		case 1:
+			{
+				int thr = mainGetThrBack();
+				drawPrintf("read card... %d->%d\n", e->fC, e->local);
+				if (thrState(thr) == 0) {
+					Tp->st = 2;
+					return taskProc(Tp, 2, 0, 0);
+				}
+			}
+			break;
+		case 2:
+			consPrintf("%s : read card success %d->%d\n", "refloadReadTask", e->fC, e->local);
+			if (e->f10) {
+				consPrintf("%s : load canceled\n", "refloadReadTask");
+				resReleaseRefer(e->type, e->local);
+				e->f10 = 0;
+			} else {
+				e->ref = e->fC;
+			}
+			e->fC = -1;
+			taskKill(Tp, 0, 0);
+			break;
+		}
+		copLetMat(Tp->m0, Tp->m1);
+		return 0;
+	case 1:
+		return 0;
+	case 3:
+		return 0;
+	case 5:
+		return 0;
+	case 0x5F:
+		return 1;
+	}
+	return taskDefaultMsg(Tp, msg, a, arg);
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/refload", D_00103740);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/refload", D_00103744);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/refload", D_00103774);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/refload", D_001037A4);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/refload", D_001037C4);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/refload", D_001037DC);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/refload", D_001037FC);
-
-extern unsigned char D_00103740;
 void copUnitMat(void *);
 void copInitAttr(void *);
 void copLetMat(void *, void *);
@@ -192,7 +275,7 @@ int refloadReleaseTask(RrTask *Tp, unsigned int msg, RefEnt *a, int arg)
 	switch (msg) {
 	case 0:
 		if (Tp == NULL)
-			consPrintf(&D_0010357C, &D_00103564, 0x174, "refloadReleaseTask", &D_00103740);
+			consPrintf(&D_0010357C, &D_00103564, 0x174, "refloadReleaseTask", "Tp");
 		Tp->f28 = -1;
 		Tp->f2C = 0;
 		copUnitMat(Tp->m0);
