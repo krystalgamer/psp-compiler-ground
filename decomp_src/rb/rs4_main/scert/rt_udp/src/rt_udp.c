@@ -225,7 +225,29 @@ int rt_udp_get_virtual_port(void *arg0, unsigned short *arg1) {
     return var_v1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_get_buffer_stats);
+int rt_udp_get_buffer_stats(void *u, unsigned int *c, int dir, unsigned int *used, unsigned int *size, unsigned int *pct)
+{
+    if (u == NULL) return 0xD2F2;
+    if (c == NULL) return 0xD2F3;
+    if (c[0] != 13) return 0xD2F3;
+    if (dir == 0) {
+        if (used != NULL) *used = c[5];
+        if (size != NULL) *size = c[6];
+        if (pct != NULL) {
+            *pct = c[6] * 100 / c[5];
+            if (*pct > 100) *pct = 100;
+        }
+    } else if (dir == 1) {
+        if (used != NULL) *used = c[9];
+        if (size != NULL) *size = c[10];
+        if (pct != NULL) {
+            *pct = c[10] * 100 / c[9];
+            if (*pct > 100) *pct = 100;
+        }
+    } else
+        return 2;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_resolve_address);
 
@@ -388,9 +410,43 @@ void rt_udp_setup_packet_sub_header(char *u, char *c, unsigned short flags, int 
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_buffer_data_for_send);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_append_data_to_packet);
+int rt_list_buf_append_data();
+int rt_udp_append_data_to_packet(void *u, void *list, unsigned short flags, int *pkt, char *data)
+{
+    unsigned short *h;
+    unsigned short len;
+    int r;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_get_packet_seed);
+    h = pkt ? (unsigned short *)((char *)pkt + 0x18) : (unsigned short *)0x10;
+    len = *h & 0x7FF;
+    r = rt_list_buf_append_data(list, &pkt, data, (pkt ? pkt[0] : 0) - 4);
+    if (r != 0) return r;
+    h = pkt ? (unsigned short *)((char *)pkt + 0x18) : (unsigned short *)0x10;
+    *h = (*h & ~0x7FF) | ((len + *(unsigned short *)(data + 0x40)) & 0x7FF) | (flags & ~0x7FF);
+    rt_udp_set_packet_seed(pkt, 0);
+    return 0;
+}
+
+typedef struct { unsigned char b[4]; } RtUdpRaw4;
+typedef struct { unsigned short len; unsigned short hlen; unsigned short flags; } RtUdpSubInfo;
+int rt_udp_get_packet_seed(int *pkt, unsigned int *seed)
+{
+    RtUdpSubInfo s;
+    unsigned char *h = pkt ? (unsigned char *)pkt + 0x18 : (unsigned char *)0x10;
+
+    ((unsigned char *)&s.len)[0] = h[0];
+    ((unsigned char *)&s.len)[1] = h[1];
+    s.len &= 0x7FF;
+    ((unsigned char *)&s.flags)[0] = h[0];
+    ((unsigned char *)&s.flags)[1] = h[1];
+    s.flags &= 0xF800;
+    if (s.flags & 0x6000) s.hlen = 4; else s.hlen = 2;
+    if (pkt != NULL && s.hlen + s.len < (unsigned int)pkt[0])
+        *(RtUdpRaw4 *)seed = *(RtUdpRaw4 *)((char *)pkt + pkt[0] + 4);
+    else
+        *seed = 0;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_set_packet_seed);
 
@@ -398,7 +454,31 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_s
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_remove_non_delivery_critical_packets);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_send_broadcasts);
+//== rt_udp_send_broadcasts
+int rt_list_buf_remove();
+int rt_udp_send_broadcasts(char *u)
+{
+    int sent;
+    char *e;
+    char *rm;
+    unsigned short len;
+
+    sent = 0;
+    e = u + 0x3C != NULL ? *(char **)(u + 0x48) : NULL;
+    while (e != NULL) {
+        rm = NULL;
+        if (*(int *)e != 0) {
+            *(short *)(e + 0x16) = (*(unsigned short *)(u + 0x78) & 0x3FF) | (short)0x8000;
+            len = *(unsigned short *)e - 0x12;
+            if (rt_comm_send_to(*(int *)u, u + 0x8C, *(int *)(u + 0x9C), e + 0x16, len, &sent) != 0) break;
+            if (len != sent) break;
+            rm = e;
+        }
+        e = *(char **)(e + 4);
+        if (rm != NULL) rt_list_buf_remove(u + 0x3C, rm);
+    }
+    return 0;
+}
 
 typedef struct { unsigned int ip; unsigned int port; } RtUdpLinkAddr;
 int rt_comm_receive_from(); int rt_comm_linkaddress_isequal(RtUdpLinkAddr, RtUdpLinkAddr); int rt_udp_process_message();
@@ -461,7 +541,35 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_p
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_process_data);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_process_unconnected_data);
+typedef struct { unsigned int ip; unsigned int port; } RtUdpUAddr;
+typedef struct { RtUdpUAddr addr; int port; } RtUdpUFrom;
+typedef struct { unsigned char *data; int len; RtUdpUFrom *from; int x; char pad[0x30]; int total; int type; } RtUdpUMsg;
+int rt_list_buf_insert(); int rt_list_buf_get_tail();
+int rt_udp_process_unconnected_data(char *u, unsigned char *data, RtUdpUAddr *addr, int port)
+{
+    RtUdpUAddr a;
+    RtUdpUFrom f;
+    RtUdpUMsg m;
+    RtUdpSubInfo s;
+
+    ((unsigned char *)&s.len)[0] = data[0];
+    ((unsigned char *)&s.len)[1] = data[1];
+    s.len &= 0x7FF;
+    a = *addr;
+    f.addr = *addr;
+    f.port = port;
+    ((unsigned char *)&s.flags)[0] = data[0];
+    ((unsigned char *)&s.flags)[1] = data[1];
+    s.flags &= 0xF800;
+    if (s.flags & 0x6000) s.hlen = 4; else s.hlen = 2;
+    m.data = data;
+    m.len = s.hlen + s.len;
+    m.from = &f;
+    m.x = 12;
+    m.total = m.len + 12;
+    m.type = 2;
+    return rt_list_buf_insert(u + 0x2C, rt_list_buf_get_tail(u + 0x2C), &m);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_find_connection);
 
