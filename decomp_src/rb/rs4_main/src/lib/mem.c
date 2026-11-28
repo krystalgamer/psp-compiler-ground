@@ -1,6 +1,9 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
+#include "../minmax.h"
+unsigned int strlen(const char *);
+char *strcpy(char *, const char *);
 int semaTerm(int);                                  /* extern */
 extern signed char D_000FACF8;
 extern unsigned char D_000FAD14;
@@ -96,7 +99,13 @@ int memGetAlignSize(void) {
     return 0x40;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", _memLog);
+struct MemLogEnt { char _0[0x18]; int line; int size; char file[0x20]; };
+void _memLog(struct MemLogEnt *p, char *file, int line, int size)
+{
+	strcpy(p->file, file + amax(strlen(file) - 0x1F, 0));
+	p->line = line;
+	p->size = size;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", _memAlloc);
 
