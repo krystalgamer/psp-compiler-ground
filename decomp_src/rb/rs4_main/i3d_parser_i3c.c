@@ -31,7 +31,27 @@ void UnpackNode_(I3cNodeP *node, unsigned int base)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_parser_i3c", PackNode_);
+void PackNode_(I3cNodeP *node, unsigned int base)
+{
+	int n = node->num;
+	char *c;
+	if (n != 0 && !(n & 0x8000)) {
+		I3cNodeP *ch = (I3cNodeP *)node->child;
+		int i;
+		for (i = 0; i < n; i++)
+			PackNode_(&ch[i], base);
+	}
+	c = (char *)node->child;
+	if ((unsigned int)c >= base) {
+		int ofs = -base;
+		if (c == (char *)0xFFFFFFFF) {
+			node->child = 0;
+			c = 0;
+		}
+		if (c != NULL)
+			node->child = (unsigned int)(c + ofs);
+	}
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_parser_i3c", I3cRoot__Unpack);
 
