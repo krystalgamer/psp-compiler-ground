@@ -2,6 +2,11 @@
 #include "common.h"
 #include "m2c_macros.h"
 
+/* The unit's .bss (config `bss 0x154008 plsel`): these two, then the function
+ * statics (count.0 .. Reconfirm.14). */
+int NowMode = 0;
+int SelectModeFlag = 0;
+
 void LoadFileList(int no, int *list);
 typedef struct {
 	int active;
@@ -131,10 +136,6 @@ int PlSelInit(void)
 /* Rough (15 instructions short): logic complete, but the original keeps ret in a stack
  * slot, tests NowMode as 1, <2, 2, 3 and allocates the face_u/face_v pointers and the
  * 128.0 double differently.  The double literals are the unit's cst8 rodata. */
-extern int D_00154010;
-extern int D_00154014;
-extern int D_00154018;
-extern int D_000408D4;
 extern int SelectModeFlag;
 extern int NowMode;
 extern const int face_u[];
@@ -159,6 +160,11 @@ void bgm_stop(void);
 int DrawSpriteEx(int no, float z, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7, float f8, float f9, float f10, float f11, float f12, float f13, int flag);
 int PlayerSelect(void)
 {
+	static int count;
+	static int fade = 30;
+	static int FrameCounter;
+	static int RollDir;
+	static float SwitchY = 10.0f;
 	int ret;
 	int i, a, x, y, k, o, r;
 	double ang;
@@ -172,14 +178,14 @@ int PlayerSelect(void)
 	DrawSpriteEz(2.0f, 0.0f, 208.0f, 200.0f, 40.0f, 0.0f, 0.0f, 13);
 	DrawSpriteEz(2.0f, 200.0f, 208.0f, 200.0f, 40.0f, 0.0f, 40.0f, 13);
 	DrawSpriteEz(2.0f, 328.0f, 0.0f, 304.0f, 304.0f, 0.0f, 0.0f, 4);
-	D_00154014++;
-	if (D_000408D4 < 30) {
-		D_000408D4++;
-	} else if (D_000408D4 >= 60) {
-		D_000408D4 += 2;
-		if (D_000408D4 >= 180) {
-			D_00154010 = 0;
-			D_000408D4 = 0;
+	FrameCounter++;
+	if (fade < 30) {
+		fade++;
+	} else if (fade >= 60) {
+		fade += 2;
+		if (fade >= 180) {
+			count = 0;
+			fade = 0;
 			SelectModeFlag = NowMode;
 			switch (NowMode) {
 			case 1:
@@ -201,7 +207,7 @@ int PlayerSelect(void)
 			if (D_0101C3BC == 0 && SelectPlayer == 5)
 				a = 2;
 			else {
-				D_000408D4 = 60;
+				fade = 60;
 				bgm_stop();
 				a = 0;
 			}
@@ -212,18 +218,18 @@ int PlayerSelect(void)
 		}
 		if (GetKeyHit() & 0xC0) {
 			se_play(4);
-			D_00154018 = 2;
+			RollDir = 2;
 			if (++SelectPlayer >= 6)
 				SelectPlayer = 0;
 		}
 		if (GetKeyHit() & 0x30) {
 			se_play(4);
-			D_00154018 = -2;
+			RollDir = -2;
 			if (--SelectPlayer < 0)
 				SelectPlayer = 5;
 		}
 		if (SelPlAngle != SelectPlayer * 30) {
-			SelPlAngle += D_00154018;
+			SelPlAngle += RollDir;
 			if (SelPlAngle < 0)
 				SelPlAngle += 180;
 			if (SelPlAngle >= 180)
@@ -240,19 +246,19 @@ int PlayerSelect(void)
 		if (NowMode == 2 || NowMode == 3) {
 			r = SelectPlayer / 3;
 			k = SelectPlayer % 3;
-			if (D_00154014 & 8)
+			if (FrameCounter & 8)
 				k += 3;
-			o = (D_00154014 >> 3) & 7;
+			o = (FrameCounter >> 3) & 7;
 			if (r == 0)
 				o = -o;
 			DrawSpriteEz(2.0f, 232.0f, 240.0f, 120.0f, 32.0f, atk_u[k], atk_v[k], 12);
 			DrawSpriteEz(2.0f, 232.0f, o + 240, 120.0f, 32.0f, 120.0f, r * 32 + 32, 12);
 		}
-		D_00154010 = (D_00154010 + 4) % 180;
-		if (D_00154010 < 0)
-			D_00154010 += 180;
+		count = (count + 4) % 180;
+		if (count < 0)
+			count += 180;
 		SetSpriteColorRGBA(191, 191, 191, 255);
-		DrawSpriteEx(10, 2.0f, 29.0f, -4.0f, 96.0f, 96.0f, 0, 0, 0, 0, 0, 0, 0, 0, (float)D_00154010 * 3.14f / 90.0f, 1.0f, 0);
+		DrawSpriteEx(10, 2.0f, 29.0f, -4.0f, 96.0f, 96.0f, 0, 0, 0, 0, 0, 0, 0, 0, (float)count * 3.14f / 90.0f, 1.0f, 0);
 	}
 	SetSpriteColorRGBA(255, 255, 255, 255);
 	DrawSpriteEz(2.0f, 40.0f, 8.0f, 400.0f, 48.0f, 0.0f, 192.0f, 7);
@@ -262,6 +268,19 @@ int PlayerSelect(void)
 	return ret;
 }
 #else
+/* STAND-IN: PlayerSelect is still asm.  Its statics, in its place and numbered as in
+ * the original (count.0, fade.1, FrameCounter.2, RollDir.3, SwitchY.4); initialized ones only keep the numbering (their .data stays asm). */
+static void __attribute__((section(".pbskip"), unused)) PlayerSelect_statics(void)
+{
+	static int count;
+	static int fade __attribute__((section(".pbskipd")));
+	static int FrameCounter;
+	static int RollDir;
+	static float SwitchY __attribute__((section(".pbskipd")));
+}
+__asm__("D_00154010 = count.0\n"
+	"D_00154014 = FrameCounter.2\n"
+	"D_00154018 = RollDir.3");
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", PlayerSelect);
 #endif
 
@@ -288,9 +307,6 @@ int ModeSelInt(void)
  * branch the delay slot gets an extra reload of D_00154020 instead of the lui.  The 64
  * unused bytes of frame are reproduced by buf[64]. */
 extern int MsAccessFlag;
-extern int D_0015401C;
-extern int D_00154020;
-extern int D_00154024;
 extern int SelectModeFlag;
 extern int NowMode;
 extern const int mode_stop[];
@@ -304,6 +320,10 @@ void sel_obj_move2(int i);
 int DrawSpriteEx(int no, float z, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7, float f8, float f9, float f10, float f11, float f12, float f13, int flag);
 int ModeSelect(void)
 {
+	static int count;
+	static int fade = 30;
+	static int SwitchMode;
+	static int SwitchDir;
 	int ret = 0;
 	int key;
 	char buf[64];
@@ -317,23 +337,23 @@ int ModeSelect(void)
 		SpriteSetFader(1.0f);
 		if (key & 0x20) {
 			se_play(4);
-			D_00154024 = -2;
-			D_00154020--;
+			SwitchDir = -2;
+			SwitchMode--;
 		}
 	}
-	if (D_00154020 < 0)
-		D_00154020 = 4;
+	if (SwitchMode < 0)
+		SwitchMode = 4;
 	if (key & 0x80) {
 		se_play(4);
-		D_00154024 = 2;
-		D_00154020++;
+		SwitchDir = 2;
+		SwitchMode++;
 	}
-	if (D_00154020 >= 5)
-		D_00154020 = 0;
+	if (SwitchMode >= 5)
+		SwitchMode = 0;
 	if (key & 0x2008) {
 		se_play(1);
 		SelectModeFlag = NowMode;
-		switch (D_00154020) {
+		switch (SwitchMode) {
 		case 0:
 			ret = 6;
 			NowMode = 0;
@@ -359,15 +379,15 @@ int ModeSelect(void)
 	sel_obj_move2(0);
 	disp_title_bg(255);
 	DrawSpriteEz(3.0f, SelWork[0].x, SelWork[0].y, 304.0f, 304.0f, 0.0f, 0.0f, 4);
-	if (D_0015401C != mode_stop[D_00154020])
-		D_0015401C += D_00154024;
+	if (count != mode_stop[SwitchMode])
+		count += SwitchDir;
 	else
-		DrawSpriteEz(3.0f, 120.0f, 200.0f, 240.0f, 32.0f, 0.0f, D_00154020 * 48 + 10, 6);
-	D_0015401C %= 180;
-	if (D_0015401C < 0)
-		D_0015401C += 180;
+		DrawSpriteEz(3.0f, 120.0f, 200.0f, 240.0f, 32.0f, 0.0f, SwitchMode * 48 + 10, 6);
+	count %= 180;
+	if (count < 0)
+		count += 180;
 	SetSpriteColorRGBA(255, 255, 255, 255);
-	DrawSpriteEx(3, 3.0f, SelWork[1].x, SelWork[1].y, 424.0f, 424.0f, 0, 0, 0, 0, 0, 0, 0, 0, (float)D_0015401C * 3.14f / 90.0f, 1.0f, 0);
+	DrawSpriteEx(3, 3.0f, SelWork[1].x, SelWork[1].y, 424.0f, 424.0f, 0, 0, 0, 0, 0, 0, 0, 0, (float)count * 3.14f / 90.0f, 1.0f, 0);
 	DrawSpriteEz(2.0f, 40.0f, 8.0f, 400.0f, 48.0f, 0.0f, 48.0f, 7);
 	DrawSpriteEz(2.0f, 104.0f, 56.0f, 272.0f, 32.0f, 0.0f, 0.0f, 5);
 	DrawSpriteEz(2.0f, 148.0f, 248.0f, 184.0f, 24.0f, 0.0f, 0.0f, 8);
@@ -375,6 +395,18 @@ int ModeSelect(void)
 	return ret;
 }
 #else
+/* STAND-IN: ModeSelect is still asm.  Its statics, in its place and numbered as in
+ * the original (count.5, fade.6, SwitchMode.7, SwitchDir.8); initialized ones only keep the numbering (their .data stays asm). */
+static void __attribute__((section(".pbskip"), unused)) ModeSelect_statics(void)
+{
+	static int count;
+	static int fade __attribute__((section(".pbskipd")));
+	static int SwitchMode;
+	static int SwitchDir;
+}
+__asm__("D_0015401C = count.5\n"
+	"D_00154020 = SwitchMode.7\n"
+	"D_00154024 = SwitchDir.8");
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", ModeSelect);
 #endif
 
@@ -392,7 +424,6 @@ int RselInt(void) {
 
 extern int D_000408E4;
 extern const double D_0002F670;	/* 23.5: a cst8 literal, kept in the unit's rodata */
-extern int D_00154028;
 extern int SelectModeFlag;
 extern const int r_num_u[];
 extern const int r_num_v[];
@@ -403,6 +434,10 @@ int se_play(int no);
 int DrawSpriteEx(int no, float z, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7, float f8, float f9, float f10, float f11, float f12, float f13, int flag);
 int RoundSelect(void)
 {
+	static int Angle;
+	/* STAND-IN: numbering only; the real `static int CurPos = 1;` is .data,
+	 * which stays asm (D_000408E4) */
+	static int CurPos __attribute__((section(".pbskipd")));
 	int ret = 0;
 	int d100, d10, d1, a;
 
@@ -502,11 +537,11 @@ int RoundSelect(void)
 		DrawSpriteEz(2.0f, 80.0f, 96.0f, 96.0f, 96.0f, r_num_u[d100], r_num_v[d100], 11);
 		DrawSpriteEz(2.0f, 192.0f, 96.0f, 96.0f, 96.0f, r_num_u[d10], r_num_v[d10], 11);
 		DrawSpriteEz(2.0f, 304.0f, 96.0f, 96.0f, 96.0f, r_num_u[d1], r_num_v[d1], 11);
-		D_00154028 = (D_00154028 + 4) % 180;
-		if (D_00154028 < 0)
-			D_00154028 += 180;
+		Angle = (Angle + 4) % 180;
+		if (Angle < 0)
+			Angle += 180;
 		SetSpriteColorRGBA(255, 255, 255, 255);
-		DrawSpriteEx(10, 2.0f, D_0002F670 - D_000408E4 * D_0002F670, -1.5f, 96.0f, 96.0f, 0, 0, 0, 0, 0, 0, 0, 0, (float)D_00154028 * 3.14f / 90.0f, 1.0f, 0);
+		DrawSpriteEx(10, 2.0f, D_0002F670 - D_000408E4 * D_0002F670, -1.5f, 96.0f, 96.0f, 0, 0, 0, 0, 0, 0, 0, 0, (float)Angle * 3.14f / 90.0f, 1.0f, 0);
 		if (GetKeyHit() & 0x2008) {
 			if (Round >= 501)
 				se_play(2);
@@ -561,10 +596,6 @@ typedef struct {
 	int unk00, unk04, unk08, unk0C, unk10, unk14, unk18, unk1C, unk20, unk24;
 } SaveData;
 extern SaveData SaveDataBuf;
-extern int D_0015402C;
-extern int D_00154030;
-extern int D_00154034;
-extern int D_00154038;
 extern int MsAccessFlag;
 extern const int option_ch_x[];
 extern const int option_ch_y[];
@@ -581,6 +612,10 @@ int MsSave2(void);
 void write_op_num(int x, int y, int num);
 int OptionMode(void)
 {
+	static int OptionSelect;
+	static int RecordsFlag;
+	static int RecordsClearFlag;
+	static int Reconfirm;
 	int ret;
 	int key;
 	int i;
@@ -594,15 +629,15 @@ int OptionMode(void)
 	}
 	SpriteInit();
 	ret = 0;
-	if (D_00154038)
+	if (Reconfirm)
 		disp_title_bg(127);
 	else
 		disp_title_bg(255);
 	DrawSpriteEz(2.0f, 140.0f, 8.0f, 200.0f, 48.0f, 0.0f, 96.0f, 7);
 	DrawSpriteEz(2.0f, 148.0f, 248.0f, 184.0f, 24.0f, 0.0f, 0.0f, 8);
-	if (D_00154030 == 0) {
+	if (RecordsFlag == 0) {
 		for (i = 0; i < 4; i++) {
-			if (D_0015402C == i)
+			if (OptionSelect == i)
 				SetSpriteColorRGBA(255, 255, 255, 255);
 			else
 				SetSpriteColorRGBA(255, 255, 255, 127);
@@ -610,16 +645,16 @@ int OptionMode(void)
 		}
 		if (key & 0x40) {
 			se_play(4);
-			if (++D_0015402C >= 4)
-				D_0015402C = 0;
+			if (++OptionSelect >= 4)
+				OptionSelect = 0;
 		}
 		if (key & 0x10) {
 			se_play(4);
-			if (--D_0015402C < 0)
-				D_0015402C = 3;
+			if (--OptionSelect < 0)
+				OptionSelect = 3;
 		}
 		SetSpriteColorRGBA(255, 255, 255, 255);
-		switch (D_0015402C) {
+		switch (OptionSelect) {
 		case 0:
 			if (GetKeyHit() & 0x20A0) {
 				SaveDataBuf.unk10 = 1 - SaveDataBuf.unk10;
@@ -633,7 +668,7 @@ int OptionMode(void)
 		case 1:
 			if (GetKeyHit() & 0x2008) {
 				se_play(4);
-				D_00154030 = 1;
+				RecordsFlag = 1;
 			}
 			break;
 		case 2:
@@ -644,13 +679,13 @@ int OptionMode(void)
 			if (GetKeyHit() & 0x2008) {
 				se_play(4);
 				MsSave2();
-				D_0015402C = 4;
+				OptionSelect = 4;
 			}
 			break;
 		case 4:
 			if (MsAccessFlag == 0) {
 				ret = 5;
-				D_0015402C = 3;
+				OptionSelect = 3;
 			}
 			break;
 		}
@@ -661,7 +696,7 @@ int OptionMode(void)
 		write_op_num(318, 112, SaveDataBuf.unk18);
 		write_op_num(318, 140, SaveDataBuf.unk1C);
 		SetSpriteColorRGBA(255, 255, 255, 127);
-		if (D_00154034 == 0) {
+		if (RecordsClearFlag == 0) {
 			DrawSpriteEz(2.0f, 168.0f, 180.0f, 144.0f, 32.0f, 0.0f, 0.0f, 14);
 			SetSpriteColorRGBA(255, 255, 255, 255);
 			DrawSpriteEz(2.0f, 205.0f, 208.0f, 70.0f, 32.0f, 136.0f, 0.0f, 12);
@@ -670,7 +705,7 @@ int OptionMode(void)
 			SetSpriteColorRGBA(255, 255, 255, 255);
 			DrawSpriteEz(2.0f, 168.0f, 180.0f, 144.0f, 32.0f, 0.0f, 0.0f, 14);
 		}
-		if (D_00154038 == 1) {
+		if (Reconfirm == 1) {
 			DrawSpriteEz(0.0f, 0.0f, 100.0f, 240.0f, 104.0f, 0.0f, 0.0f, 15);
 			DrawSpriteEz(0.0f, 240.0f, 100.0f, 240.0f, 104.0f, 240.0f, 0.0f, 15);
 			if (GetKeyHit() & 0x2008) {
@@ -678,23 +713,23 @@ int OptionMode(void)
 				SaveDataBuf.unk18 = 0;
 				SaveDataBuf.unk1C = 0;
 				se_play(1);
-				D_00154038 = 0;
+				Reconfirm = 0;
 			}
 			if (GetKeyHit() & 0x4000) {
 				se_play(3);
-				D_00154038 = 0;
+				Reconfirm = 0;
 			}
 		} else {
 			if (GetKeyHit() & 0x50) {
-				D_00154034 = 1 - D_00154034;
+				RecordsClearFlag = 1 - RecordsClearFlag;
 				se_play(4);
 			}
 			if (GetKeyHit() & 0x2008) {
 				se_play(4);
-				if (D_00154034 == 0)
-					D_00154030 = 0;
+				if (RecordsClearFlag == 0)
+					RecordsFlag = 0;
 				else
-					D_00154038 = 1;
+					Reconfirm = 1;
 			}
 		}
 	}
@@ -702,6 +737,19 @@ int OptionMode(void)
 	return ret;
 }
 #else
+/* STAND-IN: OptionMode is still asm.  Its statics, in its place and numbered as in
+ * the original (OptionSelect.11, RecordsFlag.12, RecordsClearFlag.13, Reconfirm.14); initialized ones only keep the numbering (their .data stays asm). */
+static void __attribute__((section(".pbskip"), unused)) OptionMode_statics(void)
+{
+	static int OptionSelect;
+	static int RecordsFlag;
+	static int RecordsClearFlag;
+	static int Reconfirm;
+}
+__asm__("D_0015402C = OptionSelect.11\n"
+	"D_00154030 = RecordsFlag.12\n"
+	"D_00154034 = RecordsClearFlag.13\n"
+	"D_00154038 = Reconfirm.14");
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", OptionMode);
 #endif
 
