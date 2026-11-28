@@ -883,9 +883,44 @@ int rt_p2p_process_overlay_type(char *p, int peer, void *msg)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_process_join_overlay);
-
 int rt_p2p_update_grid(char *p, RtP2POvlTab *o, unsigned short me);
+int rt_p2p_process_join_overlay(char *p, unsigned short idx, void *msg)
+{
+    struct { unsigned char a, b, c, d; } m;
+    struct { unsigned short type; unsigned char ov; } out;
+    RtP2PVec vec;
+    RtP2POvlTab *tab, *o;
+    unsigned short me;
+
+    if (p == NULL) return 2;
+    me = *(unsigned short *)(p + 0x1A4);
+    if (me >= *(unsigned short *)(p + 0x19C)) return 0;
+    tab = *(RtP2POvlTab **)(p + 0x188);
+    memcpy(&m, msg, 4);
+    if (tab != NULL) {
+    o = (RtP2POvlTab *)(m.c * 24 + (int)tab);
+    if (o->peers[me] != NULL) {
+    o->peers[idx] = (char *)*(void **)(p + 0x184) + idx * 80;
+    o->count++;
+    {
+        int r = rt_p2p_update_grid(p, o, me);
+        if (r != 0) return r;
+    }
+    out.type = rt_p2p_pack_type(7, 4);
+    out.ov = m.c;
+    vec.e[0].buf = &out;
+    vec.e[0].len = 4;
+    vec.total = 4;
+    vec.n = 1;
+    {
+        int r = rt_p2p_isend((int *)p, (int *)(*(char **)(p + 0x184) + idx * 80), 0xF000, (int)&vec);
+        if (r != 0) return r;
+    }
+    }
+    }
+    return 0;
+}
+
 int rt_p2p_process_join_response(char *p, unsigned short idx, void *msg)
 {
     struct { unsigned char a, b, c, d; } m;
@@ -1215,7 +1250,54 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_t
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_timebase_query);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_process_timebase_data);
+int rt_timebase_get_localtime();
+int rt_msg_set_u4byte();
+int rt_msg_get_u4byte();
+int rt_timebase_get_globaltime();
+void rt_timebase_reset_globaltime();
+int rt_timebase_update_globaltime();
+int rt_p2p_process_timebase_data(char *p, unsigned short idx, unsigned char *msg)
+{
+    unsigned char buf[10];
+    RtP2PVec vec;
+    unsigned int t;
+    unsigned int local;
+    unsigned char *mp;
+
+    if (p == NULL) return 2;
+    rt_msg_get_u4byte(msg + 2, &t);
+    if (*(unsigned short *)(p + 0x1A2) != idx) {
+        mp = buf + 2;
+        rt_msg_set_u4byte(mp, t);
+        mp += 4;
+        rt_timebase_get_globaltime(&t);
+        rt_msg_set_u4byte(mp, t);
+        rt_msg_set_u2byte(buf, rt_p2p_pack_type(15, 10));
+        vec.e[0].buf = buf;
+        vec.e[0].len = 10;
+        vec.total = 10;
+        vec.n = 1;
+        {
+            int r = rt_p2p_isend((int *)p, (int *)(*(char **)(p + 0x184) + idx * 80), 0xF000, (int)&vec);
+            if (r != 0) return r;
+        }
+    } else {
+        unsigned int sent = t;
+        unsigned int now, delay;
+        rt_timebase_get_localtime(&local);
+        now = local;
+        rt_msg_get_u4byte(msg + 6, &t);
+        delay = now - sent;
+        {unsigned int g = t;
+        if (*(int *)(p + 0x1E8) == 0) {
+            *(int *)(p + 0x1E8) = 1;
+            rt_timebase_reset_globaltime(g);
+        } else {
+            rt_timebase_update_globaltime(delay, g);
+        }}
+    }
+    return 0;
+}
 
 typedef struct { unsigned short type; unsigned char key[0x40]; } RtP2PKeyMsg;
 int rt_p2p_process_game_session_key(char *p, unsigned short idx, void *msg)
