@@ -11,6 +11,16 @@ static __inline__ void wclr_i(void *dst, unsigned int n)
 		*p++ = 0;
 }
 
+static __inline__ void wcpy_i(void *dst, const void *src, unsigned int n)
+{
+	char *d = dst;
+	const char *s = src;
+	unsigned int i;
+
+	for (i = 0; i < n; i++)
+		*d++ = *s++;
+}
+
 int sceWaveInit(void)
 {
 	if (D_0001378C != 0)
@@ -490,9 +500,246 @@ static int func_00005CDC(short *dst, unsigned char *vag, int *hist1, int *hist2)
 	return flags;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/libwave", func_00005E20);
+static void func_00005E20(int ch, void *dst)
+{
+	char *data = D_00014614[ch].data;
+	int ret;
 
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/libwave", func_000060CC);
+	wclr_i(dst, 0x70);
+	switch ((unsigned char)D_00014614[ch].flags) {
+	case 0:
+		if (D_00014614[ch].pos + 16 <= (int)D_00014614[ch].size) {
+			wcpy_i(D_00014AE0, data + D_00014614[ch].pos, 16);
+			D_00014614[ch].pos += 16;
+			func_00005CDC(dst, D_00014AE0, &D_00014614[ch].unk30, &D_00014614[ch].unk34);
+		} else {
+			D_00014614[ch].pos = 0;
+			D_00014614[ch].stat = 0;
+		}
+		break;
+	case 1:
+		if ((int)D_00014614[ch].size < 16)
+			break;
+		for (;;) {
+			if (D_00014614[ch].pos + 16 <= (int)D_00014614[ch].size) {
+				unsigned int i = 0;
+				char *d = D_00014AE0;
+				char *s = data + D_00014614[ch].pos;
+			cl:
+				*d++ = *s++;
+				i++;
+				if (i < 16)
+					goto cl;
+				goto decode;
+			}
+			break;
+		}
+		D_00014614[ch].pos = D_00014614[ch].unk10;
+		wcpy_i(D_00014AE0, data + D_00014614[ch].pos, 16);
+		goto decode;
+	case 2:
+		if ((int)D_00014614[ch].size < 16)
+			break;
+		if (D_00014614[ch].pos + 16 <= (int)D_00014614[ch].size) {
+			wcpy_i(D_00014AE0, data + D_00014614[ch].pos, 16);
+		} else {
+			D_00014614[ch].pos = 0;
+			D_00014614[ch].stat = 0;
+			break;
+		}
+	decode:
+		ret = func_00005CDC(dst, D_00014AE0, &D_00014614[ch].unk30, &D_00014614[ch].unk34);
+		switch (ret) {
+		case 6:
+			D_00014614[ch].unk10 = D_00014614[ch].pos;
+			D_00014614[ch].pos += 16;
+			break;
+		case 3:
+			D_00014614[ch].unk14 = D_00014614[ch].pos;
+			D_00014614[ch].pos = D_00014614[ch].unk10;
+			break;
+		default:
+			D_00014614[ch].pos += 16;
+			break;
+		}
+		break;
+	}
+}
 
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/libwave", func_0000663C);
+static void func_000060CC(int ch, void *dst)
+{
+	char *data = D_00014614[ch].data;
+
+	if (!(D_00014614[ch].flags & 1)) {
+		if (!(D_00014614[ch].flags & 0x200)) {
+			if (D_00014614[ch].pos + 0x38 <= (int)D_00014614[ch].size) {
+				wcpy_i(dst, data + D_00014614[ch].pos, 0x38);
+				D_00014614[ch].pos += 0x38;
+			} else {
+				int m;
+
+				wclr_i(dst, 0x70);
+				m = D_00014614[ch].size - D_00014614[ch].pos;
+				wcpy_i(dst, data + D_00014614[ch].pos, m);
+				D_00014614[ch].pos = 0;
+				D_00014614[ch].stat = 0;
+			}
+		} else {
+			if (D_00014614[ch].pos + 0x70 <= (int)D_00014614[ch].size) {
+				wcpy_i(dst, data + D_00014614[ch].pos, 0x70);
+				D_00014614[ch].pos += 0x70;
+			} else {
+				int m;
+
+				wclr_i(dst, 0x70);
+				m = D_00014614[ch].size - D_00014614[ch].pos;
+				wcpy_i(dst, data + D_00014614[ch].pos, m);
+				D_00014614[ch].pos = 0;
+				D_00014614[ch].stat = 0;
+			}
+		}
+	} else {
+		for (;;) {
+			if (!(D_00014614[ch].flags & 0x200)) {
+				if ((int)D_00014614[ch].size >= 0x38) {
+					if (D_00014614[ch].pos + 0x38 < (int)D_00014614[ch].size) {
+						wcpy_i(dst, data + D_00014614[ch].pos, 0x38);
+						D_00014614[ch].pos += 0x38;
+					} else {
+						int m = D_00014614[ch].size - D_00014614[ch].pos;
+
+						wcpy_i(dst, data + D_00014614[ch].pos, m);
+						D_00014614[ch].pos = 0;
+						wcpy_i((char *)dst + m, data, 0x38 - m);
+						D_00014614[ch].pos = 0x38 - m;
+					}
+				} else {
+					int n, rem;
+
+					n = D_00014614[ch].size - D_00014614[ch].pos;
+					wcpy_i(dst, data + D_00014614[ch].pos, n);
+					D_00014614[ch].pos = 0;
+					rem = 0x38 - n;
+					for (;;) {
+						if ((int)D_00014614[ch].size < rem) {
+							wcpy_i((char *)dst + n, data, D_00014614[ch].size);
+							n += D_00014614[ch].size;
+							rem -= D_00014614[ch].size;
+						} else {
+							wcpy_i((char *)dst + n, data, rem);
+							D_00014614[ch].pos += rem;
+							break;
+						}
+					}
+				}
+				return;
+			}
+			break;
+		}
+		if ((int)D_00014614[ch].size >= 0x70) {
+			if (D_00014614[ch].pos + 0x70 < (int)D_00014614[ch].size) {
+				wcpy_i(dst, data + D_00014614[ch].pos, 0x70);
+				D_00014614[ch].pos += 0x70;
+			} else {
+				int m = D_00014614[ch].size - D_00014614[ch].pos;
+
+				wcpy_i(dst, data + D_00014614[ch].pos, m);
+				D_00014614[ch].pos = 0;
+				wcpy_i((char *)dst + m, data, 0x70 - m);
+				D_00014614[ch].pos = 0x70 - m;
+			}
+		} else {
+			int n, rem;
+
+			n = D_00014614[ch].size - D_00014614[ch].pos;
+			wcpy_i(dst, data + D_00014614[ch].pos, n);
+			D_00014614[ch].pos = 0;
+			rem = 0x70 - n;
+			for (;;) {
+				if ((int)D_00014614[ch].size < rem) {
+					wcpy_i((char *)dst + n, data, D_00014614[ch].size);
+					n += D_00014614[ch].size;
+					rem -= D_00014614[ch].size;
+				} else {
+					wcpy_i((char *)dst + n, data, rem);
+					D_00014614[ch].pos += rem;
+					break;
+				}
+			}
+		}
+	}
+}
+
+static void func_0000663C(int ch, short *out, short *src)
+{
+	int i;
+	int l, r, x;
+
+	for (i = 0; i < 28; i++) {
+		if (D_00014614[ch].flags & 0x100000) {
+			D_00014614[ch].unk38 = (D_00014614[ch].unk3C - D_00014614[ch].unk40) * 127 / D_00014614[ch].unk3C;
+			if (D_00014614[ch].unk38 < 0)
+				D_00014614[ch].unk38 = 0;
+			D_00014614[ch].unk40++;
+			if (D_00014614[ch].unk40 >= D_00014614[ch].unk3C) {
+				D_00014614[ch].flags &= ~0x100000;
+				D_00014614[ch].unk40 = 0;
+				if (D_00014614[ch].flags & 0x10000) {
+					D_00014614[ch].flags &= ~0x10000;
+					D_00014614[ch].stat = D_00014874[ch].stat;
+					D_00014614[ch].pos = D_00014874[ch].pos;
+					D_00014614[ch].vol_l = D_00014874[ch].vol_l;
+					D_00014614[ch].vol_r = D_00014874[ch].vol_r;
+					D_00014614[ch].unk30 = D_00014874[ch].unk30;
+					D_00014614[ch].unk34 = D_00014874[ch].unk34;
+					D_00014614[ch].unk28 = D_00014874[ch].unk28;
+					D_00014614[ch].unk2C = D_00014874[ch].unk2C;
+				} else if (D_00014614[ch].flags & 0x20000) {
+					D_00014614[ch].flags &= ~0x20000;
+					D_00014614[ch].stat = D_00014874[ch].stat;
+					D_00014614[ch].pos = D_00014874[ch].pos;
+					D_00014614[ch].unk30 = D_00014874[ch].unk30;
+					D_00014614[ch].unk34 = D_00014874[ch].unk34;
+					D_00014614[ch].unk28 = D_00014874[ch].unk28;
+					D_00014614[ch].unk2C = D_00014874[ch].unk2C;
+				} else if (D_00014614[ch].flags & 0x40000) {
+					D_00014614[ch].flags &= ~0x40000;
+					D_00014614[ch].stat = D_00014874[ch].stat;
+				}
+			}
+		} else {
+			D_00014614[ch].unk38 = 127;
+		}
+		if (!(D_00014614[ch].flags & 0x100)) {
+			l = D_00014614[ch].vol_l * D_00014614[ch].unk38 / 127;
+			r = D_00014614[ch].vol_r * D_00014614[ch].unk38 / 127;
+			l = l * src[i] / 4096;
+			r = r * src[i] / 4096;
+		} else if (!(D_00014614[ch].flags & 0x200)) {
+			l = D_00014614[ch].vol_l * D_00014614[ch].unk38 / 127;
+			r = D_00014614[ch].vol_r * D_00014614[ch].unk38 / 127;
+			l = l * src[i] / 4096;
+			r = r * src[i] / 4096;
+		} else {
+			l = D_00014614[ch].vol_l * D_00014614[ch].unk38 / 127;
+			r = D_00014614[ch].vol_r * D_00014614[ch].unk38 / 127;
+			l = l * src[i * 2] / 4096;
+			r = r * src[i * 2 + 1] / 4096;
+		}
+		x = out[i * 2];
+		x += l;
+		if (x > 32767)
+			x = 32767;
+		if (x < -32768)
+			x = -32768;
+		out[i * 2] = x;
+		x = out[i * 2 + 1];
+		x += r;
+		if (x > 32767)
+			x = 32767;
+		if (x < -32768)
+			x = -32768;
+		out[i * 2 + 1] = x;
+	}
+}
 
