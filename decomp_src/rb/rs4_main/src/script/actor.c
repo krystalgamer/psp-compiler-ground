@@ -208,7 +208,85 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/actor", D_000FEDF4);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/actor", D_000FEE00);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/actor", ActorLightInit);
+extern char *D_001123A8[];
+extern const float D_000FF270, D_000FF274, D_000FF278, D_000FF27C, D_000FF280;
+void *_memAllocZero(int, const void *, int);
+typedef struct { void **mdl; char pad4[0x164 - 4]; int type; float *param; } AliTask;
+int ActorLightInit(AliTask *Tp)
+{
+	void *root = *Tp->mdl;
+	int i;
+	float *p;
+	for (i = 0; i < 4; i++) {
+		if (I3rRoot__GetNodeIndexByName(root, D_001123A8[i]) >= 0) {
+			if (sceKernelGetGPI() & 1)
+				consPrintf("%s : findout : %s\n", "ActorLightInit", D_001123A8[i]);
+			break;
+		}
+	}
+	Tp->type = i;
+	switch (i) {
+	default:
+		if (sceKernelGetGPI() & 1)
+			consPrintf("%s : undefined\n", "ActorLightInit");
+		return 0;
+	case 0:
+		p = _memAllocZero(0x20, &D_000FEA94, 0x283);
+		if (!p)
+			consPrintf(&D_000FEAB4, &D_000FEA94, 0x284, "ActorLightInit", "pParam");
+		Tp->param = p;
+		p[0] = 0;
+		p[1] = D_000FF270;
+		p[2] = 0;
+		p[4] = D_000FF274;
+		p[5] = D_000FF274;
+		p[6] = D_000FF274;
+		p[7] = 0;
+		return 1;
+	case 1:
+		p = _memAllocZero(0x20, &D_000FEA94, 0x292);
+		if (!p)
+			consPrintf(&D_000FEAB4, &D_000FEA94, 0x293, "ActorLightInit", "pParam");
+		Tp->param = p;
+		p[0] = 0;
+		p[1] = D_000FF270;
+		p[2] = 0;
+		p[4] = D_000FF274;
+		p[5] = D_000FF274;
+		p[6] = D_000FF274;
+		p[7] = 0;
+		return 1;
+	case 2:
+		p = _memAllocZero(0x40, &D_000FEA94, 0x2A1);
+		if (!p)
+			consPrintf(&D_000FEAB4, &D_000FEA94, 0x2A2, "ActorLightInit", "pParam");
+		Tp->param = p;
+		p[0] = 0;
+		p[1] = D_000FF270;
+		p[2] = 0;
+		p[4] = 0;
+		p[5] = D_000FF270;
+		p[6] = 0;
+		p[8] = D_000FF274;
+		p[9] = D_000FF274;
+		p[10] = D_000FF274;
+		p[11] = 0;
+		p[12] = D_000FF278;
+		p[13] = D_000FF27C;
+		return 1;
+	case 3:
+		p = _memAllocZero(0x10, &D_000FEA94, 0x2B7);
+		if (!p)
+			consPrintf(&D_000FEAB4, &D_000FEA94, 0x2B8, "ActorLightInit", "pParam");
+		Tp->param = p;
+		p[0] = D_000FF280;
+		p[1] = D_000FF280;
+		p[2] = D_000FF280;
+		p[3] = D_000FF274;
+		return 1;
+	}
+	return 0;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/actor", D_000FEE48);
 
