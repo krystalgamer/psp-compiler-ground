@@ -200,7 +200,90 @@ int http_setproxyheader_UserAgent(int h, int v)
     return http_setproxyheader(h, htlib_cstrUSERAGENT, v);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_setproxyhead", http_setproxyheader);
+int http_setproxyheader(int h, const char *name, int v)
+{
+    const char *value = (const char *)v;
+    HHObj *o;
+    HHdr *n;
+    HHdr *p;
+    HHdr *next;
+    int r;
+    int req;
+
+    o = (HHObj *)(h * 2);
+    if (h == 0)
+        return -100;
+    if (!M2C_FIELD(o, int *, 0x44))
+        goto ok;
+    if (name != NULL) {
+        if (value != NULL) {
+            n = MEM_malloc(0, 16);
+            if (n == NULL) {
+                if (o->error == 0)
+                    o->error = -0x67;
+                return o->error;
+            }
+            n->name = MEM_malloc(0, strlen(name) + 1);
+            if (n->name == NULL) {
+                if (o->error == 0)
+                    o->error = -0x67;
+                return o->error;
+            }
+            strcpy(n->name, name);
+            n->value = MEM_malloc(0, strlen(value) + 1);
+            if (n->value == NULL) {
+                if (o->error == 0)
+                    o->error = -0x67;
+                return o->error;
+            }
+            strcpy(n->value, value);
+            if (o->phdrs == NULL) {
+                n->f0 = (int)n;
+                o->phdrs = n;
+            } else {
+                for (p = o->phdrs; p->next != NULL; p = p->next)
+                    ;
+                p->next = n;
+                n->f0 = (int)p;
+            }
+            n->next = NULL;
+            return 0;
+        }
+        for (n = o->phdrs; n != NULL; n = next) {
+            next = n->next;
+            if (strcmp(n->name, name) == 0) {
+                n->f0 = (int)next;
+                if (n == o->phdrs)
+                    o->phdrs = next;
+                MEM_free(0, n->name);
+                MEM_free(0, n->value);
+                MEM_free(0, n);
+            }
+        }
+        if (o->req >= 0) {
+            r = sceHttpDeleteHeader(o->req, name);
+            if (r < 0) {
+                if (o->error == 0)
+                    o->error = r;
+                return o->error;
+            }
+        }
+        return 0;
+    }
+    n = o->phdrs;
+    if (n != NULL) {
+        do {
+            next = n->next;
+            MEM_free(0, n->name);
+            MEM_free(0, n->value);
+            MEM_free(0, n);
+            n = next;
+        } while (n != NULL);
+    }
+    o->phdrs = NULL;
+ok:
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
