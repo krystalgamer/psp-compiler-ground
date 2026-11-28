@@ -141,7 +141,36 @@ int rt_token_release_ownership(unsigned int idx, int owner, RtTokTab *t)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_update_ownership);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_list_check_ownership);
+void rt_token_list_check_ownership(unsigned char *mask, unsigned int nbytes, unsigned int base, unsigned short *owners, unsigned int *count, RtTokTab *t)
+{
+    unsigned short k;
+    unsigned int i, b;
+    unsigned int j;
+
+    if (mask == NULL) return;
+    if (t == NULL) rt_token_start(&t);
+    if (t->count == 0 || base >= t->size) {
+        owners[0] = 0xFFFF;
+        *count = 1;
+        return;
+    }
+    k = 0;
+    for (i = 0; i < nbytes; i++) {
+        j = i * 8 + base;
+        for (b = 0; b < 8; b++, j++) {
+            unsigned char bit = 1 << b;
+            if (mask[i] & bit) {
+                unsigned short idx = j;
+                if (idx >= t->size)
+                    owners[k] = 0xFFFF;
+                else
+                    owners[k] = t->ents[idx].owner;
+                k++;
+            }
+        }
+    }
+    *count = k;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_list_grant_ownership);
 
