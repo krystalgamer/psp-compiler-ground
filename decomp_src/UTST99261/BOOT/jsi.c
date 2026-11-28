@@ -152,6 +152,9 @@ int esp_postMsgDeleteCookie(int q);
 int esp_postMsgConfigChanged(int q);
 int esp_postMsgRepaint(int q);
 int esp_postMsgInputData(int q, char *str);
+typedef struct JSEvCtx { int cx; int obj; } JSEvCtx;
+typedef struct JSEvData { JSEvCtx *ctx; short type; } JSEvData;
+int mes_class_property_get(int ctx, int obj, const char *name);
 DOMStr *newDOMString_4B5FC(const char *utf8, int len) {
     DOMStr *s = MEM_malloc(0, sizeof(DOMStr));
 
@@ -1656,7 +1659,103 @@ int JSDestroy(JSMsg *m) {
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", D_00133A54);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSHandleEvent);
+int JSHandleEvent(JSMsgBody *b)
+{
+    JSMsg msg;
+    const char *name;
+    int cx, obj;
+    int h;
+    int q;
+
+    switch (((JSEvData *)b->x1C)->type) {
+    case 1:
+        name = "onabort";
+        break;
+    case 2:
+        name = "onblur";
+        break;
+    case 3:
+        name = "onchange";
+        break;
+    case 4:
+        name = "onclick";
+        break;
+    case 5:
+        name = "ondblclick";
+        break;
+    case 6:
+        name = "ondragdrop";
+        break;
+    case 7:
+        name = "onerror";
+        break;
+    case 8:
+        name = "onfocus";
+        break;
+    case 9:
+        name = "onkeydown";
+        break;
+    case 10:
+        name = "onkeypress";
+        break;
+    case 11:
+        name = "onkeyup";
+        break;
+    case 12:
+        name = "onload";
+        break;
+    case 13:
+        name = "onmousedown";
+        break;
+    case 14:
+        name = "onmousemove";
+        break;
+    case 15:
+        name = "onmouseout";
+        break;
+    case 16:
+        name = "onmouseover";
+        break;
+    case 17:
+        name = "onmouseup";
+        break;
+    case 18:
+        name = "onmove";
+        break;
+    case 19:
+        name = "onreset";
+        break;
+    case 20:
+        name = "onresize";
+        break;
+    case 21:
+        name = "onselect";
+        break;
+    case 22:
+        name = "onsubmit";
+        break;
+    case 23:
+        name = "onunload";
+        break;
+    default:
+        return -1;
+    }
+    cx = ((JSEvData *)b->x1C)->ctx->cx;
+    obj = ((JSEvData *)b->x1C)->ctx->obj;
+    OS_thread_mutex_lock(jsapi_lock);
+    h = mes_class_property_get(cx, obj, name);
+    OS_thread_mutex_unlock(jsapi_lock);
+    if (h == 0x20)
+        return 0;
+    b->x10 = h;
+    q = OS_mq_open(D_00133A54, 1);
+    if (q == -1)
+        return -1;
+    msg.body = *b;
+    OS_mq_send(q, &msg, sizeof(msg), 0);
+    OS_mq_close(q);
+    return 1;
+}
 
 int ESP_initCore(int size, int x) {
     int r;
