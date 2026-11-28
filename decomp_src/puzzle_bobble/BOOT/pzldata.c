@@ -48,26 +48,23 @@ int PzlDataGetWidth(int type)
 }
 
 #ifdef NON_MATCHING
-/* diff 32: ours CSEs PzlBuf+1 (from the PzlBuf[1] store) into s1, the original keeps s1 =
- * PzlBuf and adds the 1 per row; the rest is the resulting register shift. */
+/* diff 2: only the order of two adds in the preheader of the inner loop (the strength-
+ * reduced PzlBuf[...] pointer): ours adds PzlBuf before w, the original w first.  No term
+ * order or parenthesisation of the index (96 orders tried), struct view of PzlBuf, or
+ * defined (readonly) convert tables changes it.  The loop shape (index inside the loop, so
+ * the pointer starts after the inner loop guard) is from the original's preheader. */
 u8 *PzlDataExtract(int no)
 {
 	int w, x, y;
-	u8 *d;
-	int f;
 
 	PzlBuf[0] = PzlTypeConvet[PzlData[no][0]];
 	PzlBuf[1] = 0;
 	w = PzlDataGetWidth(PzlBuf[0]);
 	for (y = 0; y < 12; y++) {
-		d = PzlBuf + y * w - y / 2 + w + 1;
-		f = (y % 2) == 0;
 		for (x = 0; x < w; x++) {
-			if (f & (x == 0)) {
+			if (y % 2 == 0 && x == 0)
 				x++;
-				d++;
-			}
-			*d++ = PzlDataConvet[PzlData[no][x + y * w + 0x12]];
+			PzlBuf[x + y * w - y / 2 + w + 1] = PzlDataConvet[PzlData[no][x + y * w + 0x12]];
 		}
 	}
 	return PzlBuf;
