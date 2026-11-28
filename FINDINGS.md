@@ -950,6 +950,19 @@ libgcc/libsupc++ DWARF names `gcc-3.3.6/` paths.
     1.9.2 always makes `ext`.
   - libpspdemo is the 1.4.0 object; sgx*, bin_common and i3d_scissor are
     1.9.2 (their archives use `ext`/`ins`).
+- rs4_main's middleware build flags (each tested object-wide, changing no
+  other matched function): libwave and libsas are 1.9.2 `-O2
+  -frename-registers` (UCJS90007's libwave C matches all 27 functions only
+  so; 1.6.1/1.7.1/1.8.4 leave `ext`/`ins` diffs, plain `-O2` matches none —
+  the SDK 1.50 objects are near-identical but no 1.6.1.internal string is in
+  `.comment`, so they are not what was linked); the sgx*/i3d*/bin_common
+  middleware is `-O2 -fno-strict-aliasing` (8 functions match only with it,
+  none of ~1,350 matched ones changes, while SDK gim_* units lose 4 matches
+  with it as a control).
+- rs4_main `bxAnmTerm` keeps the original's `m == NULL` test with no flag:
+  `template <class T> inline void SafeDelete(T *&p) { delete p; }` applied to
+  `m->file` and `m` — the pointer taken by non-const reference.  Not a 1.9.2
+  `-fdelete-null-pointer-checks` difference.
 - Why the module's VFPU code (2,304 VFPU words in 214 functions; none of
   them in a compile unit with DWARF, and no DWARF unit has a vector type)
   is taken to be inline asm and not output of the 1.8 VFPU builtins:
