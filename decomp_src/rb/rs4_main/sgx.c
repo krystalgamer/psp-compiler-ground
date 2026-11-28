@@ -57,7 +57,21 @@ void sgxPrintf(const char *fmt, ...)
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgx", D_00109CA8);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxMalloc);
+extern const char *gSgxPrefErr;
+extern const char D_00109CA8[];
+typedef void *(*SgxMallocFn)(unsigned int);
+void *sgxMalloc(unsigned int size, int clear)
+{
+    void *p = ((SgxMallocFn)gSgxMallocFunc)(size);
+    if (p == NULL) {
+        if (gSgxDebugFlags & 1)
+            sgxPrintfPref(gSgxPrefErr, D_00109CA8, 0x96, "can't allocate memory (%d)\n", size);
+        return NULL;
+    }
+    if (clear) memset(p, 0, size);
+    gWork_11FBE0[3] += size;
+    return p;
+}
 
 void sgxFree(void *p)
 {
