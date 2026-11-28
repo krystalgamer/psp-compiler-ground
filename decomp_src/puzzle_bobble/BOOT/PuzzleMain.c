@@ -606,8 +606,6 @@ void VSInit(void)
 	InitBubCrush();
 }
 
-#ifdef NON_MATCHING
-/* Close: the Stat base and enemy get swapped callee-saved registers. */
 void SurvValueInit(void);
 void VSValueInit(int pl, int a1, int flag);
 extern const int bgmsort[];
@@ -615,29 +613,26 @@ void SurvivlaModeInit(int cont)
 {
 	int enemy = Stat[2].player;
 	int n;
-	s8 sel;
 
-	if (cont)
-		enemy = (enemy + 1) % 6;
+	if (cont) {
+		enemy++;
+		enemy %= 6;
+	}
 	SurvValueInit();
 	VSValueInit(2, 0, 0);
 	SpriteSetFader(1.0f);
 	Stat[1].cur = GetBallNext(&Stat[1], 0);
 	n = GetBallNext(&Stat[1], 0);
 	Stat[2].cur = Stat[1].cur;
-	sel = *(s8 *)&SelectPlayer;
-	Stat[1].snd.unk2 = (sel + 3) % 6;
-	Stat[2].snd.unk2 = ((s8)enemy + 3) % 6;
-	Stat[1].player = sel;
+	Stat[1].player = SelectPlayer;
 	Stat[2].player = enemy;
+	Stat[1].snd.unk2 = (Stat[1].player + 3) % 6;
+	Stat[2].snd.unk2 = (Stat[2].player + 3) % 6;
 	Stat[1].next = n;
 	Stat[2].next = n;
-	LoadGimFile(0, gim_bg_vs[6 + (s8)enemy]);
+	LoadGimFile(0, gim_bg_vs[6 + Stat[2].player]);
 	bgm_play(bgmsort[Stat[2].player % 6]);
 }
-#else
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", SurvivlaModeInit);
-#endif
 
 #ifdef NON_MATCHING
 /* diff 9 (best of all 120 store orders, either order of the first two stores): the
