@@ -98,7 +98,42 @@ int NetGetMsgClientIndex(void *arg0) {
     return M2C_FIELD(arg0, int *, 0x470);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", SendMyClientStatus);
+typedef struct { void *dest; unsigned char type; char pad[3]; int a; int b; char pad2[0x34 - 0x10]; int c; int d; void *data; } DmeMsgSend2;
+typedef struct { unsigned char b0, b1, b2, b3; unsigned short h4; short pad; int w8; int wC; } DmeClientStatus;
+int NetClientIndexToClientIndexPacket(); int NetGenerateClientList(); int NetISendMessage();
+void SendMyClientStatus(char *ctx, int dest)
+{
+    DmeClientStatus st;
+    DmeMsgSend2 m;
+    char buf[0x30];
+    char *c;
+    int r = 0;
+
+    if (*(int *)(ctx + 0x404) == 0x100) return;
+    c = *(char **)(ctx + 0x400);
+    if (c == NULL) return;
+    st.b1 = NetClientIndexToClientIndexPacket(*(int *)(ctx + 0x404));
+    st.b0 = *(int *)(c + 0xC);
+    st.b2 = *(int *)(c + 0x10);
+    st.b3 = *(int *)(c + 0x14);
+    st.w8 = *(int *)(c + 0x1C);
+    st.wC = *(int *)(ctx + 0x464);
+    if (gObjectInterfacePtr != NULL)
+        r = (*(int (**)())((char *)gObjectInterfacePtr + 0x18))(&st.h4);
+    else
+        st.h4 = 0;
+    if (r != 0) return;
+    memset(&m, 0, sizeof(m));
+    m.type = 0x50;
+    m.c = *(int *)(ctx + 0x460);
+    m.a = 0x16;
+    m.d = 0x10;
+    m.dest = ctx;
+    m.b = dest;
+    m.data = &st;
+    if (dest == -1) NetGenerateClientList(ctx, &m.b);
+    NetISendMessage(&m, buf, 0);
+}
 
 int RtMsgToDmeConnectionIndex(unsigned int arg0) {
     return arg0 + (arg0 < 5U);
