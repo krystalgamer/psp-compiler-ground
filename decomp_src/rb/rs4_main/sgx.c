@@ -29,7 +29,7 @@ static inline char *SgxListNext(char *e) { char *n = *(char **)(e + 4); return (
 
 void sgxDI();
 void sgxEI();
-void sgxConfReadStr();
+char *sgxConfReadStr();
 int atoi(const char *);
 void *memset(void *, int, unsigned int);
 char *sgxNextToken(char *, char *, const char *, const char *);
@@ -98,7 +98,28 @@ int sgxGetLineCount(char *s)
     return n;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxConfReadStr);
+char *strcpy(char *, const char *);
+int strcmp(const char *, const char *);
+char *sgxConfReadStr(char *conf, const char *key, char *out, const char *def)
+{
+	char line[0x400];
+	char tok[0x400];
+	char *s, *p;
+	if (conf != NULL) {
+		s = conf;
+		for (;;) {
+			s = sgxNextLine(s, line);
+			if (*s == 0 && line[0] == 0) break;
+			p = sgxNextToken(line, tok, "=", "\t ");
+			if (strcmp(tok, key) == 0) {
+				sgxNextToken(p, out, "=", "\t ");
+				return out;
+			}
+		}
+	}
+	strcpy(out, def);
+	return out;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxConfReadInt);
 
