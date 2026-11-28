@@ -96,7 +96,37 @@ void *rsvNextAlive(void **p) {
     return p;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/rsv", rsvCall);
+RsvNode *rsvCall(RsvCntx *pCntx)
+{
+	RsvNode *p, *pTail;
+	int Key;
+
+	p = pCntx->Free;
+	if (p == NULL) {
+		if (pCntx->Rest != 0)
+			consPrintf(&D_000FB180, &D_000FB19C, 0x79, "rsvCall", "pCntx->Rest == 0");
+		return NULL;
+	}
+	pCntx->Rest--;
+	if (pCntx->Rest < 0)
+		consPrintf(&D_000FB180, &D_000FB19C, 0x7D, "rsvCall", "pCntx->Rest >= 0");
+	if (pCntx->Rest >= pCntx->Num)
+		consPrintf(&D_000FB180, &D_000FB19C, 0x7E, "rsvCall", "pCntx->Rest < pCntx->Num");
+	pCntx->Free = p->Next;
+	pTail = pCntx->Tail;
+	pCntx->Tail = p;
+	if (pTail != NULL)
+		pTail->Next = p;
+	if (pCntx->Head == NULL)
+		pCntx->Head = p;
+	Key = pCntx->Key - 1;
+	if (Key == 0)
+		Key = 0x7FFFFFFF;
+	pCntx->Key = Key;
+	p->Key = Key;
+	p->Next = NULL;
+	return p;
+}
 
 int rsvKill(void *arg0) {
     int temp_s0;
