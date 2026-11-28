@@ -25,6 +25,27 @@ int strcmp(const char *a, const char *b);
 int strncasecmp(const char *a, const char *b, unsigned int n);
 char *iom_strnmcat(char *dst, int n, ...);
 unsigned int strlen(const char *);
+typedef struct {
+    int sec;
+    int min;
+    int hour;
+    int mday;
+    int mon;
+    int year;
+    int wday;
+    int yday;
+    int isdst;
+} IomTm9;
+typedef struct {
+    char *full;
+    char *abbr;
+} IomName;
+extern IomName D_00139E30[];
+extern IomName D_00139F08[];
+int CLIB_time(int *t);
+int CLIB_mktime(void *tm);
+int strcasecmp(const char *a, const char *b);
+int sscanf(const char *s, const char *fmt, ...);
 int iom_preferenceCache(void) {
     int r;
 
@@ -281,7 +302,76 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_preference", D_00139EFC)
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_preference", D_00139F08);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_preference", iom_str2time);
+int iom_str2time(char *s)
+{
+    char wday[48];
+    char mon[48];
+    char buf[48];
+    IomTm9 tm;
+    char ch;
+    int t;
+    int len;
+    IomTm *g;
+
+    if (s == NULL)
+        return -1;
+    while (*s == ' ' || *s == '\t')
+        s++;
+    if (*s == '"' || *s == '\'') {
+        ch = *s;
+        s++;
+        for (len = 0; s[len] != '\0' && s[len] != ch; len++)
+            ;
+    } else
+        len = strlen(s);
+    while (len > 0 && (s[len - 1] == ' ' || s[len - 1] == '\t' || s[len - 1] == ';'))
+        len--;
+    if (len <= 0 || len >= 48)
+        return -1;
+    iom_strnmcat(buf, 1, len, s);
+    len = strlen(buf);
+    if (buf[0] == '0')
+        return 0;
+    if (len < 3)
+        return -1;
+    if (strcasecmp(buf + len - 3, "GMT") == 0) {
+        len = sscanf(buf, "%s %d%c%3s%c%d %d:%d:%d GMT", wday, &tm.mday, &ch, mon, &ch, &tm.year, &tm.hour, &tm.min, &tm.sec);
+        if (len != 9)
+            return -1;
+    } else {
+        len = sscanf(buf, "%s %s %d %d:%d:%d %d", wday, mon, &tm.mday, &tm.hour, &tm.min, &tm.sec, &tm.year);
+        if (len != 7)
+            return -1;
+    }
+    if (tm.year < 100) {
+        t = CLIB_time(NULL);
+        g = CLIB_gmtime(&t);
+        tm.year = g->year / 100 * 100 + tm.year;
+    }
+    if (tm.year >= 1900)
+        tm.year -= 1900;
+    len = strlen(wday);
+    if (len > 0 && wday[len - 1] == ',')
+        wday[len - 1] = '\0';
+    for (len = 0; D_00139E30[len].full != NULL; len++) {
+        if (strcasecmp(D_00139E30[len].full, wday) == 0 || strcasecmp(D_00139E30[len].abbr, wday) == 0)
+            break;
+    }
+    if (D_00139E30[len].full == NULL)
+        return -1;
+    tm.wday = len;
+    for (len = 0; D_00139F08[len].full != NULL; len++) {
+        if (strcasecmp(D_00139F08[len].full, mon) == 0 || strcasecmp(D_00139F08[len].abbr, mon) == 0)
+            break;
+    }
+    if (D_00139F08[len].full == NULL)
+        return -1;
+    tm.mon = len;
+    tm.isdst = 0;
+    t = CLIB_mktime(&tm);
+    t = t - CLIB_mktime(CLIB_gmtime(&t)) + t;
+    return t;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_preference", D_00139FA8);
 
