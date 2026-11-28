@@ -460,7 +460,6 @@ rodata 0x16AD04 main_objs/sgl_Frustum
 rodata 0x16AD20 -
 bss 0x18CF9C main_objs/sgl_Frustum
 rodata 0x16AECC main_objs/sgl_Heap
-rodata 0x16AEE8 -
 bss 0x18D020 main_objs/sgl_Heap
 rodata 0x16F368 main_objs/sh_Env
 rodata 0x16F384 -

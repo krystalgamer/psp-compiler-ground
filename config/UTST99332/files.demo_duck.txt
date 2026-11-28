@@ -474,7 +474,6 @@ rodata 0x16DC2C main_objs/sgl_Frustum
 rodata 0x16DC48 -
 bss 0x19041C main_objs/sgl_Frustum
 rodata 0x16DDF4 main_objs/sgl_Heap
-rodata 0x16DE10 -
 bss 0x1904A0 main_objs/sgl_Heap
 rodata 0x172290 main_objs/sh_Env
 rodata 0x1722AC -

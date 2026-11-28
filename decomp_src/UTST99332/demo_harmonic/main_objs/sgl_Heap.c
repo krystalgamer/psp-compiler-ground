@@ -1,7 +1,6 @@
 /* lang: c++ */
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
-#include "cxx/defer_asm.h"
 #define DEMO_STATICS_MATH
 #define DEMO_STATICS_IOSTREAM
 #include "../main.hpp"
@@ -10,17 +9,6 @@
 __asm__(".globl _GLOBAL__I__ZN3sgl4HeapC2Ev");
 __asm__(".globl _GLOBAL__D__ZN3sgl4HeapC2Ev");
 
-extern const char D_0016AF24[];     /* " *** error " */
-extern const char D_0016AF30[];     /* "j >=0 && j < _n" */
-extern const char D_0016AF40[];     /* "../lib/sgl/Heap.cpp" */
-extern const char D_0016AF54[];     /* " " */
-extern const char D_0016AF74[];     /* "i >= 0 && i < _n" */
-extern const char D_0016AFA0[];     /* "_n > 0" */
-extern const char D_0016B084[];     /* "value( i ) >= value( i - 1 )" */
-extern const char check_sort_name[] __asm__("_ZZN3sgl4Heap10check_sortEvE19__PRETTY_FUNCTION__");
-extern const char change_value_name[] __asm__("_ZZN3sgl4Heap12change_valueEjfE19__PRETTY_FUNCTION__");
-extern const char remove_name[] __asm__("_ZZN3sgl4Heap6removeEiE19__PRETTY_FUNCTION__");
-extern const char pop_name[] __asm__("_ZZN3sgl4Heap3popEvE19__PRETTY_FUNCTION__");
 namespace common {
 template<class T> void Swap(T &a, T &b)
 {
@@ -33,7 +21,7 @@ namespace math {
 template<class T> T min_(T a, T b);
 }
 
-#define HEAP_ASSERT(c, text, fn, line) SGL_ASSERT(c, D_0016AF24, text, D_0016AF40, fn, line, D_0016AF54)
+#define HEAP_ASSERT(c, text, fn, line) SGL_ASSERT(c, " *** error ", text, "../lib/sgl/Heap.cpp", fn, line, " ")
 
 sgl::Heap::Heap() : _index(0), _e(0), _n(0), _heap(false)
 {
@@ -70,8 +58,8 @@ void sgl::Heap::resize(int n)
 
 void sgl::Heap::set_element(unsigned int i, int data, float value)
 {
-    _e[i].data = data;
     _e[i].id = i;
+    _e[i].data = data;
     _e[i].value = value;
     _index[i] = i;
 }
@@ -79,7 +67,7 @@ void sgl::Heap::set_element(unsigned int i, int data, float value)
 void sgl::Heap::change_value(unsigned int i, float value)
 {
     int j = _index[i];
-    HEAP_ASSERT(j >= 0 && j < _n, D_0016AF30, change_value_name, 81);
+    HEAP_ASSERT(j >= 0 && j < _n, "j >=0 && j < _n", __PRETTY_FUNCTION__, 81);
     _e[j].value = value;
     update(j);
 }
@@ -134,7 +122,7 @@ void sgl::Heap::update(int i)
 
 void sgl::Heap::remove(int i)
 {
-    HEAP_ASSERT(i >= 0 && i < _n, D_0016AF74, remove_name, 165);
+    HEAP_ASSERT(i >= 0 && i < _n, "i >= 0 && i < _n", __PRETTY_FUNCTION__, 165);
     swap(i, _n - 1);
     _n--;
     update(i);
@@ -142,7 +130,7 @@ void sgl::Heap::remove(int i)
 
 void sgl::Heap::pop()
 {
-    HEAP_ASSERT(_n > 0, D_0016AFA0, pop_name, 178);
+    HEAP_ASSERT(_n > 0, "_n > 0", __PRETTY_FUNCTION__, 178);
     swap(0, _n - 1);
     _n--;
     downheap(0, _n);
@@ -164,7 +152,25 @@ void sgl::Heap::sort()
     _heap = false;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Heap", _ZN3sgl4Heap13check_heapifyEv);
+int sgl::Heap::check_heapify()
+{
+    int miss = 0;
+    SGL_ASSERT(_heap, " *** error ", "_is_heap", "../lib/sgl/Heap.cpp", __PRETTY_FUNCTION__, 224, "make sure you didn't call sort() (that destroys the heap properties)");
+    for (int i = 0; i < _n / 2; i++) {
+        int l = 2 * i + 1;
+        int r = 2 * i + 2;
+        if (r < _n && value(i) < value(r)) {
+            miss++;
+            printf("\ni=%i right=%i %g / %i %i %g", i, _e[i].id, _e[i].value, r, _e[r].id, _e[r].value);
+        }
+        if (l < _n && value(i) < value(l)) {
+            miss++;
+            printf("\ni=%i left=%i %g / %i %i %g", i, _e[i].id, _e[i].value, l, _e[l].id, _e[l].value);
+        }
+    }
+    HEAP_ASSERT(miss == 0, "miss == 0", __PRETTY_FUNCTION__, 258);
+    return miss;
+}
 
 void sgl::Heap::dump() {
 }
@@ -172,17 +178,32 @@ void sgl::Heap::dump() {
 void sgl::Heap::check_sort()
 {
     for (int i = 1; i < _n; i++)
-        HEAP_ASSERT(value(i) >= value(i - 1), D_0016B084, check_sort_name, 285);
+        HEAP_ASSERT(value(i) >= value(i - 1), "value( i ) >= value( i - 1 )", __PRETTY_FUNCTION__, 285);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Heap", _ZN3sgl4Heap4TestEv);
-
-/* Test() (asm) calls math::min_<int>: referenced here (from a discarded function, before the template's
-   definition: no inlining) it is instantiated after Swap<Heap::Element>, like Sony's */
-extern "C" void sgl_Heap_instances(void) __attribute__((section(".discard.asm")));
-extern "C" void sgl_Heap_instances(void)
+void sgl::Heap::Test()
 {
-    math::min_(0, 0);
+    for (int t = 0; t != 200; t++) {
+        int n = math::min_(rand(), 4000);
+        std::cout << n << std::endl;
+        Heap h;
+        h.resize(n);
+        for (int i = 0; i < n; i++)
+            h.set_element(i, i, rand());
+        h.heapify();
+        h.check_heapify();
+        for (int k = 0; h._n; ) {
+            int j = (int)((math::FastNoise(k++) + 1.0f) * 0.5f * h._n);
+            if (j < 0)
+                j = 0;
+            if (j >= h._n)
+                j = h._n - 1;
+            h.remove(j);
+            h.check_heapify();
+        }
+    }
+    std::cout << "HEAP CHECK STILL ALIVE!\n";
+    exit(0);
 }
 
 namespace math {
