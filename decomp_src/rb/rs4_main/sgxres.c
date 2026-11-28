@@ -550,7 +550,16 @@ int sgxResRoundWavePos(int id, int idx, long long pos) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResWaveTimeToPos);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResWavePosToTime);
+float sgxResWavePosToTime(int id, int idx, long long pos, void *round)
+{
+    char *w = sgxResFindWave(id, idx, NULL);
+    if (w != NULL) {
+        int rate = *(int *)(w + 0xC);
+        if (round != NULL) pos = RoundWavePos(w, pos);
+        return (float)pos / (float)rate;
+    }
+    return -1.0f;
+}
 
 void ResResetTuningInfo(int *p)
 {
