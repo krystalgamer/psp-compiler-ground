@@ -469,7 +469,91 @@ void se_stop(void) {
     sceWaveStop(7);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", play_atrac3plus1);
+/* long: a different alias set from the int argp fields lets the first pPlayArg load move above the position stores */
+extern unsigned long uiWritePosition1;
+extern unsigned long uiPlayPosition1;
+int sceAtracGetRemainFrame();
+int sceAtracDecodeData(int id, void *buf, int *sample, int *finish, int *remain);
+int sceAtracGetInternalErrorInfo(int id, int *info);
+int sceWaveAudioSetSample(int ch, int n);
+int sceWaveAudioWriteBlocking(int ch, int vl, int vr, void *buf);
+int sceWaveAudioSetVolume(int ch, int vl, int vr);
+int sceKernelExitThread(int status);
+void *memcpy(void *d, const void *s, unsigned int n);
+void *memset(void *d, int c, unsigned int n);
+void release_at3playArgID(int *arg0);
+int play_atrac3plus1(int args, void *argp)
+{
+	int *pPlayArg;
+	int status;
+	unsigned int finishflag;
+	int iRemainFrame;
+	int iVol;
+	int *outputBuf;
+	int aiOutputBuf[0x2010];
+
+	pPlayArg = (int *)argp;
+	uiPlayPosition1 = 0;
+	uiWritePosition1 = 0;
+	outputBuf = (int *)((int)(aiOutputBuf + 15) & ~63);
+	sceAtracGetRemainFrame(((int *)argp)[0], &iRemainFrame);
+	for (;;) {
+		iVol = sound1_volume;
+		{
+			unsigned int sample;
+
+			status = sceAtracDecodeData(pPlayArg[0], outputBuf + uiWritePosition1, (int *)&sample, (int *)&finishflag, &iRemainFrame);
+			if (status < 0) {
+				int innerInfo;
+
+				sceAtracGetInternalErrorInfo(pPlayArg[0], &innerInfo);
+				break;
+			}
+			uiWritePosition1 += sample;
+			if (uiWritePosition1 - uiPlayPosition1 >= 0x800) {
+				int output_samples;
+
+				output_samples = (uiWritePosition1 - uiPlayPosition1) & ~63;
+				sceWaveAudioSetSample(pPlayArg[2], output_samples);
+				sceWaveAudioWriteBlocking(pPlayArg[2], iVol, iVol, outputBuf + uiPlayPosition1);
+				uiPlayPosition1 += output_samples;
+			} else {
+				sceWaveAudioSetVolume(pPlayArg[2], iVol, iVol);
+			}
+		}
+		if (uiWritePosition1 >= 0x1800) {
+			uiWritePosition1 -= uiPlayPosition1;
+			memcpy(outputBuf, outputBuf + uiPlayPosition1, uiWritePosition1 * 4);
+			uiPlayPosition1 = 0;
+		}
+		if (iFadeOutFlag1) {
+			finishflag = 1;
+			iVol = 0;
+			break;
+		}
+		if (finishflag) {
+			if (next_sound_block_no1 != -1) {
+				sound_block_no1 = next_sound_block_no1;
+				next_sound_block_no1 = -1;
+				if (sound_block_no1 >= sound_block_max)
+					sound_block_no1 = sound_block_max - 1;
+			}
+			break;
+		}
+	}
+	if (iVol != 0 && uiWritePosition1 > uiPlayPosition1) {
+		int paddingSize;
+
+		paddingSize = 0x800 - (uiWritePosition1 - uiPlayPosition1);
+		memset(outputBuf + uiWritePosition1, 0, paddingSize * 4);
+		sceWaveAudioSetSample(pPlayArg[2], 0x800);
+		sceWaveAudioWriteBlocking(pPlayArg[2], iVol, iVol, outputBuf + uiPlayPosition1);
+	}
+	sceWaveAudioWriteBlocking(pPlayArg[2], iVol, iVol, 0);
+	release_at3playArgID(pPlayArg);
+	sceKernelExitThread(0);
+	return 0;
+}
 
 extern int playArg1;
 int play_atrac3plus1(int args, void *argp);
