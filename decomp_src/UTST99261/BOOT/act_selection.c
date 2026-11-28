@@ -152,7 +152,60 @@ void clearSelectionTarget(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", forwardSearchTarget);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", backwardSearchTarget);
+int backwardSearchTarget(SelList *l, BOX *root, BOX *box, int start, char *pat, int cs) {
+    int len;
+    int matched;
+    int pos;
+
+    len = strlen(pat);
+    matched = 0;
+    pos = start;
+    while (box != NULL) {
+        if (box->content == 9) {
+            matched = backwardStrings(l, box, pos, pat, len, matched, cs);
+            if (matched < 0) {
+                return matched;
+            }
+            if (matched == len) {
+                return 1;
+            }
+        } else {
+            matched = 0;
+            clearSelectionTarget(l);
+        }
+        if ((root == box || box->content != 1) && box->child != NULL) {
+            matched = 0;
+            clearSelectionTarget(l);
+            box = box->child;
+            while (box->next != NULL) {
+                box = box->next;
+            }
+        } else if (root == box) {
+            goto out;
+        } else if (box->prev != NULL) {
+            box = box->prev;
+        } else {
+            matched = 0;
+            if (root != box) {
+                clearSelectionTarget(l);
+                box = box->parent;
+                while (box != NULL && box != root && box->prev == NULL) {
+                    box = box->parent;
+                }
+                box = (box != NULL && box != root) ? box->prev : NULL;
+            } else {
+            out:
+                clearSelectionTarget(l);
+                break;
+            }
+        }
+        if (box != NULL && box->content == 9) {
+            pos = M2C_FIELD(box->geom, int *, 0xC);
+        }
+    }
+    clearSelectionTarget(l);
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", forwardStrings);
 
