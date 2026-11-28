@@ -5,7 +5,7 @@
 #endif
 void memcpy(void *, const void *, unsigned long);
 int KM_GetLocalPublicKey();
-int rt_list_buf_clear();
+void rt_list_buf_clear();
 int rt_list_buf_get_pool_used();
 unsigned int randomMT();
 M2C_UNK *rt_udp_get_version_string(void);
@@ -46,7 +46,21 @@ unsigned short rt_udp_get_sequence_id(unsigned char *hdr)
     return id;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_ack_list_flush);
+int rt_comm_send_to();
+int rt_udp_ack_list_flush(int *u, char *c)
+{
+    struct { unsigned short type; unsigned short list[0x207]; } m;
+    int tmp;
+    int ret;
+    unsigned short *acks = *(unsigned short **)(c + 0x84);
+
+    if (acks == NULL) return 3;
+    m.type = 0x4000;
+    memcpy(m.list, acks, acks[0] * 2 + 2);
+    ret = rt_comm_send_to(*u, c + 8, *(int *)(c + 0x10), &m, (*(unsigned short **)(c + 0x84))[0] * 2 + 4, &tmp);
+    (*(unsigned short **)(c + 0x84))[0] = 0;
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_buffer_ack);
 

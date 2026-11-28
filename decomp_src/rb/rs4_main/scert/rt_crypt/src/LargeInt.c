@@ -186,7 +186,32 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/LargeInt", EMOD
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/LargeInt", lintGenerateKeyPair);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/LargeInt", lintGetBits);
+int lintGetBits(unsigned int *a)
+{
+    int i;
+    int bits;
+    unsigned int m;
+    unsigned int *p;
+    unsigned int w;
+
+    m = 0x80000000;
+    bits = 0x1000;
+    i = 127;
+    p = &a[127];
+    do {
+        w = *p--;
+        i--;
+        if (w != 0) {
+            while ((m & w) != m) {
+                m >>= 1;
+                bits--;
+            }
+            break;
+        }
+        bits -= 32;
+    } while (i != -1);
+    return bits;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/LargeInt", ShiftRight);
 
