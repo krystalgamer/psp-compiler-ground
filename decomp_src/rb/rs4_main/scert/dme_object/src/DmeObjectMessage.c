@@ -53,7 +53,37 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObjectMess
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObjectMessage", DataStreamUpdatePacketHandler);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObjectMessage", DataStreamEndPacketHandler);
+unsigned char *NetGetStreamChannel();
+int NetIGetSessionMasterClientIndex();
+void DmeFree();
+int rt_circ_buf_destroy();
+int DataStreamEndPacketHandler(char *o, int a1, int c, unsigned char *msg)
+{
+    int sm = 0x100;
+    unsigned char *s;
+    void (*cb)(int, int);
+
+    if (o == NULL) return -1;
+    s = NetGetStreamChannel(msg[0]);
+    if (s == NULL) return 1;
+    if (s[0] == 2) {
+        cb = (*(void (***)(int, int))((char *)gObjectInterfacePtr + 0x174))[s[3]];
+        if (cb != NULL) cb(c, msg[0]);
+        NetIGetSessionMasterClientIndex(&sm, o);
+        if (*(int *)(o + 0x404) == sm && s[5] != 0 && (*(int **)((char *)gObjectInterfacePtr + 0x178))[s[3]] != 0) {
+            s[4] = 1;
+        } else {
+            s[0] = 1;
+            if (s[2] != 0) {
+                DmeFree(s + 0x10);
+                rt_circ_buf_destroy(s + 0x2C);
+                *(int *)(s + 0x10) = 0;
+                *(int *)(s + 0x14) = 0;
+            }
+        }
+    }
+    return 1;
+}
 
 void *NetGetClientInfo();
 void SendMyClientStatus();
