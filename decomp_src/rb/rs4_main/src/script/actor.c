@@ -296,7 +296,162 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/actor", D_000FEE54);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/actor", D_000FEE58);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/actor", ActorLightMove);
+extern char *D_001123B8[];
+extern const float D_000FF284, D_000FF288;
+void copRotVec(void *, void *, void *);
+void *i3dTask_Light();
+typedef struct { void *root; char *node; } AlmMdl;
+typedef struct { AlmMdl *mdl; char pad4[0x164 - 4]; int type; float *param; } AlmEx;
+typedef struct { char pad[0x38]; AlmEx *ex; char pad3c[0xD0 - 0x3C]; char m1[0x40]; } AlmTask;
+int ActorLightMove(AlmTask *Tp)
+{
+	float c[4], d[4], p[4], a[4];
+	AlmEx *ex = Tp->ex;
+	AlmMdl *m = ex->mdl;
+	void *root = m->root;
+	unsigned int i;
+	int n;
+	float *node;
+	float r, t;
+	switch (ex->type) {
+	case 0:
+		{
+		float *q = ex->param;
+		d[0] = q[0];
+		d[1] = q[1];
+		d[2] = q[2];
+		c[0] = q[4];
+		c[1] = q[5];
+		c[2] = q[6];
+		}
+		break;
+	case 1:
+		{
+		float *q = ex->param;
+		p[0] = q[0];
+		p[1] = q[1];
+		p[2] = q[2];
+		c[0] = q[4];
+		c[1] = q[5];
+		c[2] = q[6];
+		}
+		break;
+	case 2:
+		{
+		float *q = ex->param;
+		p[0] = q[0];
+		p[1] = q[1];
+		p[2] = q[2];
+		d[0] = q[4];
+		d[1] = q[5];
+		d[2] = q[6];
+		c[0] = q[8];
+		c[1] = q[9];
+		c[2] = q[10];
+		a[0] = q[12];
+		a[1] = q[13];
+		}
+		break;
+	case 3:
+		{
+		float *q = ex->param;
+		c[0] = q[0];
+		c[1] = q[1];
+		c[2] = q[2];
+		}
+		break;
+	}
+	for (i = 0; i < 4; i++) {
+		n = I3rRoot__GetNodeIndexByName(root, D_001123B8[i]);
+		if (n < 0)
+			continue;
+		node = (float *)(m->node + n * 64);
+		switch ((int)i) {
+		default:
+			consPrintf(&D_000FEAB4, &D_000FEA94, 0x324, "ActorLightMove", &D_000FEB58);
+			break;
+		case 0:
+			c[0] = node[12];
+			c[1] = node[13];
+			c[2] = node[14];
+			break;
+		case 1:
+			d[0] = node[12];
+			d[1] = node[13];
+			d[2] = node[14];
+			break;
+		case 2:
+			p[0] = node[12];
+			p[1] = node[13];
+			p[2] = node[14];
+			break;
+		case 3:
+			a[0] = node[12];
+			a[1] = node[13];
+			a[2] = node[14];
+			break;
+		}
+	}
+	copRotVec(Tp->m1, d, d);
+	copRotTraVec(Tp->m1, p, p);
+	switch (ex->type) {
+	case 0:
+		{
+		float *q = ex->param;
+		q[0] = d[0];
+		q[1] = d[1];
+		q[2] = d[2];
+		q[4] = c[0];
+		q[5] = c[1];
+		q[6] = c[2];
+		taskSendProc(Tp, i3dTask_Light, 0x14, q, 0);
+		}
+		break;
+	case 1:
+		{
+		float *q = ex->param;
+		q[0] = p[0];
+		q[1] = p[1];
+		q[2] = p[2];
+		r = a[0] == 0.0f ? D_000FF284 : a[0];
+		a[0] = r;
+		q[4] = c[0] * (r * r);
+		q[5] = c[1] * (r * r);
+		q[6] = c[2] * (r * r);
+		taskSendProc(Tp, i3dTask_Light, 0x15, ex->param, 0);
+		}
+		break;
+	case 2:
+		{
+		float *q = ex->param;
+		q[0] = p[0];
+		q[1] = p[1];
+		q[2] = p[2];
+		q[4] = d[0];
+		q[5] = d[1];
+		q[6] = d[2];
+		r = a[2] == 0.0f ? D_000FF284 : a[2];
+		a[2] = r;
+		q[8] = c[0] * (r * r);
+		q[9] = c[1] * (r * r);
+		q[10] = c[2] * (r * r);
+		q[12] = a[0] * D_000FF288;
+		q[13] = a[1] * D_000FF288;
+		taskSendProc(Tp, i3dTask_Light, 0x16, ex->param, 0);
+		}
+		break;
+	case 3:
+		{
+		float *q = ex->param;
+		q[0] = c[0];
+		q[1] = c[1];
+		q[2] = c[2];
+		taskSendProc(Tp, i3dTask_Light, 0x17, q, 0);
+		}
+		break;
+	}
+	return 1;
+}
 
 float i3dMotTimeAdj(void *c, int mot, float t, int loop);
 void i3dMotUpdate(void *c, int mot, float t, float b, int f);
