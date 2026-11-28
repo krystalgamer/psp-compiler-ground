@@ -22,9 +22,43 @@ int CheckVersion(void *arg0) {
     return M2C_FIELD(arg0, int *, 8) == 0x20001;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_parser_i3m", I3mRoot__Unpack);
+int I3mRoot__Unpack(char *r)
+{
+	int ret, i, n;
+	if ((ret = I3mRoot__CheckIdString(r)) != 0) return ret;
+	if (!CheckVersion(r)) return 4;
+	if (*(unsigned short *)(r + 0x16) == 0) return 0;
+	n = *(unsigned short *)(r + 0x14);
+	AddOfs_((int *)(r + 0x1C), (int)r);
+	AddOfs_((int *)(r + 0x20), (int)r);
+	AddOfs_((int *)(r + 0x24), (int)r);
+	AddOfs_((int *)(r + 0x28), (int)r);
+	for (i = 0; i < n; i++) {
+		AddOfs_((int *)(*(char **)(r + 0x1C) + i * 12), (int)r);
+		AddOfs_((int *)(*(char **)(r + 0x1C) + i * 12 + 8), (int)r);
+	}
+	*(unsigned short *)(r + 0x16) = 0;
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_parser_i3m", I3mRoot__Pack);
+int I3mRoot__Pack(char *r)
+{
+	int ret, i, n;
+	if ((ret = I3mRoot__CheckIdString(r)) != 0) return ret;
+	if (!CheckVersion(r)) return 4;
+	if (*(unsigned short *)(r + 0x16) == 1) return 0;
+	n = *(unsigned short *)(r + 0x14);
+	for (i = 0; i < n; i++) {
+		AddOfs_((int *)(*(char **)(r + 0x1C) + i * 12), -(int)r);
+		AddOfs_((int *)(*(char **)(r + 0x1C) + i * 12 + 8), -(int)r);
+	}
+	AddOfs_((int *)(r + 0x20), -(int)r);
+	AddOfs_((int *)(r + 0x24), -(int)r);
+	AddOfs_((int *)(r + 0x28), -(int)r);
+	AddOfs_((int *)(r + 0x1C), -(int)r);
+	*(unsigned short *)(r + 0x16) = 1;
+	return 0;
+}
 
 int I3mRoot__Get_nNode(char *r)
 {
