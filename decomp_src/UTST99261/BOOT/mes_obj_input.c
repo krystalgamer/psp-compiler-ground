@@ -59,6 +59,21 @@ int JSI_getCheckboxState(void *node);
 int JSI_getRadioState(void *node);
 int mes_string_new(MesContext *ctx, const void *str, int len);
 int mes_string_new2(MesContext *ctx, const char *str, int len);
+typedef struct InpStrF { unsigned short *str; int len; } InpStrF;
+extern char mes_form_properties[], mes_form_methods[];
+void Element_setAttribute(void *elem, InpStr *name, InpStr *value);
+void Element_removeAttribute(void *elem, InpStr *name);
+void CharacterData_setData(void *node, InpStr *s);
+void JSI_setButtonValue(void *node, InpStr *s);
+void JSI_setTextValue(void *node, InpStr *s);
+void JSI_setCheckboxState(void *node, int state);
+void JSI_setRadioState(void *node, int state);
+void *memcpy(void *d, const void *s, unsigned int n);
+InpStrF *mes_obj_common_to_string(MesContext *ctx, int v);
+int isAllowedAsPropertyName(InpStrF *s, void *t, void *x);
+int setNewPropertyReference(MesContext *ctx, int a, int c, int s, void *b, int y);
+int deleteOldPropertyReference(MesContext *ctx, int a, int c, int s, int old, void *b);
+int mes_class_property_get(MesContext *ctx, int obj, const char *name);
 int mes_input_inner(MesContext *ctx, int cmd, int kind)
 {
     InpMsg msg;
@@ -165,7 +180,106 @@ int mes_input_get(MesContext *ctx, void *obj, InpPriv *elem, int id, int type)
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_input", mes_input_put);
+int mes_input_put(MesContext *ctx, void *obj, InpPriv *priv, int id, int type, int v)
+{
+    InpStrF *s;
+    InpStr ds;
+    int old;
+    int forms;
+    void *n;
+
+    switch (id) {
+    case 2:
+        if ((v & 3) != 3)
+            break;
+        s = (InpStrF *)(v & ~3);
+        ds.str = MEM_malloc(0, s->len * 2);
+        if (ds.str != NULL) {
+            old = mes_class_property_get(ctx, (int)obj, "name");
+            *--((int **)ctx)[6] = old;
+            forms = mes_class_property_get(ctx, priv->form, "elements");
+            deleteOldPropertyReference(ctx, priv->form, forms, v, old, obj);
+            ds.len = ds.size = s->len;
+            memcpy(ds.str, s->str, s->len * 2);
+            Element_setAttribute(priv->dom, &_DOMname, &ds);
+            MEM_free(0, ds.str);
+            ((int **)ctx)[6]++;
+            if (isAllowedAsPropertyName(s, mes_form_properties, mes_form_methods) == 1)
+                setNewPropertyReference(ctx, priv->form, forms, v, obj, 1);
+        }
+        ((int **)ctx)[6]++;
+        break;
+    case 4:
+        s = mes_obj_common_to_string(ctx, v);
+        if (s->len != 0) {
+            ds.str = MEM_malloc(0, s->len * 2);
+            if (ds.str == NULL)
+                break;
+            memcpy(ds.str, s->str, s->len * 2);
+        } else if (s->len == 0)
+            ds.str = MEM_malloc(0, 2);
+        ds.len = ds.size = s->len;
+        ((int **)ctx)[6]++;
+        switch (type) {
+        case 12:
+        case 18:
+        case 20:
+            JSI_setButtonValue(priv->dom, &ds);
+            break;
+        case 16:
+        case 21:
+        case 22:
+            JSI_setTextValue(priv->dom, &ds);
+            break;
+        default:
+            Element_setAttribute(priv->dom, &_DOMvalue, &ds);
+            break;
+        }
+        if (ds.str != NULL)
+            MEM_free(0, ds.str);
+        break;
+    case 5:
+        s = mes_obj_common_to_string(ctx, v);
+        ds.str = MEM_malloc(0, s->len * 2);
+        if (ds.str != NULL) {
+            ds.len = ds.size = s->len;
+            memcpy(ds.str, s->str, s->len * 2);
+            if (type == 22) {
+                n = Node_getFirstChild(priv->dom);
+                while (n != NULL && Node_getNodeType(n) != 3)
+                    n = Node_getNextSibling(n);
+                if (n != NULL)
+                    CharacterData_setData(n, &ds);
+            } else
+                Element_setAttribute(priv->dom, &_DOMvalue, &ds);
+            MEM_free(0, ds.str);
+        }
+        ((int **)ctx)[6]++;
+        break;
+    case 6:
+        if (v == 12 || v == 8) {
+            if (type == 13)
+                JSI_setCheckboxState(priv->dom, v == 12);
+            else if (type == 17)
+                JSI_setRadioState(priv->dom, v == 12);
+        }
+        break;
+    case 7:
+        if (v == 12) {
+            ds.size = _DOMchecked.size;
+            ds.len = _DOMchecked.len;
+            ds.str = MEM_malloc(0, _DOMchecked.len * 2);
+            if (ds.str == NULL)
+                break;
+            memcpy(ds.str, _DOMchecked.str, _DOMchecked.len * 2);
+            Element_setAttribute(priv->dom, &_DOMchecked, &ds);
+            MEM_free(0, ds.str);
+        } else if (v == 8)
+            Element_removeAttribute(priv->dom, &_DOMchecked);
+        break;
+    }
+    return 1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
