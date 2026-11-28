@@ -1991,15 +1991,13 @@ void TermChain(PZL_STAT *st)
 	}
 }
 
-#ifdef NON_MATCHING
-/* Close: the original addresses the drop entry as st + n * 6 + 0x480 with offsets from 4. */
 int CheckOneColorAll(PZL_STAT *st)
 {
 	int n = 0;
 	int i;
 	u8 col = st->color;
 	int x, y;
-	PZL_DROP *d;
+	int k;
 
 	st->unk429 = 0;
 	if (col >= 1 && col <= 9) {
@@ -2007,11 +2005,11 @@ int CheckOneColorAll(PZL_STAT *st)
 			if (st->mp.map[i] == col || st->attr[i] == 2) {
 				n++;
 				GetBallCoordinate(st, i, &x, &y);
-				d = &st->drop.d[st->ndrop];
-				d->x = x;
-				d->flag = 0;
-				d->y = y;
-				d->col = col;
+				k = st->ndrop;
+				st->drop.d[k].x = x;
+				st->drop.d[k].y = y;
+				st->drop.d[k].col = col;
+				st->drop.d[k].flag = 0;
 				st->mp.map[i] = 0;
 				st->ndrop++;
 			}
@@ -2019,9 +2017,6 @@ int CheckOneColorAll(PZL_STAT *st)
 	}
 	return n;
 }
-#else
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckOneColorAll);
-#endif
 
 int CheckRoundClear(PZL_STAT *st)
 {
