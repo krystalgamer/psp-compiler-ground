@@ -17,7 +17,40 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/lib/elm", D_000FAB04);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/lib/elm", D_000FAB20);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/elm", elmInit);
+void *_memAlloc(int size, const char *file, int line);
+extern unsigned char D_000FAB5C;
+int sceKernelGetGPI(void);
+ElmCntx *elmInit(int Num)
+{
+	ElmCntx *pCntx;
+	int size;
+	short *e;
+	short i;
+	int n;
+
+	if (Num <= 0)
+		consPrintf(&D_000FAB04, &D_000FAB20, 0x12, "elmInit", "Num >= 1");
+	if (Num > 0x8000)
+		consPrintf(&D_000FAB04, &D_000FAB20, 0x13, "elmInit", "Num <= 0x8000");
+	size = Num * 2 + 8;
+	pCntx = _memAlloc(size, &D_000FAB20, 0x17);
+	if (pCntx == NULL)
+		consPrintf(&D_000FAB04, &D_000FAB20, 0x18, "elmInit", &D_000FAB54);
+	if (sceKernelGetGPI() & 1)
+		consPrintf(&D_000FAB5C, "elmInit", pCntx, size);
+	if (pCntx != NULL) {
+		pCntx->Ofs = 0;
+		pCntx->Num = Num;
+		e = pCntx->Elm;
+		i = 0;
+		for (n = Num; n != 0; n--) {
+			*e = i;
+			i++;
+			e++;
+		}
+	}
+	return pCntx;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/lib/elm", D_000FAB54);
 
