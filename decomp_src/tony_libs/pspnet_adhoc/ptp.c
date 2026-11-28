@@ -193,7 +193,24 @@ void func_00005560(struct ptpcb *pcb, u_int rexmt_int, int rexmt_cnt)
 	pcb->rexmt_cnt = rexmt_cnt;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc/nonmatchings/ptp", func_0000556C);
+int func_0000556C(struct ptpcb *pcb, struct SceNetEtherAddr *faddr, u_short fport)
+{
+	if (memcmp(faddr, &D_0000734C, 6) == 0)
+		return 0x80410702;
+	if ((faddr->data[0] & 1) && memcmp(faddr, &D_00007344, 6) != 0)
+		return 0x80410702;
+	if (fport == 0 || fport == 0xFFFF)
+		return 0x80410703;
+	memcpy(&pcb->faddr, faddr, 6);
+	pcb->state = 2;
+	pcb->iss = D_0000743C++;
+	pcb->fport = fport;
+	pcb->so->flags |= 0x2000;
+	func_00006340(pcb, 1);
+	pcb->rexmt_left = pcb->rexmt_cnt;
+	_sce_pspnet_callout_reset_usec(&pcb->co, pcb->rexmt_int, func_00006624, pcb);
+	return 0;
+}
 
 int func_000056B0(struct ptpcb *pcb, int backlog)
 {
