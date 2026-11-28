@@ -87,7 +87,42 @@ void *SlotGetAt_81530(int id, int namev)
 }
 #undef WW
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", sgxSeqInit);
+void *memset(void *s, int c, unsigned int n);
+int sgxConfReadInt(void *, const char *, int *, int);
+void *sgxMalloc(int, int);
+void sgxListArrayInit(void *, void *, int, int);
+void sgxPrintf(const char *, ...);
+typedef struct SeqLH_ { struct SeqLH_ *prev, *next; int id; int f; } SeqLH_;
+typedef struct { int init; SeqLH_ used; SeqLH_ free; char *slots; int num; SeqLH_ ufree; char *units; int nunit; } SeqWorkI_;
+static inline void SeqListInit_(SeqLH_ *l) {
+    l->next = l->prev = l;
+    l->id = -1;
+    l->f = 0;
+}
+#define QW ((SeqWorkI_ *)&gWork_11FE60)
+int sgxSeqInit(void *conf) {
+    memset(QW, 0, 0x44);
+    sgxConfReadInt(conf, "sgx-seq-nslot", &QW->num, 0x20);
+    sgxConfReadInt(conf, "sgx-seq-nunit", &QW->nunit, 0x20);
+    QW->slots = sgxMalloc(QW->num * 0x24, 1);
+    if (QW->slots == NULL) goto fail;
+    SeqListInit_(&QW->used);
+    SeqListInit_(&QW->free);
+    sgxListArrayInit(&QW->free, QW->slots, QW->num, 0x24);
+    if (gSgxDebugFlags & 4) sgxPrintf(" sgx-seq-nslot=%d\n", QW->num);
+    QW->units = sgxMalloc(QW->nunit * 0x88, 1);
+    if (QW->units == NULL) goto fail;
+    SeqListInit_(&QW->ufree);
+    sgxListArrayInit(&QW->ufree, QW->units, QW->nunit, 0x88);
+    if (gSgxDebugFlags & 4) sgxPrintf(" sgx-seq-nunit=%d\n", QW->nunit);
+    QW->init = 1;
+    return 1;
+fail:
+    if (QW->units) sgxFree((int)QW->units);
+    if (QW->slots) sgxFree((int)QW->slots);
+    return 0;
+}
+#undef QW
 
 #ifndef NULL
 #define NULL ((void *)0)
