@@ -128,7 +128,16 @@ void rt_token_check_ownership(unsigned int idx, int *owner, RtTokTab *t)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_grant_ownership);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_release_ownership);
+int rt_token_release_ownership(unsigned int idx, int owner, RtTokTab *t)
+{
+    if (t == NULL) rt_token_start(&t);
+    if (owner == 0xFFFF) return 0xDAC2;
+    if (t->count == 0) return 0xDAC2;
+    if (idx >= t->size) return 0xDAC2;
+    if (t->ents[idx].owner != owner) return 0xDAC2;
+    rt_token_remove_ownership(idx, t);
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_update_ownership);
 
