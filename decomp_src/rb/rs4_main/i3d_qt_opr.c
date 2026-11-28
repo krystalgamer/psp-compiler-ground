@@ -52,7 +52,19 @@ const float D_001096D4 = -0.9f;
 
 const float D_001096D8 = 0.9f;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_qt_opr", I3dQtSquad);
+extern const float D_001096DC;
+void I3dQtSquad(float *out, const float *p, const float *q, const float *a, const float *b, float t)
+{
+	float t0[4], t1[4];
+	I3dQtSlerpNoInv(t0, p, q, t);
+	if (a != b || a[3] != a[3] || a[0] != a[0] || a[1] != a[1] || a[2] != a[2]) {
+		I3dQtSlerpNoInv(t1, a, b, t);
+		I3dQtSlerpNoInv(out, t1, t0, (t + t) * (D_001096DC - t));
+	} else {
+		I3dQtSlerpNoInv(out, a, t0, (t + t) * (D_001096DC - t));
+	}
+}
+const float D_001096DC = 1.0f;
 
 void I3dQtToMatrix()
 {
