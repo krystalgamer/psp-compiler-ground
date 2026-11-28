@@ -806,7 +806,25 @@ void I3rMaterialOperationGroupEntity__Pack(I3rMogEnt *m)
         m->c = m->c - (int)m;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rMaterialOperationGroupEntity__Unpack);
+#ifndef UNPACK_PTR_
+#define UNPACK_PTR_(f) { char *p_ = *(char **)(f); if (p_ != NULL) *(char **)(f) = p_ + (int)m; }
+#endif
+#ifndef PACK_PTR_
+#define PACK_PTR_(f) { char *p_ = *(char **)(f); if (p_ != NULL) *(char **)(f) = p_ - (int)m; }
+#endif
+void I3rMaterialOperationGroupEntity__Unpack(char *m)
+{
+	UNPACK_PTR_(m + 0);
+	UNPACK_PTR_(m + 4);
+	{
+	unsigned int i, n = *(unsigned char *)(m + 0xE);
+	for (i = 0; i < n; i++) {
+		char **q = *(char ***)(m + 4) + i;
+		UNPACK_PTR_(q);
+	}
+	}
+	UNPACK_PTR_(m + 8);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -1276,9 +1294,45 @@ int I3rMeshInstance__GetEndMorphTargetWeight(void *arg0) {
     return M2C_FIELD(temp_a1, int *, 8) + (__builtin_allegrex_ext(M2C_FIELD(temp_a1, int *, 4), 0, 0x18) * 0x10);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rSkinGroupEntity__Pack);
+#ifndef UNPACK_PTR_
+#define UNPACK_PTR_(f) { char *p_ = *(char **)(f); if (p_ != NULL) *(char **)(f) = p_ + (int)m; }
+#endif
+#ifndef PACK_PTR_
+#define PACK_PTR_(f) { char *p_ = *(char **)(f); if (p_ != NULL) *(char **)(f) = p_ - (int)m; }
+#endif
+void I3rSkinGroupEntity__Pack(char *m)
+{
+	PACK_PTR_(m + 0);
+	PACK_PTR_(m + 4);
+	{
+	unsigned int i, n = *(unsigned short *)(m + 0x10);
+	for (i = 0; i < n; i++) {
+		char **q = *(char ***)(m + 8) + i;
+		PACK_PTR_(q);
+	}
+	}
+	PACK_PTR_(m + 8);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rSkinGroupEntity__Unpack);
+#ifndef UNPACK_PTR_
+#define UNPACK_PTR_(f) { char *p_ = *(char **)(f); if (p_ != NULL) *(char **)(f) = p_ + (int)m; }
+#endif
+#ifndef PACK_PTR_
+#define PACK_PTR_(f) { char *p_ = *(char **)(f); if (p_ != NULL) *(char **)(f) = p_ - (int)m; }
+#endif
+void I3rSkinGroupEntity__Unpack(char *m)
+{
+	UNPACK_PTR_(m + 0);
+	UNPACK_PTR_(m + 4);
+	UNPACK_PTR_(m + 8);
+	{
+	unsigned int i, n = *(unsigned short *)(m + 0x10);
+	for (i = 0; i < n; i++) {
+		char **q = *(char ***)(m + 8) + i;
+		UNPACK_PTR_(q);
+	}
+	}
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -1400,7 +1454,23 @@ int I3rMaterial__GetEndLayer(void *arg0) {
 }
 
 typedef struct { int arr; unsigned short n; } I3rMeshEnt;
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rMeshEntity__Pack);
+#ifndef UNPACK_PTR_
+#define UNPACK_PTR_(f) { char *p_ = *(char **)(f); if (p_ != NULL) *(char **)(f) = p_ + (int)m; }
+#endif
+#ifndef PACK_PTR_
+#define PACK_PTR_(f) { char *p_ = *(char **)(f); if (p_ != NULL) *(char **)(f) = p_ - (int)m; }
+#endif
+void I3rMeshEntity__Pack(char *m)
+{
+	{
+	unsigned int i, n = *(unsigned short *)(m + 4);
+	for (i = 0; i < n; i++) {
+		char **q = *(char ***)(m + 0) + i;
+		PACK_PTR_(q);
+	}
+	}
+	PACK_PTR_(m + 0);
+}
 
 void I3rMeshEntity__Unpack(I3rMeshEnt *m)
 {
@@ -2046,7 +2116,24 @@ void I3sCornerEntity__Pack(I3sArrEnt *m)
         m->arr = m->arr - (int)m;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3sCornerEntity__Unpack);
+#ifndef UNPACK_PTR_
+#define UNPACK_PTR_(f) { char *p_ = *(char **)(f); if (p_ != NULL) *(char **)(f) = p_ + (int)m; }
+#endif
+#ifndef PACK_PTR_
+#define PACK_PTR_(f) { char *p_ = *(char **)(f); if (p_ != NULL) *(char **)(f) = p_ - (int)m; }
+#endif
+void I3sCornerEntity__Unpack(char *m)
+{
+	UNPACK_PTR_(m + 0);
+	UNPACK_PTR_(m + 4);
+	{
+	unsigned int i, n = *(unsigned int *)(m + 8);
+	for (i = 0; i < n; i++) {
+		char **q = *(char ***)(m + 4) + i;
+		UNPACK_PTR_(q);
+	}
+	}
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -2844,9 +2931,43 @@ int I3sLayer__IsExistVisibleFlag(void *arg0) {
     return M2C_FIELD(M2C_FIELD(arg0, void **, 8), int *, 0x100) != 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3sMeshInstanceEntity__Pack);
+#ifndef UNPACK_PTR_
+#define UNPACK_PTR_(f) { char *p_ = *(char **)(f); if (p_ != NULL) *(char **)(f) = p_ + (int)m; }
+#endif
+#ifndef PACK_PTR_
+#define PACK_PTR_(f) { char *p_ = *(char **)(f); if (p_ != NULL) *(char **)(f) = p_ - (int)m; }
+#endif
+void I3sMeshInstanceEntity__Pack(char *m)
+{
+	{
+	unsigned int i, n = *(unsigned int *)(m + 8);
+	for (i = 0; i < n; i++) {
+		{ char **q = *(char ***)(m + 4) + i; PACK_PTR_(q); }
+		{ char **q = *(char ***)(m + 0) + i; PACK_PTR_(q); }
+	}
+	}
+	PACK_PTR_(m + 0);
+	PACK_PTR_(m + 4);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3sMeshInstanceEntity__Unpack);
+#ifndef UNPACK_PTR_
+#define UNPACK_PTR_(f) { char *p_ = *(char **)(f); if (p_ != NULL) *(char **)(f) = p_ + (int)m; }
+#endif
+#ifndef PACK_PTR_
+#define PACK_PTR_(f) { char *p_ = *(char **)(f); if (p_ != NULL) *(char **)(f) = p_ - (int)m; }
+#endif
+void I3sMeshInstanceEntity__Unpack(char *m)
+{
+	UNPACK_PTR_(m + 0);
+	UNPACK_PTR_(m + 4);
+	{
+	unsigned int i, n = *(unsigned int *)(m + 8);
+	for (i = 0; i < n; i++) {
+		{ char **q = *(char ***)(m + 4) + i; UNPACK_PTR_(q); }
+		{ char **q = *(char ***)(m + 0) + i; UNPACK_PTR_(q); }
+	}
+	}
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -3014,7 +3135,24 @@ void I3sMeshEntity__Pack(I3sArrEnt2 *m)
         m->arr = m->arr - (int)m;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3sMeshEntity__Unpack);
+#ifndef UNPACK_PTR_
+#define UNPACK_PTR_(f) { char *p_ = *(char **)(f); if (p_ != NULL) *(char **)(f) = p_ + (int)m; }
+#endif
+#ifndef PACK_PTR_
+#define PACK_PTR_(f) { char *p_ = *(char **)(f); if (p_ != NULL) *(char **)(f) = p_ - (int)m; }
+#endif
+void I3sMeshEntity__Unpack(char *m)
+{
+	UNPACK_PTR_(m + 0);
+	UNPACK_PTR_(m + 4);
+	{
+	unsigned int i, n = *(unsigned int *)(m + 8);
+	for (i = 0; i < n; i++) {
+		char **q = *(char ***)(m + 4) + i;
+		UNPACK_PTR_(q);
+	}
+	}
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
