@@ -83,7 +83,51 @@ void ResetMidiChData(int arg0)
     p[5] = 0x40;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", sgxPortInit);
+void *memset(void *s, int c, unsigned int n);
+int sgxConfReadInt(void *, const char *, int *, int);
+void *sgxMalloc(int, int);
+void sgxListArrayInit(void *, void *, int, int);
+void sgxPrintf(const char *, ...);
+typedef struct PortLH_ { struct PortLH_ *prev, *next; int id; int f; } PortLH_;
+typedef struct { int init; PortLH_ used; PortLH_ free; char *slots; int num; PortLH_ ufree; char *units; int nunit; PortLH_ ffree; char *fades; int nfade; unsigned char midich[16][6]; } PortWorkI_;
+static inline void PortListInit_(PortLH_ *l) {
+    l->next = l->prev = l;
+    l->id = -1;
+    l->f = 0;
+}
+#define PW ((PortWorkI_ *)&gWork_11FEA4)
+int sgxPortInit(void *conf) {
+    int i;
+    memset(PW, 0, 0xBC);
+    sgxConfReadInt(conf, "sgx-port-nslot", &PW->num, 0x20);
+    sgxConfReadInt(conf, "sgx-port-nunit", &PW->nunit, 0x40);
+    sgxConfReadInt(conf, "sgx-port-nfade", &PW->nfade, 0x40);
+    for (i = 0; i < 16; i++) ResetMidiChData((int)PW->midich[i]);
+    PW->slots = sgxMalloc(PW->num * 0xA0, 1);
+    if (PW->slots == NULL) goto fail;
+    PortListInit_(&PW->used);
+    PortListInit_(&PW->free);
+    sgxListArrayInit(&PW->free, PW->slots, PW->num, 0xA0);
+    if (gSgxDebugFlags & 4) sgxPrintf(" sgx-port-nslot=%d\n", PW->num);
+    PW->units = sgxMalloc(PW->nunit * 0xB0, 1);
+    if (PW->units == NULL) goto fail;
+    PortListInit_(&PW->ufree);
+    sgxListArrayInit(&PW->ufree, PW->units, PW->nunit, 0xB0);
+    if (gSgxDebugFlags & 4) sgxPrintf(" sgx-port-nunit=%d\n", PW->nunit);
+    PW->fades = sgxMalloc(PW->nfade * 0x28, 1);
+    if (PW->fades == NULL) goto fail;
+    PortListInit_(&PW->ffree);
+    sgxListArrayInit(&PW->ffree, PW->fades, PW->nfade, 0x28);
+    if (gSgxDebugFlags & 4) sgxPrintf(" sgx-port-nfade=%d\n", PW->nfade);
+    PW->init = 1;
+    return 1;
+fail:
+    if (PW->fades) sgxFree((int)PW->fades);
+    if (PW->units) sgxFree((int)PW->units);
+    if (PW->slots) sgxFree((int)PW->slots);
+    return 0;
+}
+#undef PW
 
 #ifndef NULL
 #define NULL ((void *)0)
