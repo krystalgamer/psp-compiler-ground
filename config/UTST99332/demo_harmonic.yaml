@@ -433,7 +433,7 @@ segments:
       - [0x1656E4, .rodata, main_objs/math_basic_net_basic_net]
       - [0x1656F4, rodata, asm/rodata_165674]
       - [0x165810, .rodata, main_objs/math_bspline_curve_curve]
-      - [0x16582C, rodata, asm/rodata_1657AC]
+      - [0x16585C, rodata, asm/rodata_1657DC]
       - [0x165A70, .rodata, main_objs/math_matrix_eigenVectors]
       - [0x165B58, rodata, asm/rodata_165AD8]
       - [0x165B9C, .rodata, main_objs/math_safe_acosf]

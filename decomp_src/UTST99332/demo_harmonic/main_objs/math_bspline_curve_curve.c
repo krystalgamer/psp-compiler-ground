@@ -45,7 +45,40 @@ void *math::bspline::surface::ctrlnet()
     return &_f4;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_bspline_curve_curve", _ZN4math7bspline7surface7setTypeEi);
+void math::bspline::surface::setType(int type)
+{
+    int nx = _f4.nx();
+    int ny = _f4.ny();
+    vector_xyzw *p = _f4.addr();
+    for (int j = 0; j < ny; j++)
+        for (int i = 0; i < nx; i++, p++)
+            *p = vector_xyzw(i - nx * 0.5f, j - ny * 0.5f, 0, 1.0f);
+    p = _f4.addr();
+    for (int j = 0; j < ny; j++)
+        for (int i = 0; i < nx; i++, p++) {
+            p->z = 0;
+            switch (type) {
+            case 2:
+                break;
+            case 3:
+                p->z = 2 * sinf(i * 3.14159265f / (nx - 1)) * sinf(j * 3.14159265f / (ny - 1));
+                break;
+            case 4:
+                p->z = sinf(i * 3.0f * 3.14159265f / (nx - 1)) * sinf(j * 3.0f * 3.14159265f / (ny - 1)) + 1;
+                break;
+            }
+            if (i >= 3 && i <= nx - 4 && j >= 3 && j <= ny - 4) {
+                switch (type) {
+                case 1:
+                    p->z = -5;
+                    break;
+                case 2:
+                    p->z = 5 * sinf(i * 3.14159265f / (nx - 1)) * sinf(j * 3.14159265f / (ny - 1));
+                    break;
+                }
+            }
+        }
+}
 
 extern const char D_00165894[], D_001658DC[], D_00165878[], D_001658E8[], D_0016592C[], D_00165938[];
 extern const char surface_name[] __asm__("_ZZN4math7bspline7surfaceC1EiiiE19__PRETTY_FUNCTION__");

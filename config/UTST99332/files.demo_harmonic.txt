@@ -479,7 +479,7 @@ rodata 0x172F84 -
 bss 0x18E860 main_objs/textures_textures_internal_Bmp
 bss 0x18E8E4 -
 rodata 0x165790 main_objs/math_bspline_curve_curve
-rodata 0x1657AC -
+rodata 0x1657DC -
 bss 0x18B86C main_objs/math_bspline_curve_curve
 bss 0x18B8EC -
 rodata 0x1640D4 main_objs/gl_ext_pglBlendEquationExt
