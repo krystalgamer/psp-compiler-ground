@@ -17,9 +17,43 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_parse", rt_parse_
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_parse", rt_parse_shutdown);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_parse", rt_parse_register);
+int rt_parse_register(unsigned int *type_out, unsigned int cls, void *fn)
+{
+    unsigned int n;
+    void **slot;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_parse", rt_parse_reg_parser);
+    if (gbInitialized_135B94 != 1) return 5;
+    if (gapfParsers == NULL) return 5;
+    if (gaTypeCount == NULL) return 5;
+    if (type_out == NULL) return 2;
+    if (cls >= gMaxClasses) return 2;
+    n = gaTypeCount[cls];
+    if (n > gMaxTypes) return 0x3EB;
+    gaTypeCount[cls] = n + 1;
+    slot = (void **)(((cls * gMaxTypes + n) << 2) + (int)gapfParsers);
+    *type_out = n;
+    *slot = fn;
+    return 0;
+}
+
+int rt_parse_reg_parser(unsigned int type, unsigned int cls, void *fn)
+{
+    unsigned int n;
+    void **slot;
+
+    if (gbInitialized_135B94 != 1) return 5;
+    if (gapfParsers == NULL) return 5;
+    if (gaTypeCount == NULL) return 5;
+    if (type >= 256) return 2;
+    if (cls >= gMaxClasses) return 2;
+    n = gaTypeCount[cls];
+    if (n > gMaxTypes) return 0x3EB;
+    if (type >= n) gaTypeCount[cls] = type + 1;
+    slot = (void **)(((cls * gMaxTypes + type) << 2) + (int)gapfParsers);
+    if (*slot != NULL) return 0x3EA;
+    *slot = fn;
+    return 0;
+}
 
 extern unsigned char gbInitialized_135B94;
 extern void *gpfAppParser;
