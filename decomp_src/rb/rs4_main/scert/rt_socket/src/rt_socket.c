@@ -364,7 +364,31 @@ int rt_socket_accept_connection_udp(int s, char *a)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rt_socket_read_data_udp);
+int sceNetInetRecvfrom();
+int rt_socket_read_data_udp(int s, void *buf, int len, int *got, int *ip, int *port)
+{
+    RtSin2 sin;
+    int slen;
+    int r;
+
+    if (buf == NULL || got == NULL || ip == NULL || port == NULL) return 2;
+    if (len == 0) {
+        *got = 0;
+        return 0;
+    }
+    slen = sizeof sin;
+    r = sceNetInetRecvfrom(s, buf, len, 0, &sin, &slen);
+    if (r < 0) {
+        *got = 0;
+        *ip = 0;
+        *port = 0;
+        return rt_socket_get_err_platform();
+    }
+    *got = r;
+    *ip = sin.addr;
+    *port = (unsigned short)__builtin_allegrex_wsbh(sin.port);
+    return 0;
+}
 
 int rt_socket_send_data_udp(int s, void *buf, int len, int ip, int port, int *sent)
 {
