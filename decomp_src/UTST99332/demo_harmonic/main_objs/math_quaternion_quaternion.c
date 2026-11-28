@@ -138,14 +138,60 @@ void math::quaternion::toAxisAngle(vector_xyz &axis, float &angle)
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quaternion_quaternion", _ZNK4math10quaternion8toMatrixEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quaternion_quaternion", _ZNK4math10quaternion3logEv);
+extern const float D_00165EE8, D_00165EEC;  /* 1.0f, 0.001f */
+math::quaternion math::quaternion::log() const
+{
+    quaternion r(0, 0, 0, 0);
+    /* STAND-IN: float pointer views of r/*this order the loads and stores like the original (which
+       probably indexed the components through an accessor) */
+    float *d = &r.x;
+    const float *s = &x;
+    if (fabsf(s[3]) < D_00165EE8) {
+        float a = safe_acosf(s[3]);
+        float sn = sinf(a);
+        if (fabsf(sn) >= D_00165EEC) {
+            float k = a / sn;
+            d[0] = s[0] * k;
+            d[1] = s[1] * k;
+            d[2] = s[2] * k;
+            return r;
+        }
+    }
+    d[0] = s[0];
+    d[1] = s[1];
+    d[2] = s[2];
+    return r;
+}
 
 math::quaternion math::quaternion::conj() const
 {
     return quaternion(-x, -y, -z, w);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quaternion_quaternion", _ZNK4math10quaternion3expEv);
+extern const float D_00165EF0, D_00165EF4;  /* 1.0f, eps */
+math::quaternion math::quaternion::exp() const
+{
+    quaternion r(0, 0, 0, D_00165EF0);
+    /* STAND-IN: float pointer views of r/*this order the loads and stores like the original (which
+       probably indexed the components through an accessor) */
+    float *d = &r.x;
+    const float *s = &x;
+    vector_xyz v(s[0], s[1], s[2]);
+    float a = sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
+    float sn = sinf(a);
+    d[3] = cosf(a);
+    if (fabsf(sn) > D_00165EF4) {
+        float k = sn / a;
+        d[0] = s[0] * k;
+        d[1] = s[1] * k;
+        d[2] = s[2] * k;
+        return r;
+    }
+    d[0] = s[0];
+    d[1] = s[1];
+    d[2] = s[2];
+    return r;
+}
 
 void math::quaternion::Shortest(quaternion &a, quaternion &b)
 {
