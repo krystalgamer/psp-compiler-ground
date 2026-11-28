@@ -66,7 +66,83 @@ error:
     return NULL;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gif_util", glanceDataBlock);
+int glanceDataBlock(u8 *p, u8 *base, int size, int *count, int *end)
+{
+    int err;
+    u8 c;
+    int n;
+
+    c = *p;
+    while (c != 0) {
+        switch (c) {
+        case 0x21:
+            p = moveByte(p, base, size, 1, &err);
+            if ((err == -1) | (p == NULL))
+                goto fail;
+            c = *p;
+            switch (c) {
+            case 0xF9:
+                p = moveByte(p, base, size, 7, &err);
+                if ((err == -1) | (p == NULL))
+                    goto fail;
+                c = *p;
+                continue;
+            case 0x01:
+                p = moveByte(p, base, size, 0xE, &err);
+                break;
+            case 0xFE:
+                p = moveByte(p, base, size, 1, &err);
+                break;
+            case 0xFF:
+                p = moveByte(p, base, size, 0xD, &err);
+                break;
+            default:
+                goto fail;
+            }
+            if ((err == -1) | (p == NULL))
+                goto fail;
+            p = skipDataSubBlocks(p, base, size, &err);
+            if (err == -1)
+                goto fail;
+            break;
+        case 0x2C:
+            p = moveByte(p, base, size, 9, &err);
+            if ((err == -1) | (p == NULL))
+                goto fail;
+            c = *p;
+            p = moveByte(p, base, size, 1, &err);
+            if ((err == -1) | (p == NULL))
+                goto fail;
+            if (c > 0x80)
+                p = moveByte(p, base, size, (3 << ((c & 7) + 1)) + 1, &err);
+            else
+                p = moveByte(p, base, size, 1, &err);
+            if ((err == -1) | (p == NULL))
+                goto fail;
+            p = skipDataSubBlocks(p, base, size, &err);
+            if (err != 1) {
+                (*count)++;
+                goto fail;
+            }
+            (*count)++;
+            break;
+        case 0x3B:
+            goto done;
+        default:
+            goto fail;
+        }
+        p = moveByte(p, base, size, 1, &err);
+        if ((err == -1) | (p == NULL))
+            goto fail;
+        c = *p;
+        continue;
+    done: /* STAND-IN: the 0x3B case placed at the loop end via a label (matches the block order) */
+        *end = 1;
+        return 1;
+    }
+fail:
+    return -1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gif_util", getFrameNumber);
 
