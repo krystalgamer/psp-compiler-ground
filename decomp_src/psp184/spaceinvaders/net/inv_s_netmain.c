@@ -285,7 +285,101 @@ void draw_net_scan_result_list(int x, int y)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", draw_net_member_list);
+extern char D_0007B554[];
+int sceNetAdhocMatchingGetMembers(int id, int *buflen, struct SceNetAdhocMatchingMember *buf);
+int sceNetAdhocctlGetPeerList(int *buflen, struct SceNetAdhocctlPeerInfo *buf);
+int sceNetEtherStrton(const char *str, unsigned char *mac);
+char mac2a(int c);
+unsigned int strlen(const char *s);
+void *memset(void *s, int c, unsigned int n);
+void ASC_Init(int a, int tex);
+void ASC_Reset(void);
+void ASC_SetStringRGBALEN(int mode, char *s, int x, int y, int r, int g, int b, int a, int len);
+int sprite_set(int tex, int x, int y, int w, int h, int u, int v, int sw, int sh, int a9, int a10, int r, int g, int b, int a, int pri, int mode, int a17, int alpha);
+extern int gp_tex[4], lfont_tex, font_tex_28DDA0;
+extern int gppostbl[][2];
+void draw_net_member_list(int *x_ptr, int *y_ptr)
+{
+	char etherstr[32];
+	unsigned char mac[16];
+	char mess_buff[128];
+	char str[64];
+	int buflen;
+	struct SceNetAdhocctlNickname *nickname;
+	struct SceNetAdhocMatchingMember *m;
+	int ret, n, len;
+
+	buflen = sizeof(mmember);
+	ret = sceNetAdhocMatchingGetMembers(_mrinfo.ctx_id, &buflen, mmember);
+	if (ret < 0)
+		goto error;
+	if (buflen == 0)
+		goto error;
+	buflen = sizeof(peerinfo);
+	ret = sceNetAdhocctlGetPeerList(&buflen, peerinfo);
+	if (ret < 0)
+		goto error;
+	n = 0;
+	for (m = &mmember[0]; m != NULL; m = m->next) {
+		sceNetEtherNtostr(&m->addr, etherstr);
+		ret = get_nickname(buflen, &m->addr, &nickname);
+		memset(mess_buff, 0, sizeof(mess_buff));
+		if (ret == 2)
+			goto error;
+		if (0 < ret) {
+			sceNetEtherStrton(etherstr, mac);
+			str[0] = mac2a(mac[0]);
+			str[1] = mac2a(mac[1]);
+			str[2] = mac2a(mac[2]);
+			str[3] = mac2a(mac[3]);
+			str[4] = mac2a(mac[4]);
+			str[5] = mac2a(mac[5]);
+			str[6] = 0;
+			sprintf(mess_buff, D_0007B554, etherstr);
+		} else
+			sprintf(mess_buff, "# NO NICKNAME\n");
+		len = strlen(mess_buff) - 1;
+		if (len != win[n].f[8]) {
+			ASC_Init(0, font_tex_28DDA0);
+			ASC_Reset();
+			win[n].f[1] = gppostbl[n][0] + 16;
+			win[n].f[2] = gppostbl[n][1];
+			win[n].f[4] = gppostbl[n][1];
+			win[n].f[5] = 1;
+			win[n].f[3] = gppostbl[n][0] + 16;
+			win[n].f[7] = 2;
+			win[n].f[9] = 0;
+		}
+		if (win[n].f[0] == 0) {
+			win[n].f[1] = gppostbl[n][0] + 16;
+			win[n].f[3] = gppostbl[n][0] + 16;
+			win[n].f[0] = 1;
+			win[n].f[2] = gppostbl[n][1];
+			win[n].f[4] = gppostbl[n][1];
+			win[n].f[5] = 1;
+			win[n].f[7] = 2;
+		}
+		win[n].f[8] = len;
+		ASC_SetStringRGBALEN(2, mess_buff, gppostbl[n][0] + 16, gppostbl[n][1], 0x40, 255, 255, 255, win[n].f[5]);
+		if (win[n].f[9] % win[n].f[7] == 0) {
+			win[n].f[6] = (win[n].f[6] + 1) & 1;
+			win[n].f[3] += 8;
+			win[n].f[5]++;
+			if (len < win[n].f[5]) {
+				win[n].f[5] = len;
+				win[n].f[3] = gppostbl[n][0] + len * 8 + 16;
+				win[n].f[7] = 20;
+			}
+		}
+		win[n].f[9]++;
+		if (win[n].f[6])
+			sprite_set(lfont_tex, win[n].f[3], gppostbl[n][1], 8, 8, 8, 0x1C8, 100, 100, 0, 0, 0x40, 255, 255, 255, 100, 2, 1, 255);
+		sprite_set(gp_tex[n], gppostbl[n][0], gppostbl[n][1], 16, 16, 0, 0, 100, 100, 0, 0, 255, 255, 255, 255, 100, 2, 1, 255);
+		n++;
+	}
+error:
+	return;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", draw_net_hello_list);
 
