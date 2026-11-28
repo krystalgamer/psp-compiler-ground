@@ -197,7 +197,29 @@ void inv_matchup_handycap(void)
 	inv_matchup_zankidisp();
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", inv_matchup_startdemo2);
+extern INV_W ziki[];
+void sound_start(int no);
+void inv_matchup_startdemo2(void)
+{
+	int i;
+	u8 *p;
+	int q;
+
+	if (gcnt_28FC04 >= 181) {
+		sound_start(0);
+		RT = 6;
+		return;
+	}
+	for (i = 0; i < 2; i++) {
+		p = ziki[i].spr;
+		*(int *)(p + 0x88) = hato(*(int *)(p + 0x88), 255, 6);
+	}
+	for (i = 0; i < 48; i++) {
+		q = (int)((INV_W *)&inv)[i].spr;
+		if (q)
+			*(int *)(q + 0x88) = hato(*(int *)(q + 0x88), 255, 6);
+	}
+}
 
 void inv_matchup_continue_main(void)
 {
