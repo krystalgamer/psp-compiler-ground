@@ -38,7 +38,7 @@ int rt_p2p_send(); int rt_p2p_send_list(); int rt_p2p_receive_broadcasts(char *,
 typedef struct { unsigned int ip; unsigned int port; } RtP2PAddr;
 int rt_p2p_send_to(void *p2p, RtP2PAddr addr, void *data, int len);
 int rt_p2p_set_max_peers(void *p2p, int n); int rt_p2p_set_overlay_type(char *, unsigned char, unsigned int); int rt_p2p_join_overlay(char *, unsigned char); int rt_p2p_quit_overlay(char *, unsigned char);
-int rt_p2p_quit_all_overlays(); int rt_p2p_ignore_peer_in_overlay();
+int rt_p2p_quit_all_overlays(); int rt_p2p_ignore_peer_in_overlay(char *, unsigned char, unsigned short, unsigned int);
 int rt_p2p_is_peer_in_overlay(char *p, unsigned char ov, unsigned short peer, int *out);
 int rt_p2p_send_overlay(); int rt_p2p_send_token_msg(char *, int, int, int, unsigned short); int rt_p2p_send_token_list_msg(char *, int, unsigned char, int, int, int, int, unsigned short); int rt_p2p_token_event_notify();
 int rt_p2p_get_latency_info(char *, unsigned short, void *);
@@ -401,7 +401,33 @@ int rt_p2p_quit_overlay(char *p, unsigned char ov)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_quit_all_overlays);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_ignore_peer_in_overlay);
+int rt_p2p_ignore_peer_in_overlay(char *p, unsigned char ov, unsigned short peer, unsigned int mode)
+{
+    struct { unsigned short t; unsigned char ov; unsigned char pad; unsigned short peer; unsigned short pad2; unsigned int mode; } msg;
+    RtP2PVec vec;
+    int ret = 0;
+    int r;
+
+    if (p == NULL) return 2;
+    if (ov >= *(unsigned int *)(p + 0x1D8)) return 2;
+    if (*(char **)(p + 0x188) == NULL) return 3;
+    if (peer >= *(unsigned short *)(p + 0x19C)) return 2;
+    if (mode < 4) {
+        *(unsigned int *)((char *)((RtP2POvlTab *)(*(char **)(p + 0x188) + ov * 24))->peers[peer] + 0x48) = mode;
+        msg.t = rt_p2p_pack_type(9, 0xC);
+        vec.e[0].buf = &msg;
+        vec.e[0].len = 0xC;
+        msg.ov = ov;
+        msg.peer = peer;
+        msg.mode = mode;
+        vec.total = 0xC;
+        vec.n = 1;
+        r = rt_p2p_isend_list(p, 0, 0, 0xF000, &vec);
+        if (r != 0) return r;
+    } else
+        ret = 2;
+    return ret;
+}
 
 int rt_p2p_get_overlay_peer_count(void *arg0, int arg1, int *arg2) {
     int temp_v1;
