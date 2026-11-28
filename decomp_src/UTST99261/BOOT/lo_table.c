@@ -1,5 +1,6 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "UTST99261/BOOT/lo_box.h"
 
 int getTableColumnSpec();
 
@@ -25,11 +26,228 @@ typedef struct TBOX {
 } TBOX;
 
 
+#define CBPAD(s) ((s)->unk26 + (s)->unk36 + (s)->unk2E + (s)->unk2A + (s)->unk32 + (s)->unk22)
+int calcBoxMinWidth();
+int calcBoxMaxWidth();
+int getTableCellMaxWidth(int ctx, BOX *root, int cbw);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_table", getTableColumnSpec);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_table", getTableCellMinWidth);
+int getTableCellMinWidth(int ctx, BOX *root, int cbw)
+{
+    int w;
+    int vis;
+    int mx;
+    int ofs;
+    int fixed;
+    int line;
+    int m;
+    int p;
+    int len;
+    int k;
+    char *str;
+    int font;
+    BOX *n;
+    BOXSTYLE *st;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_table", getTableCellMaxWidth);
+    mx = 0;
+    ofs = 0;
+    fixed = 0;
+    line = 0;
+    getBodyBox(root);
+    if (root->content == 6 && (root->style->flags & 3) != 0)
+        fixed = 1;
+    n = root->child;
+    while (n != NULL && n != root) {
+        w = 0;
+        if (n->content == 4) {
+            getTableColumnSpec(ctx, n, &w, 0, 0, cbw);
+            st = n->style;
+            m = st->unk26 + st->unk22;
+            if ((st->flags & 3) == 1 && w - m < st->width)
+                w = m + st->width;
+            w = ofs + w;
+            mx = mx < w ? w : mx;
+            line = 0;
+            goto next;
+        } else if (n->content == 9) {
+            resizeTextSize(n);
+            len = ((int *)n->geom)[3];
+            str = ((char **)n->geom)[0];
+            font = n->style->unk64;
+            while (len > 0) {
+                vis = 0;
+                k = getStringsVisibleLength(font, str, len, 0, 0, &vis);
+                len -= k;
+                str += k;
+                if (w < vis)
+                    w = vis;
+            }
+            w = ofs + w;
+            line = 0;
+        } else if (n->content == 11) {
+            if ((n->style->flags & 3) == 1)
+                w = ofs + n->style->width;
+            line = 0;
+        } else if (n->content != 0 && (n->html != 0x66 || getListBox(n) == NULL) && (unsigned short)(n->display - 1) < 2) {
+            if (n->content == 10)
+                resizeImageSize(n);
+            else if (n->content == 0x10)
+                resizeButtonSize(n);
+            else if (n->content == 0xD)
+                resizeTextFieldSize(n);
+            else if (n->content == 0x12)
+                resizeSelectSize(n);
+            if (fixed == 0) {
+                line += n->width;
+                w = line + ofs;
+            } else
+                w = ofs + n->width;
+        } else if (n->display == 3) {
+            w = calcBoxMinWidth(ctx, n);
+            if (mx < w)
+                mx = w;
+            goto next;
+        } else if (n->display == 0) {
+            st = n->style;
+            p = CBPAD(st);
+            ofs += p;
+            if ((st->flags & 3) == 1)
+                w = p + st->width;
+            line = 0;
+        } else if (n->display == 1) {
+            if ((s8)n->style->unk74 != 0) {
+                w = getTableCellMaxWidth(ctx, n, cbw) + ofs;
+                if (mx < w)
+                    mx = w;
+                goto next;
+            }
+            if (n->html == 0x10)
+                line = 0;
+        }
+        mx = mx < w ? w : mx;
+        if (n->child != NULL) {
+            n = n->child;
+            continue;
+        }
+    next:
+        if (n->next != NULL) {
+            n = n->next;
+            continue;
+        }
+        for (n = n->parent; n != NULL && n != root; n = n->parent) {
+            if (n->display == 0) {
+                line = 0;
+                if (n->content == 0 || n->content == 8)
+                    ofs -= CBPAD(n->style);
+            }
+            if (n->next != NULL) {
+                n = n->next;
+                break;
+            }
+        }
+    }
+    st = root->style;
+    mx += st->unk36 + st->unk2E + st->unk2A + st->unk32;
+    if (root->content == 6 && (((u16 *)root->geom)[0x18 / 2] & 1)) {
+        w = getTableCellMaxWidth(ctx, root, cbw);
+        mx = mx < w ? w : mx;
+    }
+    return mx;
+}
+
+int getTableCellMaxWidth(int ctx, BOX *root, int cbw)
+{
+    int mn;
+    int line;
+    int mx;
+    int ofs;
+    int m;
+    int p;
+    BOX *n;
+    BOXSTYLE *st;
+
+    line = 0;
+    mx = 0;
+    ofs = 0;
+    if (root->content == 6 && (root->style->flags & 3) == 1)
+        return root->style->width;
+    n = root->child;
+    while (n != NULL && n != root) {
+        if (n->content == 4) {
+            mx = mx < ofs + line ? ofs + line : mx;
+            getTableColumnSpec(ctx, n, &mn, &line, 0, cbw);
+            st = n->style;
+            m = st->unk26 + st->unk22;
+            if ((st->flags & 3) == 1) {
+                if (st->width >= mn - m)
+                    line = m + st->width;
+                else
+                    line = mn;
+            }
+            mx = mx < ofs + line ? ofs + line : mx;
+            line = 0;
+            goto next;
+        } else if (n->content == 11) {
+            mx = mx < ofs + line ? ofs + line : mx;
+            line = 0;
+            if ((n->style->flags & 3) == 1 && mx < ofs + n->style->width)
+                mx = ofs + n->style->width;
+        } else if (n->display == 0) {
+                mx = mx < ofs + line ? ofs + line : mx;
+                line = 0;
+                st = n->style;
+                p = CBPAD(st);
+                ofs += p;
+                if ((st->flags & 3) == 1 && mx < p + st->width) {
+                    mx = n->width;
+                    goto next;
+                }
+        } else if (n->display == 3) {
+                line += calcBoxMaxWidth(ctx, n);
+                goto next;
+        } else {
+                if (n->content != 0 && (n->html != 0x66 || getListBox(n) == NULL)) {
+                    if (n->content == 10)
+                        resizeImageSize(n);
+                    else if (n->content == 9)
+                        resizeTextSize(n);
+                    else if (n->content == 0x10)
+                        resizeButtonSize(n);
+                    else if (n->content == 0xD)
+                        resizeTextFieldSize(n);
+                    else if (n->content == 0x12)
+                        resizeSelectSize(n);
+                    line += n->width;
+                } else if (n->html == 0x10) {
+                    mx = mx < ofs + line ? ofs + line : mx;
+                    line = 0;
+                }
+        }
+        if (n->child != NULL) {
+            n = n->child;
+            continue;
+        }
+    next:
+        if (n->next != NULL) {
+            n = n->next;
+            continue;
+        }
+        for (n = n->parent; n != NULL && n != root; n = n->parent) {
+            if (n->display == 0 && (n->content == 0 || n->content == 8)) {
+                mx = mx < ofs + line ? ofs + line : mx;
+                line = 0;
+                ofs -= CBPAD(n->style);
+            }
+            if (n->next != NULL) {
+                n = n->next;
+                break;
+            }
+        }
+    }
+    mx = mx < line ? line : mx;
+    st = root->style;
+    return mx + (st->unk36 + st->unk2E + st->unk2A + st->unk32);
+}
 
 typedef struct {
     u8 unk0[0x10];
