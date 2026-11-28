@@ -572,7 +572,7 @@ void FileCmdRopen(void *path, int *pfd, int *psize, volatile int *abort) {
     }
 }
 
-void FileCmdClose(void *f, int fd) {
+void FileCmdClose(void *f, int fd, volatile int *abort) {
     int r;
     if (fd < 0) return;
     r = sceIoClose(fd);
