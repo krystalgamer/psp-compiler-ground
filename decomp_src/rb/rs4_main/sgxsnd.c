@@ -96,7 +96,43 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", D_0010A400);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", D_0010A40C);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndInit);
+void *memset(void *s, int c, unsigned int n);
+int sgxConfReadInt(void *, const char *, int *, int);
+void *sgxMalloc(int, int);
+void sgxListArrayInit(void *, void *, int, int);
+typedef struct SndLH_ { struct SndLH_ *prev, *next; int id; int f; } SndLH_;
+typedef struct { int vol, vol2; } SndCatVol_;
+typedef struct { int init; SndLH_ used; SndLH_ free; char *slots; int num; int mv0, mv1; SndCatVol_ catvol[16]; SndCatVol_ cat[16]; } SndWorkI_;
+static inline void SndListInit_(SndLH_ *l) {
+    l->next = l->prev = l;
+    l->id = -1;
+    l->f = 0;
+}
+int sgxSndInit(void *conf) {
+    int n;
+    int i;
+    void *p;
+    memset(&gWork_11FC84, 0, 0x1B8);
+    sgxConfReadInt(conf, "sgx-snd-nslot", &n, 0x20);
+    ((SndWorkI_ *)&gWork_11FC84)->mv0 = 0x1000;
+    ((SndWorkI_ *)&gWork_11FC84)->mv1 = 0x1000;
+    for (i = 0; i < 16; i++) {
+        ((SndWorkI_ *)&gWork_11FC84)->catvol[i].vol = 0x1000;
+        ((SndWorkI_ *)&gWork_11FC84)->catvol[i].vol2 = 0x1000;
+        ((SndWorkI_ *)&gWork_11FC84)->cat[i].vol = 0;
+        ((SndWorkI_ *)&gWork_11FC84)->cat[i].vol2 = n - 1;
+    }
+    ((SndWorkI_ *)&gWork_11FC84)->num = n;
+    p = sgxMalloc(n * 0xFC, 1);
+    ((SndWorkI_ *)&gWork_11FC84)->slots = p;
+    if (p == NULL) return 0;
+    SndListInit_(&((SndWorkI_ *)&gWork_11FC84)->used);
+    SndListInit_(&((SndWorkI_ *)&gWork_11FC84)->free);
+    sgxListArrayInit(&((SndWorkI_ *)&gWork_11FC84)->free, p, ((SndWorkI_ *)&gWork_11FC84)->num, 0xFC);
+    if (gSgxDebugFlags & 4) sgxPrintf(" sgx-snd-nslot=%d\n", ((SndWorkI_ *)&gWork_11FC84)->num);
+    ((SndWorkI_ *)&gWork_11FC84)->init = 1;
+    return 1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
