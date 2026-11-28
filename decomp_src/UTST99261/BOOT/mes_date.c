@@ -69,6 +69,11 @@ MesValue mes_number_alloc(MesContext *ctx, double d);
 int mes_eval_to_primitive(void *, int v, int hint);
 int mes_eval_to_number(void *, int v);
 void mes_object_set(MesObject *obj, unsigned int id, int value, int flags);
+extern char *mes_date_week_name[];
+extern char *mes_date_month_name[];
+void mes_util_string_put(void *s, int c);
+void mes_util_string_puts(void *s, const char *str);
+void mes_util_string_puti(void *s, int v, int width, int base);
 MesDate *mes_date_new(MesContext *ctx)
 {
     MesDate *d = mes_gc_alloc(ctx, 7);
@@ -196,7 +201,74 @@ int mes_date_week(int arg0, int arg1, int arg2) {
     return var_a3;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_date", mes_date_string);
+MesValue mes_date_string(MesContext *ctx, MesDate *d, int date, int time, int locale)
+{
+    void *buf;
+    MesValue r;
+    int off;
+
+    if (d == NULL)
+        return 0;
+    buf = mes_util_string_new();
+    if (d->valid) {
+        if (date) {
+            if (locale) {
+                if (d->year < 0) {
+                    mes_util_string_put(buf, '-');
+                    mes_util_string_puti(buf, -d->year, 4, 10);
+                } else
+                    mes_util_string_puti(buf, d->year, 4, 10);
+                mes_util_string_put(buf, '/');
+                mes_util_string_puti(buf, d->month, 2, 10);
+                mes_util_string_put(buf, '/');
+                mes_util_string_puti(buf, d->mday, 2, 10);
+            } else {
+                mes_util_string_puts(buf, mes_date_week_name[mes_date_week(d->year, d->month, d->mday)]);
+                mes_util_string_put(buf, ' ');
+                mes_util_string_puts(buf, mes_date_month_name[d->month - 1]);
+                mes_util_string_put(buf, ' ');
+                mes_util_string_puti(buf, d->mday, 2, 10);
+                mes_util_string_put(buf, ' ');
+                if (d->year < 0) {
+                    mes_util_string_put(buf, '-');
+                    mes_util_string_puti(buf, -d->year, 4, 10);
+                } else
+                    mes_util_string_puti(buf, d->year, 4, 10);
+            }
+        }
+        if (time) {
+            if (date)
+                mes_util_string_put(buf, ' ');
+            mes_util_string_puti(buf, d->hours, 2, 10);
+            mes_util_string_put(buf, ':');
+            mes_util_string_puti(buf, d->minutes, 2, 10);
+            mes_util_string_put(buf, ':');
+            mes_util_string_puti(buf, d->seconds, 2, 10);
+            if (!locale) {
+                mes_util_string_puts(buf, " GMT");
+                off = d->gmtoff;
+                if (off != 0) {
+                    if (off < 0) {
+                        off = -off;
+                        mes_util_string_put(buf, '-');
+                    } else
+                        mes_util_string_put(buf, '+');
+                    mes_util_string_puti(buf, off / 3600, 2, 10);
+                    mes_util_string_puti(buf, off / 60 % 60, 2, 10);
+                    if (d->zone) {
+                        mes_util_string_puts(buf, " (");
+                        mes_util_string_puts(buf, (char *)d->zone);
+                        mes_util_string_put(buf, ')');
+                    }
+                }
+            }
+        }
+    } else
+        mes_util_string_puts(buf, "Invalid Date");
+    r = mes_string_new3(ctx, buf);
+    mes_util_string_free(buf);
+    return r;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_date", mes_date_from_string);
 
