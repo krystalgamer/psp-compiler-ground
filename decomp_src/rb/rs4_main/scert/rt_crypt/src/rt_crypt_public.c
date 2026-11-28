@@ -5,7 +5,21 @@
 #endif
 int IsNullRSAKey(int *arg0);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt_public", KM_Initialize);
+void *memcpy(void *, const void *, unsigned long); void *memset(void *, int, unsigned int);
+extern char **gCryptGlobals;
+void KM_Initialize(int id, void *key)
+{
+    if (id == -1) {
+        if (key != NULL) memcpy((char *)gCryptGlobals + 0x104, key, 0x80);
+        else memset((char *)gCryptGlobals + 0x104, 0, 0x80);
+    } else if (id == 0x80000000) {
+        if (key != NULL) memcpy((char *)gCryptGlobals + 4, key, 0x80);
+        else memset((char *)gCryptGlobals + 4, 0, 0x80);
+    } else {
+        if (key != NULL) memcpy((char *)gCryptGlobals + 0x84, key, 0x80);
+        else memset((char *)gCryptGlobals + 0x84, 0, 0x80);
+    }
+}
 
 int IsNullRSAKey(int *arg0) {
     int *var_a0;
@@ -33,7 +47,28 @@ loop_2:
     return var_a2;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt_public", KM_GetLocalPublicKey);
+void *memcpy(void *, const void *, unsigned long); void *memset(void *, int, unsigned int);
+extern char **gCryptGlobals;
+int KM_GetLocalPublicKey(int id, void *out)
+{
+    int ret;
+
+    if (id == 0x80000000) {
+        ret = -3;
+        if (!IsNullRSAKey((int *)((char *)gCryptGlobals + 4))) ret = 0;
+        if (out != NULL) memcpy(out, (char *)gCryptGlobals + 4, 0x40);
+    } else if (id == -1) {
+        ret = -3;
+        if (!IsNullRSAKey((int *)((char *)gCryptGlobals + 0x104))) ret = 0;
+        if (out != NULL) memcpy(out, (char *)gCryptGlobals + 0x104, 0x40);
+    } else {
+        ret = -3;
+        if (!IsNullRSAKey((int *)((char *)gCryptGlobals + 0x84))) ret = 0;
+        if (out != NULL) memcpy(out, (char *)gCryptGlobals + 0x84, 0x40);
+    }
+    if (out != NULL && ret != 0) memset(out, 0, 0x40);
+    return ret;
+}
 
 extern char **gCryptGlobals;
 void *GetKeyMaster(int id)
