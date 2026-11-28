@@ -1279,7 +1279,29 @@ void NetMutexUnlock(void) {
     rt_mutex_unlock(gDmeGlobals + 0x28, 0);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetISetFieldChanged);
+int NetISetFieldChanged(int obj, int field)
+{
+    char *self;
+    char *o;
+    unsigned int *bits;
+
+    if (gObjectInterfacePtr == NULL) return 0x10;
+    if (obj < 0 || (unsigned int)obj >= *(unsigned int *)((char *)gObjectInterfacePtr + 0x100)) return 0x17;
+    if (field < 0 || (unsigned int)field >= *(unsigned int *)((char *)gObjectInterfacePtr + 0xFC)) return 0x17;
+    self = *(char **)((char *)gObjectInterfacePtr + 0x138);
+    if (self == NULL) return 0;
+    o = (*(char *(**)(int))((char *)gObjectInterfacePtr + 0x28))(obj);
+    if (o == NULL) return 0xA;
+    if (*(int *)(o + 0xC) != -1 && *(int *)(o + 0xC) != *(int *)(self + 0x404)) return 8;
+    if (field < 32)
+        bits = (unsigned int *)(o + 0x30);
+    else {
+        bits = (unsigned int *)(o + 0x2C);
+        field /= 2;
+    }
+    *bits |= 1 << field;
+    return 0;
+}
 
 int rt_comm_get_host_by_name_nb();
 extern void *gpfLookupResponseCallback;
