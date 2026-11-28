@@ -11,7 +11,34 @@ int RequestServersPacketHandler(int, int, int, int *);
 int ServerResponsePacketHandler(void);
 int ServerVersionPacketHandler(char *, int, int, const char *);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeMessage", ClientConnectsPacketHandler);
+typedef struct { unsigned int ip; unsigned int port; } DmeLinkAddr;
+typedef struct { char t; unsigned char idx; char pad[2]; DmeLinkAddr addr; char key[1]; } DmeClientConnMsg;
+extern char *gUDPInterfacePtr; extern char *gCryptInterfacePtr; extern char *gDmeGlobals;
+int NetIGetMyExtIP(); int rt_comm_linkaddress_isequal(DmeLinkAddr, DmeLinkAddr); int RemoteClientConnects();
+int ClientConnectsPacketHandler(char *ctx, int a1, int a2, DmeClientConnMsg *m)
+{
+    DmeLinkAddr addr;
+    DmeLinkAddr my;
+    int port = 0;
+    int v;
+
+    if (ctx == NULL) return -1;
+    addr = m->addr;
+    NetIGetMyExtIP(&my);
+    if (gUDPInterfacePtr != NULL) port = *(int *)(gUDPInterfacePtr + 0x84);
+    if (!rt_comm_linkaddress_isequal(addr, my) || m->idx != *(int *)(ctx + 0x404)) {
+        if (gCryptInterfacePtr != NULL) {
+            if (*(int *)(ctx + 0x468) == 2)
+                (*(int (**)())(gCryptInterfacePtr + 0x18))(-1, m->idx, m->key);
+            else
+                (*(int (**)())(gCryptInterfacePtr + 0x18))(*(int *)(ctx + 0x470) & 0x7FFFFFFF, m->idx, m->key);
+        }
+    }
+    v = *(int *)(gDmeGlobals + 0x20);
+    if (v == 0) v = port;
+    RemoteClientConnects(ctx, m->idx, addr, v);
+    return 0x4C;
+}
 
 int ServerVersionPacketHandler(char *ctx, int a, int b, const char *ver)
 {
