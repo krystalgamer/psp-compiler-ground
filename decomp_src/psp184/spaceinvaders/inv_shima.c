@@ -615,7 +615,122 @@ void classic_inv_tamafree(int tex)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_inv_init);
+typedef struct { int f0, f4, f8, fc, f10, f14; u8 pad[0x40 - 0x18]; int f40, f44; u8 pad2[0x58 - 0x48]; int f58, f5c; } SPRI_T;
+extern int enemove_c_1p, enemove_c_2p, enemove_c_bgm, enemove_c_bgm_wait, enemove_v_1p, enemove_v_2p;
+static __inline__ void spr_set(SPR_T **p, int type, int k, int w, int h)
+{
+	SPRI_T *s = (SPRI_T *)SprAlloc(type);
+	*p = (SPR_T *)s;
+	s->f14 = k;
+	s->f40 = w;
+	s->f44 = h;
+	s->f58 = w;
+	s->f5c = h;
+}
+void classic_inv_init(void)
+{
+	SPRI_T *s;
+	int i, j, n;
+
+	{
+		SPRI_T *t = (SPRI_T *)SprAlloc(8);
+		spr[0] = (SPR_T *)t;
+		t->f14 = 2;
+		t->f40 = 16;
+		t->f44 = 8;
+		t->f58 = 16;
+		t->f5c = 8;
+	}
+	n = 1;
+	for (i = 0; i < 5; i++) {
+		for (j = 0; j < 11; j++) {
+			s = (SPRI_T *)SprAlloc(i + 1);
+			s->f4 = i * 11 + j;
+			spr[n] = (SPR_T *)s;
+			s->f14 = 0;
+			if (i == 0) {
+				s->f40 = 8;
+				s->f44 = 8;
+				s->f58 = 8;
+				s->f5c = 8;
+			} else if (i == 1) {
+				s->f40 = 16;
+				s->f44 = 8;
+				s->f58 = 13;
+				s->f5c = 8;
+			} else if (i == 2) {
+				s->f40 = 16;
+				s->f44 = 8;
+				s->f58 = 13;
+				s->f5c = 8;
+			} else if (i == 3) {
+				s->f40 = 16;
+				s->f44 = 8;
+				s->f58 = 14;
+				s->f5c = 8;
+			} else if (i == 4) {
+				s->f40 = 16;
+				s->f44 = 8;
+				s->f58 = 14;
+				s->f5c = 8;
+			}
+			n++;
+		}
+	}
+	spr_set(&spr[n++], 6, 2, 16, 8);
+	spr_set(&spr[n++], 10, 0, 24, 16);
+	spr_set(&spr[n++], 10, 0, 24, 16);
+	spr_set(&spr[n++], 10, 0, 24, 16);
+	spr_set(&spr[n++], 10, 0, 24, 16);
+	spr_set(&spr[n++], 8, 3, 16, 8);
+	for (i = 0; i < 5; i++) {
+		for (j = 0; j < 11; j++) {
+			s = (SPRI_T *)SprAlloc(i + 1);
+			s->f4 = i * 11 + j;
+			spr[n] = (SPR_T *)s;
+			s->f14 = 1;
+			if (i == 0) {
+				s->f40 = 8;
+				s->f44 = 8;
+				s->f58 = 8;
+				s->f5c = 8;
+			} else if (i == 1) {
+				s->f40 = 16;
+				s->f44 = 8;
+				s->f58 = 13;
+				s->f5c = 8;
+			} else if (i == 2) {
+				s->f40 = 16;
+				s->f44 = 8;
+				s->f58 = 13;
+				s->f5c = 8;
+			} else if (i == 3) {
+				s->f40 = 16;
+				s->f44 = 8;
+				s->f58 = 14;
+				s->f5c = 8;
+			} else if (i == 4) {
+				s->f40 = 16;
+				s->f44 = 8;
+				s->f58 = 14;
+				s->f5c = 8;
+			}
+			n++;
+		}
+	}
+	spr_set(&spr[n++], 6, 3, 16, 8);
+	spr_set(&spr[n++], 10, 1, 24, 16);
+	spr_set(&spr[n++], 10, 1, 24, 16);
+	spr_set(&spr[n++], 10, 1, 24, 16);
+	spr_set(&spr[n++], 10, 1, 24, 16);
+	enemove_c_1p = 55;
+	enemove_c_2p = 62;
+	enemove_c_bgm = 0;
+	enemove_c_bgm_wait = 0;
+	enemove_v_1p = 0;
+	enemove_v_2p = 0;
+	classic_inv_tamainit();
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_inv_init_pos_sub);
 
