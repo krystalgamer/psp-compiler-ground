@@ -14,6 +14,8 @@ M2C_UNK HST_moveBackHistory();                      /* extern */
 M2C_UNK HST_moveFrontHistory();                     /* extern */
 
 
+typedef struct HstPost { int f0; int f4; int f8; int fC; } HstPost;
+HstPost *HST_getPostData();
 void parseFreeItem(HstNode *n) {
     void **css;
     void **nx;
@@ -206,7 +208,45 @@ void parseSavedContents(void) {
     HST_moveFrontHistory();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseHistory", parseCopyHistoryEntities);
+void parseCopyHistoryEntities(HstNode *src, HstNode *dst)
+{
+    int len;
+    HstPost *pd;
+
+    len = HST_getCurURIlen(src);
+    if (len != 0)
+        HST_setCurURI(dst, HST_getCurURI(src), len);
+    len = HST_getRefURIlen(src);
+    if (len != 0)
+        HST_setRefURI(dst, HST_getRefURI(src), len);
+    len = HST_getBaseURIlen(src);
+    if (len != 0)
+        HST_setBaseURI(dst, HST_getBaseURI(src), len);
+    len = HST_getTargetNamelen(src);
+    if (len != 0)
+        HST_setTargetName(dst, HST_getTargetName(src), len);
+    len = HST_getDefaultTargetlen(src);
+    if (len != 0)
+        HST_setDefaultTarget(dst, HST_getDefaultTarget(src), len);
+    len = HST_getTitlelen(src);
+    if (len != 0)
+        HST_setTitle(dst, HST_getTitle(src), len);
+    pd = HST_getPostData(src);
+    if (pd != NULL)
+        HST_setPostData(dst, pd->f0, pd->f8, pd->f4, pd->fC);
+    HST_setSessionID(dst, HST_getSessionID(src));
+    HST_setSourceType(dst, HST_getSourceType(src));
+    HST_setMethodType(dst, HST_getMethodType(src));
+    if (HST_getRequestFlag(src) < 0)
+        HST_setRequestFlag(dst, HST_getRequestFlag(src));
+    else
+        HST_setRequestFlag(dst, 5);
+    HST_setCharSet(dst, HST_getCharSet(src));
+    HST_setDomObject(dst, HST_getDomObject(src));
+    dst->x6C = src->x6C;
+    HST_setDomObject(src, 0);
+    src->x6C = 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseHistory", parseCopyHistoryNode);
 
