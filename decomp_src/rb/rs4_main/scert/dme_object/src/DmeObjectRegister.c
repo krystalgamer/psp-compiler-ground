@@ -26,7 +26,30 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObjectRegi
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObjectRegister", NetIRegisterStructure);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObjectRegister", NetIRegisterObjectFilter);
+typedef struct { unsigned int id; long x; } DmeObjFilterId;
+typedef struct { int (*fn)(); void *arg; } DmeObjFilter;
+int NetIRegisterObjectFilter(DmeObjFilter *f, DmeObjFilterId *out)
+{
+    char *o;
+    unsigned int n;
+    DmeObjFilter *e;
+    int (*fn)();
+
+    if (f == NULL) return 0x17;
+    if (out == NULL) return 0x17;
+    fn = f->fn;
+    if (fn == 0) return 0x17;
+    o = gObjectInterfacePtr;
+    n = *(unsigned int *)(o + 0x118);
+    if (n >= *(unsigned int *)(o + 0x104)) return 0x13;
+    out->id = n;
+    e = (DmeObjFilter *)(n * 8 + (int)*(DmeObjFilter **)(o + 0x164));
+    out->x = 0;
+    *(unsigned int *)(o + 0x118) = *(unsigned int *)(o + 0x118) + 1;
+    e->fn = fn;
+    e->arg = f->arg;
+    return 0;
+}
 
 extern char *gObjectInterfacePtr;
 int NetIRegisterRemoteObjectCallback(unsigned int idx, void *a, void *b, void *c)
