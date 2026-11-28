@@ -10,7 +10,26 @@ int I3cRoot__CheckIdString(signed char *arg0) {
 }
 
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_parser_i3c", UnpackNode_);
+typedef struct { unsigned short num; short p2; int p4; unsigned int child; } I3cNodeP;
+void UnpackNode_(I3cNodeP *node, unsigned int base)
+{
+	unsigned int c = node->child;
+	int n = node->num;
+	if (c < base) {
+		if (c == 0xFFFFFFFF) {
+			node->child = 0;
+			c = 0;
+		}
+		if (c != 0)
+			node->child = c + base;
+	}
+	if (n != 0 && !(n & 0x8000)) {
+		I3cNodeP *ch = (I3cNodeP *)node->child;
+		int i;
+		for (i = 0; i < n; i++)
+			UnpackNode_(&ch[i], base);
+	}
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_parser_i3c", PackNode_);
 
@@ -77,7 +96,17 @@ unsigned short I3cRoot__GetNodeEnable(char *r, unsigned short i)
 	return 0xFFFF;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_parser_i3c", I3cRoot__SetNodeEnable);
+unsigned short I3cRoot__SetNodeEnable(char *r, unsigned short idx, unsigned short en)
+{
+	char *n;
+	int old;
+	if (idx >= *(unsigned short *)(r + 0x14))
+		return 0xFFFF;
+	n = (char *)(idx * 12 + *(int *)(r + 0x18));
+	old = *(unsigned short *)(n + 6);
+	*(unsigned short *)(n + 6) = en;
+	return old;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
