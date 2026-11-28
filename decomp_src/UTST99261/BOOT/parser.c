@@ -113,6 +113,13 @@ void *OptionSet(int a, int b, int c);
 int UCS_strncasecmp(void *, void *, int n);
 int Attr_getSpecified(void *);
 void Element_setAttribute(void *, void *, void *);
+typedef struct {
+    PChar code;
+    char *name;
+} HTMLENT;
+extern HTMLENT htmlEntitiesTable[];
+extern PChar charEntTable[];
+long strtol(const char *s, char **end, int base);
 void parseReleaseResource(void) {
     parseDeleteMultiBuffer();
     parseHST_deleteHistoryNode(0, 0);
@@ -218,7 +225,87 @@ int parseHTMLTag(PCtx *c)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseCharEntity);
+PChar parseCharEntity(PCtx *c, int strict)
+{
+    char buf[9];
+    int i;
+    int n;
+    int k;
+    int len;
+    int r;
+    long v;
+    PChar *p;
+    PChar ch;
+
+    ch = '&';
+    memset(buf, 0, sizeof(buf));
+    if (c->buf->cur[1] == '#') {
+        if (c->buf->cur[2] == 'x' || c->buf->cur[2] == 'X') {
+            for (i = 0, n = 0; i + 3 < c->buf->x04; i++) {
+                p = c->buf->cur;
+                if (!((unsigned)(p[i + 3] - '0') < 10 || (unsigned)(p[i + 3] - 'A') < 6 || (PChar)(p[i + 3] - 'a') < 6))
+                    break;
+                if (n < 4 && (n != 0 || c->buf->cur[i + 3] != '0'))
+                    {
+                    buf[n] = c->buf->cur[i + 3];
+                    n++;
+                }
+            }
+            if (i > 0 && n > 0) {
+                ch = strtol(buf, NULL, 16);
+                if (c->buf->cur[i + 3] == ';')
+                    parseSkipChar(c, 1);
+                parseSkipChar(c, i + 2);
+            }
+        } else {
+            for (i = 0, n = 0; i + 2 < c->buf->x04; i++) {
+                p = c->buf->cur;
+                if ((PChar)(p[i + 2] - '0') >= 10)
+                    break;
+                if (n < 5 && (n != 0 || p[i + 2] != '0'))
+                    {
+                    buf[n] = c->buf->cur[i + 2];
+                    n++;
+                }
+            }
+            if (i > 0 && n > 0) {
+                v = strtol(buf, NULL, 10);
+                if (v <= 0xFFFD)
+                    ch = v;
+                if (c->buf->cur[i + 2] == ';')
+                    parseSkipChar(c, 1);
+                parseSkipChar(c, i + 1);
+            }
+        }
+    } else {
+        for (i = 0; i + 1 < c->buf->x04; i++) {
+            p = c->buf->cur;
+            if (!((unsigned)(p[i + 1] - '0') < 10 || (unsigned)(p[i + 1] - 'A') < 26 || (PChar)(p[i + 1] - 'a') < 26))
+                break;
+            if (i < 8)
+                buf[i] = c->buf->cur[i + 1];
+        }
+        if (i > 0) {
+            for (k = 0xFB; k >= 0; k--) {
+                len = strlen(htmlEntitiesTable[k].name);
+                if (strict)
+                    r = strcmp(htmlEntitiesTable[k].name, buf);
+                else
+                    r = strncmp(htmlEntitiesTable[k].name, buf, len);
+                if (r == 0) {
+                    ch = htmlEntitiesTable[k].code;
+                    if (i == len && c->buf->cur[len + 1] == ';')
+                        parseSkipChar(c, 1);
+                    parseSkipChar(c, len);
+                    break;
+                }
+            }
+        }
+    }
+    if ((unsigned)(ch - 0x82) < 0x1E)
+        ch = charEntTable[ch - 0x82];
+    return ch;
+}
 
 int parseCheckTag(PCtx *c) {
     PChar *p;
