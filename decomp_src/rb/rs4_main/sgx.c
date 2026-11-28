@@ -121,7 +121,16 @@ char *sgxConfReadStr(char *conf, const char *key, char *out, const char *def)
 	return out;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxConfReadInt);
+extern const char D_00109CE0[];
+int sgxConfReadInt(char *s, const char *key, int *out, int def)
+{
+	char buf[0x400];
+	int v;
+	sgxConfReadStr(s, key, buf, D_00109CE0);
+	if (buf[0] == 0) v = def; else v = atoi(buf);
+	*out = v;
+	return v;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
