@@ -230,7 +230,7 @@ const L2V3 D_0007DEAC = { 0.7f, 0.7f, 0.7f };
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", D_0007DEB8);
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", D_0007DEC4);
+const L2V3 D_0007DEC4 = { 2.0f, 2.0f, 2.0f };
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", D_0007DED0);
 
@@ -1421,7 +1421,41 @@ void zako_mov_count(ENEMY *e, int vis)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", ufo_init);
+void ufo_init_once(UFO_T *u, int no);
+void ufo_init(int n)
+{
+	int i, k, r;
+	GMOZ_T *g;
+
+	if (gmain.f1088 == 0)
+		return;
+	for (k = 0; k < 2; k++) {
+		r = gmo_load(gmain.gmo_id[13]);
+		*(&gmain.ufo_gmo[k]) = r;
+		if (r >= 0) {
+			L2V3 v;
+			g = &((GMOZ_T *)gmo)[r];
+			g->s.fc = gmain.ff64[27];
+			g->s.f20 = 0;
+			g->s.f24 = 0;
+			g->s.f28 = 0;
+			g->s.f2c = 0;
+			g->s.f30 = 0;
+			g->s.f34 = 0;
+			g->s.f4 = 0;
+			v = D_0007DEC4;
+			g->s.scale = v;
+			g->s.f10 = 1;
+		}
+	}
+	gmain.ufo_n = n;
+	if (n == 0)
+		return;
+	for (i = 0; i < gmain.ufo_n; i++) {
+		ufo_init_once(&gmain.ufo[i], -1);
+		(&gmain.ufo[i])->x = gmain.f10bc * i / n;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", ufo_init_once);
 
