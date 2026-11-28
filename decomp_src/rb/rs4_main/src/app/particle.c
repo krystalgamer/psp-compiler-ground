@@ -400,7 +400,50 @@ int partPart2DAnimate(char *p)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partDrawPart2D);
+typedef struct { float m[16]; } PartMat;
+typedef struct {
+	float sx, sy, sz;
+	int pad;
+	float uv[4];
+	float a;
+	unsigned int f0 : 8;
+	unsigned int blend : 2;
+	unsigned int f1 : 1;
+	unsigned int f2 : 1;
+	unsigned int f3 : 20;
+} PartSprt;
+typedef struct {
+	float pos[4];
+	char pad[0x30];
+	float sx, sy, scale;
+	int blend;
+	float uv[4];
+	int tex[5];
+	float a;
+} Part2D;
+void copUnitMat(PartMat *m);
+void copLetVec(void *src, void *dst);
+void i3dDrawTexCut(int a, int b, int c);
+
+void partDrawPart2D(Part2D *p)
+{
+	PartMat m;
+	PartSprt s;
+
+	copUnitMat(&m);
+	copLetVec(p, &m.m[12]);
+	s.sx = p->sx * p->scale;
+	s.sy = p->sy * p->scale;
+	s.sz = 1.0f;
+	s.a = p->a;
+	s.uv[0] = p->uv[0];
+	s.uv[1] = p->uv[1];
+	s.uv[2] = p->uv[2];
+	s.uv[3] = p->uv[3];
+	s.blend = p->blend;
+	s.f2 = 0;
+	i3dDrawTexCut((int)p->tex, (int)&m, (int)&s);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partInitPart3DCntx);
 
@@ -431,7 +474,27 @@ int partPart3DAnimate(char *p)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partDrawPart3D);
+void copQuatMat(void *q, PartMat *m);
+void partDrawPart3D(Part2D *p)
+{
+	PartMat m;
+	PartSprt s;
+
+	copUnitMat(&m);
+	copQuatMat((char *)p + 0x80, &m);
+	copLetVec(p, &m.m[12]);
+	s.sx = p->sx * p->scale;
+	s.sy = p->sy * p->scale;
+	s.sz = 1.0f;
+	s.a = 0.0f;
+	s.uv[0] = p->uv[0];
+	s.uv[1] = p->uv[1];
+	s.uv[2] = p->uv[2];
+	s.uv[3] = p->uv[3];
+	s.blend = p->blend;
+	s.f2 = 1;
+	i3dDrawTexCut((int)p->tex, (int)&m, (int)&s);
+}
 
 float partEmitGetOps(void *arg0) {
     return M2C_FIELD(arg0, float *, 0x74);
