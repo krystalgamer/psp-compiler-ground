@@ -39,6 +39,17 @@ void CSS_StyleSheetRuleSingle(void *ss, u16 *p);
 void popCSSNode(void *node);
 void freeCSSStyleSheet(void *ss);
 void freeCSSPrimitiveValue(void *v, int all);
+typedef struct CSSValNode {
+    short kind;
+    char pad2[0x16];
+    struct CSSValNode *next;          /* 0x18 */
+    short type;                       /* 0x1C */
+    int v20;                          /* 0x20 */
+    int v24;
+    int v28;
+    int v2C;
+} CSSValNode;
+extern char CSSSTR_inherit[];
 void *CSSStyleDeclaration_getPropertyDeclaration(void *d, u16 *name) {
     void *p;
     for (p = d; p != NULL; p = M2C_FIELD(p, void **, 0x18)) {
@@ -1337,7 +1348,86 @@ fail:
     return NULL;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSValue_getCssText);
+int CSSValue_getCssText(int valp)
+{
+    CSSValNode *val = (CSSValNode *)valp;
+    char buf[256];
+    void *pb;
+    CSSValNode *v;
+    char *s;
+    int r;
+    int t;
+
+    pb = CSS_newPoolBuf();
+    if (pb == NULL)
+        return 0;
+    for (v = val; v != NULL && val->kind == 0xB; v = v->next) {
+        t = v->type;
+        if (t == 2) {
+            s = (char *)CSSPrimitiveValue_getCssText(&v->v20);
+            CSS_putsPoolBuf(pb, (int)s);
+            if (s != NULL)
+                MEM_free(0, (int)s);
+        } else if (t == 1) {
+            CSS_putsPoolBuf(pb, (int)CSSSTR_inherit);
+        } else if (t == 3) {
+            CSS_putsPoolBuf(pb, v->v20);
+        } else if (t == 4) {
+            s = (char *)CSSPrimitiveValue_getCssText(v->v20);
+            CSS_putsPoolBuf(pb, (int)s);
+            if (s != NULL)
+                MEM_free(0, (int)s);
+            CSS_putSPoolBuf(pb, " ");
+            s = (char *)CSSPrimitiveValue_getCssText(v->v24);
+            CSS_putsPoolBuf(pb, (int)s);
+            if (s != NULL)
+                MEM_free(0, (int)s);
+        } else if (t == 5) {
+            s = (char *)CSSPrimitiveValue_getCssText(v->v20);
+            CSS_putsPoolBuf(pb, (int)s);
+            if (s != NULL)
+                MEM_free(0, (int)s);
+            CSS_putSPoolBuf(pb, " ");
+            s = (char *)CSSPrimitiveValue_getCssText(v->v24);
+            CSS_putsPoolBuf(pb, (int)s);
+            if (s != NULL)
+                MEM_free(0, (int)s);
+        } else if (t == 6) {
+            CSS_putsPoolBuf(pb, v->v20);
+            sprintf(buf, " %d", (short)v->v24);
+            CSS_putSPoolBuf(pb, buf);
+        } else if (t == 7) {
+            CSS_putsPoolBuf(pb, v->v20);
+            sprintf(buf, " %d", (short)v->v24);
+            CSS_putSPoolBuf(pb, buf);
+        } else if (t == 8) {
+            s = (char *)CSSPrimitiveValue_getCssText(v->v20);
+            CSS_putsPoolBuf(pb, (int)s);
+            if (s != NULL)
+                MEM_free(0, (int)s);
+            CSS_putSPoolBuf(pb, " ");
+            s = (char *)CSSPrimitiveValue_getCssText(v->v24);
+            CSS_putsPoolBuf(pb, (int)s);
+            if (s != NULL)
+                MEM_free(0, (int)s);
+            CSS_putSPoolBuf(pb, " ");
+            s = (char *)CSSPrimitiveValue_getCssText(v->v28);
+            CSS_putsPoolBuf(pb, (int)s);
+            if (s != NULL)
+                MEM_free(0, (int)s);
+            CSS_putSPoolBuf(pb, " ");
+            s = (char *)CSSPrimitiveValue_getCssText(v->v2C);
+            CSS_putsPoolBuf(pb, (int)s);
+            if (s != NULL)
+                MEM_free(0, (int)s);
+        }
+        if (v->next != NULL)
+            CSS_putSPoolBuf(pb, " ");
+    }
+    r = CSS_getPoolBuf(pb);
+    CSS_freePoolBuf(pb);
+    return r;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
