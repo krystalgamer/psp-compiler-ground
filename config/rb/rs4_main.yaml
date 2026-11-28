@@ -650,6 +650,7 @@ segments:
       - [0x108490, .rodata, src/net/saru_network_lobby_message_queue]
       - [0x108544, .rodata, src/net/saru_network_param]
       - [0x108550, .rodata, src/net/saru_network_screen_panel]
+      - [0x108620, .rodata, src/net/saru_network_task]
       - [0x108A20, .rodata, src/net/saru_petit_network_card_battle_player]
       - [0x108B5C, .rodata, src/net/saru_petit_network_controller_set]
       - [0x108BEC, .rodata, src/net/saru_petit_network_game]

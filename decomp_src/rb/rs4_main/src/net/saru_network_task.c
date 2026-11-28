@@ -1,7 +1,5 @@
 /* lang: c++ */
 /* cflags: -Os -fno-strength-reduce -fno-merge-constants -fno-exceptions */
-/* #pragma interface: the vtables, typeinfo and implicit destructors stay in the module's asm */
-#pragma interface "rodata"
 #include "common.h"
 
 extern "C" {
@@ -9,8 +7,6 @@ void *_memAllocMBL(unsigned int size, const char *file, int line);
 void _memFree(void *p, const char *file, int line);
 void *memset(void *, int, unsigned long);
 void consPrintf(const char *fmt, ...);
-extern const char D_00108560[];
-extern const char D_00108574[];
 }
 
 struct Task {
@@ -21,10 +17,12 @@ struct Task {
 };
 
 namespace Ys {
+class Task;
+
 class Object {
 public:
-	static void *operator new(unsigned int size) { return _memAllocMBL(size, D_00108560, 23); }
-	static void operator delete(void *p) { _memFree(p, D_00108560, 25); }
+	static void *operator new(unsigned int size) { return _memAllocMBL(size, "src/ys/ys_object.h", 23); }
+	static void operator delete(void *p) { _memFree(p, "src/ys/ys_object.h", 25); }
 };
 
 class TaskState : public Object {
@@ -145,27 +143,6 @@ public:
 	Network *Init(int a);
 };
 
-namespace ScreenPanel {
-class Panel : public Ys::ScreenPanel {
-public:
-};
-class CancelPanel : public Ys::Cancel_ScreenPanel {
-public:
-};
-class Connecting : public Panel {
-public:
-	Panel *Init(Ys::Task *parent);
-};
-class Error : public CancelPanel {
-public:
-	CancelPanel *Init(Ys::Task *parent);
-};
-class Error_WLanOff : public CancelPanel {
-public:
-	CancelPanel *Init(Ys::Task *parent);
-};
-}
-
 namespace NetworkTaskState {
 class StartupWait : public Ys::TaskState {
 public:
@@ -188,10 +165,10 @@ public:
 class NetworkTask : public Ys::Task {
 public:
 	Net::Game *game_p;
-	Ys::TaskState *startup_state_p;
-	Ys::TaskState *setup_state_p;
-	Ys::TaskState *quit_state_p;
-	Ys::TaskState *delay_error_state_p;
+	NetworkTaskState::StartupWait *startup_state_p;
+	NetworkTaskState::SetupWait *setup_state_p;
+	NetworkTaskState::QuitWait *quit_state_p;
+	NetworkTaskState::Delay_Error *delay_error_state_p;
 	signed char startup_wait;
 	signed char delay_wait;
 	signed char min_object;
@@ -219,6 +196,28 @@ public:
 	virtual void Run_DelayError(::Task *t, void *p, unsigned int n);
 	bool Check_Error();
 };
+
+namespace ScreenPanel {
+class Panel : public Ys::ScreenPanel {
+public:
+};
+class CancelPanel : public Ys::Cancel_ScreenPanel {
+public:
+};
+class Connecting : public Panel {
+public:
+	Panel *Init(Ys::Task *parent);
+};
+class Error : public CancelPanel {
+public:
+	CancelPanel *Init(Ys::Task *parent);
+};
+class Error_WLanOff : public CancelPanel {
+public:
+	CancelPanel *Init(Ys::Task *parent);
+};
+}
+
 
 void NetworkTask::To_DelayError()
 {
@@ -344,7 +343,7 @@ void NetworkTask::Receive_RunMessage(::Task *t, void *p, unsigned int n)
 	if (Check_Error()) {
 		To_DelayError();
 	} else if (Net::ObjectDaemon::_instance_p->count < min_object) {
-		consPrintf(D_00108574);
+		consPrintf("saru network task : object removed.\n");
 		To_DelayError();
 	}
 }
@@ -387,19 +386,3 @@ void NetworkTaskState::Delay_Error::Run(Ys::Task &t, ::Task *p, void *q, unsigne
 }
 
 
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet16NetworkTaskState11StartupWaitD0Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet16NetworkTaskState11StartupWaitD1Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet16NetworkTaskState9SetupWaitD0Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet16NetworkTaskState9SetupWaitD1Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet16NetworkTaskState8QuitWaitD0Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet16NetworkTaskState8QuitWaitD1Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet16NetworkTaskState11Delay_ErrorD0Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet16NetworkTaskState11Delay_ErrorD1Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11ScreenPanel10ConnectingD1Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11ScreenPanel10ConnectingD0Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11ScreenPanel5ErrorD1Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11ScreenPanel5ErrorD0Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11ScreenPanel13Error_WLanOffD1Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11ScreenPanel13Error_WLanOffD0Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11ScreenPanel5PanelD0Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11ScreenPanel5PanelD1Ev); }
