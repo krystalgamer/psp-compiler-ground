@@ -439,7 +439,8 @@ bss 0x18EA74 main_objs/textures_textures_internal_Tga
 rodata 0x170B40 main_objs/math_factorial
 bss 0x18E2DC main_objs/math_factorial
 rodata 0x165C5C main_objs/math_matrix_matrix
-rodata 0x165D44 -
+cst4 0x165C5C-0x165D44 main_objs/math_matrix_matrix
+rodata 0x165E90 -
 bss 0x18BA08 main_objs/math_matrix_matrix
 bss 0x18BA8C -
 rodata 0x168800 main_objs/scene_Group

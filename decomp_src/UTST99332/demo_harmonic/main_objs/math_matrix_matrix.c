@@ -1,5 +1,5 @@
 /* lang: c++ */
-/* cflags: -O3 -fno-exceptions */
+/* cflags: -O3 -fno-exceptions -fmerge-constants */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
 #define DEMO_STATICS_MATH
@@ -10,12 +10,8 @@
 __asm__(".globl _GLOBAL__I__ZN4math6matrixC2ERKNS_10quaternionE");
 __asm__(".globl _GLOBAL__D__ZN4math6matrixC2ERKNS_10quaternionE");
 
-/* float constants stay in the module's .rodata (asm) */
-extern const char D_00165D94[];     /* " *** error " */
-extern const char D_00165DA0[];     /* "n != 0.f" */
-extern const char D_00165DAC[];     /* "../lib/maths/matrix.cpp" */
-extern const char D_00165DC4[];     /* "n should never be set to 0" */
-extern const char PF_Perspective[] __asm__("_ZZN4math6matrix11PerspectiveEffffE19__PRETTY_FUNCTION__");
+/* -fmerge-constants: all the floats (also the asm functions', files.MODULE.txt `cst4`) precede
+   the strings; trackball's unreferenced TRACKBALL_THRES goes with its asm (function_owner) */
 
 math::matrix::matrix(const quaternion &q)
 {
@@ -102,11 +98,11 @@ math::matrix math::matrix::Rotation(float a, const vector_xyz &v)
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_matrix_matrix", _ZN4math6matrix11PointNormalENS_11vector_xyzwES1_);
 
-math::matrix math::matrix::Perspective(float fovy, float aspect, float n, float f)
+const math::matrix math::matrix::Perspective(float fovy, float aspect, float n, float f)
 {
     float c = 1.0f / tanf(fovy * 0.0174532924f * 0.5f);
     if (!(n != 0)) {
-        common::common_internal::assert_display(D_00165D94, D_00165DA0, D_00165DAC, PF_Perspective, 168, D_00165DC4);
+        common::common_internal::assert_display(" *** error ", "n != 0.f", "../lib/maths/matrix.cpp", __PRETTY_FUNCTION__, 168, "n should never be set to 0");
         common::common_internal::on_error();
         common::common_internal::clash();
     }
@@ -120,12 +116,10 @@ math::matrix math::matrix::Frustum(float l, float r, float b, float t, float n, 
                   vector_xyzw(0, 0, -(f + n) / (f - n), f * -2.0f * n / (f - n)), vector_xyzw(0, 0, -1.0f, 0));
 }
 
-extern const char D_00165E3C[], D_00165E40[];
-extern const char PF_ShadowMatrix[] __asm__("_ZZN4math6matrix12ShadowMatrixENS_11vector_xyzwES1_E19__PRETTY_FUNCTION__");
-math::matrix math::matrix::ShadowMatrix(vector_xyzw plane, vector_xyzw light)
+const math::matrix math::matrix::ShadowMatrix(vector_xyzw plane, vector_xyzw light)
 {
     if (!(light.w == 1.0f)) {
-        common::common_internal::assert_display(D_00165D94, D_00165E40, D_00165DAC, PF_ShadowMatrix, 225, D_00165E3C);
+        common::common_internal::assert_display(" *** error ", "light.w() == 1.f", "../lib/maths/matrix.cpp", __PRETTY_FUNCTION__, 225, " ");
         common::common_internal::on_error();
         common::common_internal::clash();
     }
@@ -175,7 +169,18 @@ math::matrix math::matrix::EulerRotation(vector_xyz v, RotationOrder o)
     return EulerRotation(v.x, v.y, v.z, o);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_matrix_matrix", _ZNK4math6matrix11eulerAnglesENS_13RotationOrderE);
+math::vector_xyz math::matrix::eulerAngles(RotationOrder o) const
+{
+    switch (o) {
+    default:
+    case 0: return eulerAnglesXYZ();
+    case 1: return eulerAnglesXZY();
+    case 2: return eulerAnglesYZX();
+    case 3: return eulerAnglesYXZ();
+    case 4: return eulerAnglesZXY();
+    case 5: return eulerAnglesZYX();
+    }
+}
 
 math::vector_xyz math::matrix::eulerAnglesXYZ() const
 {
@@ -351,8 +356,7 @@ math::matrix math::matrix::fixedCoordSys() const
     return m;
 }
 
-extern const char D_00165E88[], D_00165E8C[];
 void math::matrix::print(std::string a, std::string b) const
 {
-    std::cout << a << D_00165E88 << (*this)[0][0] << D_00165E88 << (*this)[1][0] << D_00165E88 << (*this)[2][0] << D_00165E88 << (*this)[3][0] << D_00165E8C << D_00165E88 << (*this)[0][1] << D_00165E88 << (*this)[1][1] << D_00165E88 << (*this)[2][1] << D_00165E88 << (*this)[3][1] << D_00165E8C << D_00165E88 << (*this)[0][2] << D_00165E88 << (*this)[1][2] << D_00165E88 << (*this)[2][2] << D_00165E88 << (*this)[3][2] << D_00165E8C << D_00165E88 << (*this)[0][3] << D_00165E88 << (*this)[1][3] << D_00165E88 << (*this)[2][3] << D_00165E88 << (*this)[3][3] << D_00165E8C << b;
+    std::cout << a << "\t" << (*this)[0][0] << "\t" << (*this)[1][0] << "\t" << (*this)[2][0] << "\t" << (*this)[3][0] << "\n" << "\t" << (*this)[0][1] << "\t" << (*this)[1][1] << "\t" << (*this)[2][1] << "\t" << (*this)[3][1] << "\n" << "\t" << (*this)[0][2] << "\t" << (*this)[1][2] << "\t" << (*this)[2][2] << "\t" << (*this)[3][2] << "\n" << "\t" << (*this)[0][3] << "\t" << (*this)[1][3] << "\t" << (*this)[2][3] << "\t" << (*this)[3][3] << "\n" << b;
 }

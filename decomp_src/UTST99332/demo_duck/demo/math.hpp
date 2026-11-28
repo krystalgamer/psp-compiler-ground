@@ -83,9 +83,9 @@ struct matrix {
     static matrix RotationY(float a);
     static matrix RotationZ(float a);
     static matrix PointNormal(vector_xyzw p, vector_xyzw n);
-    static matrix Perspective(float fovy, float aspect, float n, float f);
+    static const matrix Perspective(float fovy, float aspect, float n, float f);
     static matrix Frustum(float l, float r, float b, float t, float n, float f);
-    static matrix ShadowMatrix(vector_xyzw plane, vector_xyzw light);
+    static const matrix ShadowMatrix(vector_xyzw plane, vector_xyzw light);
     static matrix trackball(float, float, bool, bool, float, float, vector_xyzw &);
     static matrix EulerRotation(float a, float b, float c, RotationOrder o);
     static matrix EulerRotation(vector_xyz v, RotationOrder o);
