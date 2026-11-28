@@ -2,8 +2,16 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
+#define DEMO_STATICS_SGL
 #define SGL_LINKONCE_PerVertexData 1
+#include <iostream>
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN2sh3PRTC2ENS_4Args4ToolE\n_GLOBAL__I__ZN2sh3PRTC2ENS_4Args4ToolE = _GLOBAL__I__ZN2sh3PRTC2ENS_4Args4ToolE__asm");
+__asm__(".globl _GLOBAL__D__ZN2sh3PRTC2ENS_4Args4ToolE\n_GLOBAL__D__ZN2sh3PRTC2ENS_4Args4ToolE = _GLOBAL__D__ZN2sh3PRTC2ENS_4Args4ToolE__asm");
 
 #include "UTST99332/demo_duck/gl.hpp"
 #include <fstream>
@@ -23,8 +31,6 @@ extern const char D_00172F9C[];     /* "FULL_HEMISPHERE_VTX" */
 extern const char D_00172FB0[];     /* "DRAW_METRICS" */
 extern const char D_00172FC0[];     /* "UNKNOWN" */
 extern const char D_00172FC8[];     /* "DRAW_NORMAL" */
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_PRT", _Z41__static_initialization_and_destruction_0ii_E2CD4);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_PRT", _ZN2sh3PRTC2ENS_4Args4ToolE);
 
@@ -192,22 +198,6 @@ void sh::PRT::load()
         _vdata._v[i]._sh = d._v[i]._sh;
 }
 
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_E2CD4");
-void _GLOBAL__I__ZN2sh3PRTC2ENS_4Args4ToolE(void);
-void _GLOBAL__D__ZN2sh3PRTC2ENS_4Args4ToolE(void);
-}
-
-void _GLOBAL__I__ZN2sh3PRTC2ENS_4Args4ToolE(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN2sh3PRTC2ENS_4Args4ToolE(void)
-{
-    static_init(0, 0xFFFF);
-}
-
 /* the original's .gnu.linkonce.t order */
 DEMO_LINKONCE_ORDER(DEMO_LINKONCE(_ZNSt6vectorIN2sh3PRT13PerVertexDataESaIS2_EE6resizeEjRKS2_)
                     DEMO_LINKONCE(_ZN10BoolVectorILj320EE2jkERjS1_j)
@@ -238,7 +228,6 @@ public:
     void jk(unsigned int &j, unsigned int &k, unsigned int i);
 };
 
-
 extern "C" void sh_PRT_resize(void) __asm__("_ZNSt6vectorIN2sh3PRT13PerVertexDataESaIS2_EE6resizeEjRKS2_");
 extern "C" void sh_PRT_instances(std::vector<sh::PRT::PerVertexData> *pv, BoolVector<320> *b, std::vector<sh::Vertex> *vv, unsigned int n) __attribute__((section(".discard.asm")));
 extern "C" void sh_PRT_instances(std::vector<sh::PRT::PerVertexData> *pv, BoolVector<320> *b, std::vector<sh::Vertex> *vv, unsigned int n)
@@ -259,3 +248,15 @@ template<unsigned int N> void BoolVector<N>::jk(unsigned int &j, unsigned int &k
     j = i / 32;
     k = i - j * 32;
 }
+
+/* the asm functions refer to the header statics by their module names */
+__asm__("_ZN3sgl3REDE_1914AC = _ZN3sgl3REDE\n"
+        "_ZN3sgl4BLUEE_1914CC = _ZN3sgl4BLUEE\n"
+        "_ZN3sgl4CYANE_19151C = _ZN3sgl4CYANE\n"
+        "_ZN3sgl5BLACKE_1914DC = _ZN3sgl5BLACKE\n"
+        "_ZN3sgl5GREENE_1914BC = _ZN3sgl5GREENE\n"
+        "_ZN3sgl5WHITEE_1914EC = _ZN3sgl5WHITEE\n"
+        "_ZN3sgl6YELLOWE_1914FC = _ZN3sgl6YELLOWE\n"
+        "_ZN3sgl7MAGENTAE_19150C = _ZN3sgl7MAGENTAE\n"
+        "_ZN4math12BEZIER_BASISE_19146C = _ZN4math12BEZIER_BASISE\n"
+        "_ZN4math13HERMITE_BASISE_19142C = _ZN4math13HERMITE_BASISE\n");

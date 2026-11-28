@@ -2,9 +2,16 @@
 /* cflags: -O3 -fno-exceptions -fno-merge-constants */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
 #define DEMO_TEMPLATE_DEFS
 #define SGL_LINKONCE_TestEnv 1
+#include <iostream>
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN2sh10TestEnvSet7TestEnvC2ENS0_7EnvEnumENS_4Args3EnvE");
+__asm__(".globl _GLOBAL__D__ZN2sh10TestEnvSet7TestEnvC2ENS0_7EnvEnumENS_4Args3EnvE");
 
 /* this object's .gnu.linkonce.t sections in the original's order */
 DEMO_LINKONCE_ORDER(
@@ -39,14 +46,13 @@ typedef std::vector<common::handle<sh::TestEnvSet::TestEnv> > TestEnvHandles;
 namespace common {
 extern template void setAt(unsigned int, TestEnvHandles &, sh::TestEnvSet::TestEnv *);
 }
-extern "C" void TestEnvHandles_resize(TestEnvHandles &v, unsigned int n) __attribute__((section(".discard.asm")));
-extern "C" void TestEnvHandles_resize(TestEnvHandles &v, unsigned int n) { v.resize(n); }
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_TestEnvSet_TestEnv", _Z41__static_initialization_and_destruction_0ii_F0748);
-
 sh::TestEnvSet::TestEnv::TestEnv(EnvEnum type, Args::Env args) : _env(args), _type(type), _loaded(false)
 {
 }
+
+/* after the first public function: the static constructor is keyed to TestEnv() */
+extern "C" void TestEnvHandles_resize(TestEnvHandles &v, unsigned int n) __attribute__((section(".discard.asm")));
+extern "C" void TestEnvHandles_resize(TestEnvHandles &v, unsigned int n) { v.resize(n); }
 
 void sh::TestEnvSet::TestEnv::load()
 {
@@ -105,22 +111,6 @@ void sh::TestEnvSet::draw(bool b)
 {
     TES_ASSERT(_current_light < MAX_ENV, D_001712E4, draw_name, 109);
     _lights[_current_light]->_env.draw(!b);
-}
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_F0748");
-void _GLOBAL__I__ZN2sh10TestEnvSet7TestEnvC2ENS0_7EnvEnumENS_4Args3EnvE(void);
-void _GLOBAL__D__ZN2sh10TestEnvSet7TestEnvC2ENS0_7EnvEnumENS_4Args3EnvE(void);
-}
-
-void _GLOBAL__I__ZN2sh10TestEnvSet7TestEnvC2ENS0_7EnvEnumENS_4Args3EnvE(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN2sh10TestEnvSet7TestEnvC2ENS0_7EnvEnumENS_4Args3EnvE(void)
-{
-    static_init(0, 0xFFFF);
 }
 
 /* out-of-line inline members / instances that stay asm */

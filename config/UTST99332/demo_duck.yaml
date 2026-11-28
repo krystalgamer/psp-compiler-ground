@@ -540,8 +540,7 @@ segments:
       - [0x1727E0, .rodata, main_objs/Icosahedron_Bin]
       - [0x1727FC, rodata, asm/rodata_17277C]
       - [0x172CC4, .rodata, main_objs/sh_Matrix]
-      - [0x172D0C, rodata, asm/rodata_172C8C]
-      - [0x172D5C, .rodata, main_objs/sh_PRT]
+      - [0x172D0C, .rodata, main_objs/sh_PRT]
       - [0x172D74, rodata, asm/rodata_172CF4]
       - [0x173520, .rodata, main_objs/sh_PolarFunction]
       - [0x17353C, rodata, asm/rodata_1734BC]
@@ -554,7 +553,7 @@ segments:
       - [0x173F2C, rodata, asm/rodata_173EAC]
       - [0x174140, .rodata, main_objs/sh_SquareMap]
       - [0x174190, rodata, asm/rodata_174110]
-      - [0x1741C8, .rodata, main_objs/sh_TestEnvSet_TestEnv]
+      - [0x1741AC, .rodata, main_objs/sh_TestEnvSet_TestEnv]
       - [0x1741F8, rodata, asm/rodata_174178]
       - [0x174390, .rodata, main_objs/sh_Vector]
       - [0x17451C, .rodata, main_objs/interp_VectorRGBAnim]
@@ -758,6 +757,7 @@ segments:
       - { start: 0x18CFCC, type: bss, vram: 0x190830, name: bss_190830 }
       - { start: 0x18CFCC, type: .bss, vram: 0x190830, name: main_objs/sgl_Mesh_3 }
       - { start: 0x18CFCC, type: bss, vram: 0x190934, name: bss_190934 }
+      - { start: 0x18CFCC, type: .bss, vram: 0x190A38, name: main_objs/sgl_MeshBuilder_extruded_var_extruded_var }
       - { start: 0x18CFCC, type: .bss, vram: 0x190B3C, name: main_objs/sgl_MeshParams }
       - { start: 0x18CFCC, type: .bss, vram: 0x190C40, name: main_objs/sgl_Stripper }
       - { start: 0x18CFCC, type: .bss, vram: 0x190D44, name: main_objs/sgl_TransformSet_Transform }
@@ -769,7 +769,7 @@ segments:
       - { start: 0x18CFCC, type: .bss, vram: 0x1911A4, name: main_objs/sh_HDRMap }
       - { start: 0x18CFCC, type: .bss, vram: 0x191228, name: main_objs/Icosahedron_Bin }
       - { start: 0x18CFCC, type: .bss, vram: 0x191350, name: main_objs/sh_Matrix }
-      - { start: 0x18CFCC, type: bss, vram: 0x191428, name: bss_191428 }
+      - { start: 0x18CFCC, type: .bss, vram: 0x191428, name: main_objs/sh_PRT }
       - { start: 0x18CFCC, type: .bss, vram: 0x19152C, name: main_objs/sh_PolarFunction }
       - { start: 0x18CFCC, type: bss, vram: 0x1915B0, name: bss_1915B0 }
       - { start: 0x18CFCC, type: .bss, vram: 0x1915B0, name: main_objs/sgl_RT }
@@ -782,7 +782,7 @@ segments:
       - { start: 0x18CFCC, type: .bss, vram: 0x191864, name: main_objs/sh_SphericalRGBFn }
       - { start: 0x18CFCC, type: bss, vram: 0x1918E8, name: bss_1918E8 }
       - { start: 0x18CFCC, type: .bss, vram: 0x1918E8, name: main_objs/sh_SquareMap }
-      - { start: 0x18CFCC, type: bss, vram: 0x19196C, name: bss_19196C }
+      - { start: 0x18CFCC, type: .bss, vram: 0x19196C, name: main_objs/sh_TestEnvSet_TestEnv }
       - { start: 0x18CFCC, type: .bss, vram: 0x1919F0, name: main_objs/sh_Vector }
       - { start: 0x18CFCC, type: .bss, vram: 0x191A74, name: main_objs/interp_VectorRGBAnim }
       - { start: 0x18CFCC, type: bss, vram: 0x191B38, name: bss_191B38 }

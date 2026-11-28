@@ -128,17 +128,19 @@ rodata 0x16FD64 -
 rodata 0x16F5D8 main_objs/sh_HDRMap
 rodata 0x16F634 -
 # sh_PRT: the float pools of PRT::draw_samples .. draw_averaged_normals (draw_with_sh's are its asm's)
-rodata 0x16FDB4 main_objs/sh_PRT
+rodata 0x16FD64 main_objs/sh_PRT
 rodata 0x16FDCC -
 rodata 0x16F2E8 main_objs/sh_DebugMap
 rodata 0x16F310 -
 rodata 0x171198 main_objs/sh_SquareMap
 rodata 0x1711E8 -
 bss 0x18DED0 main_objs/sh_Matrix
-bss 0x18DFA8 -
+# sh_PRT: the header statics (std::__ioinit first)
+bss 0x18DFA8 main_objs/sh_PRT
 bss 0x18DB48 main_objs/sh_DebugMap
 bss 0x18E468 main_objs/sh_SquareMap
-bss 0x18E4EC -
+# sh_TestEnvSet_TestEnv: the header statics (std::__ioinit first)
+bss 0x18E4EC main_objs/sh_TestEnvSet_TestEnv
 # gl__name_stack: the float pools of gl::PushMatrix and gl::LoadIdentity (Identity()'s 1.0f)
 rodata 0x164798 main_objs/gl__name_stack
 rodata 0x1647A0 -
@@ -158,7 +160,7 @@ rodata 0x16477C -
 rodata 0x1626E8 main_objs/glutils_PickingBase
 rodata 0x1626F8 -
 # sh_TestEnvSet_TestEnv: the float pools of TestEnvSet::TestEnvSet (C2, C1)
-rodata 0x171220 main_objs/sh_TestEnvSet_TestEnv
+rodata 0x171204 main_objs/sh_TestEnvSet_TestEnv
 rodata 0x171250 -
 # math_basic_net_basic_net: the float pools of basic_net::basic_net(unsigned, unsigned) (C2, C1)
 rodata 0x165648 main_objs/math_basic_net_basic_net
@@ -414,6 +416,8 @@ bss 0x18CE94 main_objs/BVH
 rodata 0x160EE0 main_objs/glutils_Material
 bss 0x18AD18 main_objs/glutils_Material
 rodata 0x16E230 main_objs/sgl_MeshParams
+# sgl_MeshBuilder_extruded_var_extruded_var: the header statics
+bss 0x18D5B8 main_objs/sgl_MeshBuilder_extruded_var_extruded_var
 bss 0x18D6BC main_objs/sgl_MeshParams
 # sgl_Stripper: the header statics
 bss 0x18D7C0 main_objs/sgl_Stripper

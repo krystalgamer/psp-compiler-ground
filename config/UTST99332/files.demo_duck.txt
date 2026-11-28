@@ -141,18 +141,20 @@ rodata 0x172C8C -
 # sh_HDRMap: the float pools of convert01f .. eval (load's is its asm's)
 rodata 0x172500 main_objs/sh_HDRMap
 rodata 0x17255C -
-# sh_PRT: the float pools of PRT::draw_samples .. draw_averaged_normals (draw_with_sh's are its asm's)
-rodata 0x172CDC main_objs/sh_PRT
+# sh_PRT: the float pools of the static initializer .. draw_averaged_normals (the asm functions' are theirs)
+rodata 0x172C8C main_objs/sh_PRT
 rodata 0x172CF4 -
 rodata 0x172210 main_objs/sh_DebugMap
 rodata 0x172238 -
 rodata 0x1740C0 main_objs/sh_SquareMap
 rodata 0x174110 -
 bss 0x191350 main_objs/sh_Matrix
-bss 0x191428 -
+# sh_PRT: the header statics (std::__ioinit first)
+bss 0x191428 main_objs/sh_PRT
 bss 0x190FC8 main_objs/sh_DebugMap
 bss 0x1918E8 main_objs/sh_SquareMap
-bss 0x19196C -
+# sh_TestEnvSet_TestEnv: the header statics (std::__ioinit first)
+bss 0x19196C main_objs/sh_TestEnvSet_TestEnv
 # VertexColorEnv: the header statics' float pool, the float pools (2 pi) of VertexColorEnv::VertexColorEnv (C2, C1)
 rodata 0x16D5E0 main_objs/VertexColorEnv
 rodata 0x16D604 -
@@ -171,8 +173,8 @@ rodata 0x16769C -
 # glutils_PickingBase: vector<unsigned>::reserve()'s "vector::reserve" (after PickingBase's typeinfo name)
 rodata 0x165458 main_objs/glutils_PickingBase
 rodata 0x165468 -
-# sh_TestEnvSet_TestEnv: the float pools of TestEnvSet::TestEnvSet (C2, C1)
-rodata 0x174148 main_objs/sh_TestEnvSet_TestEnv
+# sh_TestEnvSet_TestEnv: the float pools of the static initializer and TestEnvSet::TestEnvSet (C2, C1)
+rodata 0x17412C main_objs/sh_TestEnvSet_TestEnv
 rodata 0x174178 -
 # math_basic_net_basic_net: the float pools of basic_net::basic_net(unsigned, unsigned) (C2, C1)
 rodata 0x168568 main_objs/math_basic_net_basic_net
@@ -428,6 +430,8 @@ bss 0x190314 main_objs/BVH
 rodata 0x163980 main_objs/glutils_Material
 bss 0x18E198 main_objs/glutils_Material
 rodata 0x171158 main_objs/sgl_MeshParams
+# sgl_MeshBuilder_extruded_var_extruded_var: the header statics
+bss 0x190A38 main_objs/sgl_MeshBuilder_extruded_var_extruded_var
 bss 0x190B3C main_objs/sgl_MeshParams
 # sgl_Stripper: the header statics
 bss 0x190C40 main_objs/sgl_Stripper

@@ -2,10 +2,17 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
+#define DEMO_STATICS_SGL
 extern const float D_0016DC34;
 #define SGL_POSITION_ONE D_0016DC34
 #define DEMO_TEMPLATE_DEFS 1
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN3sgl11MeshBuilder12extruded_varC2Ev");
+__asm__(".globl _GLOBAL__D__ZN3sgl11MeshBuilder12extruded_varC2Ev");
 
 extern const char D_0016DC64[];     /* " *** error " */
 extern const char D_0016DC90[];     /* "../lib/sgl/MeshBuilder.cpp" */
@@ -41,14 +48,9 @@ extern const char D_0016E06C[];     /* "_var._input_mode == INDEXED" */
 #define CHECK_BSPLINE(fn, line) MB_ASSERT(_var._write_primitive == 4, D_0016DE60, fn, line)
 unsigned int math_max_u(unsigned int, unsigned int) __asm__("_ZN4math4max_IjEET_S1_S1_");
 
-
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _Z41__static_initialization_and_destruction_0ii_C17C4);
-
 sgl::MeshBuilder::extruded_var::extruded_var() : _slices(32), _start_angle(0), _end_angle(6.28318548f)
 {
 }
-
 
 void sgl::MeshBuilder::extruded_var::reset()
 {
@@ -59,7 +61,6 @@ sgl::MeshBuilder::begin_var::begin_var(InputMode im, BeginMode bm)
     : _write_primitive(bm), _input_mode(im), _f8(0), _fC(0), _f10(0), _color(0, 0, 0, 0), _normal(0, 0, 0), _texcoord(0, 0)
 {
 }
-
 
 void sgl::MeshBuilder::begin_var::reset()
 {
@@ -73,14 +74,11 @@ sgl::MeshBuilder::MeshBuilder(Mesh &mesh, bool no_finish)
     _mesh.lock();
 }
 
-
 sgl::MeshBuilder::~MeshBuilder()
 {
     SGL_ASSERT(_mesh.locked(), D_0016DC64, D_0016DCE8, D_0016DC90, dtor_name, 82, D_0016DCD4);
     SGL_ASSERT(_finished_called || _fB4, D_0016DC64, D_0016DC70, D_0016DC90, dtor_name, 85, D_0016DCAC);
 }
-
-
 
 void sgl::MeshBuilder::grey(float g)
 {
@@ -685,22 +683,6 @@ void sgl::MeshBuilder::finish()
         _mesh.finish(*this);
 }
 
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_C17C4");
-void _GLOBAL__I__ZN3sgl11MeshBuilder12extruded_varC2Ev(void);
-void _GLOBAL__D__ZN3sgl11MeshBuilder12extruded_varC2Ev(void);
-}
-
-void _GLOBAL__I__ZN3sgl11MeshBuilder12extruded_varC2Ev(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN3sgl11MeshBuilder12extruded_varC2Ev(void)
-{
-    static_init(0, 0xFFFF);
-}
-
 /* inline members / instances kept as asm: .gnu.linkonce.t (splat only sees `INCLUDE_ASM(`) */
 #undef INCLUDE_ASM
 #define INCLUDE_ASM INCLUDE_ASM_LINKONCE
@@ -801,3 +783,15 @@ template<class T> T max_(T a, T b)
     return a < b ? b : a;
 }
 }
+
+/* the asm functions refer to the header statics by their module names */
+__asm__("_ZN3sgl3REDE_18D63C = _ZN3sgl3REDE\n"
+        "_ZN3sgl4BLUEE_18D65C = _ZN3sgl4BLUEE\n"
+        "_ZN3sgl4CYANE_18D6AC = _ZN3sgl4CYANE\n"
+        "_ZN3sgl5BLACKE_18D66C = _ZN3sgl5BLACKE\n"
+        "_ZN3sgl5GREENE_18D64C = _ZN3sgl5GREENE\n"
+        "_ZN3sgl5WHITEE_18D67C = _ZN3sgl5WHITEE\n"
+        "_ZN3sgl6YELLOWE_18D68C = _ZN3sgl6YELLOWE\n"
+        "_ZN3sgl7MAGENTAE_18D69C = _ZN3sgl7MAGENTAE\n"
+        "_ZN4math12BEZIER_BASISE_18D5F8 = _ZN4math12BEZIER_BASISE\n"
+        "_ZN4math13HERMITE_BASISE_18D5B8 = _ZN4math13HERMITE_BASISE\n");
