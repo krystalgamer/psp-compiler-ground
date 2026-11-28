@@ -212,7 +212,26 @@ int rt_socket_bind_with_ip(int s, int ip, int port)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rt_socket_bind_dynamic);
+int sceNetInetGetsockname();
+int rt_socket_bind_dynamic(int s, int *port)
+{
+    RtSin2 sin;
+    RtSin2 name;
+    int len;
+
+    memset(&sin, 0, sizeof sin);
+    sin.family = 2;
+    sin.addr = __builtin_allegrex_wsbw(0);
+    if (*port == 0) sin.port = 0;
+    else sin.port = __builtin_allegrex_wsbh((unsigned short)*port);
+    if (sceNetInetBind(s, &sin, sizeof sin) != 0) return rt_socket_get_err_platform();
+    if (*port == 0) {
+        len = sizeof name;
+        if (sceNetInetGetsockname(s, &name, &len) != 0) return rt_socket_get_err_platform();
+        *port = (unsigned short)__builtin_allegrex_wsbh(name.port);
+    }
+    return 0;
+}
 
 int rt_socket_connect_to_service(int s, int ip, int port)
 {
