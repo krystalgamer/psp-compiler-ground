@@ -85,9 +85,28 @@ sh::VectorRGB sh::SphereSampling::project(const SphericalRGBFn *f)
     return project();
 }
 
+extern const char D_00170D08[], D_00170D0C[], D_00170D30[], D_00170D80[], D_00170D9C[];
+/* create_samples (matches with literals: tmp/cxx/drafts/s31/ss/c_match.c) waits for the unit's full .rodata carve:
+   its inlined canonical_random_var uses the function's own pool copies */
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_SphereSampling_Sample", _ZN2sh14SphereSampling14create_samplesEi);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_SphereSampling_Sample", _ZN2sh14SphereSampling17precalc_sh_coeffsEv);
+
+extern const char precalc_name[] __asm__("_ZZN2sh14SphereSampling17precalc_sh_coeffsEvE19__PRETTY_FUNCTION__");
+void sh::SphereSampling::precalc_sh_coeffs()
+{
+    for (std::vector<Sample>::iterator it = _samples.begin(); it != _samples.end(); ++it) {
+        int count = 0;
+        for (int l = 0; l < BANDS; l++)
+            for (int m = -l; m <= l; m++) {
+                unsigned int i = l * (l + 1) + m;
+                SGL_ASSERT(i < COEFFS, D_00170D0C, D_00170D80, D_00170D30, precalc_name, 204, D_00170D08);
+                it->sh[i] = math::SH::Eval(l, m, it->_theta, it->_phi);
+                count++;
+            }
+        SGL_ASSERT(count == COEFFS, D_00170D0C, D_00170D9C, D_00170D30, precalc_name, 212, D_00170D08);
+    }
+}
+
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_SphereSampling_Sample", _ZN2sh14SphereSampling9partitionEv);
 
