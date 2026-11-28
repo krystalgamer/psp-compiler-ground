@@ -69,7 +69,20 @@ int sprTerm(void) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/spr", sprCall);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/spr", sprFree);
+#define ui(x) ((unsigned int)(x))
+static inline int bit(int n) { return 1 << n; }
+void sprFree(void *pSpr)
+{
+	int Rsv = (ui(pSpr) - ui(SprWorkTop)) >> 11;
+
+	if (!(ui(pSpr) >= ui(SprWorkTop) && ui(pSpr) < ui(SprWorkEnd)))
+		consPrintf(&D_000FA708, &D_000FA724, 0x5A, "sprFree", "ui(pSpr) >= SprWorkTop && ui(pSpr) < SprWorkEnd");
+	if (!(Rsv >= 0 && Rsv < 8))
+		consPrintf(&D_000FA708, &D_000FA724, 0x5B, "sprFree", "Rsv >= 0 && Rsv < SprWorkLen");
+	if (!((SprRsv & bit(Rsv)) == 0))
+		consPrintf(&D_000FA708, &D_000FA724, 0x5C, "sprFree", "(SprRsv & bit(Rsv)) == 0");
+	SprRsv |= bit(Rsv);
+}
 
 int sprGetSize(void) {
     return 0x800;
