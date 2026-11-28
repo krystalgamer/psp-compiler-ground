@@ -138,21 +138,144 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_sorter", I3dRender__ProcessSor
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_sorter", I3dRender__ProcessSortTagCmd);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_sorter", I3dSorter__SetCallCmd_ByUint32);
+void I3dSorter__SetCallCmd_ByUint32(int *s, unsigned int key, int arg)
+{
+	int *rd = (int *)s[4];
+	int *c;
+	int *t;
+	c = (int *)rd[0xF8 / 4];
+	c -= 8;
+	rd[0xF8 / 4] = (int)c;
+	c[4] = arg;
+	c[3] = (int)I3dRender__SortTagCmdProc_Call;
+	t = (int *)s[3];
+	c[0] = key;
+	t[1] = (int)c;
+	c[2] = 0;
+	s[3] = (int)c;
+	s[9]++;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_sorter", I3dSorter__SetRetCmd_ByUint32);
+void I3dSorter__SetRetCmd_ByUint32(int *s, unsigned int key)
+{
+	int *rd = (int *)s[4];
+	int *c;
+	int *t;
+	c = (int *)rd[0xF8 / 4];
+	c -= 4;
+	rd[0xF8 / 4] = (int)c;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_sorter", I3dSorter__SetChangeStateCmd_ByUint32);
+	c[3] = (int)I3dRender__SortTagCmdProc_Ret;
+	t = (int *)s[3];
+	c[0] = key;
+	t[1] = (int)c;
+	c[2] = 0;
+	s[3] = (int)c;
+	s[9]++;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_sorter", I3dSorter__SetChangeStateAndSendPacketCmd_ByUint32);
+int I3dRender__SortTagCmdProc_ChangeState();
+void I3dSorter__SetChangeStateCmd_ByUint32(int *s, unsigned int key, int a1, int a2)
+{
+	int *rd = (int *)s[4];
+	int *c;
+	int *t;
+	c = (int *)rd[0xF8 / 4];
+	c -= 8;
+	rd[0xF8 / 4] = (int)c;
+	c[4] = a1;
+	c[5] = a2;
+	c[3] = (int)I3dRender__SortTagCmdProc_ChangeState;
+	t = (int *)s[3];
+	c[0] = key;
+	t[1] = (int)c;
+	c[2] = 0;
+	s[3] = (int)c;
+	s[9]++;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_sorter", I3dSorter__SetClearStateCmd_ByUint32);
+int I3dRender__SortTagCmdProc_ChangeStateAndSendPacket();
+void I3dSorter__SetChangeStateAndSendPacketCmd_ByUint32(int *s, unsigned int key, int a1, int a2, int a3, int a4)
+{
+	int *rd = (int *)s[4];
+	int *c;
+	int *t;
+	c = (int *)rd[0xF8 / 4];
+	c -= 8;
+	rd[0xF8 / 4] = (int)c;
+	c[4] = a1;
+	c[5] = a2;
+	c[6] = a3;
+	c[7] = a4;
+	c[3] = (int)I3dRender__SortTagCmdProc_ChangeStateAndSendPacket;
+	t = (int *)s[3];
+	c[0] = key;
+	t[1] = (int)c;
+	c[2] = 0;
+	s[3] = (int)c;
+	s[9]++;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_sorter", I3dSorter__SetClearStateAndSendPacketCmd_ByUint32);
+void I3dSorter__SetClearStateCmd_ByUint32(int *s, unsigned int key, int a1)
+{
+	int *rd = (int *)s[4];
+	int *c;
+	int *t;
+	c = (int *)rd[0xF8 / 4];
+	c -= 8;
+	rd[0xF8 / 4] = (int)c;
+	c[4] = a1;
+	c[3] = (int)I3dRender__SortTagCmdProc_ClearState;
+	t = (int *)s[3];
+	c[0] = key;
+	t[1] = (int)c;
+	c[2] = 0;
+	s[3] = (int)c;
+	s[9]++;
+}
+
+int I3dRender__SortTagCmdProc_ClearStateAndSendPacket();
+void I3dSorter__SetClearStateAndSendPacketCmd_ByUint32(int *s, unsigned int key, int a1, int a2, int a3)
+{
+	int *rd = (int *)s[4];
+	int *c;
+	int *t;
+	c = (int *)rd[0xF8 / 4];
+	c -= 8;
+	rd[0xF8 / 4] = (int)c;
+	c[4] = a1;
+	c[5] = a2;
+	c[6] = a3;
+	c[3] = (int)I3dRender__SortTagCmdProc_ClearStateAndSendPacket;
+	t = (int *)s[3];
+	c[0] = key;
+	t[1] = (int)c;
+	c[2] = 0;
+	s[3] = (int)c;
+	s[9]++;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_sorter", I3dSorter__SetLogMsgCmd_ByUint32);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_sorter", I3dSorter__SetCallbackCmd_ByUint32);
+void I3dSorter__SetCallbackCmd_ByUint32(int *s, unsigned int key, int a1, int a2, int a3)
+{
+	int *rd = (int *)s[4];
+	int *c;
+	int *t;
+	c = (int *)rd[0xF8 / 4];
+	c -= 8;
+	rd[0xF8 / 4] = (int)c;
+	c[4] = a1;
+	c[5] = a2;
+	c[6] = a3;
+	c[3] = (int)I3dRender__SortTagCmdProc_Callback;
+	t = (int *)s[3];
+	c[0] = key;
+	t[1] = (int)c;
+	c[2] = 0;
+	s[3] = (int)c;
+	s[9]++;
+}
 
 void I3dTexEnv__SetParam(void) {
 }
