@@ -31,7 +31,19 @@ void *NetIGetClient(void *o, unsigned int idx)
     return NULL;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/ClientMgr", NetIGetClientStatus);
+void *NetGetClientInfo();
+int NetIGetClientStatus(int *st, void *o, unsigned int idx)
+{
+    char *ci;
+
+    if (st == NULL) return 0x17;
+    *st = 0;
+    if (idx >= 256) return 8;
+    ci = NetGetClientInfo(o, idx);
+    if (ci != NULL)
+        *st = *(int *)(ci + 0xC);
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/ClientMgr", NetCreateClient);
 
