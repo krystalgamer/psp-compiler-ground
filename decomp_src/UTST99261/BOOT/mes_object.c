@@ -149,7 +149,52 @@ void mes_object_insert_one(MesPage *pg, MesProp *item, MesPage *child, int pos)
     pg->n++;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_object", mes_object_insert_page);
+int mes_object_insert_page(MesPage *pg, MesProp *item, MesPage **split)
+{
+    int i;
+    int j;
+    int mid;
+    unsigned int id;
+    MesPage *np;
+
+    if (pg == NULL)
+        return 0;
+    for (i = 0; i < pg->n; i++) {
+        id = pg->items[i].id;
+        if (id == item->id)
+            return 1;
+        if (item->id < id)
+            break;
+    }
+    if (mes_object_insert_page(pg->child[i], item, split))
+        return 1;
+    if (pg->n < 4) {
+        mes_object_insert_one(pg, item, *split, i);
+        return 1;
+    }
+    if (i < 3)
+        mid = 2;
+    else
+        mid = 3;
+    np = mes_object_page_new();
+    if (np != NULL) {
+        for (j = mid; j < 4; j++) {
+            np->items[j - mid] = pg->items[j];
+            np->child[j - mid + 1] = pg->child[j + 1];
+        }
+        np->n = 4 - mid;
+        pg->n = mid;
+        if (i < 3)
+            mes_object_insert_one(pg, item, *split, i);
+        else
+            mes_object_insert_one(np, item, *split, i - mid);
+        *item = pg->items[pg->n - 1];
+        np->child[0] = pg->child[pg->n];
+        pg->n--;
+        *split = np;
+    }
+    return 0;
+}
 
 void mes_object_insert(MesObject *obj, unsigned int id)
 {
