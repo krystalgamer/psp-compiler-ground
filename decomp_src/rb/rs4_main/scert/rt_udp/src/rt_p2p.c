@@ -322,7 +322,43 @@ int rt_p2p_set_overlay_type(char *p, unsigned char ov, unsigned int type)
     return ret;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_join_overlay);
+int rt_p2p_join_overlay(char *p, unsigned char ov)
+{
+    short me;
+    struct { unsigned short t; unsigned char ov; unsigned char pad; } msg;
+    RtP2PVec vec;
+    int st;
+    RtP2POvlTab *o;
+    unsigned int i;
+    int ret, r;
+
+    me = -2;
+    st = 0;
+    if (p == NULL) return 2;
+    if (ov >= *(unsigned int *)(p + 0x1D8)) return 2;
+    if (*(char **)(p + 0x188) == NULL) return 3;
+    rt_p2p_get_my_peer_status(p, &st, &me);
+    if ((unsigned short)me >= *(unsigned short *)(p + 0x19C) || (st != 8 && st != 9)) {
+        *(unsigned char *)(p + 0x18C) = ov;
+    } else {
+    o = (RtP2POvlTab *)(*(char **)(p + 0x188) + ov * 24);
+    for (i = 0; i < *(unsigned short *)(p + 0x19C); i++)
+        o->peers[i] = NULL;
+    for (i = 0; i < 3; i++)
+        o->x[i] = 0;
+    o->peers[(unsigned short)me] = (RtP2PPeer *)*(int *)(p + 0x184) + (unsigned short)me;
+    o->count = 1;
+    msg.t = rt_p2p_pack_type(6, 4);
+    msg.ov = ov;
+    vec.e[0].buf = &msg;
+    vec.e[0].len = 4;
+    vec.total = 4;
+    vec.n = 1;
+    r = rt_p2p_isend_list(p, 0, 0, 0xF000, &vec);
+    if (r != 0 && r != 0xD2F3) return r;
+    }
+    return 0;
+}
 
 int rt_p2p_quit_overlay(char *p, unsigned char ov)
 {
