@@ -26,7 +26,21 @@ unsigned int *SendDefaultStatus(unsigned int *p, void *st)
 	return p;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__DrawLineA);
+void I3dVecCopyA(float *, const float *);
+void *I3dMatGetUnitPtrA(void);
+unsigned int *I3dPkDrawScissorLineStripFA(unsigned int *, char *, const void *, int, int, float (*)[4], const int *);
+int I3dRenderStage__DrawLineA(char *st, float *a, float *b, int col)
+{
+	unsigned int *p;
+	float v[2][4];
+	I3dRenderStage__SetCurrentPacketEntry(st, (char *)I3dRenderStage__GetDefaultPacketEntry(st));
+	p = SendDefaultStatus((unsigned int *)I3dRenderStage__OpenPacketUca_ByUint32(st, 0), st);
+	I3dVecCopyA(v[0], a);
+	I3dVecCopyA(v[1], b);
+	p = I3dPkDrawScissorLineStripFA(p, st, I3dMatGetUnitPtrA(), 2, col, v, 0);
+	I3dRenderStage__ClosePacketUca(st, (int)p);
+	return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -262,11 +276,110 @@ int I3dRenderStage__GetMasterRegMask(int arg0, int arg1) {
     return M2C_FIELD(((arg1 * 8) + arg0), int *, 0x83C);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__CreatePacketEntry_FromMaterial);
+typedef struct { float z; int *tbl; unsigned int n; int a, b, c; } PkEntPrm;
+typedef struct I3dRSt { int tag[3]; int *last; int num; int *bucket[256]; int b2[256]; int render; int s818, s81C, s820, def, cur, light, fog, view; int reg[256][2]; } I3dRSt;
+int *I3dRenderStage__CreatePacketEntry(I3dRSt *rs, PkEntPrm *prm);
+int *I3dRenderStage__CreatePacketEntry_FromMaterial(I3dRSt *rs, char **m, char *ofs)
+{
+	PkEntPrm prm;
+	int tbl[16];
+	unsigned int n = 0;
+	unsigned int i;
+	char *t = m[2];
+	unsigned int cnt = (*(unsigned int *)(t + 4) << 8) >> 8;
+	char *e;
+	char *mat = m[0];
+	if (cnt != 0) {
+		char *end;
+		e = *(char **)(t + 8);
+		end = e + cnt * 16;
+		do {
+		int v = *(int *)(*(char **)e + 0x1C);
+		e += 16;
+		if (v != -1) tbl[n++] = v;
+		} while (e != end);
+	}
+	prm.z = *(float *)mat;
+	prm.tbl = tbl;
+	prm.n = n;
+	prm.a = ((unsigned char *)mat)[0xA];
+	prm.b = ((unsigned char *)mat)[0xB];
+	prm.c = *(int *)(mat + 4);
+	if (ofs != NULL) prm.z = prm.z + *(float *)(ofs + 0x20);
+	return I3dRenderStage__CreatePacketEntry(rs, &prm);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__CreatePacketEntry);
+int *I3dRender__ReserveTrashQwc(int, int);
+void I3dPacketEntry__Construct(int *e, I3dRSt *rs, PkEntPrm *prm, unsigned int h);
+void I3dPacketEntry__InsertLruPrev(void *arg0, void *arg1);
+void I3dPacketEntry__MoveLruPrev(void *arg0, void *arg1);
+int *I3dRenderStage__CreatePacketEntry(I3dRSt *rs, PkEntPrm *prm)
+{
+	unsigned int h, idx;
+	unsigned int i, j;
+	int *t;
+	int *head, *e, *ne, *p, *last;
+	int key;
+	int *et;
+	unsigned int n;
+	n = prm->n;
+	h = *(int *)&prm->z + n + prm->a + prm->b + prm->c;
+	t = prm->tbl;
+	for (j = 0; j < prm->n; j++) h += t[j];
+	h += h >> 16;
+	h += h >> 8;
+	idx = h & 0xFF;
+	head = rs->bucket[idx];
+	if (head != NULL) {
+		e = head;
+		do {
+			if (h == e[0] && *(float *)&e[8] == prm->z && e[10] == prm->n && e[11] == prm->a && e[12] == prm->b && e[13] == prm->c) {
+				et = (int *)e[9];
+				for (i = 0; i < prm->n; i++)
+					if (et[i] != prm->tbl[i]) goto next;
+				if (e != head) {
+					I3dPacketEntry__MoveLruPrev(e, head);
+					rs->bucket[idx] = e;
+				}
+				return e;
+			}
+		next:
+			e = (int *)e[1];
+		} while (e != head);
+	}
+	ne = I3dRender__ReserveTrashQwc(rs->render, 4);
+	I3dPacketEntry__Construct(ne, rs, prm, h);
+	if (head != NULL) I3dPacketEntry__InsertLruPrev(ne, head);
+	rs->bucket[idx] = ne;
+	p = I3dRender__ReserveTrashQwc(rs->render, 1);
+	last = rs->last;
+	key = *(int *)&prm->z;
+	p[0] = key ^ ((key >> 31) | 0x80000000);
+	last[1] = (int)p;
+	p[2] = (int)ne;
+	rs->last = p;
+	rs->num++;
+	return ne;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__CreateRenderStage);
+int *I3dRender__ReserveTrashQwc(int, int);
+void *I3dRender__CreateSorter(void *r, int a, int b, int c);
+void I3dSorter__SetCallCmd_ByUint32(int *s, unsigned int key, int arg);
+int I3dRenderStage__Construct(int *, int);
+int *I3dRenderStage__CreateRenderStage(int *rs, float z)
+{
+	int *ns;
+	union { float f; int i; } u;
+	if (rs[0x820 / 4] == 0) {
+		rs[0x820 / 4] = (int)I3dRender__CreateSorter((void *)rs[0x814 / 4], 1, 1, 0);
+		I3dSorter__SetCallCmd_ByUint32((int *)rs[0x81C / 4], 3, rs[0x820 / 4]);
+	}
+	ns = I3dRender__ReserveTrashQwc(rs[0x814 / 4], 0x104);
+	I3dRenderStage__Construct(ns, rs[0x814 / 4]);
+	u.f = z;
+	I3dSorter__SetCallCmd_ByUint32((int *)rs[0x820 / 4], u.i ^ ((u.i >> 31) | 0x80000000), ns[0x81C / 4]);
+	return ns;
+}
 
 int *I3dRender__ReserveTrashQwc(int, int);
 int I3dRenderStage__InitTexCache(int *rs, float z)
@@ -283,7 +396,45 @@ int I3dRenderStage__InitTexCache(int *rs, float z)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__Construct);
+void *I3dRender__CreateSorter(void *r, int a, int b, int c);
+void I3dSorter__SetCallbackCmd_ByUint32(void *s, unsigned int key, void *fn, void *arg, int x);
+void I3dPacketEntryParam__Clear(void *);
+int I3dRenderStage__CallPacketEntry();
+int I3dRenderStage__Construct(int *rs, int r)
+{
+	int *s = I3dRender__CreateSorter((void *)r, 1, 1, 0);
+	unsigned int i;
+	int *e;
+	int prm[6];
+	I3dSortTag__ConstructAsHead(rs);
+	rs[4] = 0;
+	for (i = 0; i < 0x100; i++) rs[5 + i] = 0;
+	for (i = 0; i < 0x100; i++) rs[0x105 + i] = 0;
+	rs[0x814 / 4] = r;
+	rs[0x81C / 4] = (int)s;
+	rs[0x820 / 4] = 0;
+	rs[0x828 / 4] = 0;
+	rs[0x82C / 4] = 0;
+	rs[0x830 / 4] = 0;
+	rs[0x834 / 4] = 0;
+	for (i = 0; i < 0x100; i++) {
+		rs[0x838 / 4 + i * 2] = 0;
+		rs[0x83C / 4 + i * 2] = 0;
+	}
+	I3dSorter__SetCallbackCmd_ByUint32(s, 1, I3dRenderStage__CallPacketEntry, rs, 0);
+	I3dPacketEntryParam__Clear(prm);
+	prm[0] = 0;
+	prm[1] = 0;
+	prm[2] = 0;
+	prm[3] = 0;
+	prm[4] = 0;
+	prm[5] = 0;
+	e = I3dRenderStage__CreatePacketEntry((I3dRSt *)rs, (PkEntPrm *)prm);
+	rs[0x824 / 4] = (int)e;
+	rs[0x828 / 4] = (int)e;
+	rs[0x818 / 4] = e[3];
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__DrawStrip);
 
