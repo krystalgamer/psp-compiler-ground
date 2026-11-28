@@ -16,7 +16,7 @@ extern char D_000FE5A0[];
 extern char D_000FE5A0[];
 
 extern unsigned char D_000FE65C, D_000FE69C;
-int sgxSndSetVolume();
+void sgxSndSetVolume(int, int, int);
 
 extern unsigned char D_000FE65C, D_000FE6A8;
 int sgxSndStop();
@@ -160,7 +160,48 @@ int scxRelease(void *arg0) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", scxPlay);
+int sgxSndEnumUseID(int *);
+int sgxSndPlayWave(int, int, int);
+int sgxSndPlayNote(int, int, int, int);
+int sgxSndPlaySeq(int, int, int, int);
+void sgxSndSetPr2Pan(int, float);
+void sgxSndSetDry(int, int);
+void sgxSndSetWet(int, int);
+void sgxSndSetPitch(int, float);
+void sgxSndSetSpeed(int, float);
+extern unsigned char D_000FE64C, D_000FE654, D_000FE678;
+int scxPlay(int *res, int a, int b)
+{
+	int id = -1;
+	if (sgxSndEnumUseID(0) < 0x30) {
+		int *s = (int *)res[4];
+		switch (s[1]) {
+		default:
+			consPrintf(&D_000FE604, D_000FE5A0, 0xD0, &D_000FE64C, &D_000FE654);
+			break;
+		case 0:
+			id = sgxSndPlayWave(s[0], a, 0);
+			break;
+		case 1:
+			id = sgxSndPlayNote(s[0], a, b, 0);
+			break;
+		case 2:
+			id = sgxSndPlaySeq(s[0], a, b, 0);
+			break;
+		}
+		if (id >= 0) {
+			sgxSndSetVolume(id, 0x80, 0x80);
+			sgxSndSetPr2Pan(id, 0.0f);
+			sgxSndSetDry(id, 0x80);
+			sgxSndSetWet(id, 0x80);
+			sgxSndSetPitch(id, 1.0f);
+			sgxSndSetSpeed(id, 1.0f);
+		} else
+			consPrintf(&D_000FE65C, &D_000FE64C, id);
+	} else
+		consPrintf(&D_000FE678, &D_000FE64C);
+	return id;
+}
 
 int scxVolume(int id, int vol, int arg)
 {
