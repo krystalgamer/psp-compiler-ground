@@ -154,7 +154,85 @@ void lfm_resetPageRegion(void *arg0, int arg1) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_floatManager", lfm_addFloat);
+void lfm_addFloat(LFMPAGE *pg, LFMBOX *b, int y, int w, int h, int align, int *ox, int *oy)
+{
+    int x, yo, width;
+    int top, bottom;
+    int end;
+    LFMRGN *r;
+    void *base;
+    void *fr;
+
+    x = b->x + b->st->ml + b->st->pl + b->st->bl - pg->box->x - pg->box->st->ml - pg->box->st->pl - pg->box->st->bl;
+    yo = b->y + b->st->mt + b->st->pt + b->st->bt - pg->box->y - pg->box->st->mt - pg->box->st->pt - pg->box->st->bt;
+    y += yo;
+    width = b->w - b->st->ml - b->st->pl - b->st->bl - b->st->br - b->st->pr - b->st->mr;
+    if (y < pg->h) {
+        r = pg->head->next;
+        while (r->next != r) {
+            if (y < r->y + r->h) {
+                if (!(r->x >= x ? (x + width >= r->x + r->w ? r->w < w : width - (r->x - x) < w)
+                                : (x + width >= r->x + r->w ? r->w - (x - r->x) < w : width < w)))
+                    break;
+            }
+            r = r->next;
+        }
+    } else
+        r = pg->cur->next;
+    if (r->next == r) {
+        if (pg->h < y) {
+            end = y + h;
+            base = newRegion(0, pg->h, pg->w, end - pg->h);
+            if (base == NULL)
+                return;
+            top = y;
+            pg->h = end;
+        } else {
+            base = newRegion(0, pg->h, pg->w, h);
+            if (base == NULL)
+                return;
+            top = pg->h;
+            pg->h = h + top;
+        }
+        addRegion(pg, base);
+        if (align != 1 && width >= w)
+            y = x + width - w;
+        else
+            y = x;
+        fr = newRegion(y, top, w, h);
+        if (fr == NULL)
+            return;
+    } else {
+        if (y < r->y) {
+            bottom = h + r->y;
+            top = r->y;
+        } else {
+            bottom = y + h;
+            top = y;
+        }
+        if (pg->h < bottom) {
+            base = newRegion(0, pg->h, pg->w, bottom - pg->h);
+            if (base == NULL)
+                return;
+            addRegion(pg, base);
+            pg->h = bottom;
+        }
+        if (align == 1 || width < w)
+            y = x > r->x ? x : r->x;
+        else if (x + width < r->x + r->w)
+            y = x + width - w;
+        else
+            y = r->x + r->w - w;
+        fr = newRegion(y, top, w, h);
+        if (fr == NULL)
+            return;
+        base = r;
+    }
+    overlayRegion(pg, base, fr, align);
+    MEM_free(0, fr);
+    *ox = y - x;
+    *oy = top - yo;
+}
 
 int lfm_getHorizontalArea(LFMPAGE *pg, LFMBOX *b, int y, int *off, int *wout) {
     int ret = 0;
