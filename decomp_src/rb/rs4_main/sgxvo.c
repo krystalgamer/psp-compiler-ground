@@ -57,7 +57,23 @@ int sgxVoGetSlotNum(void) {
     return D_0011FF68;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxvo", sgxVoSetDeviceRange);
+typedef struct { int start, end, num, cur; } VoRange_;
+typedef struct { char pad[0xC]; VoRange_ dev[8]; VoRange_ cat[8][16]; } VoWorkR_;
+int sgxVoSetDeviceRange(unsigned int dev, int start, int num)
+{
+	VoRange_ r;
+	int end = start + num - 1;
+	int i;
+	if (dev >= 8 || end < start) return 0;
+	r.start = start;
+	r.end = end;
+	r.num = end - start + 1;
+	r.cur = start;
+	((VoWorkR_ *)&gWork_11FF60)->dev[dev] = r;
+	for (i = 0; i < 16; i++)
+		((VoWorkR_ *)&gWork_11FF60)->cat[dev][i] = r;
+	return num;
+}
 
 int sgxVoGetDeviceRangeLo(unsigned int d)
 {
@@ -73,7 +89,29 @@ int sgxVoGetDeviceRangeHi(unsigned int d)
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgxvo", D_0010AEE4);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxvo", sgxCategorySetVoiceRange);
+extern int gSgxDebugFlags;
+extern int gSgxPrefErr;
+extern const char D_0010AEE4[];
+int sgxPrintfPref(int, const void *, int, const char *, ...);
+void sgxCategorySetVoiceRange(unsigned int cat, unsigned int dev, int ofs, int end)
+{
+	int lo, hi, s, e, n;
+	if (cat >= 16 || dev >= 3 || end < ofs) goto err;
+	lo = ((VoWorkR_ *)&gWork_11FF60)->dev[dev].start;
+	hi = ((VoWorkR_ *)&gWork_11FF60)->dev[dev].end;
+	s = lo + ofs;
+	e = lo + end;
+	if (s < lo || hi < s) goto err;
+	if (e < lo || hi < e) goto err;
+	n = e - s + 1;
+	((VoWorkR_ *)&gWork_11FF60)->cat[dev][cat].end = e;
+	((VoWorkR_ *)&gWork_11FF60)->cat[dev][cat].num = n;
+	((VoWorkR_ *)&gWork_11FF60)->cat[dev][cat].start = s;
+	((VoWorkR_ *)&gWork_11FF60)->cat[dev][cat].cur = s;
+	return;
+err:
+	if (gSgxDebugFlags & 1) sgxPrintfPref(gSgxPrefErr, D_0010AEE4, 0xB2, "invalid category range (%d,%d,%d,%d)\n", cat, dev, ofs, end);
+}
 
 int sgxCategoryGetVoiceRangeLo(unsigned int c, unsigned int t)
 {
