@@ -1,9 +1,13 @@
 /* lang: c++ */
-/* cflags: -O3 -fno-exceptions */
+/* cflags: -O3 -fno-exceptions -fmerge-constants */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
 #define DEMO_TEMPLATE_DEFS
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN12HouseKeeping11AttribStack5tableE");
+__asm__(".globl _GLOBAL__D__ZN12HouseKeeping11AttribStack5tableE");
 
 /* this object's .gnu.linkonce.t sections in the original's order */
 DEMO_LINKONCE_ORDER(
@@ -21,12 +25,85 @@ DEMO_LINKONCE_ORDER(
     DEMO_LINKONCE(_ZN12HouseKeeping11AttribStack3getERNS_10EnableMaskEj)
 );
 #include <deque>
+#include <queue>
+#include <stack>
 
-/* the GL emulation's state (only the members used so far) */
-struct HouseKeepingState {
-    std::deque<unsigned int> free_textures;     /* 0x00 */
+typedef void GLvoid;
+typedef double GLdouble;
+
+#define GL_ASSERT(c, fn, line, msg) SGL_ASSERT(c, " *** error ", #c, "../lib/gl_psp/gl.cpp", fn, line, msg)
+
+namespace HouseKeeping {
+enum EnableMask {
+    ALPHA_TEST, DEPTH_TEST, STENCIL_TEST, BLEND, CULL_FACE, DITHER, FOG, TEXTURE, LIGHTING,
+    LIGHT0, LIGHT1, LIGHT2, LIGHT3, AALINE, N_ENABLE
+};
+class AttribStack {
+    std::stack<unsigned int> _stack;
+public:
+    static const unsigned int table[N_ENABLE];
+    static const char *names[N_ENABLE];
+    AttribStack();
+    ~AttribStack()
+    {
+        pop();
+        GL_ASSERT(_stack.empty(), __PRETTY_FUNCTION__, 543, " ");
+    }
+    bool get(EnableMask &m, unsigned int cap);
+    unsigned int bits() { return _stack.top(); }
+    void enable(unsigned int cap)
+    {
+        EnableMask m;
+        if (!get(m, cap))
+            return;
+        GL_ASSERT(! _stack.empty(), __PRETTY_FUNCTION__, 586, " ");
+        unsigned int b = 1 << m;
+        _stack.top() |= b;
+        sceGuEnable(table[m]);
+    }
+    void disable(unsigned int cap)
+    {
+        EnableMask m;
+        if (!get(m, cap))
+            return;
+        GL_ASSERT(! _stack.empty(), __PRETTY_FUNCTION__, 608, " ");
+        unsigned int b = 1 << m;
+        _stack.top() &= ~b;
+        sceGuDisable(table[m]);
+    }
+    void push()
+    {
+        _stack.push(_stack.empty() ? 0 : _stack.top());
+    }
+    void pop()
+    {
+        GL_ASSERT(_stack.size() > 1, __PRETTY_FUNCTION__, 629, " ");
+        _stack.pop();
+    }
+};
+}
+
+/* inline members defined in gl.h that the object calls (weak copies in its tail) */
+SGL_LINKONCE_BEGIN
+inline HouseKeeping::AttribStack::AttribStack()
+{
+    GL_ASSERT(sizeof(table) / sizeof(table[0]) == sizeof(names) / sizeof(names[0]), __PRETTY_FUNCTION__, 0, " ");
+    push();
+}
+SGL_LINKONCE_END
+
+/* the GL emulation's state */
+struct GLArrays {
+    unsigned int format;        /* 0x54 */
+    const void *pointer;        /* 0x58 */
+    int stride;                 /* 0x5C */
+    GLArrays() : pointer(0), stride(0) {}
+};
+struct GLState {
+    std::queue<unsigned int> free_textures;     /* 0x00 */
     unsigned int last_texture;  /* 0x28 */
-    char _pad2c[0x34 - 0x2C];
+    unsigned int texture;       /* 0x2C */
+    int _30;
     int wrap_s;                 /* 0x34 */
     int wrap_t;                 /* 0x38 */
     int min_filter;             /* 0x3C */
@@ -35,12 +112,39 @@ struct HouseKeepingState {
     int viewport_y;             /* 0x48 (+2048) */
     int viewport_w;             /* 0x4C */
     int viewport_h;             /* 0x50 */
-    unsigned int array_format;  /* 0x54 */
-    const void *array_pointer;  /* 0x58 */
-    int array_stride;           /* 0x5C */
+    GLArrays array;             /* 0x54 */
+    HouseKeeping::AttribStack attribs;  /* 0x60 */
+    GLState() : last_texture(0), texture(0), wrap_s(0), wrap_t(0), min_filter(1), mag_filter(1) {}
 };
-extern HouseKeepingState hk;
-bool GL2SCEGU(unsigned int, int *);
+static GLState hk;
+
+const unsigned int HouseKeeping::AttribStack::table[HouseKeeping::N_ENABLE] = {
+    0, 1, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15
+};
+/* AttribStack::names stays in the module's asm .data: a same-shaped stand-in in a section the link
+   discards keeps its strings in this object's .rodata (right after table) */
+const char *HouseKeeping_AttribStack_names[HouseKeeping::N_ENABLE] __attribute__((section(".discard"))) = {
+    "SCEGU_ALPHA_TEST", "SCEGU_DEPTH_TEST", "SCEGU_STENCIL_TEST", "SCEGU_BLEND", "SCEGU_CULL_FACE",
+    "SCEGU_DITHER", "SCEGU_FOG", "SCEGU_TEXTURE", "SCEGU_LIGHTING", "SCEGU_LIGHT0", "SCEGU_LIGHT1",
+    "SCEGU_LIGHT2", "SCEGU_LIGHT3", "SCEGU_AALINE"
+};
+/* the asm .data (AttribStack::names) points at these strings */
+__asm__(".globl D_00163368\nD_00163368 = _ZN12HouseKeeping11AttribStack5tableE + 0x38");
+__asm__(".globl D_0016337C\nD_0016337C = _ZN12HouseKeeping11AttribStack5tableE + 0x4C");
+__asm__(".globl D_00163390\nD_00163390 = _ZN12HouseKeeping11AttribStack5tableE + 0x60");
+__asm__(".globl D_001633A4\nD_001633A4 = _ZN12HouseKeeping11AttribStack5tableE + 0x74");
+__asm__(".globl D_001633B0\nD_001633B0 = _ZN12HouseKeeping11AttribStack5tableE + 0x80");
+__asm__(".globl D_001633C0\nD_001633C0 = _ZN12HouseKeeping11AttribStack5tableE + 0x90");
+__asm__(".globl D_001633D0\nD_001633D0 = _ZN12HouseKeeping11AttribStack5tableE + 0xA0");
+__asm__(".globl D_001633DC\nD_001633DC = _ZN12HouseKeeping11AttribStack5tableE + 0xAC");
+__asm__(".globl D_001633EC\nD_001633EC = _ZN12HouseKeeping11AttribStack5tableE + 0xBC");
+__asm__(".globl D_001633FC\nD_001633FC = _ZN12HouseKeeping11AttribStack5tableE + 0xCC");
+__asm__(".globl D_0016340C\nD_0016340C = _ZN12HouseKeeping11AttribStack5tableE + 0xDC");
+__asm__(".globl D_0016341C\nD_0016341C = _ZN12HouseKeeping11AttribStack5tableE + 0xEC");
+__asm__(".globl D_0016342C\nD_0016342C = _ZN12HouseKeeping11AttribStack5tableE + 0xFC");
+__asm__(".globl D_0016343C\nD_0016343C = _ZN12HouseKeeping11AttribStack5tableE + 0x10C");
+int GL2SCEGU(unsigned int, int *);
+void PspLogEnableBits(const char *);
 extern "C" {
 void sceGuFrontFace(int);
 void sceGumMatrixMode(int);
@@ -50,16 +154,18 @@ void sceGumStoreMatrix(ScePspFMatrix4 *);
 void sceGumOrtho(float, float, float, float, float, float);
 void glRotatef(float, float, float, float);
 }
-extern "C" const char D_001634A0[], D_001634C0[], D_001635F8[], D_0016360C[], D_00163654[], D_00163690[];
-extern const char glClearDepth_fn[] __asm__("_ZZ12glClearDepthE19__PRETTY_FUNCTION__");
-extern const char glDepthRange_fn[] __asm__("_ZZ12glDepthRangeE19__PRETTY_FUNCTION__");
-extern const char glLoadMatrixd_fn[] __asm__("_ZZ13glLoadMatrixdE19__PRETTY_FUNCTION__");
-#define GL_ASSERT(c, fn, line, msg) SGL_ASSERT(c, D_001634A0, D_0016360C, D_001634C0, fn, line, msg)
-extern unsigned int D_0018DE1C;     /* glBindTexture's current texture */
+#define GL_FAIL(fn, line, msg) SGL_ASSERT(false, " *** error ", "", "../lib/gl_psp/gl.cpp", fn, line, msg)
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", _Z41__static_initialization_and_destruction_0ii_1F6B0);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", _Z16PspLogEnableBitsPKc);
+void PspLogEnableBits(const char *s)
+{
+    common::Log() << s;
+    common::Log() << "enablebits: \n";
+    for (int i = 0; i != HouseKeeping::N_ENABLE; i++) {
+        bool on = hk.attribs.bits() & (1 << i);
+        common::Log() << HouseKeeping::AttribStack::names[i] << "\t" << (on ? "on" : "off") << "\n";
+    }
+}
 
 extern "C" void glClearIndex(void) {
 }
@@ -85,9 +191,46 @@ extern "C" void glIndexMask(void) {
 extern "C" void glColorMask(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", glAlphaFunc);
+extern "C" void glAlphaFunc(unsigned int func, float ref)
+{
+    int r = (int)(ref * 255.0f);
+    int f = 1;
+    switch (func) {
+    case 0x200: f = 0; break;
+    case 0x201: f = 4; break;
+    case 0x202: f = 2; break;
+    case 0x203: f = 5; break;
+    case 0x204: f = 6; break;
+    case 0x205: f = 3; break;
+    case 0x206: f = 7; break;
+    case 0x207: f = 1; break;
+    }
+    sceGuAlphaFunc(f, r, 0xFF);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", glBlendFunc);
+extern "C" void glBlendFunc(unsigned int sfactor, unsigned int dfactor)
+{
+    int src = 0, dst = 0;
+    unsigned int fixa = 0, fixb = 0;
+    switch (sfactor) {
+    case 0: src = 10; fixa = 0; break;
+    case 1: src = 10; fixa = 0xFFFFFFFF; break;
+    case 0x306: src = 0; break;
+    case 0x307: src = 1; break;
+    case 0x302: src = 2; break;
+    case 0x303: src = 3; break;
+    case 0x304: case 0x305: case 0x308: return;
+    }
+    switch (dfactor) {
+    case 0: dst = 10; fixb = 0; break;
+    case 1: dst = 10; fixb = 0xFFFFFFFF; break;
+    case 0x301: dst = 1; break;
+    case 0x302: dst = 2; break;
+    case 0x303: dst = 3; break;
+    case 0x304: case 0x305: return;
+    }
+    sceGuBlendFunc(0, src, dst, fixa, fixb);
+}
 
 extern "C" void glLogicOp(void) {
 }
@@ -144,9 +287,15 @@ extern "C" void glDrawBuffer(void) {
 extern "C" void glReadBuffer(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", glEnable);
+extern "C" void glEnable(unsigned int cap)
+{
+    hk.attribs.enable(cap);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", glDisable);
+extern "C" void glDisable(unsigned int cap)
+{
+    hk.attribs.disable(cap);
+}
 
 extern "C" int glIsEnabled(void)
 {
@@ -232,10 +381,24 @@ extern "C" void glHint(void) {
 
 extern "C" void glClearDepth(double)
 {
-    GL_ASSERT(false, glClearDepth_fn, 0x46D, D_001635F8);
+    GL_FAIL(__PRETTY_FUNCTION__, 0x46D, "function disabled");
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", glDepthFunc);
+extern "C" void glDepthFunc(unsigned int func)
+{
+    int f = 1;
+    switch (func) {
+    case 0x200: f = 0; break;
+    case 0x201: f = 4; break;
+    case 0x202: f = 2; break;
+    case 0x203: f = 5; break;
+    case 0x204: f = 6; break;
+    case 0x205: f = 3; break;
+    case 0x206: f = 7; break;
+    case 0x207: f = 1; break;
+    }
+    sceGuDepthFunc(f);
+}
 
 extern "C" void glDepthMask(unsigned char flag)
 {
@@ -244,7 +407,7 @@ extern "C" void glDepthMask(unsigned char flag)
 
 extern "C" void glDepthRange(double, double)
 {
-    GL_ASSERT(false, glDepthRange_fn, 0x497, D_00163654);
+    GL_FAIL(__PRETTY_FUNCTION__, 0x497, "mapping not implemented");
 }
 
 extern "C" void glClearAccum(void) {
@@ -311,9 +474,9 @@ extern "C" void glLoadIdentity(void)
     sceGumLoadIdentity_();
 }
 
-extern "C" void glLoadMatrixd(const double *)
+extern "C" void glLoadMatrixd(const GLdouble *)
 {
-    GL_ASSERT(false, glLoadMatrixd_fn, 0x4F1, D_00163690);
+    GL_FAIL(__PRETTY_FUNCTION__, 0x4F1, "glLoadMatrixd unsupported");
 }
 
 extern "C" void glLoadMatrixf(void)
@@ -341,7 +504,33 @@ extern "C" void glRotated(double a, double x, double y, double z)
     glRotatef(a, x, y, z);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", glRotatef);
+extern "C" void glRotatef(float angle, float x, float y, float z)
+{
+    float a = angle * 0.01745329238f;
+    float s = sinf(a);
+    float c = cosf(a);
+    float t = 1.0f - c;
+    float tx = t * x, ty = t * y, tz = t * z;
+    float sx = s * x, sy = s * y, sz = s * z;
+    ScePspFMatrix4 m;
+    m.x.x = tx * x + c;
+    m.x.y = ty * x + sz;
+    m.x.z = tz * x - sy;
+    m.y.x = tx * y - sz;
+    m.y.y = ty * y + c;
+    m.y.z = tz * y + sx;
+    m.z.x = tx * z + sy;
+    m.z.y = ty * z - sx;
+    m.z.z = tz * z + c;
+    m.x.w = 0;
+    m.y.w = 0;
+    m.z.w = 0;
+    m.w.x = 0;
+    m.w.y = 0;
+    m.w.z = 0;
+    m.w.w = 1.0f;
+    sceGumMultMatrix(&m);
+}
 
 extern "C" void glScaled(double x, double y, double z)
 {
@@ -1142,13 +1331,38 @@ extern "C" void glPushName(void) {
 extern "C" void glPopName(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", glGenTextures);
+static inline unsigned int gen_texture()
+{
+    if (!hk.free_textures.empty()) {
+        unsigned int t = hk.free_textures.front();
+        hk.free_textures.pop();
+        return t;
+    }
+    return ++hk.last_texture;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", glDeleteTextures);
+extern "C" void glGenTextures(int n, unsigned int *textures)
+{
+    if (textures == 0)
+        return;
+    for (int i = 0; i != n; i++)
+        textures[i] = gen_texture();
+}
+
+extern "C" void glDeleteTextures(int n, const unsigned int *textures)
+{
+    if (textures == 0)
+        return;
+    for (int i = 0; i != n; i++) {
+        std::queue<unsigned int> &q = hk.free_textures;
+        unsigned int t = textures[i];
+        q.push(t);
+    }
+}
 
 extern "C" void glBindTexture(unsigned int, unsigned int texture)
 {
-    D_0018DE1C = texture;
+    hk.texture = texture;
 }
 
 extern "C" void glPrioritizeTextures(void) {
@@ -1209,13 +1423,19 @@ extern "C" void glArrayElement(void) {
 extern "C" void glDrawArrays(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", glDrawElements);
+extern "C" void glDrawElements(unsigned int mode, int count, unsigned int, const GLvoid *)
+{
+    int guprim = -1;
+    GL2SCEGU(mode, &guprim);
+    GL_ASSERT(guprim != -1, __PRETTY_FUNCTION__, 0xA6F, " ");
+    sceGumDrawArray(guprim, 0x1FF, count, 0, hk.array.pointer);
+}
 
 extern "C" void glInterleavedArrays(unsigned int format, int stride, const void *pointer)
 {
-    hk.array_format = format;
-    hk.array_pointer = pointer;
-    hk.array_stride = stride;
+    hk.array.format = format;
+    hk.array.pointer = pointer;
+    hk.array.stride = stride;
 }
 
 extern "C" void glDrawRangeElements(void) {
@@ -1475,42 +1695,29 @@ extern "C" void glSamplePass(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", _Z8GL2SCEGUjPi);
 
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_1F6B0");
-void _GLOBAL__I__ZN12HouseKeeping11AttribStack5tableE(void);
-void _GLOBAL__D__ZN12HouseKeeping11AttribStack5tableE(void);
-}
 
-void _GLOBAL__I__ZN12HouseKeeping11AttribStack5tableE(void)
+
+/* (weak copy in the tail) */
+SGL_LINKONCE_BEGIN
+inline bool HouseKeeping::AttribStack::get(EnableMask &m, unsigned int cap)
 {
-    static_init(1, 0xFFFF);
+    switch (cap) {
+    case 0x0BC0: m = ALPHA_TEST; break;
+    case 0x0B71: m = DEPTH_TEST; break;
+    case 0x0B90: m = STENCIL_TEST; break;
+    case 0x0BE2: m = BLEND; break;
+    case 0x0B44: m = CULL_FACE; break;
+    case 0x0BD0: m = DITHER; break;
+    case 0x0B60: m = FOG; break;
+    case 0x0DE1: m = TEXTURE; break;
+    case 0x0B50: m = LIGHTING; break;
+    case 0x4000: m = LIGHT0; break;
+    case 0x4001: m = LIGHT1; break;
+    case 0x4002: m = LIGHT2; break;
+    case 0x4003: m = LIGHT3; break;
+    case 0x0B20: m = AALINE; break;
+    default: return false;
+    }
+    return true;
 }
-
-void _GLOBAL__D__ZN12HouseKeeping11AttribStack5tableE(void)
-{
-    static_init(0, 0xFFFF);
-}
-
-/* deque<unsigned> instances of this object that only its asm functions use: called from here (a discarded
-   function) so that cc1plus emits them (their order is DEMO_LINKONCE_ORDER's) */
-extern "C" void HouseKeeping_instance_refs(std::deque<unsigned int> &d, std::deque<unsigned int> &e)
-    __attribute__((section(".discard.asm")));
-extern "C" void HouseKeeping_instance_refs(std::deque<unsigned int> &d, std::deque<unsigned int> &e)
-{
-    std::deque<unsigned int> t(e);
-    d.push_back(0);
-    d.pop_back();
-    d.pop_front();
-    d = e;
-    /* deque<unsigned>::pop_back's out-of-line copy (static pointer in a discarded section: no .rodata) */
-    static void (std::deque<unsigned int>::*pop_back)() __attribute__((section(".discard.data"))) = &std::deque<unsigned int>::pop_back;
-    __asm__ volatile("" : : "m"(pop_back));
-}
-
-/* out-of-line inline members / instances that stay asm */
-#undef INCLUDE_ASM
-#define INCLUDE_ASM INCLUDE_ASM_LINKONCE
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", _ZN12HouseKeeping11AttribStackC1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", _ZN12HouseKeeping11AttribStack3getERNS_10EnableMaskEj);
+SGL_LINKONCE_END

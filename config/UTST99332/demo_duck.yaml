@@ -403,7 +403,7 @@ segments:
       - [0x1611F4, rodata, asm/rodata_161174]
       - [0x162B94, .rodata, main_objs/psp_VertexArrayEdit]
       - [0x162C4C, rodata, asm/rodata_162BCC]
-      - [0x163780, .rodata, main_objs/HouseKeeping_AttribStack]
+      - [0x1633B0, .rodata, main_objs/HouseKeeping_AttribStack]
       - [0x163798, rodata, asm/rodata_163718]
       - [0x1637B0, .rodata, main_objs/glutils_CheckerTexture]
       - [0x1637CC, .rodata, main_objs/vector_font_Console]
@@ -685,6 +685,7 @@ segments:
       - { start: 0x18CFCC, type: bss, vram: 0x18D7D8, name: bss_18D7D8 }
       - { start: 0x18CFCC, type: .bss, vram: 0x18D7D8, name: main_objs/psp_vram }
       - { start: 0x18CFCC, type: bss, vram: 0x18D85C, name: bss_18D85C }
+      - { start: 0x18CFCC, type: .bss, vram: 0x18DDF0, name: main_objs/HouseKeeping_AttribStack }
       - { start: 0x18CFCC, type: .bss, vram: 0x18DE78, name: main_objs/glutils_CheckerTexture }
       - { start: 0x18CFCC, type: .bss, vram: 0x18DF58, name: main_objs/vector_font_Console }
       - { start: 0x18CFCC, type: bss, vram: 0x18DF5C, name: bss_18DF5C }
