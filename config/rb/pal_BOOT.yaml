@@ -105,6 +105,7 @@ segments:
       - [0x11C6C, c, newlib/libc/stdio/makebuf]
       - [0x11DC4, c, newlib/libc/string/memchr]
       - [0x11EC0, c, newlib/libc/sys/psp/memmove]
+      - [0x122A0, asm, asm/text_12220]
       - [0x122C0, c, newlib/libc/stdlib/mprec]
       - [0x131C4, c, newlib/libc/stdlib/mallocr/_realloc_r]
       - [0x13734, c, newlib/libc/reent/reent]
