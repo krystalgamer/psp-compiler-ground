@@ -45,4 +45,37 @@ void sortTagR(unsigned int *p)
 	*p = 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/sort", sortPrio);
+unsigned int *sprCall(void);
+void sprFree(unsigned int *p);
+extern unsigned char D_000FB3CC, D_000FB3D8;
+void sortPrio(int top, int prio, int next, int link, int *out)
+{
+	int *pCntx;
+	int p;
+
+	pCntx = (int *)sprCall();
+	if (pCntx == NULL)
+		consPrintf(&D_000FB374, &D_000FB390, 0x6C, "sortPrio", "pCntx");
+	sortTagR((unsigned int *)pCntx);
+	p = top;
+	while (p != 0) {
+		int *b = &pCntx[*(unsigned char *)(p + prio)];
+		int n = *(int *)(p + next);
+		*(int *)(p + link) = *b;
+		*b = p;
+		p = n;
+	}
+	*out = 0;
+	p = pCntx[255];
+	while (p != 0) {
+		if (p > 0) {
+			int n = *(int *)(p + link);
+			*(int *)(p + link) = *out;
+			*out = p;
+			p = n;
+		} else {
+			p = *(int *)(p & 0x7FFFFFFF);
+		}
+	}
+	sprFree((unsigned int *)pCntx);
+}
