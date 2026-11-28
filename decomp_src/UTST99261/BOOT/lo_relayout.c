@@ -376,7 +376,88 @@ void repositionBox_frameset(RBOX *b, int mode) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", repositionBox_frameborder);
+void repositionBox_frameborder(b)
+RBOX *b;
+{
+    RBOX *fs;
+    RBOX *nx;
+    RBOX *pv;
+    int idx;
+    int cols;
+    int rows;
+    int m;
+    int q;
+
+    fs = (RBOX *)getFramesetBox(b);
+    if (fs == NULL)
+        return;
+    nx = b;
+    for (;;) {
+        if (nx == NULL)
+            break;
+        if (nx->content == 1)
+            break;
+        if (nx->content == 2)
+            break;
+        nx = nx->next;
+    }
+    if (nx == NULL)
+        return;
+    if (nx->content == 1)
+        idx = FG(nx)[0x24 / 4];
+    else
+        idx = FG(nx)[0xA8 / 4];
+    pv = b;
+    for (;;) {
+        if (pv == NULL)
+            break;
+        if (pv->content == 1)
+            break;
+        if (pv->content == 2)
+            break;
+        pv = pv->unk8;
+    }
+    if (pv == NULL)
+        return;
+    cols = FG(fs)[0x88 / 4];
+    rows = FG(fs)[0x44 / 4];
+    if (cols >= 2) {
+        q = idx / cols;
+        m = idx % cols;
+        if (rows >= 2) {
+            if (q != 0) {
+                if (m == 0)
+                    b->unk18 = FG(fs)[0x94 / 4];
+            } else if (m != 0) {
+                b->unk1C = FG(fs)[0x98 / 4];
+            }
+        } else if (idx != 0) {
+            b->unk1C = FG(fs)[0x98 / 4];
+            b->y = FG(fs)[0x90 / 4];
+            switch (pv->content) {
+            case 1:
+                b->x = FG(pv)[0] + FG(pv)[2];
+                break;
+            case 2:
+                b->x = FG(pv)[0x8C / 4] + FG(pv)[0x94 / 4];
+                break;
+            }
+        }
+    } else if (rows != 0) {
+        if (idx != 0) {
+            b->unk18 = FG(fs)[0x94 / 4];
+            b->x = FG(fs)[0x8C / 4];
+            switch (pv->content) {
+            case 1:
+                b->y = FG(pv)[1] + FG(pv)[3];
+                break;
+            case 2:
+                b->y = FG(pv)[0x90 / 4] + FG(pv)[0x98 / 4];
+                break;
+            }
+        }
+    }
+}
 
 void resizeTextSize(RBOX *box);
 void resizeImageSize(RBOX *box);
