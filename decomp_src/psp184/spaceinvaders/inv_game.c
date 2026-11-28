@@ -226,7 +226,7 @@ INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", D_0007DE90)
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", D_0007DEA0);
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", D_0007DEAC);
+const L2V3 D_0007DEAC = { 0.7f, 0.7f, 0.7f };
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", D_0007DEB8);
 
@@ -1055,7 +1055,43 @@ M2C_UNK ziki_beat_miss_check(void)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", zako_init);
+/* gmo objects written through a union view (alias set 0): orders the dead stack copy of v after the field stores */
+typedef union { struct { int f0, f4, f8, fc; u8 f10; u8 pad11[3]; int f14, f18, f1c, f20, f24, f28, f2c, f30, f34; L2V3 scale; u8 pad[0x68 - 0x44]; } s; u8 raw[0x68]; } GMOZ_T;
+int gmo_load(int no);
+typedef struct { u8 pad[0xFA0]; int tex[4][3]; u8 pad2[0x101C - 0xFD0]; int model[4][3]; } GMZ_T;
+#define GMZ (*(GMZ_T *)&gmain)
+void zako_init(void)
+{
+	int i, j, k, n;
+	GMOZ_T *g;
+
+	if (gmain.f1088 == 0)
+		return;
+	for (i = 3; i >= 0; i--) {
+		for (j = 0; j < 11; j++) {
+			int *z = gmain.zako_gmo[i][j];
+			for (k = 0; k < 3; k++) {
+				n = gmo_load(GMZ.model[i][k]);
+				z[k] = n;
+				if (n >= 0) {
+					L2V3 v;
+					g = &((GMOZ_T *)gmo)[n];
+					g->s.fc = GMZ.tex[i][k];
+					g->s.f20 = 0;
+					g->s.f24 = 0;
+					g->s.f28 = 0;
+					g->s.f2c = 0;
+					g->s.f30 = 0;
+					g->s.f34 = 0;
+					g->s.f4 = 0;
+					v = D_0007DEAC;
+					g->s.scale = v;
+					g->s.f10 = 1;
+				}
+			}
+		}
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", zako_init_once);
 
