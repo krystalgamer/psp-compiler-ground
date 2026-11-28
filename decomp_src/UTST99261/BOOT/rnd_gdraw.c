@@ -152,6 +152,14 @@ int GUI_ScrollPane_getScrollPosition();
 
 int GUI_Graphics_getImageProperty();
 int GUI_Graphics_createAnimationGIF();
+typedef struct DIBSTYLE { u8 pad0[0x20]; s16 mt, mr, mb, ml, bt, br, bb, bl, pt, pr, pb, pl; u8 pad38[0x1C]; int color; u8 pad58[8]; int bg; int font; u8 pad68[5]; s8 mask; } DIBSTYLE;
+#define DS ((DIBSTYLE *)box->style)
+#define DSUB(t, o) M2C_FIELD(box->sub, t, o)
+typedef struct { int f0; int x; int y; int w; int h; } DIBRECT;
+extern const int e_icon_image_width;
+extern const int e_icon_image_height;
+extern RGIMAGE *D_00584CAC;
+void rnd_drawBasicBoxnode();
 int color2rgb(int *rgb, int c) {
     rgb[0] = ((unsigned int)c >> 16) & 0xFF;
     rgb[1] = (c & 0xFF00) >> 8;
@@ -627,7 +635,7 @@ void rnd_gdrawMaskFillrectangle(int g, int color, int x, int y, int w, int h) {
     GUI_Graphics_freePixmap(p);
 }
 
-void rnd_gdrawImage(int g, int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int pixmap) {
+void rnd_gdrawImage(int g, int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int pixmap, int type) {
     GUI_Graphics_drawPixmap(g, pixmap, a1, a2, a3, a4, a5, a6, a7, a8);
 }
 
@@ -979,7 +987,64 @@ int rnd_gdrawImageReset(RGIMAGE *img, RTIME *now) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_drawImageBoxnode);
+void rnd_drawImageBoxnode(int g, RBN *box, int ox, int oy)
+{
+    RGIMAGE *img;
+    int x;
+    int y;
+    int w;
+    int h;
+    char *alt;
+    int len;
+    int tw;
+    int th;
+    int off;
+    int line;
+    int n;
+    int color;
+    DIBRECT *r;
+
+    rnd_drawBasicBoxnode(g, box, ox, oy);
+    img = box->sub->img;
+    if (img == NULL)
+        return;
+    x = box->x + DS->ml + DS->pl + DS->bl + ox;
+    y = box->y + DS->mt + DS->pt + DS->bt + oy;
+    w = box->w - DS->br - DS->bl - DS->mr - DS->ml - DS->pr - DS->pl;
+    h = box->h - DS->bt - DS->bb - DS->mt - DS->mb - DS->pt - DS->pb;
+    if (DSUB(int *, 0x14) != 1 || (M2C_FIELD(box, u16 *, 0x40) & 4)) {
+        if (w >= e_icon_image_width + 6 && h >= e_icon_image_height + 6) {
+            rnd_gdrawRectangle(g, ~M2C_FIELD(((RBN *)getBodyBox(box))->style, int *, 0), x, y, w, h);
+            if (M2C_FIELD(box, u16 *, 0x40) & 4)
+                img = D_00584CAC;
+            rnd_gdrawImage(g, x + 3, y + 3, e_icon_image_width, e_icon_image_height, 0, 0, 0, 0, img->pixmap, img->type);
+            alt = DSUB(char **, 0x18);
+            if (alt != NULL) {
+                len = strlen(alt);
+                GUI_Graphics_getStringSize(DS->font, alt, len, &tw, &th);
+                off = 0;
+                line = 1;
+                while (h - 6 >= line * th && len > 0) {
+                    n = rnd_gdrawGetStringsVisibleLength(DS->font, alt + off, len, w - e_icon_image_width - 6, -1, 0);
+                    rnd_gdrawStrings(g, DS->font, DS->color, x + e_icon_image_width + 6, y + (line - 1) * th + 3, alt + off, n, 0);
+                    line++;
+                    len -= n;
+                    off += n;
+                }
+            }
+        }
+    } else {
+        if (img->pixmap != 0 && w != 0 && h != 0)
+            rnd_gdrawImage(g, x, y, w, h, 0, 0, 0, 0, img->pixmap, img->type);
+    }
+    color = DS->bg;
+    if (DS->mask != 0)
+        rnd_gdrawMaskFillrectangle(g, color, x, y, w, h);
+    if (DSUB(s8 *, 0x1C) > 0) {
+        r = DSUB(DIBRECT **, 0x20);
+        rnd_gdrawMaskFillrectangle(g, color, x + r->x, y + r->y, r->w, r->h);
+    }
+}
 
 int rnd_updateAnimImageBoxnode(n)
     RBN *n;
