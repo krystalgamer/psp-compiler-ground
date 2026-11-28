@@ -14,7 +14,41 @@ int ServerVersionPacketHandler(char *ctx, int a, int b, const char *ver)
     return 0x10;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeMessage", RequestServersPacketHandler);
+typedef struct { unsigned int ip; unsigned int port; } DmeLinkAddr2;
+typedef struct { struct { void *buf; int len; } e[8]; int total; int n; } DmeVec;
+typedef struct { int port; DmeLinkAddr2 addr; } DmeSrvReply;
+extern char *gUDPInterfacePtr; extern char *gDmeGlobals;
+int NetGetConnInfo(); int NetIsPeerToPeerHost(); int NetIGetCurrentUDPSourceBinaryIP(); int NetIGetMyIntIP(); int NetISendTo();
+int RequestServersPacketHandler(int a0, int a1, int a2, int *msg)
+{
+    DmeLinkAddr2 src;
+    DmeVec vec;
+    DmeSrvReply r;
+    int p2p = 0;
+    int port;
+
+    if (!NetIsPeerToPeerHost(NetGetConnInfo(0), &p2p)) {
+        NetIGetCurrentUDPSourceBinaryIP(&src);
+        if ((*(int *)(gDmeGlobals + 0xC) != 0 || p2p != 0) && *msg == *(int *)gDmeGlobals) {
+            port = 0;
+            if (gUDPInterfacePtr != NULL) port = *(int *)(gUDPInterfacePtr + 0x84);
+            if (*(int *)(gDmeGlobals + 0xC) != 0)
+                r.addr = *(DmeLinkAddr2 *)(gDmeGlobals + 4);
+            else
+                NetIGetMyIntIP(&r.addr);
+            if (p2p != 0)
+                r.port = port;
+            else
+                r.port = *(int *)(gDmeGlobals + 0xC);
+            vec.e[0].buf = &r;
+            vec.e[0].len = 0xC;
+            vec.total = 0xC;
+            vec.n = 1;
+            NetISendTo(&src, port, 0, 0x14, &vec);
+        }
+    }
+    return 4;
+}
 
 int ServerResponsePacketHandler(void) {
     return 0xC;
