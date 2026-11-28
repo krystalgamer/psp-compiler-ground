@@ -8,6 +8,21 @@ int Node_getSid(void *node);
 extern MesClassDef mes_event_def;
 extern MesClass *mes_event_class;
 
+typedef struct LinkStr { DOMChar *str; unsigned int len; } LinkStr;
+extern DOMString _DOMhref;
+extern DOMString _DOMtarget;
+DOMString *makeHref(void *url);
+void JSI_freeDOMString(DOMString *s);
+void mes_val2domstr(MesContext *ctx, MesValue v, DOMString *out);
+LinkStr *mes_obj_common_to_string(MesContext *ctx, MesValue v);
+MesValue mes_eval_to_number(MesContext *ctx, MesValue v);
+void JSI_setURLHash(void *u, DOMString *s);
+void JSI_setURLHost(void *u, DOMString *s);
+void JSI_setURLPathname(void *u, DOMString *s);
+void JSI_setURLPort(void *u, int port);
+void JSI_setURLProtocol(void *u, DOMString *s);
+void JSI_setURLSearch(void *u, DOMString *s);
+int Element_setAttribute();
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_event", mes_event_get);
 
 void mes_event_mark(void) {
@@ -83,4 +98,108 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_event", D_0013C814);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_event", mes_link_common_get_sub);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_event", mes_link_common_put_sub);
+int mes_link_common_put_sub(MesContext *ctx, void *elem, int id, MesValue v, void *urlp, int type)
+{
+    DOMString s;
+    LinkStr *o;
+    DOMChar *p;
+    unsigned int n;
+    unsigned int i;
+    unsigned int len;
+    int port;
+    DOMString *h;
+
+    switch (id) {
+    case 1:
+        mes_val2domstr(ctx, v, &s);
+        JSI_setURLHash(urlp, &s);
+        break;
+    case 2:
+        mes_val2domstr(ctx, v, &s);
+        JSI_setURLHost(urlp, &s);
+        break;
+    case 5:
+        mes_val2domstr(ctx, v, &s);
+        JSI_setURLPathname(urlp, &s);
+        break;
+    case 6:
+        port = mes_eval_to_number(ctx, v) >> 2;
+        JSI_setURLPort(urlp, port);
+        break;
+    case 7:
+        mes_val2domstr(ctx, v, &s);
+        if (s.len == 0)
+            return 1;
+        JSI_setURLProtocol(urlp, &s);
+        break;
+    case 8:
+        mes_val2domstr(ctx, v, &s);
+        JSI_setURLSearch(urlp, &s);
+        break;
+    case 4:
+        if (type == 6) {
+            mes_val2domstr(ctx, v, &s);
+            mes_link_common_set_href(ctx, elem, s.str, s.len);
+            break;
+        }
+    case 9:
+        o = mes_obj_common_to_string(ctx, v);
+        s.size = s.len = o->len;
+        s.str = MEM_malloc(0, s.len * 2);
+        if (s.str != NULL) {
+            memcpy(s.str, o->str, s.len * 2);
+            Element_setAttribute(elem, id == 4 ? &_DOMhref : &_DOMtarget, &s);
+            MEM_free(0, s.str);
+        }
+        ctx->sp++;
+        break;
+    case 3:
+        o = mes_obj_common_to_string(ctx, v);
+        p = o->str;
+        n = o->len;
+        for (i = 0; i < o->len; i++) {
+            if (*p++ == ':') {
+                n = i;
+                break;
+            }
+        }
+        if ((int)n > 0) {
+            s.size = s.len = n;
+            s.str = o->str;
+            JSI_setURLHost(urlp, &s);
+        }
+        if (n == o->len)
+            port = 80;
+        else {
+            port = 0;
+            for (i = n + 1; i < o->len; i++, p++) {
+                if (*p < '0' || *p > '9')
+                    break;
+                port = port * 10 + *p - '0';
+            }
+        }
+        JSI_setURLPort(urlp, port);
+        ctx->sp++;
+        break;
+    case 10:
+    case 11:
+    case 12:
+        break;
+    }
+    if (type == 11) {
+        switch (id) {
+        case 1: case 2: case 3: case 5: case 6: case 7: case 8:
+            h = makeHref(urlp);
+            Element_setAttribute(elem, &_DOMhref, h);
+            JSI_freeDOMString(h);
+        }
+    } else {
+        switch (id) {
+        case 1: case 2: case 3: case 5: case 6: case 7: case 8:
+            h = makeHref(urlp);
+            mes_link_common_set_href(ctx, elem, h->str, h->len);
+            JSI_freeDOMString(h);
+        }
+    }
+    return 1;
+}
