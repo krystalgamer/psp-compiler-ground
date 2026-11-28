@@ -196,23 +196,23 @@ def rodata_order(text, module):
     release assemblers have .rodata first; the 1.6.1.internal toolchain's
     creates the sections as they are first used (config/compilers.txt
     objorder).  A C++ object's .gnu.linkonce.r sections (cxx_linkonce) are
-    created as first used too, and so is its .rodata (before or after a
-    vtable), so they link in one statement with its .rodata, before its
-    .rodata.*."""
+    created as first used too, and so are its .rodata (before or after a
+    vtable) and its .rodata.cst*: they all link in one statement, in the
+    object's own section order (rs4_main's ys_screen_panel and
+    ys_text_menu_view, built with -fmerge-constants: strings, then the
+    1.0f, then the vtables)."""
     sys.path.insert(0, str(Path(__file__).parent))
     import compiler
 
     def rep(m):
         obj, extra = m[1], m[2]
         u = re.search(r"decomp_src/([^/]+)/" + re.escape(module) + r"/(.+)\.c\.o$", obj)
-        if u and compiler.object_order(u[1], module, u[2]):
+        # a C++ object's strings, constants and vtables/typeinfo (extra) in
+        # object-file order: rs4_main has string-first and vtable-first
+        # objects, and floats between strings and vtables
+        if extra or (u and compiler.object_order(u[1], module, u[2])):
             return f"{obj}(.rodata .rodata.*{extra});"
-        if extra:
-            # a C++ object's vtables/typeinfo: .rodata and .gnu.linkonce.r in
-            # object-file order (rs4_main has both string-first and
-            # vtable-first objects); its constants still follow
-            return f"{obj}(.rodata{extra});\n        {obj}(.rodata.*);"
-        return f"{obj}(.rodata);\n        {obj}(.rodata.*{extra});"
+        return f"{obj}(.rodata);\n        {obj}(.rodata.*);"
     lo = r"((?: \.gnu\.linkonce\.r\.[^\s)]+)*)"
     text = re.sub(r"(\S+\.c\.o)\(\.rodata \.rodata\.\*" + lo + r"\);", r"\1(.rodata\2);", text)
     text = re.sub(r"(\S+\.c\.o)\(\.rodata\);\n\s*\1\(\.rodata\.\*" + lo + r"\);", r"\1(.rodata\2);", text)

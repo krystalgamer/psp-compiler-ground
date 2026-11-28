@@ -1,5 +1,5 @@
 /* lang: c++ */
-/* cflags: -Os -fno-strength-reduce -fno-merge-constants -fno-exceptions */
+/* cflags: -Os -fno-strength-reduce -fno-exceptions */
 /* #pragma interface: the vtables, typeinfo and implicit destructors stay in the module's asm */
 #pragma interface "rodata"
 #include "common.h"

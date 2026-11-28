@@ -1,5 +1,5 @@
 /* lang: c++ */
-/* cflags: -Os -fno-strength-reduce -fno-merge-constants */
+/* cflags: -Os -fno-strength-reduce */
 /* #pragma interface: FadeTask's vtable stays in the module's asm .rodata */
 #pragma interface "rodata"
 #include "common.h"

@@ -1,5 +1,5 @@
 /* lang: c++ */
-/* cflags: -Os -fno-strength-reduce -fno-merge-constants -fno-exceptions */
+/* cflags: -Os -fno-strength-reduce -fno-exceptions */
 /* #pragma interface: NetworkTask's vtable stays in the module's asm .rodata */
 #pragma interface "rodata"
 #include "common.h"

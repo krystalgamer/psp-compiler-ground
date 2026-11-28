@@ -1,5 +1,5 @@
 /* lang: c++ */
-/* cflags: -Os -fno-merge-constants -fno-exceptions */
+/* cflags: -Os -fno-exceptions */
 /* strength reduction on: Finish_Update matches only with it (address loop IV) */
 #include "common.h"
 

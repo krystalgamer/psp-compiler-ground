@@ -1,5 +1,5 @@
 /* lang: c++ */
-/* cflags: -Os -fno-strength-reduce -fno-merge-constants -fno-exceptions */
+/* cflags: -Os -fno-strength-reduce -fno-exceptions */
 /* data-align: 8 */
 #include "common.h"
 

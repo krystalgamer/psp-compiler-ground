@@ -1,5 +1,5 @@
 /* lang: c++ */
-/* cflags: -Os -fno-strength-reduce -fno-merge-constants -fno-exceptions */
+/* cflags: -Os -fno-strength-reduce -fno-exceptions */
 #include "common.h"
 
 extern "C" void _memFree(void *p, const char *file, int line);

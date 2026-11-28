@@ -1,5 +1,5 @@
 /* lang: c++ */
-/* cflags: -Os -fno-merge-constants -fno-exceptions */
+/* cflags: -Os -fno-exceptions */
 /* strength reduction on: Update matches only with it (menu item pointer IV) */
 #include "common.h"
 
