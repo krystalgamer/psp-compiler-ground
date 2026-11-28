@@ -1,10 +1,7 @@
 /* lang: c++ */
 /* cflags: -Os -fno-strength-reduce -fno-merge-constants -fno-exceptions */
-/* #pragma interface: the vtables, typeinfo and implicit destructors stay in the module's asm */
-#pragma interface "rodata"
 #include "common.h"
 
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_task", D_00105238); }
 
 struct Task;
 struct InstDat;
@@ -16,14 +13,13 @@ Task *taskMake(Task *parent, void *func, void *arg, unsigned int n);
 void taskKill(Task *t, int a, int b);
 int taskDefaultMsg(Task *t, int msg, void *p, unsigned int n);
 void consPrintf(const char *fmt, ...);
-extern const char D_00105238[];
 }
 
 namespace Ys {
 class Object {
 public:
-	static void *operator new(unsigned int size) { return _memAllocMBL(size, D_00105238, 23); }
-	static void operator delete(void *p) { _memFree(p, D_00105238, 25); }
+	static void *operator new(unsigned int size) { return _memAllocMBL(size, "src/ys/ys_object.h", 23); }
+	static void operator delete(void *p) { _memFree(p, "src/ys/ys_object.h", 25); }
 };
 
 class Task;
@@ -64,7 +60,7 @@ public:
 	::Task *task_p;
 	TaskState *state_p;
 	static TaskState *_default_state_p;
-	static TaskState *_sleep_state_p;
+	static class TaskStateSleep *_sleep_state_p;
 	static void Create_State();
 	static void Delete_State();
 	Task *Init(void *p, unsigned int n, Task *parent);
@@ -257,17 +253,3 @@ void TaskStateSleep::Draw(Task &t, ::Task *p, void *q, unsigned int n)
 }
 
 
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_task", _ZN2Ys14TaskStateSleepD0Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_task", _ZN2Ys14TaskStateSleepD1Ev); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_task", _ZTVN2Ys14TaskStateSleepE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_task", D_001052C0); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_task", _ZTVN2Ys9TaskStateE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_task", D_001052E8); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_task", _ZTVN2Ys4TaskE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_task", D_00105310); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_task", _ZTIN2Ys4TaskE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_task", _ZTIN2Ys9TaskStateE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_task", _ZTIN2Ys14TaskStateSleepE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_task", _ZTSN2Ys14TaskStateSleepE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_task", _ZTSN2Ys9TaskStateE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_task", _ZTSN2Ys4TaskE); }
