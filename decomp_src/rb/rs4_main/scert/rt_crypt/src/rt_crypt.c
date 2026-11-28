@@ -6,7 +6,6 @@
 int NetUseCrypt(void);
 void InitializePRNG(void);
 void KM_GenerateRSAKeyPair(int arg0, int arg1);
-M2C_UNK rt_crypt_resolve_interface();               /* extern */
 M2C_UNK setNewSeed(M2C_UNK);                        /* extern */
 extern unsigned char D_00132074;
 
@@ -15,7 +14,74 @@ int NetUseCrypt(void) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", rt_crypt_resolve_interface);
+extern void *gCryptInterface[31];
+extern void **gCryptInterfacePtr;
+void *GetKeyChain(char *km, unsigned int id);
+void *GetKeyMaster();
+void GetSoftwareKeyPair();
+int KM_AddSymmetricKey(int a, unsigned int id, unsigned char *key);
+int KM_Cleanup();
+int KM_CompareSymmetricKey();
+int KM_CopyKeys();
+int KM_Create();
+void KM_CreateRandomRCKey(unsigned int *k);
+int KM_Decrypt();
+int KM_Decrypt2();
+void KM_DeleteKeys(int a, int id);
+void KM_DeleteSymmetricKey(int a, unsigned int id);
+int KM_Destroy();
+int KM_DigiSign();
+int KM_DigiVerify();
+int KM_Encrypt();
+int KM_Encrypt2();
+int KM_GetGameSessionKey(int a, int b, unsigned char *out);
+int KM_GetPublicKey(int a, unsigned int id, void *out);
+int KM_GetSymmetricKey(int a, unsigned int id, void *out);
+M2C_UNK *KM_GetVersionStringPtr(void);
+int KM_MD5();
+void KM_RSAAdjust(void *a, void *b);
+void KM_SHA1(void *data, int len, void *out, int outlen);
+int KM_Salted_MD5();
+void KM_Salted_SHA1(void *salt, int slen, void *data, int len, void *out, int outlen);
+int KM_SetGameSessionKey(int a, int id, unsigned char *key);
+void KM_SetLocalClientID(int a, int id);
+int KM_SetLocalKeyPair(int a, char *keys);
+int KM_SetPublicKey();
+void rt_crypt_resolve_interface(void)
+{
+    gCryptInterface[0] = (void *)GetKeyMaster;
+    gCryptInterface[1] = (void *)GetKeyChain;
+    gCryptInterface[2] = (void *)KM_Encrypt2;
+    gCryptInterface[3] = (void *)KM_Decrypt2;
+    gCryptInterface[4] = (void *)KM_GetVersionStringPtr;
+    gCryptInterface[5] = (void *)KM_Create;
+    gCryptInterface[6] = (void *)KM_SetPublicKey;
+    gCryptInterface[7] = (void *)KM_GetPublicKey;
+    gCryptInterface[8] = (void *)KM_SetLocalKeyPair;
+    gCryptInterface[9] = (void *)KM_SetGameSessionKey;
+    gCryptInterface[10] = (void *)KM_GetGameSessionKey;
+    gCryptInterface[11] = (void *)KM_AddSymmetricKey;
+    gCryptInterface[12] = (void *)KM_GetSymmetricKey;
+    gCryptInterface[13] = (void *)KM_CompareSymmetricKey;
+    gCryptInterface[14] = (void *)KM_DeleteSymmetricKey;
+    gCryptInterface[15] = (void *)KM_Encrypt;
+    gCryptInterface[16] = (void *)KM_Decrypt;
+    gCryptInterface[17] = (void *)KM_CopyKeys;
+    gCryptInterface[18] = (void *)KM_DigiSign;
+    gCryptInterface[19] = (void *)KM_DigiVerify;
+    gCryptInterface[20] = (void *)KM_DeleteKeys;
+    gCryptInterface[21] = (void *)KM_CreateRandomRCKey;
+    gCryptInterface[22] = (void *)KM_SetLocalClientID;
+    gCryptInterface[23] = (void *)KM_Destroy;
+    gCryptInterface[24] = (void *)KM_Cleanup;
+    gCryptInterface[25] = (void *)KM_SHA1;
+    gCryptInterface[26] = (void *)KM_MD5;
+    gCryptInterface[27] = (void *)KM_Salted_SHA1;
+    gCryptInterface[28] = (void *)KM_Salted_MD5;
+    gCryptInterface[29] = (void *)KM_RSAAdjust;
+    gCryptInterface[30] = (void *)GetSoftwareKeyPair;
+    gCryptInterfacePtr = gCryptInterface;
+}
 
 int IsNullRCKey(unsigned char *k) {
     unsigned int i;

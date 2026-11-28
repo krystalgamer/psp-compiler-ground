@@ -29,7 +29,6 @@ void rt_udp_set_peer_id(void *arg0, int arg1);
 M2C_UNK rt_comm_shutdown();                         /* extern */
 M2C_UNK rt_memory_free(void *);                     /* extern */
 M2C_UNK rt_upnp_destroy(int);                       /* extern */
-M2C_UNK rt_udp_resolve_interface();                 /* extern */
 extern int gbEnableUnexpectedPort;
 extern unsigned char gszRtUdpVersionString;
 extern int RT_UDP_INACTIVITY_TIMEOUT;
@@ -77,7 +76,80 @@ int NetUseUDP(void) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_resolve_interface);
+extern void *gUDPInterface[37];
+extern void **gUDPInterfacePtr;
+int rt_udp_broadcast();
+int rt_udp_connect();
+int rt_udp_create();
+int rt_udp_deny(void *u, int *c);
+int rt_udp_destroy();
+int rt_udp_disable_nat_service_heartbeat(void *arg0);
+int rt_udp_disconnect();
+int rt_udp_event_check();
+int rt_udp_event_process();
+int rt_udp_get_address();
+int rt_udp_get_aggregation_interval(void *arg0, int *arg1);
+int rt_udp_get_buffer_size(void *u, int *conn, int which, int *out);
+int rt_udp_get_buffer_stats();
+int rt_udp_get_local_address(void *arg0, void *arg1, int *arg2);
+int rt_udp_get_pool_used(void *udp);
+int rt_udp_get_resolved_address();
+M2C_UNK *rt_udp_get_version_string(void);
+int rt_udp_get_virtual_port(void *arg0, unsigned short *arg1);
+int rt_udp_listen(void *arg0, int arg1);
+int rt_udp_mgr_create();
+int rt_udp_mgr_destroy();
+int rt_udp_mgr_find_channel_ref();
+int rt_udp_mgr_get_channel_ref();
+int rt_udp_mgr_release_channel_ref();
+int rt_udp_pre_accept();
+int rt_udp_resolve_address();
+int rt_udp_send();
+int rt_udp_send_list();
+int rt_udp_send_unconnected();
+int rt_udp_set_aggregation_interval();
+int rt_udp_set_buffer_size(void *u, int *c, int which, int size);
+void rt_udp_set_peer_id(void *arg0, int arg1);
+void rt_udp_resolve_interface(void)
+{
+    gUDPInterface[0] = (void *)rt_udp_get_version_string;
+    gUDPInterface[1] = (void *)rt_udp_create;
+    gUDPInterface[2] = (void *)rt_udp_destroy;
+    gUDPInterface[3] = (void *)rt_udp_set_buffer_size;
+    gUDPInterface[4] = (void *)rt_udp_set_aggregation_interval;
+    gUDPInterface[5] = (void *)rt_udp_get_buffer_size;
+    gUDPInterface[6] = (void *)rt_udp_get_aggregation_interval;
+    gUDPInterface[7] = (void *)rt_udp_get_virtual_port;
+    gUDPInterface[8] = (void *)rt_udp_get_buffer_stats;
+    gUDPInterface[9] = (void *)rt_udp_resolve_address;
+    gUDPInterface[10] = (void *)rt_udp_get_resolved_address;
+    gUDPInterface[11] = (void *)rt_udp_get_local_address;
+    gUDPInterface[12] = (void *)rt_udp_get_address;
+    gUDPInterface[13] = (void *)rt_udp_disable_nat_service_heartbeat;
+    gUDPInterface[14] = (void *)rt_udp_connect;
+    gUDPInterface[15] = (void *)rt_udp_disconnect;
+    gUDPInterface[16] = (void *)rt_udp_set_peer_id;
+    gUDPInterface[17] = (void *)rt_udp_send;
+    gUDPInterface[18] = (void *)rt_udp_send_list;
+    gUDPInterface[19] = (void *)rt_udp_send_unconnected;
+    gUDPInterface[20] = (void *)rt_udp_broadcast;
+    gUDPInterface[21] = (void *)rt_udp_listen;
+    gUDPInterface[23] = (void *)rt_udp_deny;
+    gUDPInterface[24] = (void *)rt_udp_pre_accept;
+    gUDPInterface[25] = (void *)rt_udp_event_process;
+    gUDPInterface[26] = (void *)rt_udp_event_check;
+    gUDPInterface[27] = (void *)rt_udp_mgr_create;
+    gUDPInterface[28] = (void *)rt_udp_mgr_destroy;
+    gUDPInterface[29] = (void *)rt_udp_mgr_get_channel_ref;
+    gUDPInterface[30] = (void *)rt_udp_mgr_release_channel_ref;
+    gUDPInterface[31] = (void *)rt_udp_mgr_find_channel_ref;
+    gUDPInterface[32] = (void *)rt_udp_get_pool_used;
+    gUDPInterface[33] = (void *)0xE4A;
+    gUDPInterface[34] = 0;
+    gUDPInterface[35] = (void *)0x10000;
+    gUDPInterface[36] = 0;
+    gUDPInterfacePtr = gUDPInterface;
+}
 
 M2C_UNK *rt_udp_get_version_string(void) {
     return &gszRtUdpVersionString;
