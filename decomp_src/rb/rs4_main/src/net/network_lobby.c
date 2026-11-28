@@ -274,7 +274,25 @@ unsigned int get__current_time()
 namespace Net {
 
 }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby", _ZN3Net5Lobby19Update_TerminalListERK15SceNetEtherAddriPv); }
+namespace Net {
+LobbyTerminalInfo *Lobby::Update_TerminalList(const SceNetEtherAddr &addr, int size, void *data)
+{
+	unsigned int now = get__current_time();
+	LobbyTerminalList *list = terminal_list_p;
+	LobbyTerminalInfo *info = list->Find_Info(addr);
+	if (info) {
+		info->time = now;
+	} else if (16 - list->count > 0) {
+		LobbyTerminalInfo *n = list->Alloc_Info();
+		n->time = now;
+		n->address = addr;
+		if (n->data)
+			memcpy(n->data, data, n->data_size);
+		info = n;
+	}
+	return info;
+}
+}
 namespace Net {
 
 
