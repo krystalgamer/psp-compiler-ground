@@ -61,7 +61,21 @@ void I3dMemBlock__ChangeAttributeToGarbage(b)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dMemBlock__Construct);
+typedef struct MBC { struct MBC *next, *prev; } MBC;
+int I3dMemBlock__Construct(MBC *b)
+{
+	unsigned int i;
+	for (i = 0; i < 6; i++) {
+		b[i].prev = b;
+		b[i].next = b;
+	}
+	((int *)b)[12] = 1;
+	((int *)b)[13] = 0;
+	((int *)b)[14] = 0;
+	((int *)b)[15] = 0;
+	((int *)b)[16] = 0;
+	return 0;
+}
 
 int I3dMemBlock__Destruct(void *b)
 {

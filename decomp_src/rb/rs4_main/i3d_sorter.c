@@ -159,7 +159,21 @@ void I3dTexEnv__SetParam(void) {
 void I3dTexEnv__SetErrorTex(void) {
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_sorter", I3dCheckTim2FileHeader);
+int I3dCheckTim2FileHeader(unsigned char *h)
+{
+    int type;
+    if (h[0] == 'T' || h[1] == 'I' || h[2] == 'M' || h[3] == '2')
+        type = 1;
+    else if (h[0] == 'C' || h[1] == 'L' || h[2] == 'T')
+        type = 2;
+    else
+        return 0;
+    if (h[4] != 3 && h[4] != 0x82) {
+        if (h[4] != 4 || h[5] >= 2)
+            return 0;
+    }
+    return type;
+}
 
 void *I3dGetTim2PictureHeader(unsigned char *t, unsigned int n)
 {
@@ -184,7 +198,24 @@ int I3dTim2PictureHeader__IsClut2(void *arg0) {
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/i3d_sorter", s_apI3dSortFunc);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_sorter", I3dTim2PictureHeader__GetMipMapPictureSize);
+int I3dTim2PictureHeader__GetMipMapPictureSize(unsigned char *p, int level, int *pw, int *ph)
+{
+    int w = *(unsigned short *)(p + 0x14) >> level;
+    int h = *(unsigned short *)(p + 0x16) >> level;
+    int n;
+    if (pw) *pw = w;
+    if (ph) *ph = h;
+    n = w * h;
+    switch (p[0x13]) {
+    case 0: break;
+    case 1: n *= 2; break;
+    case 2: n *= 3; break;
+    case 3: n *= 4; break;
+    case 4: n /= 2; break;
+    case 5: break;
+    }
+    return (n + 15) & ~15;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_sorter", I3dTim2PictureHeader__Get_pPictureImage);
 
