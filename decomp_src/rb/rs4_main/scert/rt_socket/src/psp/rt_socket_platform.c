@@ -323,7 +323,32 @@ int rt_socket_is_connected_platform(int s, int *conn)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/psp/rt_socket_platform", rt_socket_get_dns_servers_platform);
+int sceNetInetInetAton(const char *, void *);
+int rt_socket_get_dns_servers_platform(unsigned int *out, unsigned int max, unsigned int *count)
+{
+    char info[0x80];
+    char *p;
+    unsigned int a;
+    int i;
+    int code;
+
+    if (out == NULL) return 2;
+    if (count == NULL) return 2;
+    memset(out, 0, max * 8);
+    *count = 0;
+    for (i = 0; i < 2; i++) {
+        switch (i) {
+        case 0: code = 11; p = info; break;
+        case 1: code = 12; p = info; break;
+        default: continue;
+        }
+        if (*count < max && sceNetApctlGetInfo(code, info) >= 0 && sceNetInetInetAton(p, &a) >= 0) {
+            out[*count * 2] = a;
+            (*count)++;
+        }
+    }
+    return 0;
+}
 
 typedef struct { void *buf; int len; } RtSockIov;
 typedef struct { RtSockIov e[8]; int total; int n; } RtSockVec;

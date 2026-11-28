@@ -116,7 +116,37 @@ int rt_pack_cu2byte(int mode, RtPackBuf *b, unsigned short *data)
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_pack", rt_pack_cstring);
+int rt_strnlen();
+int rt_pack_cstring(int mode, RtPackBuf *b, char *str)
+{
+    short len;
+    unsigned char *start = b->cur;
+
+    if (b->err != 0) return 0;
+    if (str == NULL) {
+        b->err = 2;
+        return 0;
+    }
+    if (mode == 1) {
+        len = rt_strnlen(str, 0x7FFF) + 1;
+        if (len == 0x7FFF) {
+            b->err = 9;
+            return 0;
+        }
+    }
+    rt_pack_cu2byte(mode, b, (unsigned short *)&len);
+    if (b->err != 0) return 0;
+    rt_pack_anything(mode, b, str, len);
+    if (b->err != 0 || ((char *)b->cur)[-1] != 0) {
+        b->cur = start;
+        if (b->err != 0) return 0;
+        if (((char *)b->cur)[-1] != 0) {
+            b->err = 9;
+            return 0;
+        }
+    }
+    return 1;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_pack", rcsid_10ED94);
 
