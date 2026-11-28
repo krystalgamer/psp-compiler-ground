@@ -12,8 +12,12 @@ typedef struct { /* size 0xD8 */
     void *unk10;
     void *unk14;
     PSPBROWSER_INI ini;                         /* 0x18 */
-    u8 unk7C[0x18];
-    void *unk94;
+    u8 unk7C[8];
+    int unk84;
+    int unk88;
+    int unk8C;
+    int unk90;
+    char *unk94;
     void *unk98;
     PSPBROWSER_FOCUS_CALLBACK focusCallback;    /* 0x9C */
     int unkA0;

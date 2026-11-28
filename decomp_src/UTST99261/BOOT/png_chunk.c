@@ -62,7 +62,7 @@ void do_filter_sub(PNGCTX *ctx, u8 *row, u8 *prior, int len, int bpp) {
     }
 }
 
-void do_filter_up(PNGCTX *ctx, u8 *row, u8 *prior, int len) {
+void do_filter_up(PNGCTX *ctx, u8 *row, u8 *prior, int len, int bpp) {
     int i;
 
     if (prior == NULL) {

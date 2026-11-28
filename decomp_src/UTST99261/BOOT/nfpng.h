@@ -28,7 +28,8 @@ typedef struct { /* size 0x58 */
     s16 trB;
     void *image;            /* 0x48 */
     void *unk4C;
-    u8 unk50[0x8];
+    int unk50;              /* 0x50: current pass */
+    int unk54;              /* 0x54: next row */
 } PNGCTX;
 
 void *ESP_malloc(unsigned int size);

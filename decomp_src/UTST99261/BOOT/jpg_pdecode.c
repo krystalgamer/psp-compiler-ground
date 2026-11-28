@@ -50,6 +50,7 @@ typedef struct {
     u8 vmax;                    /* 0x68F */
     u8 unk690[0xC];
     int eobrun;                 /* 0x69C */
+    u8 marker;                  /* 0x6A0 */
 } JPCTX;
 
 extern const int natural_order[];
