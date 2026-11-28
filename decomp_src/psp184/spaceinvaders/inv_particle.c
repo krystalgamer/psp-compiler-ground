@@ -160,7 +160,117 @@ void inv_particle_control(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_particle", inv_particle_disp);
+typedef struct __attribute__((packed)) { float u, v; unsigned int c; float x, y, z; } PVTX;
+typedef struct { int used, f4, tex, fc; PV3 pos; PSUB s[16]; PVTX v0[48]; PVTX v1[48]; } PDISP;
+extern int inv_particle_disp_max, inv_particle_disp_time, g_packet;
+unsigned int sceKernelGetSystemTimeLow(void);
+void inv_particle_syncsort(void);
+void vec_roll_yxz(PV3 *in, PV3 *rot, PV3 *out);
+void sceGuEnable(int);
+void sceGuDisable(int);
+void sceGuTexFunc(int, int);
+void sceGuTexMapMode(int, unsigned int, unsigned int);
+void sceGuTexWrap(int, int);
+void sceGuTexFilter(int, int);
+void set_texture(int);
+void sceGuAlphaFunc(int, int, int);
+void sceGuBlendFunc(int, int, int, unsigned int, unsigned int);
+void sceGumPushMatrix(void);
+void sceGumPopMatrix(void);
+int sceKernelDcacheWritebackInvalidateRange(const void *p, unsigned int size);
+void sceGumDrawArrayN(int prim, int vtype, int count, int n, const void *indices, const void *vertices);
+void inv_particle_disp(void)
+{
+	PDISP *p;
+	PSUB *s;
+	PVTX *v, *w;
+	PV3 t[3];
+	int i, j, k;
+	unsigned int tm;
+	int set;
+	int tex;
+
+	inv_particle_disp_max = 0;
+	inv_particle_disp_time = 0;
+	if (inv_particle_max <= 0)
+		return;
+	tm = sceKernelGetSystemTimeLow();
+	inv_particle_syncsort();
+	set = 0;
+	tex = -1;
+	for (i = 0; i < inv_particle_max; i++) {
+		p = &((PDISP *)&inv_particle)[par_co[i]];
+		if (p->used != 1)
+			continue;
+		if (!g_packet)
+			v = p->v0;
+		else
+			v = p->v1;
+		for (j = 0; j < 16; j++) {
+			s = &p->s[j];
+			w = &v[j * 3];
+			if (s->cnt < s->end) {
+				w[0].u = s->f78;
+				w[0].v = s->f80;
+				w[1].u = s->f78;
+				w[1].v = s->f84;
+				w[2].u = s->f7c;
+				w[2].v = s->f80;
+				w[0].c = -1;
+				w[1].c = -1;
+				w[2].c = -1;
+				vec_roll_yxz(&s->a, &s->r, &t[0]);
+				vec_roll_yxz(&s->b, &s->r, &t[1]);
+				vec_roll_yxz(&s->c, &s->r, &t[2]);
+				w[0].x = s->pos.x + t[0].x;
+				w[0].y = s->pos.y + t[0].y;
+				w[0].z = s->pos.z + t[0].z;
+				w[1].x = s->pos.x + t[1].x;
+				w[1].y = s->pos.y + t[1].y;
+				w[1].z = s->pos.z + t[1].z;
+				w[2].x = s->pos.x + t[2].x;
+				w[2].y = s->pos.y + t[2].y;
+				w[2].z = s->pos.z + t[2].z;
+			} else {
+				for (k = 0; k < 3; k++) {
+					v[j * 3 + k].u = 0;
+					v[j * 3 + k].v = 0;
+					v[j * 3 + k].c = 0;
+					v[j * 3 + k].x = 0;
+					v[j * 3 + k].y = 0;
+					v[j * 3 + k].z = 0;
+				}
+			}
+		}
+		if (set == 0) {
+			sceGuDisable(5);
+			sceGuAlphaFunc(1, 0, 255);
+			sceGuEnable(0);
+			sceGuBlendFunc(0, 2, 3, 0, 0);
+			set = 1;
+			sceGuEnable(4);
+		}
+		if (p->tex == -1 && tex == p->tex) {
+			sceGuDisable(9);
+		} else {
+			tex = p->tex;
+			sceGuEnable(9);
+			sceGuTexFunc(0, 1);
+			sceGuTexMapMode(0, 0, 0);
+			sceGuTexWrap(0, 0);
+			sceGuTexFilter(1, 1);
+			set_texture(p->tex);
+		}
+		sceGumPushMatrix();
+		sceKernelDcacheWritebackInvalidateRange(v, 0x480);
+		sceGumDrawArrayN(3, 0x19F, 3, 16, 0, v);
+		sceGumPopMatrix();
+	}
+	if (set == 1)
+		sceGuEnable(5);
+	inv_particle_disp_time = sceKernelGetSystemTimeLow() - tm;
+	inv_particle_disp_max = inv_particle_max;
+}
 
 void inv_particle_syncsort(void)
 {
