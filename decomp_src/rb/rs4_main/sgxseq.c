@@ -408,9 +408,35 @@ int SesqPlay(char *s, int a, int b, int c, int d)
 	return sgxPortCommand(*(short *)(s + 0x1A), (int)cmd);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", SesqPlayWave);
+void SesqPlayWave(char *s, int a, int b, int c, int d, int e, int f, int g)
+{
+    int cmd[12];
+    cmd[0] = 1;
+    cmd[1] = a;
+    cmd[2] = **(short **)(s + 0x20);
+    cmd[3] = b;
+    cmd[4] = c;
+    cmd[5] = d;
+    cmd[6] = e;
+    cmd[7] = f;
+    cmd[8] = g;
+    sgxPortCommand(*(short *)(s + 0x1A), (int)cmd);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", SesqPlayNoise);
+void SesqPlayNoise(char *s, int a, int b, int c, int d, int e, int f, int g)
+{
+    int cmd[12];
+    cmd[0] = 2;
+    cmd[1] = a;
+    cmd[2] = **(short **)(s + 0x20);
+    cmd[3] = b;
+    cmd[4] = c;
+    cmd[5] = d;
+    cmd[6] = e;
+    cmd[7] = f;
+    cmd[8] = g;
+    sgxPortCommand(*(short *)(s + 0x1A), (int)cmd);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
