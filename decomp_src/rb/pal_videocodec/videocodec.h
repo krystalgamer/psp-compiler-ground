@@ -48,6 +48,12 @@ typedef struct {
 } VideocodecCtx;
 
 int sceKernelDcacheWritebackInvalidateRange(const void *p, unsigned int size);
+
+static inline void wbInvNotMe(unsigned int p, unsigned int size)
+{
+	if (!isMeAddr(p))
+		sceKernelDcacheWritebackInvalidateRange((void *)p, size);
+}
 int sceKernelDcacheInvalidateRange(const void *p, unsigned int size);
 void *sceMeCalloc(unsigned int size, unsigned int n);
 void sceMeFree(void *p);
