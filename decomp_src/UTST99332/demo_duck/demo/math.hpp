@@ -482,6 +482,7 @@ public:
     common::t_array2d<vector_xyzw> *net();
     void *ctrlnet();
     void setNet(common::t_array2d<vector_xyzw> *);
+    void globalEval();
     /* data */
     common::t_array2d<vector_xyzw> *_f0;
     char _f4;

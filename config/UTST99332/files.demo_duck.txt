@@ -614,3 +614,6 @@ bss 0x18DFE4 -
 # HouseKeeping float pools
 rodata 0x163700 main_objs/HouseKeeping_AttribStack
 rodata 0x163718 -
+# textures_Texture float pools
+rodata 0x1763D4 main_objs/textures_Texture
+rodata 0x17641C -

@@ -575,6 +575,8 @@ segments:
       - [0x175F2C, rodata, asm/rodata_175EAC]
       - [0x1762F8, .rodata, main_objs/FloatImage]
       - [0x17631C, rodata, asm/rodata_17629C]
+      - [0x176454, .rodata, main_objs/textures_Texture]
+      - [0x17649C, rodata, asm/rodata_17641C]
       - [0x17700C, .rodata, main_objs/textures_Texture_2]
       - [0x177028, rodata, asm/rodata_176FA8]
       - [0x177948, .rodata, menu]

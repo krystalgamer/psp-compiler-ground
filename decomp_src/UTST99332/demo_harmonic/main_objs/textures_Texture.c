@@ -297,7 +297,28 @@ void textures::Texture::make_from_argb(int n, const unsigned char *src)
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture9makeDummyEii);
+void textures::Texture::makeDummy(int w, int h)
+{
+    make(w, h, (Format)1);
+    setFiltering((Filtering)1);
+    unsigned char *p = image.addr();
+    for (int y = 0; y < m.height; y++)
+        for (int x = 0; x < m.width; x++) {
+            float c = (x + y) & 1;
+            float r, g, b;
+            r = g = b = c;
+            if ((int)c == 0) {
+                r = x / (m.width - 1.0f);
+                g = y / (m.height - 1.0f);
+                b = 1.0f;
+            }
+            p[0] = (unsigned char)(r * 255);
+            p[1] = (unsigned char)(g * 255);
+            p[2] = (unsigned char)(b * 255);
+            p[3] = override_alpha_value;
+            p += 4;
+        }
+}
 
 void textures::Texture::make(int w, int h, Format f)
 {
