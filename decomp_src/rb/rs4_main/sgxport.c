@@ -17,6 +17,7 @@ void *SlotGetAt_848F0(int, const char *);
 void UnitFreeByID_8589C(void *, int, int);
 void UnitFree_85774(void *);
 void sgxVoFree(int);
+void FadeFreeAll(char *);
 extern int D_00113C94[];
 static inline char *PortListFirst(char *l) {
     char *n = *(char **)(l + 4);
@@ -42,6 +43,7 @@ static inline void SgxPNodeAddTail(SgxPNode *l, SgxPNode *n) {
     n->prev = t;
     n->next->prev = n;
 }
+static inline void SgxPNodeMove(SgxPNode *l, SgxPNode *n) { SgxPNodeUnlink(n); SgxPNodeAddTail(l, n); }
 
 int UnitMergeVoiceStatus(void *);
 void sgxPortCommand(int id, int *cmd);
@@ -132,7 +134,14 @@ int AttrGetValue(short *a, int idx) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", sgxPortAlloc);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", sgxPortFree);
+void sgxPortFree(int id) {
+    char *p = SlotGetAt_848F0(id, 0);
+    if (p == NULL) return;
+    sgxPortCommand(id, D_00113CC8);
+    FadeFreeAll(p + 0x28);
+    ((int *)p)[3] = 0;
+    SgxPNodeMove((SgxPNode *)&D_0011FEB8, (SgxPNode *)p);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", FadeAlloc);
 
@@ -173,7 +182,6 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", UnitTakenVoice);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", UnitVoiceAlloc);
 
-static inline void SgxPNodeMove(SgxPNode *l, SgxPNode *n) { SgxPNodeUnlink(n); SgxPNodeAddTail(l, n); }
 typedef struct { char pad[0x30]; struct { int a; short res; signed char nv; char p; short v[8]; } s; } UnitT;
 void UnitFree_85774(void *uv)
 {
