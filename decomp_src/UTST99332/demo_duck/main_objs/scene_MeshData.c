@@ -41,15 +41,13 @@ SCENE_LINKONCE_ORDER(
     SCENE_LINKONCE(_ZNK2sh6Vector5equalERKS0_f)
 );
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_MeshData", _ZN5scene8MeshDataC2Ev);
+scene::MeshData::MeshData() : _fB5(false), _fB6(false), _fB7(false)
+{
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_MeshData", _ZN5scene8MeshDataC1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_MeshData", _ZN5scene8MeshDataD2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_MeshData", _ZN5scene8MeshDataD1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_MeshData", _ZN5scene8MeshDataD0Ev);
+scene::MeshData::~MeshData()
+{
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_MeshData", _ZN5scene8MeshData6finishEv);
 

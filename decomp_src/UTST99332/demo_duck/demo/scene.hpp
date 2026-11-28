@@ -565,10 +565,11 @@ public:
     void draw(const TraversalVarStack &);
     void clear();
     struct ShlColors {
+        ShlColors() : _valid(false) {}
         std::vector<sh::VectorRGB> _c;
         bool _valid;
     } _shl;                                 /* 0x5C */
-    math::vector_xyzw _f6C[3];
+    sh::VectorRGB _f6C;                     /* 0x6C */
     std::vector<sgl::TexCoord> _t9C;        /* 0x9C */
     std::vector<sgl::TexCoord> _tA8;        /* 0xA8 */
     bool _fB4, _fB5, _fB6, _fB7;
