@@ -925,4 +925,20 @@ int NetIGetHostByName(char *req)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIGetClientBufferStatus);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetDNSLookupCallback);
+typedef struct { char s[16][16]; int count; int err; } DmeLookupOut;
+typedef struct { DmeLinkAddr addr[16]; int count; int err; } DmeLookupIn;
+extern DmeLookupOut D_00132DA8;
+int NetMapRtError();
+void NetDNSLookupCallback(DmeLookupIn *in)
+{
+    int i;
+    int e;
+
+    for (i = 0; i < 16; i++)
+        rt_comm_linkaddress_toext(D_00132DA8.s[i], in->addr[i]);
+    e = in->err;
+    D_00132DA8.count = in->count;
+    D_00132DA8.err = NetMapRtError(e);
+    ((void (*)(DmeLookupOut *))gpfLookupResponseCallback)(&D_00132DA8);
+    gpfLookupResponseCallback = NULL;
+}
