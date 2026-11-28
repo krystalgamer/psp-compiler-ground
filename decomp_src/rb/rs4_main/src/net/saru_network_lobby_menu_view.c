@@ -1,8 +1,6 @@
 /* lang: c++ */
 /* cflags: -Os -fno-merge-constants -fno-exceptions */
 /* strength reduction on: Update matches only with it (menu item pointer IV) */
-/* #pragma interface: the vtables, typeinfo and implicit destructors stay in the module's asm */
-#pragma interface "rodata"
 #include "common.h"
 
 struct tagTtrFontCntx;
@@ -31,8 +29,6 @@ void *resGetDatLocal(int a, int b);
 void _memFree(void *p, const char *file, int line);
 void *_memAllocMBL(unsigned int size, const char *file, int line);
 void profileGetRankingTtrStr(void *dst, unsigned short rank);
-extern const char D_00107FC4[];
-extern const char D_00107FD8[];
 
 float bxAnmGetFrame(bxAnm *a);
 float bxAnmGetEndFrame(bxAnm *a);
@@ -50,7 +46,7 @@ class TaskState;
 
 class Task {
 public:
-	static void operator delete(void *p) { _memFree(p, D_00107FC4, 25); }
+	static void operator delete(void *p) { _memFree(p, "src/ys/ys_object.h", 25); }
 	::Task *task_p;
 	TaskState *state_p;
 	static TaskState *_default_state_p;
@@ -66,6 +62,7 @@ public:
 
 class TaskState {
 public:
+	static void operator delete(void *p) { _memFree(p, "src/ys/ys_object.h", 25); }
 	virtual ~TaskState();
 	virtual void Kill(Task &t, ::Task *p, void *q, unsigned int n);
 	virtual void Free(Task &t, ::Task *p, void *q, unsigned int n);
@@ -103,8 +100,8 @@ public:
 
 }
 
-inline void *operator new[](unsigned int size) { return _memAllocMBL(size, D_00107FC4, 32); }
-inline void operator delete[](void *p) { if (p) _memFree(p, D_00107FC4, 37); }
+inline void *operator new[](unsigned int size) { return _memAllocMBL(size, "src/ys/ys_object.h", 32); }
+inline void operator delete[](void *p) { if (p) _memFree(p, "src/ys/ys_object.h", 37); }
 
 extern unsigned int Reset_ItemTexture_void_text[] __asm__("_ZZN7SaruNet19LobbyPlayerMenuView17Reset_ItemTextureEiE9void_text");
 
@@ -238,15 +235,13 @@ int LobbyPlayerMenuView::Reset_ItemTexture(int i)
 	param[0] = Reset_ItemTexture_void_text;
 	c.Remove_Context();
 	const ItemTextureResource &r = res_p[i];
-	c.font[0] = ttrFontInit(resGetDatLocal(group, r.id[0]), resGetDatLocal(1, 5), D_00107FD8, 1, param);
-	c.font[1] = ttrFontInit(resGetDatLocal(group, r.id[1]), resGetDatLocal(1, 5), D_00107FD8, 1, param);
+	c.font[0] = ttrFontInit(resGetDatLocal(group, r.id[0]), resGetDatLocal(1, 5), "MENU_TEXT_56", 1, param);
+	c.font[1] = ttrFontInit(resGetDatLocal(group, r.id[1]), resGetDatLocal(1, 5), "MENU_TEXT_56", 1, param);
 	return i;
 }
 
 }
 
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_menu_view", D_00107FC4); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_menu_view", D_00107FD8); }
 
 namespace SaruNet {
 
@@ -289,7 +284,7 @@ void LobbyPlayerMenuView::Update()
 				unsigned int buf[0x14];
 				void *param[1];
 				param[0] = item.name;
-				c.font[0] = ttrFontInit(resGetDatLocal(group, r.id[0]), resGetDatLocal(1, 5), D_00107FD8, 1, param);
+				c.font[0] = ttrFontInit(resGetDatLocal(group, r.id[0]), resGetDatLocal(1, 5), "MENU_TEXT_56", 1, param);
 				profileGetRankingTtrStr(buf, item.rank);
 				c.font[1] = ttrFontInit(resGetDatLocal(group, r.id[1]), resGetDatLocal(1, 5), (const char *)buf, 0, 0);
 			} else {
@@ -404,19 +399,3 @@ void LobbyPlayerMenuViewState::Close::Run(Ys::Task &t, ::Task *p, void *q, unsig
 }
 
 
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_menu_view", _ZN7SaruNet24LobbyPlayerMenuViewState4OpenD0Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_menu_view", _ZN7SaruNet24LobbyPlayerMenuViewState4OpenD1Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_menu_view", _ZN7SaruNet24LobbyPlayerMenuViewState5CloseD0Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_menu_view", _ZN7SaruNet24LobbyPlayerMenuViewState5CloseD1Ev); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_menu_view", _ZTVN7SaruNet24LobbyPlayerMenuViewState5CloseE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_menu_view", D_00107FF8); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_menu_view", _ZTVN7SaruNet24LobbyPlayerMenuViewState4OpenE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_menu_view", D_00108020); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_menu_view", _ZTVN7SaruNet19LobbyPlayerMenuViewE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_menu_view", D_00108048); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_menu_view", _ZTIN7SaruNet24LobbyPlayerMenuViewState4OpenE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_menu_view", _ZTIN7SaruNet24LobbyPlayerMenuViewState5CloseE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_menu_view", _ZTIN7SaruNet19LobbyPlayerMenuViewE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_menu_view", _ZTSN7SaruNet19LobbyPlayerMenuViewE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_menu_view", _ZTSN7SaruNet24LobbyPlayerMenuViewState5CloseE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_menu_view", _ZTSN7SaruNet24LobbyPlayerMenuViewState4OpenE); }
