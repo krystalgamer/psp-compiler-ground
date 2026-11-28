@@ -12,7 +12,7 @@ extern unsigned char D_0010B074;
 extern int gSgxDebugFlags;
 extern int gSgxPrefErr;
 M2C_UNK FreqAdd(int, M2C_UNK, int, int, M2C_UNK, M2C_UNK, M2C_UNK); /* extern */
-M2C_UNK FreqRemove();                               /* extern */
+void FreqRemove();                               /* extern */
 M2C_UNK FreqSync(int, M2C_UNK);                     /* extern */
 float sgxPspVoGetEnvelope(int);
 float sgxPspVoGetVolume(int, int);
@@ -232,7 +232,27 @@ void SasTerm(void) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", SasDecode);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", SasFlush);
+typedef struct { int f0; int set[13]; int cur[13]; } SasFl;
+int SasFlush(void) {
+    int i, ret;
+    sceKernelWaitSema(gWork_1207F0[0x468 / 4], 1, NULL);
+    for (i = 0; i < gWork_1207F0[0x480 / 4]; i++) {
+        SasFl *e = (SasFl *)(gWork_1207F0[0x47C / 4] + i * 0x6C);
+        int *d = e->cur, *s = e->set;
+        int m = s[0];
+        if (m == 0) continue;
+        {
+            int j;
+            for (j = 1; j < 13; j++)
+                if ((m >> j) & 1) d[j] = s[j];
+            d[0] |= m;
+            s[0] = 0;
+        }
+    }
+    ret = gWork_1207F0[0x488 / 4];
+    sceKernelSignalSema(gWork_1207F0[0x468 / 4], 1);
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", At3AllocAtracID);
 
@@ -254,7 +274,43 @@ void At3FreeAtracID(signed char *s)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", At3Init);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", At3Term);
+void At3Term(void) {
+    int i;
+    if (gWork_1207F0[0x438 / 4] == 0) return;
+    for (i = 0; i < gWork_1207F0[0x450 / 4]; i++) {
+        int *e = (int *)(gWork_1207F0[0x44C / 4] + i * 0x60B0);
+        if (e[4] >= 0) {
+            e[3] = 0;
+            sceKernelSignalSema(e[5], 1);
+            sceKernelWaitThreadEnd(e[4], NULL);
+            sceKernelDeleteThread(e[4]);
+            e[4] = -1;
+        }
+        At3FreeAtracID((signed char *)e);
+        FreqRemove(e[1]);
+        if (e[10] >= 0) {
+            FreqClose(e[1], e[7], e[10]);
+            ((char *)e)[0x3B] = 0;
+            e[10] = -1;
+        }
+        if (e[6] >= 0) {
+            sceKernelDeleteSema(e[6]);
+            e[6] = -1;
+        }
+        if (e[5] >= 0) {
+            sceKernelDeleteSema(e[5]);
+            e[5] = -1;
+        }
+    }
+    if (gWork_1207F0[0x44C / 4] != 0) {
+        sgxFree((int *)gWork_1207F0[0x44C / 4]);
+        gWork_1207F0[0x44C / 4] = 0;
+    }
+    if (gWork_1207F0[0x448 / 4] >= 0) {
+        sceKernelDeleteSema(gWork_1207F0[0x448 / 4]);
+        gWork_1207F0[0x448 / 4] = -1;
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -414,7 +470,38 @@ int sgxPspSetAt3DecodeCallback(int cb)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", FreqInit);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", FreqTerm);
+void FreqTerm(void) {
+    int *w = gWork_1207F0;
+    if (w[0x4A4 / 4] == 0) return;
+    if (w[0x4B4 / 4] >= 0) {
+        w[0x4B0 / 4] = 0;
+        sceKernelSignalSema(w[0x4B8 / 4], 1);
+        sceKernelWaitThreadEnd(w[0x4B4 / 4], NULL);
+        sceKernelDeleteThread(w[0x4B4 / 4]);
+        w[0x4B4 / 4] = -1;
+    }
+    if (w[0x4C4 / 4] >= 0) {
+        sceKernelDeleteEventFlag(w[0x4C4 / 4]);
+        w[0x4C4 / 4] = -1;
+    }
+    if (w[0x4C0 / 4] >= 0) {
+        sceKernelDeleteSema(w[0x4C0 / 4]);
+        w[0x4C0 / 4] = -1;
+    }
+    if (w[0x4BC / 4] >= 0) {
+        sceKernelDeleteSema(w[0x4BC / 4]);
+        w[0x4BC / 4] = -1;
+    }
+    if (w[0x4B8 / 4] >= 0) {
+        sceKernelDeleteSema(w[0x4B8 / 4]);
+        w[0x4B8 / 4] = -1;
+    }
+    if (w[0x4C8 / 4] != 0) {
+        sgxFree((int *)w[0x4C8 / 4]);
+        w[0x4C8 / 4] = 0;
+    }
+    { int *s = &w[0x4DC / 4]; __builtin_memset(s, 0, 32); }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
