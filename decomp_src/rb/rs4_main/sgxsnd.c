@@ -25,8 +25,8 @@ void sgxSndSetStrBufCB(int, int, int, int);
 extern const char D_0010A504[];
 extern const char D_0010A50C[];
 extern int D_0011FCAC;
-M2C_UNK sgxDI();                                    /* extern */
-M2C_UNK sgxEI();                                    /* extern */
+void sgxDI(void);
+void sgxEI(void);
 int sgxListEnumID(M2C_UNK *, M2C_UNK);              /* extern */
 extern unsigned char D_0011FC98;
 
@@ -501,7 +501,22 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndRelease);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndPause);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndSetVolume);
+extern const char D_0010A528[];
+void sgxSndSetVolume(int id, int l, int r)
+{
+    char *s = SlotGetAt_7DD48(id, D_0010A528);
+    int a, b;
+    if (s == NULL) return;
+    l = (l < -128 ? -128 : (l > 128 ? 128 : l));
+    r = (r < -128 ? -128 : (r > 128 ? 128 : r));
+    a = ConvVol12(l);
+    b = ConvVol12(r);
+    if (*(short *)(s + 0x20) != a || *(short *)(s + 0x22) != b) {
+        *(short *)(s + 0x20) = a;
+        *(short *)(s + 0x22) = b;
+        SlotUpdateVolume(s, 1);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndSetPr2Pan);
 
@@ -614,7 +629,18 @@ int sgxSndGetName(int id)
     return M2C_FIELD(s, int *, 0x90);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndGetPlayInfo);
+extern const char D_0010A5F8[];
+int sgxSndGetPlayInfo(int id, int *a, int *b, int *c, int *d, int *e)
+{
+    char *s = SlotGetAt_7DD48(id, D_0010A5F8);
+    if (s == NULL) return 0;
+    if (a) *a = *(signed char *)(s + 0x10);
+    if (b) *b = *(short *)(s + 0x12);
+    if (c) *c = *(int *)(s + 0x14);
+    if (d) *d = *(int *)(s + 0x18);
+    if (e) *e = *(signed char *)(s + 0x11);
+    return 1;
+}
 
 extern const char D_0010A604[];
 void *sgxSndSetMarkerCallback(int id, void *cb) {
@@ -733,7 +759,23 @@ int sgxSndGetBank(int id, int idx) {
     return -1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndSetChannelVolume);
+#define CLAMP(x, lo, hi) ((x) < (lo) ? (lo) : ((x) > (hi) ? (hi) : (x)))
+extern const char D_0010A6F8[], D_0010A70C[];
+void sgxSndSetChannelVolume(int id, unsigned int ch, int vol)
+{
+    char *s = SlotGetAt_7DD48(id, D_0010A6F8);
+    int v;
+    if (s == NULL) return;
+    if (ch >= 16) {
+        SGX_ERR(0x78F, D_0010A70C, ch);
+        return;
+    }
+    v = CLAMP(vol, 0, 128);
+    *(unsigned char *)(ch + (int)s + 0xD0) = v;
+    sgxDI();
+    { int t = *(short *)(s + 0x38); *(short *)(s + 0x38) = t | 0x10; }
+    sgxEI();
+}
 
 extern const char D_0010A728[];
 extern const char D_0010A70C[];
@@ -853,4 +895,17 @@ int sgxSndGetFreeCount(void) {
     return temp_s0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndEnumUseID);
+int sgxSndEnumUseID(int *out)
+{
+    int n = 0;
+    char *p;
+    sgxDI();
+    for (p = (*(int *)((char *)D_0011FC8C + 8) < 0) ? NULL : D_0011FC8C; p != NULL; p = SndListFirst2(p)) {
+        if (SlotGetAt_7DD48(*(int *)(p + 8), NULL)) {
+            if (out) out[n] = *(int *)(p + 8);
+            n++;
+        }
+    }
+    sgxEI();
+    return n;
+}
