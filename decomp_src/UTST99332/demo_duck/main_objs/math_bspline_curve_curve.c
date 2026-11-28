@@ -40,7 +40,7 @@ common::t_array2d<math::vector_xyzw> *math::bspline::surface::net()
     return _f0;
 }
 
-void *math::bspline::surface::ctrlnet()
+common::t_array2d<math::vector_xyzw> *math::bspline::surface::ctrlnet()
 {
     return &_f4;
 }

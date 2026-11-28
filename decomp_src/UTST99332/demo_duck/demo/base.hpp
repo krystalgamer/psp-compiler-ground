@@ -455,7 +455,7 @@ class surface {
 public:
     surface(int, int, int);
     common::t_array2d<vector_xyzw> *net();
-    void *ctrlnet();
+    common::t_array2d<vector_xyzw> *ctrlnet();
     void setNet(common::t_array2d<vector_xyzw> *);
     void setType(int);
     void globalEval();
