@@ -514,12 +514,16 @@ public:
 class Stripper {
 public:
     struct stripper_triangle {
+        stripper_triangle() : _flags(0), _f10(1), _f14(-1), _untagged(0) { _adj[0] = -1; _adj[1] = -1; _adj[2] = -1; }
         int _adj[3];                /* neighbour triangles */
         unsigned char _flags;       /* 0x0C */
         int _f10, _f14;
         int _untagged;              /* 0x18 */
         int _heap_id;               /* 0x1C */
     };
+    void adjacent_check(const char *);
+    void run();
+    void build_path(int, int, const int *);
     void undo();
     void collect_triangles();
     void assert_valid_vertex_index(int);

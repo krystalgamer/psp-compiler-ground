@@ -34,7 +34,19 @@ ST_PRETTY(cmp_name, "15cmp_orientationEPiS1_");
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Stripper", _Z41__static_initialization_and_destruction_0ii_CF2FC);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Stripper", _ZN3sgl8Stripper14adjacent_checkEPKc);
+extern const char D_00171200[];     /* "get_common_edge( ti, ati ) != -1" */
+ST_PRETTY(adjc_name, "14adjacent_checkEPKc");
+void sgl::Stripper::adjacent_check(const char *msg)
+{
+    for (unsigned int ti = 0; ti < _mesh.getTriangles().size(); ti++) {
+        stripper_triangle &t = _tris[ti];
+        for (int i = 0; i != 3; i++) {
+            int ati = t._adj[i & 3];
+            if (ati != -1)
+                ST_ASSERT(get_common_edge(ti, ati) != -1, D_00171200, adjc_name, 37);
+        }
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Stripper", _ZN3sgl8Stripper3runEv);
 
@@ -68,7 +80,22 @@ void sgl::Stripper::assert_valid_strip_index(int i)
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Stripper", _ZN3sgl8Stripper17collect_trianglesEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Stripper", _ZN3sgl8Stripper15get_common_edgeEii);
+int sgl::Stripper::get_common_edge(int t1, int t2)
+{
+    if (t1 == -1)
+        return -1;
+    if (t2 == -1)
+        return -1;
+    int e[3];
+    _mesh.getTriangleEdgeIndex(t1, e[0], e[1], e[2]);
+    for (int i = 0; i != 3; i++) {
+        int ei = e[i];
+        ST_ASSERT(ei != -1, D_00171558, gce_name, 419);
+        if (ei != -1 && (t2 == _mesh.getEdgeTriangleIndex(ei, 0) || t2 == _mesh.getEdgeTriangleIndex(ei, 1)))
+            return ei;
+    }
+    return -1;
+}
 
 int sgl::Stripper::get_opposite_vertex(int t, int e)
 {
@@ -132,7 +159,58 @@ void sgl::Stripper::path_tag_triangle(int t)
     _heap.remove(_heap._index[tr._heap_id]);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Stripper", _ZN3sgl8Stripper10build_pathEiiPKi);
+extern const char D_001715F0[];     /* "next_edge != -1" */
+extern const char D_00171600[];     /* "get_common_edge( next_triangle, current_triangle ) != -1" */
+extern const char D_0017163C[];     /* "! _triangles_info[next_triangle].istagged()" */
+ST_PRETTY(build_path_name, "10build_pathEiiPKi");
+void sgl::Stripper::build_path(int current_triangle, int prev_edge, const int *edges)
+{
+    if (current_triangle == -1)
+        return;
+    assert_valid_triangle_index(current_triangle);
+    path_tag_triangle(current_triangle);
+    _tris[current_triangle]._flags |= 4;
+    for (int i = 0; i < 3; i++) {
+        int next_edge = _mesh.getTriangleEdgeIndex(current_triangle, i);
+        ST_ASSERT(next_edge != -1, D_001715F0, build_path_name, 575);
+        if (next_edge == prev_edge)
+            continue;
+        int next_triangle = _tris[current_triangle]._adj[i & 3];
+        if (next_triangle == -1)
+            continue;
+        ST_ASSERT(get_common_edge(next_triangle, current_triangle) != -1, D_00171600, build_path_name, 584);
+        if (_tris[next_triangle]._flags & 1)
+            continue;
+        assert_valid_triangle_index(next_triangle);
+        int a = _mesh.getEdgeVertexIndex(next_edge, 0);
+        int b = _mesh.getEdgeVertexIndex(next_edge, 1);
+        int count = 0;
+        for (int j = 0; j < 3; j++) {
+            int e = edges[j];
+            if (e != -1) {
+                int c = _mesh.getEdgeVertexIndex(e, 0);
+                int d = _mesh.getEdgeVertexIndex(e, 1);
+                if (a == c)
+                    count++;
+                else if (a == d)
+                    count++;
+                if (b == c)
+                    count++;
+                else if (b == d)
+                    count++;
+            }
+        }
+        if (count >= 3)
+            continue;
+        ST_ASSERT(!(_tris[next_triangle]._flags & 1), D_0017163C, build_path_name, 617);
+        _tris[next_triangle]._f14 = current_triangle;
+        _tris[next_triangle]._f10 = _tris[current_triangle]._f10 + 1;
+        ST_ASSERT(get_common_edge(next_triangle, current_triangle) != -1, D_00171600, build_path_name, 625);
+        _tris[current_triangle]._flags &= 3;
+        int ne[3] = { edges[2], prev_edge, next_edge };
+        build_path(next_triangle, next_edge, ne);
+    }
+}
 
 void sgl::Stripper::reset_flags()
 {
@@ -159,7 +237,50 @@ void sgl::Stripper::add_index(int *pos, int vertex_index, int t)
     (*pos)++;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Stripper", _ZN3sgl8Stripper9read_pathEiPi);
+extern const char D_0017170C[];     /* "edge != -1" */
+ST_PRETTY(read_path_name, "9read_pathEiPi");
+void sgl::Stripper::read_path(int t, int *pos)
+{
+    bool first = true;
+    int reverse = 0;
+    if (((_tris[t]._flags >> 2) & 1) == 0)
+        return;
+    while (t != -1) {
+        _tris[t]._flags |= 1;
+        int next = _tris[t]._f14;
+        int edge = get_common_edge(t, next);
+        int ov = get_opposite_vertex(next, edge);
+        if (next != -1)
+            ST_ASSERT(edge != -1, D_0017170C, read_path_name, 711);
+        if (first) {
+            if (next == -1) {
+                add_index(pos, _mesh.getTriangleVertexIndex(t, 0), t);
+                add_index(pos, _mesh.getTriangleVertexIndex(t, 1), t);
+                add_index(pos, _mesh.getTriangleVertexIndex(t, 2), t);
+                add_index(pos, -1, t);
+                return;
+            }
+            int nn = _tris[next]._f14;
+            int v[3] = { get_opposite_vertex(t, edge), _mesh.getEdgeVertexIndex(edge, 0), _mesh.getEdgeVertexIndex(edge, 1) };
+            if (v[1] == _mesh.getTriangleVertexIndex(nn, 0) || v[1] == _mesh.getTriangleVertexIndex(nn, 1) || v[1] == _mesh.getTriangleVertexIndex(nn, 2)) {
+                v[1] ^= v[2];
+                v[2] ^= v[1];
+                v[1] ^= v[2];
+            }
+            add_index(pos, v[0], t);
+            add_index(pos, v[1], t);
+            add_index(pos, v[2], t);
+            int w[3];
+            _mesh.getTriangleVertexIndex(t, w[0], w[1], w[2]);
+            reverse = cmp_orientation(v, w);
+            first = false;
+                    }
+        add_index(pos, ov, next);
+        t = next;
+    }
+    if (reverse)
+        reverse_strip(*pos);
+}
 
 void sgl::Stripper::feed_strips()
 {
@@ -206,7 +327,61 @@ void sgl::Stripper::reverse_strip(int end)
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Stripper", _ZN3sgl8Stripper9scan_backEi);
+extern const char D_00171A10[];     /* "_triangles_info[index].isleaf()" */
+extern const char D_00171AE0[];
+extern const char D_00171ABC[];
+extern const char D_00171898[];
+extern const char D_001718B8[];
+extern const char D_001718F4[];
+extern const char D_00171918[];
+extern const char D_0017193C[];
+extern const char D_00171A4C[];
+extern const char D_00171A80[];
+extern const char D_00171A30[];
+extern const char D_001719C0[];
+extern const char D_0017199C[];
+extern const char D_00171974[];
+ST_PRETTY(scan_back_name, "9scan_backEi");
+#define ST_ASSERT_MSG(c, text, line, msg) SGL_ASSERT(c, D_001711F4, text, D_001711D8, scan_back_name, line, msg)
+static inline bool st_isleaf(const sgl::Stripper::stripper_triangle &t) { return (t._flags >> 2) & 1; }
+static inline bool st_istagged(const sgl::Stripper::stripper_triangle &t) { return t._flags & 1; }
+int sgl::Stripper::scan_back(int leaf)
+{
+    int scan = 0;
+    int index = leaf;
+    int len = 0;
+    ST_ASSERT_MSG(st_isleaf(_tris[index]), D_00171A10, 910, D_00171AE0);
+    ST_ASSERT_MSG(!st_istagged(_tris[index]), D_00171ABC, 912, D_00171898);
+    while (index != -1) {
+        len++;
+        scan++;
+        ST_ASSERT_MSG(!(index != leaf && st_istagged(_tris[index])), D_001718B8, 924, D_001718F4);
+        _tris[index]._flags |= 1;
+        int father = _tris[index]._f14;
+        if (father != -1) {
+        ST_ASSERT_MSG(!st_isleaf(_tris[father]), D_00171918, 935, D_0017193C);
+        if (st_istagged(_tris[father])) {
+            _tris[index]._f14 = -1;
+            index = leaf;
+            ST_ASSERT_MSG(_tris[index]._heap_id != -1, D_00171A4C, 953, D_00171A80);
+            ST_ASSERT_MSG(st_isleaf(_tris[index]), D_00171A10, 958, D_00171A30);
+            while (index != -1) {
+                stripper_triangle &tr = _tris[index];
+                index = tr._f14;
+                tr._f10 = len;
+                len--;
+            }
+            ST_ASSERT_MSG(_heap._e[0].id == (unsigned int)_tris[leaf]._heap_id, D_001719C0, 972, D_001711F0);
+            _heap.pop();
+            return scan;
+        }
+        }
+        index = father;
+    }
+    ST_ASSERT_MSG(scan == _tris[leaf]._f10, D_0017199C, 987, D_00171974);
+    _heap.remove(_heap._index[_tris[leaf]._heap_id]);
+    return scan;
+}
 
 void sgl::Stripper::fix_cullface()
 {
