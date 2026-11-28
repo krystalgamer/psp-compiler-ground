@@ -121,7 +121,29 @@ void rt_comm_shutdown(void)
     (&gEchoInfo)[2] = 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_update);
+int rt_comm_check_for_query_response(); int rt_comm_resend_lookup_query();
+int rt_comm_update(void)
+{
+    if (gnInitCount_1353F4 != 0) {
+    {
+        int r = rt_comm_resend_lookup_query(gLookupData);
+        if (r != 0) return r;
+    }
+    {
+        int r = COMMIF(0x4C)();
+        if (r != 0) return r;
+    }
+    {
+        int r = rt_comm_check_for_query_response(gLookupData);
+        if (r != 0) return r;
+    }
+    if (gEchoInfo != 0) {
+        int r = rt_comm_echo_update();
+        if (r != 0) return r;
+    }
+    }
+    return 0;
+}
 
 void rt_comm_set_default_options(int *o)
 {
