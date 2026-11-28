@@ -21,11 +21,41 @@ void RemapOnMemorySub(int *dst, int *a, int *b, int w) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", RemapOnMemoryHalf);
+void RemapOnMemoryHalf(int *pix, int h, int w, int *tmp)
+{
+	int y;
+	unsigned int j;
+	for (y = 0; y < h; y += 8) {
+		memcpy(tmp, pix, w * 4 * sizeof(int));
+		RemapOnMemorySub(pix, tmp, pix + w * 4, w);
+		for (j = 0; j < 4; j++)
+			memcpy(tmp + j * w, pix + w * 4 + w / 2 + j * w, w * sizeof(int) / 2);
+		RemapOnMemorySub(pix + w * 4, tmp + w / 2, tmp, w);
+		pix += w * 8;
+	}
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", RemapOnMemoryFull);
+void RemapOnMemoryFull(int *pix, int h, int w, int *tmp)
+{
+	int y, i, off = 0;
+	for (y = 0; y < h; y += 8) {
+		for (i = 0; i < w * 8; i += 4) {
+			int *d = (int *)(((i % w) * 2 + i / w) * 16 + (int)tmp);
+			d[0] = pix[off + i + 0];
+			d[1] = pix[off + i + 1];
+			d[2] = pix[off + i + 2];
+			d[3] = pix[off + i + 3];
+		}
+		memcpy(pix + off, tmp, i * 4);
+		off += i;
+	}
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", RemapOnStack);
+void RemapOnStack(void (*fn)(int, int, int, void *), int a, int b, int c)
+{
+	char buf[0x2000];
+	fn(a, b, c, buf);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", I3dPicture__SetupFromTim2Sub_PSP);
 
