@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""autodecomp.py TARGET MODULE [UNIT...] [--write]
+"""autodecomp.py TARGET MODULE [UNIT...]
 
 For each function of the given (default: all non-newlib, non-libgcc C)
 units, take m2c's draft, compile it with the unit's compiler at -O2 (then
--Os) and compare with the original.  Reports matches; with --write, puts
-the matching functions into decomp_src (replacing their INCLUDE_ASM).
+-Os) and compare with the original.  Reports matches only; tools/autowrite.py
+installs them (and reverts what breaks the module build).
 """
 import argparse
 import re
@@ -129,7 +129,6 @@ def main():
     ap.add_argument("target")
     ap.add_argument("module")
     ap.add_argument("units", nargs="*")
-    ap.add_argument("--write", action="store_true")
     ap.add_argument("--opts", action="append", help="optimization option set to try (default -O2, -Os)")
     a = ap.parse_args()
     mod = objcmp.module_funcs(a.target, a.module)
