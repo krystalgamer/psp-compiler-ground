@@ -1,5 +1,6 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
+#include <stdarg.h>
 #include "m2c_macros.h"
 #ifndef NULL
 #define NULL ((void *)0)
@@ -417,4 +418,24 @@ int *textMid(int *s, int start, int len)
 	return p;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/text", textPrintf);
+int vsprintf(char *, const char *, va_list);
+extern char D_000FB3EC[];
+int textPrintf(int *fmt, ...)
+{
+	char buf[0x200];
+	va_list ap;
+	char *s;
+
+	if (fmt != NULL) {
+		va_start(ap, fmt);
+		s = textUCS4toASCII(fmt);
+		buf[0x1FF] = 0;
+		vsprintf(buf, s, ap);
+		if (buf[0x1FF] != 0)
+			__asm__ volatile("sync\n\tbreak");
+		consPrintf(D_000FB3EC, buf);
+		_memFree(s, &D_000FB408, 0x4B9);
+		va_end(ap);
+	}
+	return 1;
+}
