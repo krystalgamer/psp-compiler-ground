@@ -474,8 +474,17 @@ int MenuScreenPanel2::Set_SelectItem(int n)
 	return n;
 }
 
-extern "C" {
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_screen_panel", _ZN2Ys16MenuScreenPanel218Receive_RunMessageEP4TaskPvj);
+void MenuScreenPanel2::Receive_RunMessage(::Task *t, void *p, unsigned int n)
+{
+	Run_Common();
+	VerticalMenu *m = menu_p;
+	if (m->Run())
+		Close();
+	else {
+		int id = se;
+		if (m->Is_Change())
+			Sound::Play_SE(id);
+	}
 }
 
 
