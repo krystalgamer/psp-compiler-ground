@@ -230,7 +230,25 @@ int rt_comm_platform_send_echo(int s, int a, RtLinkAddr addr, int d)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_socket/rt_comm_platform", rt_comm_platform_receive);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_socket/rt_comm_platform", rt_comm_platform_receive_from);
+int rt_socket_read_data_udp();
+int rt_comm_platform_receive_from(int s, int flags, int *len, void *buf, int size, int *from)
+{
+    int addr = 0;
+    int n;
+    int r;
+
+    if (gbInitialized_1313FC != 1) return 5;
+    if (s < 0) return 2;
+    if (len == NULL) return 2;
+    if (buf == NULL) return 2;
+    if (from == NULL) return 2;
+    *from = 0;
+    r = rt_socket_read_data_udp(s, buf, size, &addr, flags, &n);
+    if (r != 0 && r != 0xCF0E) return r;
+    *len = n;
+    *from = addr;
+    return 0;
+}
 
 int rt_comm_platform_receive_echo(int s, int a, int b, int d)
 {
@@ -272,7 +290,20 @@ int rt_comm_platform_get_host_by_name(const char *name, int *ip)
     return rt_socket_get_host_by_name(ip, name);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_socket/rt_comm_platform", rt_comm_platform_get_remote_ip);
+int rt_comm_platform_get_remote_ip(int s, int *ip)
+{
+    unsigned int i;
+    int r;
+
+    if ((unsigned int)(s + 1) < 2) return 2;
+    if (s >= 0) return 2;
+    i = s + 0x101;
+    r = rt_comm_platform_get_listen_socket(&s);
+    if (r != 0) return r;
+    if (s == -1) return 2;
+    *ip = gaListenSocket[i].ip;
+    return 0;
+}
 
 int rt_comm_platform_display_state(void) {
     return 0;
