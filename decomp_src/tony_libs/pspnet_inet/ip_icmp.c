@@ -3,15 +3,6 @@
 #include "inetlib.h"
 #include <stdarg.h>
 
-#define icmpreturndatabytes D_0002E830
-#define icmpmaskrepl D_0002EC04
-#define icmpstat D_000300A0
-#define icmpsrc D_0002E834
-#define icmpdst D_0002E844
-#define icmpgw D_0002E854
-#define icmperrppslim D_0002E7A8
-#define icmp_mtudisc_callbacks D_0002EC08
-#define ip_mtudisc_timeout_q D_0002EBC8
 #define mtutab D_0002E89C
 #define mtu_table D_0002E864
 extern u_int mtu_table[14];

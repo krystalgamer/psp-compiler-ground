@@ -8,34 +8,13 @@ struct ip_srcrt_s {
 	char	srcopt[IPOPT_OFFSET + 1];	/* OPTVAL, OLEN and OFFSET */
 	struct	in_addr route[MAX_IPOPTLEN/sizeof(struct in_addr)];
 };
-#define ip_nhops D_0002EBD0
-#define ip_srcrt D_0002EBD4
-#define ipforwarding D_0002EBC0
-#define ipsendredirects D_0002E7AC
-#define ip_forwsrcrt D_0002E7B4
-#define ip_allowsrcrt D_0002E7B8
-#define ip_directedbcast D_0002EBC4
-#define ip_mtudisc_timeout D_0002E7C0
-#define ipqmaxlen D_0002E7C4
-#define ip_maxfragpackets D_0002E7C8
-#define ip_nfragpackets D_0002EBCC
-#define ip_mtudisc_timeout_q D_0002EBC8
-#define ipq_list D_00030098
-#define ipq_locked D_0002FF94
-#define ipaddr D_0002E7CC
-#define ipforward_rt D_0002FF98
-#define in_ifaddrhash D_0002F540
-#define anonportmin D_0002E5EC
-#define anonportmax D_0002E5F0
-#define lowportmin D_0002E5F4
-#define lowportmax D_0002E5F8
 extern int ip_nhops;
 extern struct ip_srcrt_s ip_srcrt;
 extern int ipforwarding, ipsendredirects, ip_forwsrcrt, ip_allowsrcrt, ip_directedbcast;
 extern int ipqmaxlen, ip_maxfragpackets, ip_nfragpackets;
 extern u_int ip_mtudisc_timeout;
 extern struct rttimer_queue *ip_mtudisc_timeout_q;
-extern struct ipqhead ipq_list;
+extern struct ipqhead ipq;
 extern int ipq_locked;
 extern struct sockaddr_in ipaddr __attribute__((aligned(4)));
 extern struct route ipforward_rt __attribute__((aligned(4)));
@@ -318,7 +297,7 @@ ours:
 		 * of this datagram.
 		 */
 		IPQ_LOCK();
-		for (fp = ipq_list.lh_first; fp != NULL; fp = fp->ipq_q.le_next)
+		for (fp = ipq.lh_first; fp != NULL; fp = fp->ipq_q.le_next)
 			if (ip->ip_id == fp->ipq_id &&
 			    in_hosteq(ip->ip_src, fp->ipq_src) &&
 			    in_hosteq(ip->ip_dst, fp->ipq_dst) &&
@@ -436,7 +415,7 @@ ip_reass(struct ipqent *ipqe, struct ipq *fp)
 		fp = (struct ipq *)sceNetMallocInternal(sizeof (struct ipq));
 		if (fp == NULL)
 			goto dropfrag;
-		LIST_INSERT_HEAD(&ipq_list, fp, ipq_q);
+		LIST_INSERT_HEAD(&ipq, fp, ipq_q);
 		fp->ipq_ttl = IPFRAGTTL;
 		fp->ipq_p = ipqe->ipqe_ip->ip_p;
 		fp->ipq_id = ipqe->ipqe_ip->ip_id;
@@ -600,7 +579,7 @@ ip_slowtimo(void)
 	int s = _sce_pspnet_spllock();
 
 	IPQ_LOCK();
-	for (fp = ipq_list.lh_first; fp != NULL; fp = nfp) {
+	for (fp = ipq.lh_first; fp != NULL; fp = nfp) {
 		nfp = fp->ipq_q.le_next;
 		if (--fp->ipq_ttl == 0) {
 			ipstat.ips_fragtimeout++;
@@ -615,8 +594,8 @@ ip_slowtimo(void)
 	if (ip_maxfragpackets < 0)
 		;
 	else {
-		while (ip_nfragpackets > ip_maxfragpackets && ipq_list.lh_first)
-			ip_freef(ipq_list.lh_first);
+		while (ip_nfragpackets > ip_maxfragpackets && ipq.lh_first)
+			ip_freef(ipq.lh_first);
 	}
 	IPQ_UNLOCK();
 	_sce_pspnet_splunlock(s);
@@ -636,9 +615,9 @@ ip_drain(void)
 	if (ipq_lock_try() == 0)
 		return;
 
-	while (ipq_list.lh_first != NULL) {
+	while (ipq.lh_first != NULL) {
 		ipstat.ips_fragdropped++;
-		ip_freef(ipq_list.lh_first);
+		ip_freef(ipq.lh_first);
 	}
 
 	IPQ_UNLOCK();

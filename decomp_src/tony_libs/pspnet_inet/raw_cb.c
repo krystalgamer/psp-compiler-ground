@@ -15,7 +15,7 @@ raw_attach(struct socket *so, int proto)
 	rp->rcb_socket = so;
 	rp->rcb_proto.sp_family = so->so_proto->pr_domain->dom_family;
 	rp->rcb_proto.sp_protocol = proto;
-	LIST_INSERT_HEAD(&rawcb_list, rp, rcb_list);
+	LIST_INSERT_HEAD(&rawcb, rp, rcb_list);
 	return (0);
 }
 

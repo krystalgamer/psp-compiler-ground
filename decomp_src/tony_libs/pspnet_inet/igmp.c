@@ -3,9 +3,6 @@
 #include "inetlib.h"
 #include <stdarg.h>
 
-#define igmp_timers_are_running D_00030210
-#define rti_head D_0002EC0C
-#define igmpstat D_00030218
 extern int igmp_timers_are_running;
 extern struct router_info *rti_head;
 extern struct igmpstat_t igmpstat;

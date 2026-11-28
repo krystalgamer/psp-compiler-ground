@@ -57,7 +57,6 @@ struct udpcbstat {
 	u_short lport;
 	u_short fport;
 };
-#define udbtable D_000302C8
 extern struct inpcbtable udbtable;
 int sceNetInetSend(int s, const void *buf, size_t len, int flags);
 int sceNetInetRecv(int s, void *buf, size_t len, int flags);

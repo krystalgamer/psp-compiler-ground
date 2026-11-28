@@ -23,8 +23,6 @@
 #define pppoe_send_padi func_0002BE00
 #define pppoe_get_mbuf func_0002C0F4
 
-#define ppoediscinq D_0002EC50
-#define ppoeinq D_0002EC64
 #define pppoe_softc0 D_0002EC78
 
 #define splnet _sce_pspnet_spllock

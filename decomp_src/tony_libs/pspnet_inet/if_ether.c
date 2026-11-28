@@ -10,25 +10,9 @@
 #define R_Malloc(p, t, n) (p = (t) sceNetMallocInternal((unsigned int)(n)))
 #define Free(p) sceNetFreeInternal((caddr_t)p)
 
-#define arpt_prune D_0002E540
-#define arpt_keep D_0002E544
-#define arpt_down D_0002E548
-#define arp_maxtries D_0002E560
-#define useloopback D_0002E564
-#define llinfo_arp_head D_0002F504
-#define arp_inuse D_0002F50C
-#define arp_allocated D_0002F500
-#define arp_locked D_0002F508
-#define arptimer_ch D_0002F514
-#define arpinit_done D_0002EB88
-#define myip_initialized D_0002EB8C
-#define revarp_in_progress D_0002EB90
-#define myip_ifp D_0002EB94
-#define myip D_0002EBA8
-#define srv_ip D_0002EBAC
 #define null_sdl D_0002E5C8
 extern int arpt_prune, arpt_keep, arpt_down, arp_maxtries, useloopback;
-extern LIST_HEAD(, llinfo_arp) llinfo_arp_head;
+extern LIST_HEAD(, llinfo_arp) llinfo_arp;
 extern int arp_inuse, arp_allocated, arp_locked, D_0002F510;
 extern struct callout arptimer_ch;
 extern int arpinit_done, myip_initialized, revarp_in_progress;
@@ -135,7 +119,7 @@ arp_rtrequest(int req, struct rtentry *rt, struct sockaddr *sa)
 		Bzero(la, allocsize);
 		la->la_rt = rt;
 		rt->rt_flags |= RTF_LLINFO;
-		LIST_INSERT_HEAD(&llinfo_arp_head, la, la_list);
+		LIST_INSERT_HEAD(&llinfo_arp, la, la_list);
 		if (in_hosteq(SIN(rt_key(rt))->sin_addr,
 		    (IA_SIN(rt->rt_ifa))->sin_addr)) {
 			rt->rt_expire = 0;
@@ -489,7 +473,7 @@ arp_drain(void)
 	if (arp_lock_try(0) == 0)
 		return;
 
-	for (la = llinfo_arp_head.lh_first; la != 0; la = nla) {
+	for (la = llinfo_arp.lh_first; la != 0; la = nla) {
 		nla = la->la_list.le_next;
 
 		mold = la->la_hold;
@@ -614,7 +598,7 @@ arptimer(void *arg)
 	}
 
 	callout_reset(&arptimer_ch, arpt_prune * hz, arptimer, NULL);
-	for (la = llinfo_arp_head.lh_first; la != 0; la = nla) {
+	for (la = llinfo_arp.lh_first; la != 0; la = nla) {
 		struct rtentry *rt = la->la_rt;
 
 		nla = la->la_list.le_next;
@@ -637,7 +621,7 @@ arp_init(void)
 	arp_locked = 0;
 	arpinit_done = 0;
 	arpintrq.ifq_head = 0;
-	llinfo_arp_head.lh_first = 0;
+	llinfo_arp.lh_first = 0;
 	myip_initialized = 0;
 	revarp_in_progress = 0;
 	myip_ifp = 0;

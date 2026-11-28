@@ -14,7 +14,7 @@ int func_00001E30(void)
 	D_0002F29C = 0;
 	D_0002F2E8 = 0;
 	domains = NULL;
-	ADDDOMAIN(D_0002E768);
+	ADDDOMAIN(inetdomain);
 	ADDDOMAIN(D_0002E59C);
 	ADDDOMAIN(D_0002E50C);
 	for (dp = domains; dp; dp = dp->dom_next) {

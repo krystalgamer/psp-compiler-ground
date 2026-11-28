@@ -67,12 +67,6 @@
 #define sppp_chap_scr func_0002A67C
 #define sppp_to_event func_0002A684
 
-#define lcp D_0002DEC0
-#define ipcp D_0002DF04
-#define pap D_0002DF44
-#define chap D_0002DF88
-#define cps D_0002EAA0
-#define keepalive_ch D_0002EC2C
 
 #include "if_spppvar.h"
 

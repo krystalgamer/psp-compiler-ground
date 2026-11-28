@@ -3,12 +3,6 @@
 #include "inetlib.h"
 #include <stdarg.h>
 
-#define udpcksum D_0002E8D4
-#define udbhashsize D_0002E8D8
-#define udp_sendspace D_0002E8DC
-#define udp_recvspace D_0002E8E0
-#define udpstat D_00030280
-#define udbtable D_000302C8
 extern int udpcksum, udbhashsize, udp_sendspace, udp_recvspace;
 extern struct udpstat_t udpstat;
 extern struct inpcbtable udbtable;

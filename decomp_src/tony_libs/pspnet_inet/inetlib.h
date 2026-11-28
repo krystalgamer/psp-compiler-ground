@@ -490,7 +490,6 @@ struct protosw {
 	int (*pr_sysctl)(int *, u_int, void *, size_t *, void *, size_t);
 };
 
-#define domains D_0002EB50
 extern struct domain *domains;
 
 /* callouts (pspnet) */
@@ -519,7 +518,7 @@ void sceNetIfhandle_lib_62B20015(int max_linkhdr, int max_protohdr, int max_hdr,
 #define SOCK_STREAM 1
 #define SOCK_DGRAM 2
 #define SOCK_RAW 3
-extern struct domain D_0002E50C, D_0002E59C, D_0002E768;
+extern struct domain D_0002E50C, D_0002E59C, inetdomain;
 extern int D_0002F29C, D_0002F2E8;
 extern struct callout D_0002F2A0, D_0002F2C4;
 struct domain *func_00001FAC(int family);
@@ -1099,7 +1098,6 @@ void pfctlinput(int cmd, struct sockaddr *sa);
 #define soshutdown func_00004600
 #define sohasoutofband func_000046A8
 #define soioctl func_000046C4
-#define somaxconn D_0002E480
 extern int somaxconn;
 
 int socreate(int dom, struct socket **aso, int type, int proto);
@@ -1442,7 +1440,6 @@ struct in_ifaddr {
 #define ia_broadaddr ia_dstaddr
 #define ifatoia(ifa) ((struct in_ifaddr *)(ifa))
 TAILQ_HEAD(in_ifaddrhead_t, in_ifaddr);
-#define in_ifaddrhead D_0002FF78
 extern struct in_ifaddrhead_t in_ifaddrhead;
 
 #define IFP_TO_IA(ifp, ia) { \
@@ -1560,11 +1557,6 @@ struct mbuf *ip_srcroute(void);
 #define in_pcbnotifyall func_00014614
 #define in_losing func_00014710
 #define in_pcbrtentry func_000147C0
-#define anonportmin D_0002E5EC
-#define anonportmax D_0002E5F0
-#define lowportmin D_0002E5F4
-#define lowportmax D_0002E5F8
-#define zeroin_addr D_0002F544
 extern int anonportmin, anonportmax, lowportmin, lowportmax;
 extern struct in_addr zeroin_addr;
 
@@ -1625,13 +1617,6 @@ struct rtstat_t {
 	u_short rts_wildcard;
 };
 
-#define rt_tables D_0002F308
-#define rtstat D_0002F3AC
-#define route_cb D_0002F3B8
-#define rttrash D_0002F300
-#define rt_init_done D_0002EB84
-#define rttimer_queue_head D_0002F304
-#define rt_timer_ch D_0002F388
 extern struct radix_node_head *rt_tables[32];
 extern struct rtstat_t rtstat;
 extern struct route_cb_t route_cb;
@@ -1681,10 +1666,7 @@ struct rawcb {
 };
 #define sotorawcb(so) ((struct rawcb *)(so)->so_pcb)
 LIST_HEAD(rawcbhead, rawcb);
-#define rawcb_list D_0002F3D0
-extern struct rawcbhead rawcb_list;
-#define raw_sendspace D_0002E538
-#define raw_recvspace D_0002E53C
+extern struct rawcbhead rawcb;
 extern u_long raw_sendspace, raw_recvspace;
 #define raw_attach func_0000ECA8
 #define raw_detach func_0000ED48
@@ -1729,7 +1711,6 @@ void raw_setpeeraddr(struct rawcb *rp, struct mbuf *nam);
 #define NETISR_IP 2
 void _sce_pspnet_schednetintr_with_evf(int isr);
 #define schednetisr(isr) _sce_pspnet_schednetintr_with_evf(isr)
-#define ipintrq D_0002FF80
 extern struct ifqueue ipintrq;
 void _sce_pspnet_if_attach(struct ifnet *ifp);
 #define if_attach _sce_pspnet_if_attach
@@ -1758,7 +1739,6 @@ struct ifreq {
 #define IFT_LOOP 0x18
 
 /* if_loop.c */
-#define loif D_0002F3D8
 extern struct ifnet loif;
 #define looutput func_0000F264
 #define loioctl func_0000F5B4
@@ -1835,9 +1815,6 @@ struct walkarg {
 #define NET_RT_IFLIST 4
 #define AF_MAX 31
 #define PF_ROUTE 17
-#define route_dst D_0002E4B4
-#define route_src D_0002E4C4
-#define route_proto D_0002E4D4
 extern struct sockaddr route_dst, route_src;
 extern struct sockproto route_proto;
 #define route_usrreq func_0000D3C8
@@ -1929,13 +1906,9 @@ struct arphdr {
 #define pseudo_AF_HDRCMPLT 30
 #define NETISR_ARP 28
 #define LLADDR(s) ((caddr_t)((s)->sdl_data + (s)->sdl_nlen))
-#define etherbroadcastaddr D_0002E490
-#define ether_ipmulticast_min D_0002E498
-#define ether_ipmulticast_max D_0002E4A0
 extern u_int8_t etherbroadcastaddr[ETHER_ADDR_LEN];
 extern u_int8_t ether_ipmulticast_min[ETHER_ADDR_LEN];
 extern u_int8_t ether_ipmulticast_max[ETHER_ADDR_LEN];
-#define arpintrq D_0002E54C
 extern struct ifqueue arpintrq;
 #define arpresolve func_0000FB90
 #define revarpinput func_00010770
@@ -1954,7 +1927,6 @@ extern int D_0002EB70;
 /* in_var.h: address hash */
 #define IN_IFADDR_HASH_SIZE 509
 LIST_HEAD(in_ifaddrhashhead, in_ifaddr);
-#define in_ifaddrhashtbl D_0002FF74
 extern struct in_ifaddrhashhead *in_ifaddrhashtbl;
 #define IN_IFADDR_HASH(x) in_ifaddrhashtbl[(u_long)(x) % IN_IFADDR_HASH_SIZE]
 #define IA_SIN(ia) (&(((struct in_ifaddr *)(ia))->ia_addr))
@@ -2215,13 +2187,9 @@ struct ipstat_t {
 	u_quad_t ips_toolong;
 	u_quad_t ips_nogif;
 };
-#define ipstat D_0002FFB0
 extern struct ipstat_t ipstat;
-#define ip_id_g D_0002FF70
-extern u_int16_t ip_id_g;
-#define inetsw D_0002E5FC
+extern u_int16_t ip_id;
 extern struct protosw inetsw[];
-#define ip_protox D_0002F548
 extern u_char ip_protox[];
 #define IP_FORWARDING 0x1
 #define IP_RAWOUTPUT 0x2
@@ -2270,7 +2238,6 @@ void icmp_error(struct mbuf *n, int type, int code, n_long dest, struct ifnet *d
 #define rip_bind func_0001C180
 #define rip_connect func_0001C248
 #define rip_disconnect func_0001C2E0
-#define rawcbtable D_00030260
 extern struct inpcbtable rawcbtable;
 
 /* udp.h / udp_var.h */
@@ -2334,8 +2301,6 @@ void ip_stripoptions(struct mbuf *m, struct mbuf *mopt);
 #define PRC_HOSTDEAD 6
 #define PRC_MSGSIZE 5
 #define PRC_IS_REDIRECT(cmd) ((cmd) >= PRC_REDIRECT_NET && (cmd) <= PRC_REDIRECT_TOSHOST)
-#define inetctlerrmap D_0002E7DC
-#define ip_defttl D_0002E7B0
 extern int ip_defttl;
 extern int inetctlerrmap[];
 
@@ -2620,7 +2585,6 @@ void in_init(void);
 void in_proto_init(void);
 #define pffindproto func_00002058
 struct protosw *pffindproto(int family, int protocol, int type);
-#define inetdomain D_0002E768
 extern struct domain inetdomain;
 #define ip_init func_00014890
 #define ip_input func_00014B18
@@ -2671,8 +2635,6 @@ struct rttimer_queue *rt_timer_queue_create(u_int timeout);
 void rt_timer_queue_destroy(struct rttimer_queue *q, int destroy);
 void rt_timer_queue_change(struct rttimer_queue *q, long timeout);
 
-#define subnetsarelocal D_0002E5DC
-#define hostzeroisbroadcast D_0002E5E0
 extern int subnetsarelocal, hostzeroisbroadcast;
 
 /* tcp */
@@ -3147,42 +3109,6 @@ struct	tcpstat_s {
 
 
 /* tcp globals */
-#define tcprexmtthresh D_0002E8E4
-#define tcp_outflags D_0002E8E8
-#define tcp_cwm_burstsize D_0002E8F4
-#define tcp_mssdflt D_0002E8F8
-#define tcp_rttdflt D_0002E8FC
-#define tcp_do_rfc1323 D_0002E900
-#define tcp_do_sack D_0002E904
-#define tcp_do_win_scale D_0002E908
-#define tcp_do_timestamps D_0002E90C
-#define tcp_init_win D_0002E910
-#define tcbhashsize D_0002E914
-#define tcp_keepidle D_0002E918
-#define tcp_keepintvl D_0002E91C
-#define tcp_keepcnt D_0002E920
-#define tcp_maxpersistidle D_0002E924
-#define tcp_backoff D_0002E928
-#define tcp_totbackoff D_0002E95C
-#define tcp_sendspace D_0002E960
-#define tcp_recvspace D_0002E964
-#define tcp_cwm D_0002EC10
-#define tcp_do_newreno D_0002EC14
-#define tcp_ack_on_push D_0002EC18
-#define tcp_mss_ifmtu D_0002EC1C
-#define tcp_compat_42 D_0002EC20
-#define tcp_iss_seq D_0002EC24
-#define tcp_log_refused D_000302E4
-#define tcbtable D_00030360
-#define tcp_now D_0003037C
-#define tcpstat D_00030380
-#define tcp_maxidle D_000305A0
-#define tcp_delacks D_000305A4
-#define tcp_syn_cache_size D_0002E794
-#define tcp_syn_cache_limit D_0002E798
-#define tcp_syn_bucket_limit D_0002E79C
-#define tcp_syn_cache_interval D_0002E7A0
-#define tcp_rst_ppslim D_0002E7A4
 extern int tcprexmtthresh, tcp_cwm_burstsize, tcp_mssdflt, tcp_rttdflt;
 extern u_char tcp_outflags[TCP_NSTATES];
 extern int tcp_do_rfc1323, tcp_do_sack, tcp_do_win_scale, tcp_do_timestamps;
@@ -3195,14 +3121,12 @@ extern int tcp_log_refused;
 extern struct inpcbtable tcbtable;
 extern u_int32_t tcp_now;
 extern struct tcpstat_s tcpstat;
-#define ip_mtudisc D_0002E7BC
 extern int ip_mtudisc;
 extern int tcp_maxidle;
 extern struct tcp_delack_head tcp_delacks;
 extern int tcp_syn_cache_size, tcp_syn_cache_limit, tcp_syn_bucket_limit;
 extern int tcp_syn_cache_interval, tcp_rst_ppslim;
 
-#define in_maxmtu D_0002F53C
 extern unsigned long in_maxmtu;
 
 #endif

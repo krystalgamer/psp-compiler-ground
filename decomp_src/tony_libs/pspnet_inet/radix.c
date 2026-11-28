@@ -2,13 +2,6 @@
 #include "common.h"
 #include "inetlib.h"
 
-#define max_keylen D_0002F2FC
-#define mask_rnhead D_0002F2F4
-#define addmask_key D_0002EB78
-#define normal_chars D_0002E4A8
-#define rn_zeros D_0002EB7C
-#define rn_ones D_0002EB80
-#define rn_mkfreelist D_0002F2F8
 #define last_zeroed D_0002EB74
 
 extern int max_keylen;

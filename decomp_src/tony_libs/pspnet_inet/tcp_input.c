@@ -62,14 +62,9 @@ int syn_cache_add(struct sockaddr *src, struct sockaddr *dst, struct tcphdr *th,
 int syn_cache_respond(struct syn_cache *sc, struct mbuf *m);
 void syn_cache_init(void);
 
-#define tcp_syn_cache D_0002F648
 extern struct syn_cache_head tcp_syn_cache[];
-#define tcp_syn_cache_timeq D_000302E8
 TAILQ_HEAD(syn_cache_timeq_head, syn_cache);
 extern struct syn_cache_timeq_head tcp_syn_cache_timeq[TCP_MAXRXTSHIFT + 1];
-#define syn_hash1 D_00030358
-#define syn_cache_count D_00030354
-#define syn_hash2 D_00030350
 extern u_int32_t syn_hash1, syn_hash2;
 extern u_long syn_cache_count;
 #define log(lvl, fmt, args...)

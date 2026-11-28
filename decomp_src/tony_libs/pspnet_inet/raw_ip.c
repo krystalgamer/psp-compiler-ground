@@ -7,8 +7,6 @@
 int	 rip_bind (struct inpcb *, struct mbuf *);
 int	 rip_connect (struct inpcb *, struct mbuf *);
 void	 rip_disconnect (struct inpcb *);
-#define rip_sendspace D_0002E8CC
-#define rip_recvspace D_0002E8D0
 extern u_long rip_sendspace, rip_recvspace;
 
 /*
@@ -171,7 +169,7 @@ rip_output(struct mbuf *m, ...)
 			return (EINVAL);
 		}
 		if (ip->ip_id == 0)
-			ip->ip_id = htons(ip_id_g++);
+			ip->ip_id = htons(ip_id++);
 		opts = NULL;
 		/* XXX prevent ip_output from overwriting header fields */
 		flags |= IP_RAWOUTPUT;

@@ -2,7 +2,6 @@
 #include "common.h"
 #include "inetlib.h"
 
-#define tcp_ctlvars D_0002E968
 #define TCPCTL_STATS 25
 extern struct {
 	 unsigned int valid : 1;

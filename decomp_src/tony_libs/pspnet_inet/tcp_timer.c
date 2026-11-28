@@ -2,7 +2,6 @@
 #include "common.h"
 #include "inetlib.h"
 
-#define syn_cache_last D_0002EC28
 extern int syn_cache_last;
 #define tcp_output func_00022D7C
 #define tcp_usrreq func_00025EE0

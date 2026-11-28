@@ -6,7 +6,7 @@
 void
 raw_init(void)
 {
-	LIST_INIT(&rawcb_list);
+	LIST_INIT(&rawcb);
 }
 
 void
@@ -27,7 +27,7 @@ raw_input(struct mbuf *m0, ...)
 	va_end(ap);
 
 	last = 0;
-	for (rp = rawcb_list.lh_first; rp != 0; rp = rp->rcb_list.le_next) {
+	for (rp = rawcb.lh_first; rp != 0; rp = rp->rcb_list.le_next) {
 		if (rp->rcb_proto.sp_family != proto->sp_family)
 			continue;
 		if (rp->rcb_proto.sp_protocol &&

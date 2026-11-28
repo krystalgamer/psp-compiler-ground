@@ -40,7 +40,6 @@ void tcp_notify(struct inpcb *inp, int error);
 struct tcpcb *tcp_close(struct tcpcb *tp);
 u_int tcp_optlen(struct tcpcb *tp);
 void tcp_quench(struct inpcb *inp, int errno);
-#define syn_cache_count D_00030354
 extern u_long syn_cache_count;
 #define RTM_RTTUNIT 1000000
 
