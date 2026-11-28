@@ -63,11 +63,12 @@ def fix_unsupported(asm_dir: Path, reloc_roms=frozenset()):
     operands spimdisasm inferred at offsets without a PRX relocation: those
     are plain constants (e.g. handwritten code using $gp as a register).
     """
-    defined_locals = set()
-    for path in asm_dir.rglob("*.s"):
-        defined_locals.update(re.findall(r"^\s*(\.L\w+):", path.read_text(), re.M))
     for path in asm_dir.rglob("*.s"):
         text = path.read_text()
+        # .L labels are local to one object: a table word is only symbolic
+        # when its label is defined in the same file (a jump table split
+        # off from its function, e.g. by a partial rodata carve, is not)
+        defined_locals = set(re.findall(r"^\s*(?:jlabel\s+)?(\.L\w+):?\s*$", text, re.M))
         # Layout is fixed by the original addresses, so .align above 4 bytes
         # never moves anything; it only raises section alignment, which old
         # psp-as turns into end-of-section padding.
