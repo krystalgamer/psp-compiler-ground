@@ -91,7 +91,6 @@ typedef struct {
 #define cassert(e, l) if (!(e)) consPrintf(&D_00101BB8, &D_00101B98, l, "SoundTask", #e)
 int SoundTask(StTask *Tp, unsigned int msg, int a, unsigned int arg)
 {
-	int ret = 0;
 	StProg *Pp;
 	StScr *Sp;
 	void *SWp;
@@ -178,5 +177,4 @@ int SoundTask(StTask *Tp, unsigned int msg, int a, unsigned int arg)
 	default:
 		return taskDefaultMsg(Tp, msg, a, arg);
 	}
-	return ret;
 }
