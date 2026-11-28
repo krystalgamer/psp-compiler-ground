@@ -88,7 +88,7 @@ typedef struct { unsigned int ip; unsigned int port; } RtP2PAddr;
 
 int rt_p2p_quit_all_overlays();
 
-int rt_p2p_send_overlay(); int rt_p2p_send_token_list_msg(char *, int, unsigned char, int, int, int, int, unsigned short); int rt_p2p_token_event_notify();
+int rt_p2p_send_overlay(); int rt_p2p_send_token_list_msg(char *, int, unsigned char, int, int, int, int, unsigned short); int rt_p2p_token_event_notify(char *, unsigned short, unsigned short, void *, int, int, int);
 
 int NetUsePeerToPeer(void *arg0) {
     rt_p2p_resolve_interface();
@@ -994,7 +994,34 @@ int rt_p2p_isend(int *p, int *peer, unsigned short a, int b)
     return ret;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_isend_list);
+int rt_p2p_isend_list(void *pp, int **peers, unsigned int n, unsigned short port, void *vec)
+{
+    char *p = pp;
+    unsigned int i;
+
+    if (peers != NULL) {
+        for (i = 0; i < n; i++) {
+            if (peers[i][1] != 0 && peers[i][3] != 0)
+                (*(int **)(p + 0x194))[i] = peers[i][1];
+            else if (peers[i][2] != 0 && peers[i][4] != 0)
+                (*(int **)(p + 0x194))[i] = peers[i][2];
+            else
+                (*(int **)(p + 0x194))[i] = 0;
+        }
+    } else {
+        int *peer = *(int **)(p + 0x184);
+        for (i = 0, n = 0; i < *(unsigned short *)(p + 0x19C); i++, peer += 20) {
+            if (peer[0] == 3 || peer[0] == 4) {
+                if (peer[1] != 0 && peer[3] != 0)
+                    (*(int **)(p + 0x194))[n++] = peer[1];
+                else if (peer[2] != 0 && peer[4] != 0)
+                    (*(int **)(p + 0x194))[n++] = peer[2];
+            }
+        }
+    }
+    if (n == 0) return 0xD2F3;
+    return rt_udp_send_list(*(int *)p, *(int **)(p + 0x194), n, port, vec);
+}
 
 int rt_p2p_send_my_broadcast_flag(char *p, unsigned short idx)
 {
