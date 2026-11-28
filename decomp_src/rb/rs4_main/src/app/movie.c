@@ -88,7 +88,87 @@ void movUnlock(void) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/movie", movPrepare);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/movie", movCleanup);
+int sceMpegAvcDecodeFlush(void *);
+int sceMpegDelete(void *);
+int sceMpegFreeAvcEsBuf(void *, int);
+int sceMpegRingbufferDestruct(void *);
+int sceMpegUnRegistStream(void *, int);
+extern int MpegHdl;
+extern unsigned char Ring;
+extern int StreamOfs;
+extern void *pAudioDecBuf;
+extern int pAudioStream;
+extern void *pAudioTmpBuf;
+extern void *pRingBuf;
+extern int pTail;
+extern void *pVideoDecBuf;
+
+int movCleanup(void) {
+    void *temp_s1;
+    void *var_s2;
+
+    if (sceMpegAvcDecodeFlush(&Mpeg) != 0) {
+        consPrintf(&D_000FDC20, &D_000FDC10, 0x10F, "movCleanup", &D_000FDBFC);
+    }
+    if (sceMpegFreeAvcEsBuf(&Mpeg, MpegHdl) != 0) {
+        consPrintf(&D_000FDC20, &D_000FDC10, 0x113, "movCleanup", &D_000FDBFC);
+    }
+    if (sceMpegUnRegistStream(&Mpeg, pVideoStream) != 0) {
+        consPrintf(&D_000FDC20, &D_000FDC10, 0x117, "movCleanup", &D_000FDBFC);
+    }
+    if (sceMpegUnRegistStream(&Mpeg, pAudioStream) != 0) {
+        consPrintf(&D_000FDC20, &D_000FDC10, 0x11B, "movCleanup", &D_000FDBFC);
+    }
+    if (sceMpegDelete(&Mpeg) != 0) {
+        consPrintf(&D_000FDC20, &D_000FDC10, 0x11F, "movCleanup", &D_000FDBFC);
+    }
+    if (sceMpegRingbufferDestruct(&Ring) != 0) {
+        consPrintf(&D_000FDC20, &D_000FDC10, 0x123, "movCleanup", &D_000FDBFC);
+    }
+    if (pAudioTmpBuf != NULL) {
+        _memFree(pAudioTmpBuf, &D_000FDC10, 0x127);
+    }
+    if (pAudioDecBuf != NULL) {
+        _memFree(pAudioDecBuf, &D_000FDC10, 0x129);
+    }
+    if (pVideoDecBuf != NULL) {
+        _memFree(pVideoDecBuf, &D_000FDC10, 0x12A);
+    }
+    if (pRingBuf != NULL) {
+        _memFree(pRingBuf, &D_000FDC10, 0x12B);
+    }
+    pVideoRenderBuf[0] = NULL;
+    var_s2 = pHead;
+    pVideoRender = 0;
+    StreamPtr = 0;
+    StreamOfs = 0;
+    pRingBuf = NULL;
+    MpegHdl = 0;
+    pVideoDecBuf = NULL;
+    pAudioDecBuf = NULL;
+    pVideoRenderBuf[1] = NULL;
+    pAudioTmpBuf = NULL;
+    StreamSize = 0;
+    movLock();
+    if (var_s2 != NULL) {
+        do {
+            temp_s1 = M2C_FIELD(var_s2, void **, 0);
+            _memFree(M2C_FIELD(var_s2, void **, 4), &D_000FDC10, 0x149);
+            _memFree(var_s2, &D_000FDC10, 0x14A);
+            var_s2 = temp_s1;
+        } while (temp_s1 != NULL);
+    }
+    if (pDrop != NULL) {
+        _memFree(M2C_FIELD(pDrop, void **, 4), &D_000FDC10, 0x150);
+        _memFree(pDrop, &D_000FDC10, 0x151);
+    }
+    pTail = 0;
+    pDrop = NULL;
+    pHead = NULL;
+    AudioBlock = 0;
+    movUnlock();
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/movie", movPutCB);
 
