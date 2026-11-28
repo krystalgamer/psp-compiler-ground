@@ -4,11 +4,59 @@
 M2C_UNK I3dVecCopyA(int, int);                      /* extern */
 
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_vertex_anim", BinSearchSection_FloatArray);
+int BinSearchSection_FloatArray(float *a, unsigned int n, float t)
+{
+	int lo = 0, hi = n - 1, mid, r;
+	while (1) {
+		float d;
+		mid = lo + ((hi - lo) >> 1);
+		d = t - a[mid];
+		r = mid;
+		if (d < 0.0f) {
+			hi = mid - 1;
+			r = hi;
+			if (hi < lo) return r;
+		} else if (d > 0.0f) {
+			lo = mid + 1;
+			if (hi < lo) return r;
+		} else {
+			return mid;
+		}
+	}
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_vertex_anim", I3rArrayKeyFrameFloatEntity__Solve);
+typedef struct { float a, b; } I3rKeyF;
+typedef struct { float first, last; int p0; I3rKeyF *keys; float *times; int p1; unsigned short num; } I3rArrayKeyFrameFloatEntity;
+int BinSearchSection_FloatArray(float *, unsigned int, float);
+float I3rArrayKeyFrameFloatEntity__Solve(I3rArrayKeyFrameFloatEntity *e, float t)
+{
+	unsigned int n = e->num;
+	float *times = e->times;
+	int i;
+	float r;
+	if (n == 0) {
+		r = e->last;
+	} else {
+		i = BinSearchSection_FloatArray(times, n, t);
+		if (i < 0)
+			r = e->last;
+		else if (i >= (int)n - 1)
+			r = e->first;
+		else {
+			I3rKeyF *k = &e->keys[i];
+			r = k->a * t + k->b;
+		}
+	}
+	return r;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_vertex_anim", I3rAnimFloat__Solve);
+float I3rAnimFloat__Solve(void *a, float t)
+{
+	I3rArrayKeyFrameFloatEntity *e = **(I3rArrayKeyFrameFloatEntity ***)((char *)a + 8);
+	if (e != 0)
+		return I3rArrayKeyFrameFloatEntity__Solve(e, t);
+	return **(float **)a;
+}
 
 typedef struct { float a[4]; float b[4]; } I3rKeyV4;
 typedef struct { float first[4]; float last[4]; int p0; I3rKeyV4 *keys; float *times; int p1; unsigned short num; } I3rArrayKeyFrameVector4Entity;
