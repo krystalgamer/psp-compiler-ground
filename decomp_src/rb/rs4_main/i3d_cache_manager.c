@@ -288,7 +288,23 @@ void I3dCacheManager__ChangeMarkedBlockToGarbage(int arg0, int arg1) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dCacheManager__GarbageCollect);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dCacheManager__CheckMarkedBlockSize);
+typedef struct MBLnk9 { struct MBk9 *next, *prev; } MBLnk9;
+typedef struct MBk9 { MBLnk9 l[6]; unsigned int attr; int f34; unsigned int size; } MBk9;
+int I3dCacheManager__CheckMarkedBlockSize(char *cm, MBk9 *b, unsigned int size)
+{
+	MBk9 *h = (MBk9 *)(cm + 0x18);
+	unsigned int sum = 0;
+	MBk9 *p;
+	for (p = b; p != h && ((p->attr >> 12) & 1); p = p->l[0].prev) {
+		sum += p->size;
+		if (sum >= size) return 1;
+	}
+	for (b = b->l[0].next; b != h && ((b->attr >> 12) & 1); b = b->l[0].next) {
+		sum += b->size;
+		if (sum >= size) return 1;
+	}
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dCacheManager__SearchMinimumMarkedRange);
 
