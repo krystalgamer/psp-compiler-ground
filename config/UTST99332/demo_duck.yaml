@@ -577,7 +577,7 @@ segments:
       - [0x176454, .rodata, main_objs/textures_Texture]
       - [0x17649C, rodata, asm/rodata_17641C]
       - [0x17700C, .rodata, main_objs/textures_Texture_2]
-      - [0x177028, rodata, asm/rodata_176FA8]
+      - [0x177260, rodata, asm/rodata_1771E0]
       - [0x177948, .rodata, menu]
       - [0x1779A0, .rodata, libgum]
       - [0x1779D0, .rodata, libgu]

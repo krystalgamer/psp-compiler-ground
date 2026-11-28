@@ -34,10 +34,17 @@ public:
     bool f4;                /* 0x4 */
     int f8, fC, f10;        /* 0x8 */
     int f14;                /* 0x14 */
-    char _pad18[0x10];
-    std::string s28;        /* 0x28 */
-    char _pad2c[0x10];
-    std::string s3C;        /* 0x3C */
+    /* a linear allocator over a VRAM range (Vram.h: load() copies data in, asserts `_cur + _Bytesize < _end`) */
+    struct Area {
+        unsigned int load(void *data, unsigned int _Bytesize);
+        unsigned int _cur;      /* 0x00 */
+        int _f4;
+        unsigned int _end;      /* 0x08 */
+        unsigned int _base;     /* 0x0C */
+        std::string _name;      /* 0x10 */
+    };
+    Area a18;               /* 0x18 */
+    Area a2C;               /* 0x2C */
     VramBuffer b40;         /* 0x40 */
     VramBuffer b5C;         /* 0x5C */
     PixelFormat src_pf;     /* 0x78 */

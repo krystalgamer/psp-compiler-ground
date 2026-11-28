@@ -554,7 +554,7 @@ bss 0x18FF70 main_objs/scene_Transform
 bss 0x190078 -
 # static initializers (header statics): float pools and .bss (s22)
 rodata 0x176F8C main_objs/textures_Texture_2
-rodata 0x176FA8 -
+rodata 0x1771E0 -
 bss 0x191E70 main_objs/textures_Texture_2
 bss 0x191EF4 -
 rodata 0x1751FC main_objs/sh_VerticesVector
