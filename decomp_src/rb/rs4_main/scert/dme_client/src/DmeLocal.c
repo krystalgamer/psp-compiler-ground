@@ -1490,7 +1490,36 @@ int NetGetClientConnectStatus(void *c, unsigned int idx, int *st)
     return 0x1E;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetProcessP2PDisconnect);
+int rt_time_elapsed(); int rt_token_free_owner();
+int NetProcessP2PDisconnect(void)
+{
+    unsigned int el;
+    unsigned int i;
+    char *ci;
+
+    for (i = 0; i < 4; i++) {
+        ci = NetGetConnInfo(i);
+        if (ci != NULL && *(unsigned char *)(ci + 0x48C) != 0) {
+            rt_time_elapsed(ci + 0x490, &el);
+            if (el > 500) {
+                DmeDiscMsg m;
+                m.d = 0; /* STAND-IN?: dead store; the original keeps sw zero,0x10(sp) before the 0x434 load */
+                *(long *)(ci + 0x454) = 0;
+                m.d = *(int *)(ci + 0x434);
+                m.c = ci;
+                m.a = 0;
+                m.b = 0;
+                m.cc = 0;
+                (*(DmeDiscCb *)(ci + 0x430))(&m);
+                *(unsigned char *)(ci + 0x48C) = 0;
+                if (*(int *)(ci + 0x4A0) != 0)
+                    rt_token_free_owner(i, *(int *)(ci + 0x40C));
+                NetCleanupConnInfo(ci);
+            }
+        }
+    }
+    return 0;
+}
 
 int NetClientIndexToClientIndexPacket(int arg0) {
     return arg0 & 0xFF;
