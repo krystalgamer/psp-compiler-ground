@@ -381,7 +381,14 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_c
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_send_local_broadcast_tests);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_isend);
+int rt_udp_send(int, int, int, int);
+int rt_p2p_isend(int *p, int *peer, unsigned short a, int b)
+{
+    int ret = 0xD2F3;
+    if (peer[1] != 0 && peer[3] != 0) ret = rt_udp_send(p[0], peer[1], a, b);
+    else if (peer[2] != 0 && peer[4] != 0) ret = rt_udp_send(p[0], peer[2], a, b);
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_isend_list);
 
