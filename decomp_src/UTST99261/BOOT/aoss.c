@@ -67,7 +67,6 @@ extern int _gNecApResult;
 extern unsigned long long D_002DD080;
 void *AOSS_Malloc(unsigned int n);
 void AOSS_Free(void *p);
-void AOSS_Memset(void *p, int c, unsigned int n);
 void *AOSS_Memcpy(void *d, const void *s, unsigned int n);
 int AOSS_Memcmp(const void *a, const void *b, unsigned int n);
 int AOSS_Rand(void);
@@ -141,7 +140,19 @@ void aoss_release(void)
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", aoss_data_init);
+void aoss_data_init(unsigned char *p)
+{
+    AOSS_Memset(gSeqID, 0, 8);
+    gError = 1;
+    AOSS_Memset(&gData, 0, sizeof(gData));
+    gData.mac = p + 6;
+    gData.f4 = *(unsigned short *)(p + 4);
+    gData.f8 = *(unsigned short *)p & 0xF;
+    gData.f19 = p[2];
+    gData.f18 = 0;
+    gData.fC = 0;
+    gData.ip = 0xC0A80B01;
+}
 
 void aoss_set_error(int e)
 {
