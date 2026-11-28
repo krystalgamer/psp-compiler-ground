@@ -1,4 +1,5 @@
 #include "common.h"
+/* text-align: 16 */
 #include "m2c_macros.h"
 #ifndef NULL
 #define NULL ((void *)0)
