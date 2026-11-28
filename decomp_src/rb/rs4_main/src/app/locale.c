@@ -1,6 +1,7 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
+#include "../minmax.h"
 extern int pNowLocale;
 extern int pRegionCntx;
 M2C_UNK ctrlSetCancel(M2C_UNK);                     /* extern */
@@ -17,7 +18,40 @@ typedef struct { unsigned char num, cur, f2, f3; int pad[3]; LocInfo *loc[1]; } 
 #define RGN ((RegionInfo *)pRegionCntx)
 #define NOWLOC ((LocInfo *)pNowLocale)
 int localeChangeDirect();
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/locale", localeChangeDirect);
+int localeGetRegionCntx(void);
+void sceImposeSetLanguageMode(int, int);
+void consPrintf(const char *, ...);
+int localeChangeDirect(int idx)
+{
+	unsigned int i = amax(idx, 0);
+	int lang, btn;
+	int v;
+	LocInfo *loc;
+
+	if (i >= ((RegionInfo *)localeGetRegionCntx())->num)
+		i = 0;
+	loc = RGN->loc[i];
+	pNowLocale = (int)loc;
+	consPrintf("%s : %s\n", "localeChangeDirect", loc->name);
+	lang = -1;
+	btn = -1;
+	if (sceUtilityGetSystemParamInt(8, &v) == 0)
+		lang = v;
+	else
+		consPrintf("cassert : %s %d : %s : %s\n", "src/app/locale.c", 765, "localeChangeDirect", "FALSE");
+	if (sceUtilityGetSystemParamInt(9, &v) == 0)
+		btn = v;
+	else
+		consPrintf("cassert : %s %d : %s : %s\n", "src/app/locale.c", 767, "localeChangeDirect", "FALSE");
+	if (RGN->f2)
+		lang = NOWLOC->lang;
+	if (RGN->f3)
+		btn = NOWLOC->flags & 1;
+	consPrintf("%s : sceImposeSetLanguageMode(%d,%d)\n", "localeChangeDirect", lang, btn);
+	sceImposeSetLanguageMode(lang, btn);
+	RGN->cur = i;
+	return (unsigned char)i;
+}
 
 int localeChange(int lang, int btn)
 {
