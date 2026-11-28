@@ -723,7 +723,27 @@ int NetSetServerIpAddress(char *dme, void *addr)
     return ret;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetCheckForPingTimeouts);
+typedef struct { int a[4]; void (*cb)(int, void *, int); int time; int pad[2]; } DmePingInfo;
+int NetCheckForPingTimeouts(void)
+{
+    unsigned int i;
+    char ext[16];
+    struct { int t; int u; } now;
+    DmePingInfo *pi;
+
+    rt_time_get_local(&now);
+    for (i = 0, pi = (DmePingInfo *)gPingInfo; i < 127; i++, pi++) {
+        if (pi->cb != NULL && now.t - pi->time - 30000 > 0) {
+            rt_comm_linkaddress_toext(ext, pi);
+            *(int *)((char *)gDmeGlobals + 0x18) = pi->a[0];
+            *(int *)((char *)gDmeGlobals + 0x1C) = pi->a[1];
+            *(int *)((char *)gDmeGlobals + 0x20) = pi->a[2];
+            pi->cb(0xE, ext, 0);
+            pi->cb = NULL;
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIsPeerToPeerHost);
 

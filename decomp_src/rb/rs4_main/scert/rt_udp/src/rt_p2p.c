@@ -25,6 +25,7 @@ typedef struct { struct { void *buf; int len; } e[8]; int total; int n; } RtP2PV
 void rt_p2p_get_my_peer_status(char *p, int *status, short *idx);
 void rt_udp_disconnect();
 typedef struct { unsigned char a, b; unsigned short from; unsigned short idx; } RtP2PDetach;
+extern void *gCryptInterfacePtr;
 extern void *gP2PInterface[35];
 extern void **gP2PInterfacePtr;
 int rt_p2p_create(); int rt_p2p_destroy(); int rt_p2p_get_current_address_type(char *, unsigned short, int *); int rt_p2p_get_peer_address();
