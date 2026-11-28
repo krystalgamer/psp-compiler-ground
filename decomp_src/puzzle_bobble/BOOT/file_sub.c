@@ -18,9 +18,14 @@
 extern char PakBuf[0x87D000];
 extern int PakFileMax;
 extern int *PakFileSize;
-extern char *PakData;
-extern SceUtilitySavedataParam savedata_param;
-extern int D_00153A38;	/* disp_ms_dialog's static counter */
+/* The unit's .bss (config `bss 0x153A28 file_sub`): these four, disp_ms_dialog's
+ * DebugX.0, then PakData and savedata_param (tentative). */
+int MsType = 0;
+int MsSkip = 0;
+int UtilityFlag = 0;
+int OldError = 0;
+static char *PakData;
+static SceUtilitySavedataParam savedata_param;
 
 void wait_umd(void)
 {
@@ -454,6 +459,7 @@ void set_ms_dialog(int no)
  * tails between the cases (crossjumping) and keeps the two sprite floats in $f20-$f22. */
 void disp_ms_dialog(void)
 {
+	static int DebugX;
 	if (MsGim < 0)
 		return;
 	if (MsSkip) {
@@ -462,7 +468,7 @@ void disp_ms_dialog(void)
 		SetSpriteColorRGBA(255, 255, 255, 255);
 		DrawSpriteEz(0.0f, 0.0f, 84.0f, 240.0f, 104.0f, 0.0f, 0.0f, MsGim);
 		DrawSpriteEz(0.0f, 240.0f, 84.0f, 240.0f, 104.0f, 240.0f, 0.0f, MsGim);
-		D_00153A38 = (D_00153A38 + 1) & 0xFF;
+		DebugX = (DebugX + 1) & 0xFF;
 	}
 	if (UtilityFlag > 0)
 		return;
@@ -568,6 +574,13 @@ void disp_ms_dialog(void)
 	}
 }
 #else
+/* STAND-IN: disp_ms_dialog is still asm.  Its statics, in its place and numbered as in
+ * the original (DebugX.0); initialized ones only keep the numbering (their .data stays asm). */
+static void __attribute__((section(".pbskip"), unused)) disp_ms_dialog_statics(void)
+{
+	static int DebugX;
+}
+__asm__("D_00153A38 = DebugX.0");
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/file_sub", disp_ms_dialog);
 #endif
 

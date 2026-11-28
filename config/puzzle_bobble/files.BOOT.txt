@@ -53,5 +53,6 @@ bss 0x14E768 game_main
 bss 0x14E7FC PuzzleMain
 bss 0x15295C Title
 bss 0x152978 -
+bss 0x153A28 file_sub
 bss 0x154008 plsel
 bss 0x15403C -

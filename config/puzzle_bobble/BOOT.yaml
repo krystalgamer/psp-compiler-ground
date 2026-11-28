@@ -256,6 +256,7 @@ segments:
       - { start: 0x5540C, type: .bss, vram: 0x14E7FC, name: PuzzleMain }
       - { start: 0x5540C, type: .bss, vram: 0x15295C, name: Title }
       - { start: 0x5540C, type: bss, vram: 0x152978, name: bss_152978 }
+      - { start: 0x5540C, type: .bss, vram: 0x153A28, name: file_sub }
       - { start: 0x5540C, type: .bss, vram: 0x154008, name: plsel }
       - { start: 0x5540C, type: bss, vram: 0x15403C, name: bss_15403C }
   - [0x5540C, bin, elf_trailer]
