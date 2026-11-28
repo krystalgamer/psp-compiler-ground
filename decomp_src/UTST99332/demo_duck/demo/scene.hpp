@@ -588,10 +588,10 @@ public:
     void use(Pass);
     void extractFrom(const MeshData &);
     void extractFrom(const MeshData &, std::vector<short>);
+    /* 16 bytes, trivially destructible (VertexData's dtor destroys only _v38/_v44) */
     struct Channel {
-        Channel() : _fC(0) {}
-        std::vector<math::vector_xyzw> _v;
-        int _fC;
+        Channel() : _f0(0), _f4(0), _f8(0), _fC(0) {}
+        int _f0, _f4, _f8, _fC;
     };
     bool _f0;
     Channel _c4;                            /* 0x4 */
@@ -724,9 +724,9 @@ public:
     void deleteNode(common::handle<Node>);
     void deleteBranch(common::handle<Node>);
     common::handle<Node> cloneNode(common::handle<Node>, std::string);
-    common::handle<Group> cloneBranch(common::handle<Group>, std::string);
-    common::handle<Group> cloneGroup(std::string, std::string);
-    common::handle<Group> cloneObject(std::string, std::string);
+    common::handle<Node> cloneBranch(common::handle<Group>, std::string);
+    common::handle<Node> cloneGroup(std::string, std::string);
+    common::handle<Node> cloneObject(std::string, std::string);
     common::handle<Object> newObject(std::string);
     common::handle<Mesh> newMesh(std::string, const sgl::Mesh &, unsigned int);
     common::handle<Object> getObject(std::string);
@@ -748,7 +748,7 @@ public:
     template<class T> common::handle<T> newNode(std::string, bool);
     template<class T> common::handle<T> getMappedNode(const std::string &);
     template<class T> void getSublist(common::handles_list<T> &);
-    void load(std::string, unsigned int, std::string);
+    common::handle<Object> load(std::string, unsigned int, std::string);
     void save(const char *);
     void dot_output(std::string);
     void calcbv();
