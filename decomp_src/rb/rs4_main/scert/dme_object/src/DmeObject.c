@@ -668,7 +668,40 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", E
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", GlobalFieldErrorExceedsThreshold);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetGetDataStreamPacket);
+typedef struct { unsigned char id, b1, b2, b3, b4; char pad; unsigned short used, size, len; } DmeDsPktHdr;
+int rt_circ_buf_is_wrapped(); int rt_circ_buf_normalize(); int rt_circ_buf_get_start_used_ptr();
+void *memcpy(void *, const void *, unsigned long);
+int NetGetDataStreamPacket(unsigned char *buf, int id, int len)
+{
+    DmeDsPktHdr h;
+    int wrapped;
+    void *start;
+    char *ch;
+
+    start = NULL;
+    wrapped = 0;
+    if (buf == NULL) return 0;
+    if (len <= 0) return 0;
+    ch = NetGetStreamChannel(id);
+    if (ch == NULL) return 0;
+    h.id = id;
+    h.b1 = ch[5];
+    h.b2 = ch[3];
+    h.b3 = ch[1];
+    h.b4 = ch[2];
+    h.len = len;
+    h.used = *(char **)(ch + 0x14) - *(char **)(ch + 0x10);
+    h.size = *(char **)(ch + 0x18) - *(char **)(ch + 0x10);
+    memcpy(buf, &h, 12);
+    if (rt_circ_buf_is_wrapped(ch + 0x2C, &wrapped) != 0) return 0;
+    if (wrapped) {
+        if (rt_circ_buf_normalize(ch + 0x2C, 1) != 0) return 0;
+        memcpy(*(void **)(ch + 0x10), *(void **)(ch + 0x3C), *(int *)(ch + 0x34));
+    }
+    if (rt_circ_buf_get_start_used_ptr(ch + 0x2C, &start) != 0) return 0;
+    memcpy(buf + 12, start, len);
+    return len + 12;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", SendCloseDataStream);
 
