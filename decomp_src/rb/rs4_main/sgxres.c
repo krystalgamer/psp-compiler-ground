@@ -296,7 +296,30 @@ int sgxResCanPlayType(int id, int type) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResEnumPlayName);
+int sgxResEnumPlayName(int id, int *out) {
+    char *p = ResGetSlot(id, SLOT_NAME("EnumPlayName"));
+    char *t, *e;
+    int *o;
+    int i, n;
+    if (p != NULL && (t = *(char **)(p + 0x3C), n = 0, t != NULL)) {
+        i = 0;
+        if (*(int *)(p + 0x40) > 0) {
+            e = t;
+            o = out;
+            do {
+                i++;
+                if ((*(unsigned int *)(e + 8) >> 28) - 1 < 3U) {
+                    n++;
+                    if (out != NULL) *o = *(int *)(p + 0x14) + *(int *)(e + 0xC);
+                    o++;
+                }
+                e += 8;
+            } while (i < *(int *)(p + 0x40));
+        }
+        return n;
+    }
+    return 0;
+}
 
 int sgxResGetWaveCount(int id) {
     char *p = ResGetSlot(id, SLOT_NAME("GetWaveCount"));
