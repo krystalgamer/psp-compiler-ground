@@ -25,6 +25,13 @@ void getListExtents(int font, char *s, int n, int *w, int *h);
 int lineFeedProc(void *ctx, BOX *box);
 #define LBS_MIN(a, b) ((a) < (b) ? (a) : (b))
 #define LBS_MAX(a, b) ((a) < (b) ? (b) : (a))
+void getBaseBlockPosition(void *ctx, int *x, int *y);
+BOX *getFixedHeightBox(BOX *box);
+void lfm_addFloat(void *page, void *box, int y, int w, int h, int side, int *dx, int *dy);
+void moveBoxPosition(BOX *box, int dx, int dy);
+void moveBoxPositionChild(BOX *box, int dx, int dy);
+void turnupContent(void *ctx, BOX *box);
+#define LBS_HTYPE(b) (((b)->style->flags & 0xC) >> 2)
 void calcInLineBoxSize(void *ctx, BOX *box)
 {
     BOX *b;
@@ -120,7 +127,62 @@ void calcBodyBoxSize(void *ctx, BOX *box) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_size", calcBlockButtonBoxSize);
+void calcBlockButtonBoxSize(void *ctx, BOX *box)
+{
+    int x, y;
+    int dx, dy;
+    int pad;
+    int h;
+    BOX *fb;
+    int side;
+    int ox, oy;
+    int nx, ny;
+    BOXGEOM *g;
+
+    getBaseBlockPosition(ctx, &x, &y);
+    pad = box->style->unk30 + box->style->unk28 + box->style->unk2C + box->style->unk34;
+    if (LBS_HTYPE(box) == 1) {
+        h = box->style->height - pad;
+        if (M2C_FIELD(box, int *, 0x34) < h)
+            M2C_FIELD(box, int *, 0x34) = h;
+    } else if (LBS_HTYPE(box) == 2) {
+        fb = getFixedHeightBox(box);
+        if (fb != NULL) {
+            int fh = fb->content == 1 ? M2C_FIELD(fb->geom, int *, 0xC) : fb->style->height;
+            int h2;
+            h = box->style->height;
+            h2 = fh * h / 100 - pad;
+            if (M2C_FIELD(box, int *, 0x34) < h2)
+                M2C_FIELD(box, int *, 0x34) = h2;
+        }
+    }
+    { int m = lfm_getHeight(box->region);
+    box->height = (m < M2C_FIELD(box, int *, 0x34) ? M2C_FIELD(box, int *, 0x34) : m) + box->style->unk20 + box->style->unk30 + box->style->unk28 + box->style->unk2C + box->style->unk34 + box->style->unk24; }
+    side = M2C_FIELD(box->style, s8 *, 0x71);
+    if (side != 0) {
+        ox = box->x;
+        oy = box->y;
+        lfm_addFloat(M2C_FIELD(ctx, void **, 0x10), M2C_FIELD(ctx, void **, 4), oy - y, box->width, box->height, side == 1 ? 1 : 3, &dx, &dy);
+        if (x + dx != ox || y + dy != oy) {
+            box->x = x + dx;
+            box->y = y + dy;
+            moveBoxPositionChild(box, box->x - ox, box->y - oy);
+        }
+    } else if (box->style->unk72 < 2) {
+        addBoxList(M2C_FIELD(ctx, LIST **, 0xC), box);
+        turnupContent(ctx, box);
+    } else {
+        getBaseBlockPosition(ctx, &x, &y);
+        nx = x + box->style->unk52;
+        ny = y + box->style->unk50;
+        if (nx != box->x || ny != box->y)
+            moveBoxPosition(box, nx - box->x, ny - box->y);
+        ny = box->y + box->height;
+        g = M2C_FIELD(ctx, BOX **, 0)->geom;
+        if (M2C_FIELD(g, int *, 0x14) < ny)
+            M2C_FIELD(g, int *, 0x14) = ny;
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
