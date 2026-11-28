@@ -250,7 +250,11 @@ void callback_fin(int id, void *arg)
 		cb->finish_func(id & 0xffff);
 }
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgu", send_commandi);
+static void send_commandi(int cmd, int argument)
+{
+	cmd = (cmd << 24) | (argument & 0xffffff);
+	*(pList->current++) = cmd;
+}
 
 static void send_commandi_stall(int cmd, int argument)
 {
