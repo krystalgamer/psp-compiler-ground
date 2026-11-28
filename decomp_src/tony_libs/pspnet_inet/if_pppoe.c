@@ -279,7 +279,56 @@ pppoe_disc_input(struct mbuf *m)
 	pppoe_dispatch_disc_pkt(m, 0);
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_inet/nonmatchings/if_pppoe", func_0002AABC);
+static void
+pppoe_data_input(struct mbuf *m)
+{
+	u_int16_t session, plen;
+	struct pppoe_softc *sc;
+	u_int8_t *ph;
+	u_int8_t vertype, code;
+
+	m_adj(m, sizeof(struct ether_header));
+	if (m->m_pkthdr.len <= PPPOE_HEADERLEN)
+		goto drop;
+
+	if (m->m_len < PPPOE_HEADERLEN) {
+		m = m_pullup(m, PPPOE_HEADERLEN);
+		if (!m)
+			return;
+	}
+	ph = mtod(m, u_int8_t *);
+
+	vertype = *ph++;
+	if (vertype != PPPOE_VERTYPE)
+		goto drop;
+	code = *ph++;
+	if (code != 0)
+		goto drop;
+
+	session = PPPOE_READ_16(ph);
+	ph += 2;
+	sc = pppoe_find_softc_by_session(session, m->m_pkthdr.rcvif);
+	if (sc == NULL)
+		goto drop;
+
+	plen = PPPOE_READ_16(ph);
+
+	m_adj(m, PPPOE_HEADERLEN);
+
+	if (m->m_pkthdr.len < plen)
+		goto drop;
+
+	/* fix incoming interface pointer (not the raw ethernet interface anymore) */
+	m->m_pkthdr.rcvif = &sc->sc_sppp.pp_if;
+
+	/* pass packet up and account for it */
+	sc->sc_sppp.pp_if.if_ipackets++;
+	sppp_input(&sc->sc_sppp.pp_if, m);
+	return;
+
+drop:
+	m_freem(m);
+}
 
 static int
 pppoe_output(struct pppoe_softc *sc, struct mbuf *m)
