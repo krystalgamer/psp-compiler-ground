@@ -1,5 +1,5 @@
 /* lang: c++ */
-/* cflags: -Os -fno-strength-reduce -fno-merge-constants -fno-exceptions */
+/* cflags: -Os -fno-strength-reduce -fno-exceptions */
 #include "common.h"
 
 extern "C" void *_memAllocMBL(unsigned int size, const char *file, int line);
@@ -84,7 +84,20 @@ LobbyMessage *LobbyMessage::Create_Array(int n) const
 }
 
 extern "C" {
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net12LobbyMessage14Set_OptionDataEiPKv);
+namespace Net {
+bool LobbyMessage::Set_OptionData(int n, const void *p)
+{
+	if (n <= 0) {
+		size = 0;
+		return true;
+	}
+	if (capacity < n)
+		return false;
+	size = n;
+	memcpy(Get_Data(), p, Get_Size());
+	return true;
+}
+}
 }
 
 LobbyMessage &LobbyMessage::Copy(const LobbyMessage &m)
