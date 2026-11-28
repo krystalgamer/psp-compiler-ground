@@ -30,7 +30,39 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/mod", D_000FA45C);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/mod", D_000FA484);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/mod", modTerm);
+typedef struct { const char *name; int a, b; int uid; } ModEnt;
+extern ModEnt ModTbl[3];
+extern int NetTbl[2];
+extern unsigned char D_000FA3A4, D_000FA3C0, D_000FA398, D_000FA3DC, D_000FA404, D_000FA42C, D_000FA45C, D_000FA484;
+int sceUtilityUnloadNetModule(int module);
+int sceUtilityUnloadAvModule(int module);
+int sceKernelDelayThreadCB(unsigned int usec);
+int semaTerm(int sema);
+int modUnload(int uid);
+int modTerm(void)
+{
+	int i, n;
+	ModEnt *p;
+
+	consPrintf(&D_000FA398, "modTerm");
+	for (i = 1; i >= 0; i--)
+		while (sceUtilityUnloadNetModule(NetTbl[i]) != 0)
+			sceKernelDelayThreadCB(1000);
+	p = &ModTbl[2];
+	for (n = 3; n != 0; n--) {
+		modUnload(p->uid);
+		p--;
+	}
+	consPrintf(&D_000FA45C, sceUtilityUnloadAvModule(3));
+	consPrintf(&D_000FA42C, sceUtilityUnloadAvModule(2));
+	consPrintf(&D_000FA404, sceUtilityUnloadAvModule(1));
+	consPrintf(&D_000FA3DC, sceUtilityUnloadAvModule(0));
+	if (semaTerm(SemaMod) != 1)
+		consPrintf(&D_000FA3A4, &D_000FA3C0, 0xA4, "modTerm", "Ret == TRUE");
+	SemaMod = -1;
+	consPrintf(&D_000FA484);
+	return 1;
+}
 
 void modLock(void) {
     if (SemaMod > 0) {
