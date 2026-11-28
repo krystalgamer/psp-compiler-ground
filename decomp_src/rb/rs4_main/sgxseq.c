@@ -167,7 +167,16 @@ void GetLeftStr(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", UnitAlloc);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", UnitFree_81D64);
+static inline void SeqNodeMove(SeqNode *l, SeqNode *n) { SeqNodeUnlink(n); SeqNodeAddTail(l, n); }
+void UnitFree_81D64(void *uv)
+{
+    char *u = uv;
+    if (*(short *)(u + 0x1C) >= 0) sgxBmgFree(*(short *)(u + 0x1C));
+    if (*(short *)(u + 0x1A) >= 0) sgxPortFree(*(short *)(u + 0x1A));
+    if (*(short *)(u + 0x18) >= 0) sgxResUnlock(*(short *)(u + 0x18));
+    *(int *)(u + 0xC) = 0;
+    SeqNodeMove((SeqNode *)&D_0011FE8C, (SeqNode *)u);
+}
 
 void UnitFreeAll_81DFC(u)
     char *u;
