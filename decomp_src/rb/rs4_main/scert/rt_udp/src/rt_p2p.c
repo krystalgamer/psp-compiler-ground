@@ -656,7 +656,37 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_udp_d
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_send_peer_info);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_handle_connect_event);
+int rt_p2p_save_backlog_connection(char *p, int conn); int rt_udp_get_virtual_port(); int rt_udp_set_peer_id(); int rt_udp_accept(); int rt_udp_set_buffer_size(); int rt_udp_deny();
+void rt_p2p_handle_connect_event(char *p, int conn)
+{
+    short me = -2;
+    int st = 0;
+
+    rt_p2p_get_my_peer_status(p, &st, &me);
+    if (st != 9 || *(int *)(p + 0x1C8) == 0) {
+        rt_p2p_save_backlog_connection(p, conn);
+        return;
+    }
+    {
+        unsigned short idx = rt_p2p_find_free_peer_index(p);
+        RtP2PPeer *peer;
+        if (idx == 0xFFFE) {
+            rt_udp_deny(*(int *)p, conn);
+            return;
+        }
+        peer = (RtP2PPeer *)(*(char **)(p + 0x184) + idx * 80);
+        rt_p2p_reset_peer_info(p, peer);
+        peer->a = 2;
+        peer->conn1 = conn;
+        rt_udp_get_virtual_port(conn, (char *)peer + 0x24);
+        *(short *)((char *)peer + 0x34) = 0;
+        rt_p2p_set_host_inactivity_timeout_connection(p, conn);
+        rt_udp_set_peer_id(conn, idx);
+        rt_udp_accept(*(int *)p, conn);
+        rt_udp_set_buffer_size(*(int *)p, conn, 0, *(int *)(p + 0x1D0));
+        rt_udp_set_buffer_size(*(int *)p, conn, 1, *(int *)(p + 0x1D4));
+    }
+}
 
 int rt_p2p_send_peer_info();
 
