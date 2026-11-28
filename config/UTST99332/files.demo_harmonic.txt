@@ -176,8 +176,8 @@ rodata 0x165AD8 main_objs/math_safe_acosf
 rodata 0x165B34 -
 bss 0x18B970 main_objs/math_safe_acosf
 bss 0x18B9F4 -
-# math_quaternion_quaternion: the float pools (quaternion()'s 1.0f) of quaternion operator*, -=, *=
-rodata 0x165EC4 main_objs/math_quaternion_quaternion
+# math_quaternion_quaternion: the float pools of the static initializer, quaternion(matrix) (asm), operator*, -=, *=; .bss: the header statics
+rodata 0x165E90 main_objs/math_quaternion_quaternion
 rodata 0x165ED0 -
 # interp_KeyFrameSequence: the header statics' float pool, the float pools of KeyFrameSequence<quaternion>::calc_tangent, evaluate, op_identity
 rodata 0x164940 main_objs/interp_KeyFrameSequence
@@ -447,9 +447,8 @@ rodata 0x170B40 main_objs/math_factorial
 bss 0x18E2DC main_objs/math_factorial
 rodata 0x165C5C main_objs/math_matrix_matrix
 cst4 0x165C5C-0x165D44 main_objs/math_matrix_matrix
-rodata 0x165E90 -
 bss 0x18BA08 main_objs/math_matrix_matrix
-bss 0x18BA8C -
+bss 0x18BA8C main_objs/math_quaternion_quaternion
 rodata 0x168800 main_objs/scene_Group
 rodata 0x16881C -
 bss 0x18C334 main_objs/scene_Group

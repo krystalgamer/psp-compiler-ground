@@ -2,9 +2,12 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
 #include "../main.hpp"
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_quaternion_quaternion", _Z41__static_initialization_and_destruction_0ii_5D6E0);
+/* the module's .ctors/.dtors refer to the static constructor/destructor; cc1plus keys them to the
+   first public symbol, the deferred-asm wrapper of the (still asm) first function */
+__asm__(".globl _GLOBAL__I__ZN4math10quaternionC2ERKNS_6matrixE\n_GLOBAL__I__ZN4math10quaternionC2ERKNS_6matrixE = _GLOBAL__I__ZN4math10quaternionC2ERKNS_6matrixE__asm");
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_quaternion_quaternion", _ZN4math10quaternionC2ERKNS_6matrixE);
 
@@ -113,7 +116,6 @@ math::quaternion math::quaternion::FromEulerAngles(vector_xyz v, RotationOrder o
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_quaternion_quaternion", _ZN4math10quaternion15FromEulerAnglesEfffNS_13RotationOrderE);
-
 
 extern const float D_00168DF4;  /* 0.5f */
 math::quaternion math::quaternion::FromAxisAngle(vector_xyz axis, float angle)
@@ -236,13 +238,6 @@ math::quaternion math::quaternion::Slerp(quaternion a, quaternion b, float t)
     return r;
 }
 
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_5D6E0");
-void _GLOBAL__I__ZN4math10quaternionC2ERKNS_6matrixE(void);
-}
-
-void _GLOBAL__I__ZN4math10quaternionC2ERKNS_6matrixE(void)
-{
-    static_init(1, 0xFFFF);
-}
-
+/* the asm functions refer to the header statics by their module names */
+__asm__("_ZN4math12BEZIER_BASISE_18EF4C = _ZN4math12BEZIER_BASISE\n"
+        "_ZN4math13HERMITE_BASISE_18EF0C = _ZN4math13HERMITE_BASISE\n");

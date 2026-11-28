@@ -448,8 +448,7 @@ segments:
       - [0x168A78, .rodata, main_objs/math_safe_acosf]
       - [0x168AD4, rodata, asm/rodata_168A54]
       - [0x168BFC, .rodata, main_objs/math_matrix_matrix]
-      - [0x168E30, rodata, asm/rodata_168DB0]
-      - [0x168E64, .rodata, main_objs/math_quaternion_quaternion]
+      - [0x168E30, .rodata, main_objs/math_quaternion_quaternion]
       - [0x168E70, rodata, asm/rodata_168DF0]
       - [0x16904C, .rodata, main_objs/scene_HasBVdata]
       - [0x1690B8, rodata, asm/rodata_169038]
@@ -711,7 +710,7 @@ segments:
       - { start: 0x18CFCC, type: .bss, vram: 0x18EDF0, name: main_objs/math_safe_acosf }
       - { start: 0x18CFCC, type: bss, vram: 0x18EE74, name: bss_18EE74 }
       - { start: 0x18CFCC, type: .bss, vram: 0x18EE88, name: main_objs/math_matrix_matrix }
-      - { start: 0x18CFCC, type: bss, vram: 0x18EF0C, name: bss_18EF0C }
+      - { start: 0x18CFCC, type: .bss, vram: 0x18EF0C, name: main_objs/math_quaternion_quaternion }
       - { start: 0x18CFCC, type: .bss, vram: 0x18EF8C, name: main_objs/scene_HasBVdata }
       - { start: 0x18CFCC, type: .bss, vram: 0x18F010, name: main_objs/scene_DefaultShader }
       - { start: 0x18CFCC, type: .bss, vram: 0x18F094, name: main_objs/scene_Graph }
