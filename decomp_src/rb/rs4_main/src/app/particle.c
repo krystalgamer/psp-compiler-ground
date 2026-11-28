@@ -23,7 +23,32 @@ void partSetInst(int arg0) {
     g_nInst = arg0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", _PartCusConvEnv);
+extern char D_000FDE18[], D_000FDE1C[], D_000FDE24[], D_000FDE2C[], D_000FDE34[], D_000FDE3C[], D_000FDE44[], D_000FDE4C[], D_000FDE54[], D_000FDE5C[], D_000FDE64[], D_000FDE6C[];
+char *cusGetString(int name, char *section, char *key, char *out, int size, char *def);
+int cusSetSection(int, char *);
+int _PartCusConvEnv(float *e, int cus)
+{
+	char name[0x200];
+
+	cusGetString(cus, D_000FDE1C, "EnvName", name, 0x200, D_000FDE18);
+	if (name[0] == 0)
+		return 0;
+	if (cusSetSection(cus, name) != 1)
+		return 0;
+	e[4] = cusGetFloat(cus, 0, D_000FDE24, 0.0f);
+	e[5] = cusGetFloat(cus, 0, D_000FDE2C, 0.0f);
+	e[6] = cusGetFloat(cus, 0, D_000FDE34, 0.0f);
+	e[7] = 0.0f;
+	e[0] = cusGetFloat(cus, 0, D_000FDE3C, e[7]);
+	e[1] = cusGetFloat(cus, 0, D_000FDE44, 0.0f);
+	e[2] = cusGetFloat(cus, 0, D_000FDE4C, 0.0f);
+	e[3] = 0.0f;
+	e[8] = cusGetFloat(cus, 0, D_000FDE54, e[3]);
+	e[9] = cusGetFloat(cus, 0, D_000FDE5C, 0.0f);
+	e[10] = cusGetFloat(cus, 0, D_000FDE64, 0.0f);
+	e[11] = cusGetFloat(cus, 0, D_000FDE6C, 0.0f);
+	return 1;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FDE18);
 
