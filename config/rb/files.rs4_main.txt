@@ -43,6 +43,7 @@
 0x13840 src_app_gim      1.9.2           src/app/gim.c
 0x139A0 src_app_i3d      1.9.2           src/app/i3d.c
 0x191CC src_app_i3d_task 1.9.2           src/app/i3d_task.c
+cst4 0xFD9B0-0xFDA34 src/app/i3d_task
 0x1B6F0 src_app_init     1.9.2           src/app/init.c
 0x1B9A0 src_app_loading  1.9.2           src/app/loading.c
 0x1BA2C src_app_locale   1.9.2           src/app/locale.c

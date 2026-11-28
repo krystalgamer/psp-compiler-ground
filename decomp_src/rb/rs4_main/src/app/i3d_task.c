@@ -313,57 +313,25 @@ void i3dCameraSetMatrix(int a, int b)
 	taskSendProc(a, &i3dTask_View, 0x13, b, 0);
 }
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD96C);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD97C);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD98C);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD9A0);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD9B0);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD9B4);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD9B8);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD9BC);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD9C0);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD9C4);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD9C8);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD9CC);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD9D0);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD9D4);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD9D8);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD9DC);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD9E0);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD9E4);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD9E8);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD9EC);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD9F0);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD9F4);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD9F8);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD9FC);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FDA00);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", i3dCameraCardBattle);
+float tanf(float);
+void i3dCameraCardBattle(void)
+{
+	float p[16];
+	float w;
+	float h;
+	float fov;
+	taskSendProc(0, &i3dTask_View, 0x10, (int)p, 0);
+	p[0] = 50.0f;
+	p[1] = 350.0f;
+	fov = 0.7853982f;
+	w = p[0] * tanf(fov * 0.5f);
+	h = w * 1.7647059f;
+	p[2] = -h;
+	p[3] = h;
+	p[4] = -w;
+	p[5] = w;
+	taskSendProc(0, &i3dTask_View, 0x11, (int)p, 0);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", i3dLightInit);
 
