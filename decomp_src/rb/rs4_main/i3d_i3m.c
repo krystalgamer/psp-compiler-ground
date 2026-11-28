@@ -71,13 +71,54 @@ void I3mRoot__GetBlendMotionBTA(char *m, I3mPostureX *out, float *t1, char *m2, 
         GetBlendPosture(out + i, m, &(*(I3mNodeAnimX **)(m + 0x1C))[i], t1[i], m2, &(*(I3mNodeAnimX **)(m2 + 0x1C))[i], t2[i], w[i], a6);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_i3m", I3mRoot__BlendMotionA);
+void I3mPosture__InterPolateA(int, int, int, float);
+void I3mRoot__BlendMotionA(char *m, I3mPostureX *out, int a2, float t, float w)
+{
+    int n = *(unsigned short *)(m + 0x14);
+    int i;
+    I3mPostureX tmp;
+    for (i = 0; i < n; i++) {
+        int s = I3mNodeAnim__GetSectionByTime(&(*(I3mNodeAnimX **)(m + 0x1C))[i], *(int *)(m + 0x24), t);
+        if (I3mSection__GetPostureA(s, &tmp, t, a2, m))
+            I3mPosture__InterPolateA((int)&out[i], (int)&out[i], (int)&tmp, w);
+    }
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_i3m", I3mRoot__BlendMotionBA);
+void I3mRoot__BlendMotionBA(char *m, I3mPostureX *out, float *w, int a2, float t)
+{
+    int n = *(unsigned short *)(m + 0x14);
+    int i;
+    I3mPostureX tmp;
+    for (i = 0; i < n; i++) {
+        int s = I3mNodeAnim__GetSectionByTime(&(*(I3mNodeAnimX **)(m + 0x1C))[i], *(int *)(m + 0x24), t);
+        if (I3mSection__GetPostureA(s, &tmp, t, a2, m))
+            I3mPosture__InterPolateA((int)&out[i], (int)&out[i], (int)&tmp, w[i]);
+    }
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_i3m", I3mRoot__BlendMotionTA);
+void I3mRoot__BlendMotionTA(char *m, I3mPostureX *out, float *t, int a2, float w)
+{
+    int n = *(unsigned short *)(m + 0x14);
+    int i;
+    I3mPostureX tmp;
+    for (i = 0; i < n; i++) {
+        int s = I3mNodeAnim__GetSectionByTime(&(*(I3mNodeAnimX **)(m + 0x1C))[i], *(int *)(m + 0x24), t[i]);
+        if (I3mSection__GetPostureA(s, &tmp, t[i], a2, m))
+            I3mPosture__InterPolateA((int)&out[i], (int)&out[i], (int)&tmp, w);
+    }
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_i3m", I3mRoot__BlendMotionBTA);
+void I3mRoot__BlendMotionBTA(char *m, I3mPostureX *out, float *t, float *w, int a2)
+{
+    int n = *(unsigned short *)(m + 0x14);
+    int i;
+    I3mPostureX tmp;
+    for (i = 0; i < n; i++) {
+        int s = I3mNodeAnim__GetSectionByTime(&(*(I3mNodeAnimX **)(m + 0x1C))[i], *(int *)(m + 0x24), t[i]);
+        if (I3mSection__GetPostureA(s, &tmp, t[i], a2, m))
+            I3mPosture__InterPolateA((int)&out[i], (int)&out[i], (int)&tmp, w[i]);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_i3m", I3mRoot__IsBlendPossible);
 
