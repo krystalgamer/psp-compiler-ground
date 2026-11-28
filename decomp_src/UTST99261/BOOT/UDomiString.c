@@ -139,7 +139,7 @@ void ps_freeRecvInfo(void);
 int UTL_guessMIMETypeFromName(char *name);
 typedef struct PsAuth { int x0; char *user; char *pass; } PsAuth;
 void ps_HeadSend(int len1, char *p1, int len2, char *p2, PsAuth *a, int b, int id);
-void ps_postsend(int len1, char *p1, int len2, char *p2, int a, int hdrlen, char *hdr, int bodylen, char *body, int z, int id);
+void ps_postsend(int len1, char *p1, int len2, char *p2, PsAuth *a, int hdrlen, char *hdr, int bodylen, char *body, int z, int id);
 char *strcat(char *d, const char *s);
 int OS_mq_send(int id, const char *buf, int len, unsigned int prio);
 void ps_halt(char *msg);
