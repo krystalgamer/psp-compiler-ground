@@ -115,11 +115,59 @@ int I3rRoot__UpdateMarkedMaterial(int *root)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_gim_control", I3rRoot__ReplaceStqMapEntity);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_gim_control", I3rLayer__GetOffset);
+int I3rLayer__GetOffset(void *l)
+{
+	void *a;
+	int r;
+	if (I3rLayer__IsExistAdjustStq(l) == 0) {
+		r = 0;
+		goto end;
+	}
+	a = (void *)I3rLayer__GetAdjustStq(l);
+	if (I3rAdjustStq__IsExistOffset(a) == 0) {
+		r = 0;
+		goto end;
+	}
+	r = *(int *)I3rAdjustStq__GetOffset(a);
+end:
+	return r;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_gim_control", I3rLayer__GetRepeat);
+int I3rLayer__GetRepeat(void *l)
+{
+	void *a;
+	int r;
+	if (I3rLayer__IsExistAdjustStq(l) == 0) {
+		r = 0;
+		goto end;
+	}
+	a = (void *)I3rLayer__GetAdjustStq(l);
+	if (I3rAdjustStq__IsExistRepeat(a) == 0) {
+		r = 0;
+		goto end;
+	}
+	r = *(int *)I3rAdjustStq__GetRepeat(a);
+end:
+	return r;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_gim_control", I3rLayer__GetRotate);
+int I3rLayer__GetRotate(void *l)
+{
+	void *a;
+	int r;
+	if (I3rLayer__IsExistAdjustStq(l) == 0) {
+		r = 0;
+		goto end;
+	}
+	a = (void *)I3rLayer__GetAdjustStq(l);
+	if (I3rAdjustStq__IsExistRotate(a) == 0) {
+		r = 0;
+		goto end;
+	}
+	r = *(int *)I3rAdjustStq__GetRotate(a);
+end:
+	return r;
+}
 
 int I3rLayer__SetOffset(void *l, int v)
 {
