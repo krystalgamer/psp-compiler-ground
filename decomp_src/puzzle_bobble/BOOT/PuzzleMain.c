@@ -3152,17 +3152,17 @@ __asm__("D_0014E8B8 = Ticks.21\nD_0014E8BC = X.22\nD_0014E8C0 = Y.23\nD_0014E8C4
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", PuzzleBody);
 #endif
 
-#ifdef NON_MATCHING
-/* Byte-matches (fntest) but cannot be installed while the unit is mixed: its jump table
- * must sit at D_0002E5AC, before rodata of functions that precede it in .text. */
 extern u8 CpuCheckBall[];
+extern int D_00038A50;
 int CPUThinking(PZL_STAT *st)
 {
 	static short PushTime0;
 	static short PushTime1;
 	static int ArrowDir;
 	static int ArrowTime;
-	static int ArrowType = 1;
+	/* STAND-IN: numbering only; the real `static int ArrowType = 1;` is .data,
+	 * which stays asm (D_00038A50) */
+	static int ArrowType __attribute__((section(".pbskipd")));
 	int ret = 1;
 	int i, f, c;
 
@@ -3170,7 +3170,7 @@ int CPUThinking(PZL_STAT *st)
 	switch (st->cpu) {
 	case 0:
 	think:
-		ArrowDir = ArrowType == -1 ? 0x80 : 0x20;
+		ArrowDir = D_00038A50 == -1 ? 0x80 : 0x20;
 		ArrowTime = rand() % 20 + 2;
 		st->cpu = 1;
 	case 1:
@@ -3217,7 +3217,7 @@ int CPUThinking(PZL_STAT *st)
 		if (PushTime0 >= 5)
 			PushTime0 = 4;
 		if (st->unk454 >= 472) {
-			ArrowType = -1;
+			D_00038A50 = -1;
 			st->unk454 = 464;
 		}
 		st->drop.unk2 = 0;
@@ -3228,7 +3228,7 @@ int CPUThinking(PZL_STAT *st)
 		if (PushTime1 >= 5)
 			PushTime1 = 4;
 		if (st->unk454 < 35 || st->unk454 >= 504) {
-			ArrowType = 1;
+			D_00038A50 = 1;
 			st->unk454 = 34;
 		}
 		st->drop.unk2 = 0;
@@ -3240,20 +3240,6 @@ int CPUThinking(PZL_STAT *st)
 	}
 	return ret;
 }
-#else
-/* STAND-IN: CPUThinking is still asm.  Its statics, in its place and numbered as in the
- * original (PushTime0.30, PushTime1.31, ArrowDir.32, ArrowTime.33, ArrowType.34); data ones only keep the numbering (their .data stays asm). */
-static void __attribute__((section(".pbskip"), unused)) CPUThinking_statics(void)
-{
-	static short PushTime0;
-	static short PushTime1;
-	static int ArrowDir;
-	static int ArrowTime;
-	static int ArrowType __attribute__((section(".pbskipd")));
-}
-__asm__("D_0014E8D4 = PushTime0.30\nD_0014E8D6 = PushTime1.31\nD_0014E8D8 = ArrowDir.32\nD_0014E8DC = ArrowTime.33");
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CPUThinking);
-#endif
 
 int GetOjamaPat(int mode)
 {
@@ -4794,12 +4780,8 @@ void MonitorPut(PZL_STAT *st)
 	}
 }
 
-#ifdef NON_MATCHING
-/* Byte-matches (fntest, every cc1) but cannot be installed while the unit is mixed: the
- * switch's jump table must sit at D_0002E750, far before this function's own rodata
- * (the 1.0f at D_0002E9AC).  Needs: the case order below (found by search), and the
- * frame counter re-read before `% 2` (only a volatile read reproduces the reload). */
-extern const float D_0002E9AC;
+/* Needs the case order below (found by search) and the frame counter re-read before
+ * `% 2`: only a volatile read reproduces the reload.  STAND-IN: the volatile views. */
 extern SPRDATA SHUTTER_PARTZ;
 int PollShutter(int req)
 {
@@ -4898,21 +4880,9 @@ int PollShutter(int req)
 		}
 	}
 	for (i = 0; i < Count; i++)
-		SpriteDrawC(D_0002E9AC, 240, 28 + i * 12, &SHUTTER_PARTZ);
+		SpriteDrawC(1.0f, 240, 28 + i * 12, &SHUTTER_PARTZ);
 	return ret;
 }
-#else
-/* STAND-IN: PollShutter is still asm.  Its statics, in its place and numbered as in the
- * original (Count.56, Tick.57, Stat.58); data ones only keep the numbering (their .data stays asm). */
-static void __attribute__((section(".pbskip"), unused)) PollShutter_statics(void)
-{
-	static int Count;
-	static int Tick;
-	static int Stat;
-}
-__asm__("D_0014E930 = Count.56\nD_0014E934 = Tick.57\nD_0014E938 = Stat.58");
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", PollShutter);
-#endif
 
 void DrawLight(int x, int y, int col, int no)
 {
