@@ -8,7 +8,7 @@ extern unsigned char D_000FA23C;
 extern signed char D_000FA248;
 extern unsigned char D_000FA264;
 extern int HomeUID;
-extern unsigned char homeProc;
+int homeProc(void);
 int sceKernelDeleteCallback(int);                   /* extern */
 
 
@@ -25,7 +25,7 @@ int homeInit(void) {
 
     temp_v0 = "homeInit";
     consPrintf(&D_000FA21C, temp_v0);
-    temp_v0_2 = sceKernelCreateCallback(&D_000FA220, &homeProc, NULL);
+    temp_v0_2 = sceKernelCreateCallback(&D_000FA220, homeProc, NULL);
     HomeUID = temp_v0_2;
     if (temp_v0_2 <= 0) {
         consPrintf(&D_000FA248, &D_000FA22C, 0x21, temp_v0, &D_000FA23C);
@@ -67,7 +67,31 @@ int homeTerm(void) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/home", homeProc);
+int sceKernelGetThreadCurrentPriority(void);
+void modLock(void);
+void msLock(void);
+void fileLock(void);
+void sgxPspSuspendThreadAll(int);
+int sceKernelExitGame(void);
+int homeProc(void)
+{
+	consPrintf("%s : %d\n", &D_000FA220, sceKernelGetThreadCurrentPriority());
+	consPrintf("%s : modLock : Wait\n", &D_000FA220);
+	modLock();
+	consPrintf("%s : modLock : Sync\n", &D_000FA220);
+	consPrintf("%s : msLock : Wait\n", &D_000FA220);
+	msLock();
+	consPrintf("%s : msLock : Sync\n", &D_000FA220);
+	consPrintf("%s : fileLock : Wait\n", &D_000FA220);
+	fileLock();
+	consPrintf("%s : fileLock : Sync\n", &D_000FA220);
+	sgxPspSuspendThreadAll(1);
+	consPrintf("%s : Sound : Suspend\n", &D_000FA220);
+	consPrintf("%s : sceKernelExitGame\n", &D_000FA220);
+	if (sceKernelExitGame() != 0)
+		consPrintf(&D_000FA248, &D_000FA22C, 0x75, &D_000FA220, &D_000FA264);
+	return 0;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/home", D_000FA350);
 
