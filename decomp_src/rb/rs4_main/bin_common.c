@@ -1554,9 +1554,53 @@ void I3rWorkEntity__Unpack_PSP(int *p)
         *p = *p + (int)p;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rModelEntity__Pack);
+#define PACK_PTR_(f) { char *p_ = *(char **)(f); if (p_ != NULL) *(char **)(f) = p_ - (int)m; }
+void I3rModelEntity__Pack(char *m)
+{
+	PACK_PTR_(m + 0x10);
+	PACK_PTR_(m + 0x14);
+	{
+	unsigned int i, n = *(unsigned short *)(m + 0x2C);
+	for (i = 0; i < n; i++) {
+		char **q = *(char ***)(m + 0x18) + i;
+		PACK_PTR_(q);
+	}
+	}
+	PACK_PTR_(m + 0x18);
+	{
+	unsigned int i, n = *(unsigned short *)(m + 0x2E);
+	for (i = 0; i < n; i++) {
+		char **q = *(char ***)(m + 0x20) + i;
+		PACK_PTR_(q);
+	}
+	}
+	PACK_PTR_(m + 0x1C);
+	PACK_PTR_(m + 0x20);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rModelEntity__Unpack);
+#define UNPACK_PTR_(f) { char *p_ = *(char **)(f); if (p_ != NULL) *(char **)(f) = p_ + (int)m; }
+void I3rModelEntity__Unpack(char *m)
+{
+	UNPACK_PTR_(m + 0x10);
+	UNPACK_PTR_(m + 0x14);
+	UNPACK_PTR_(m + 0x18);
+	{
+	unsigned int i, n = *(unsigned short *)(m + 0x2C);
+	for (i = 0; i < n; i++) {
+		char **q = *(char ***)(m + 0x18) + i;
+		UNPACK_PTR_(q);
+	}
+	}
+	UNPACK_PTR_(m + 0x1C);
+	UNPACK_PTR_(m + 0x20);
+	{
+	unsigned int i, n = *(unsigned short *)(m + 0x2E);
+	for (i = 0; i < n; i++) {
+		char **q = *(char ***)(m + 0x20) + i;
+		UNPACK_PTR_(q);
+	}
+	}
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
