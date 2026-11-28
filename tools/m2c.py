@@ -54,6 +54,9 @@ def c_prototypes(target, module):
         for m in re.finditer(r"^(?:static )?([A-Za-z_][\w ]*?[\w*]) ?\*?\s*(\w+)\(([^;{}()]*)\)\s*\{",
                              text, re.M):
             line = m.group(0).rstrip("{").strip()
+            params = [x.strip() for x in m.group(3).split(",") if x.strip()]
+            if any(re.fullmatch(r"[A-Za-z_]\w*", x) and x != "void" for x in params):
+                continue    # K&R definition `f(a, b)`: no prototype to give
             words = set(re.findall(r"[A-Za-z_]\w*", re.sub(r"\w+\s*(,|\)|$)", r"\1", m.group(3))))
             words |= set(re.findall(r"[A-Za-z_]\w*", m.group(1)))
             if words <= KNOWN and not line.startswith(("if", "while", "for", "switch", "return")):
