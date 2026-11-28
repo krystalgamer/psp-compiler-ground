@@ -37,9 +37,27 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/draw_mesh_en
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/draw_mesh_enabled", _ZN5scene19MeshDataInterleaved4drawERKNS_17TraversalVarStackE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/draw_mesh_enabled", _ZN5scene13DrawFuncIndex4drawEPN14vertex_formats16T2F_C4UB_N3F_V3FERKN3sgl14PrimitiveIndexIsEE);
+void scene::DrawFuncIndex::draw(vertex_formats::T2F_C4UB_N3F_V3F *v, const sgl::PrimitiveIndex<short> &p)
+{
+    if (!p.tri().empty())
+        sceGuDrawArray(3, 0x11FF, p.tri().size(), &p.tri()[0], v);
+    for (int i = 0, k = 0; i != p.n; i++) {
+        int len = p.strips()[k++];
+        sceGuDrawArray(4, 0x11FF, len, &p.strips()[k], v);
+        k += len;
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/draw_mesh_enabled", _ZN5scene16DrawFuncNonIndex4drawEPN14vertex_formats16T2F_C4UB_N3F_V3FERKN3sgl14PrimitiveIndexIsEE);
+void scene::DrawFuncNonIndex::draw(vertex_formats::T2F_C4UB_N3F_V3F *v, const sgl::PrimitiveIndex<short> &p)
+{
+    if (!p.tri().empty())
+        sceGuDrawArray(3, 0x1FF, p.tri().size(), 0, v);
+    for (int i = 0, k = 0; i != p.n; i++) {
+        int len = p.strips()[k++];
+        sceGuDrawArray(4, 0x1FF, len, 0, v + p.strips()[k]);
+        k += len;
+    }
+}
 
 extern "C" {
 void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_8B5A8");

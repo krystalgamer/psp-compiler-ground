@@ -598,6 +598,20 @@ public:
     std::vector<vertex_formats::T2F_C4UB_N3F_V3F> *_v_ptr;  /* 0x50 */
 };
 
+/* draw callbacks of MeshDataInterleaved (vtable: draw only) */
+class DrawFunc {
+public:
+    virtual void draw(vertex_formats::T2F_C4UB_N3F_V3F *, const sgl::PrimitiveIndex<short> &) = 0;
+};
+class DrawFuncIndex : public DrawFunc {
+public:
+    virtual void draw(vertex_formats::T2F_C4UB_N3F_V3F *, const sgl::PrimitiveIndex<short> &);
+};
+class DrawFuncNonIndex : public DrawFunc {
+public:
+    virtual void draw(vertex_formats::T2F_C4UB_N3F_V3F *, const sgl::PrimitiveIndex<short> &);
+};
+
 class MeshDataInterleaved {
 public:
     struct SharedData;
