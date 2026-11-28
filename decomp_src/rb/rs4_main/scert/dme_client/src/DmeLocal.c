@@ -1005,7 +1005,46 @@ int FindFreePingSlot(void)
     return 127;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIPing);
+int NetSendMessage(char, char *, int, int, int, int, void *);
+typedef struct { LinkAddrS addr; int port; int st; int x; int time; char *conn; int idx; } DmePingEnt;
+typedef struct { int z; unsigned char slot; unsigned char one; } DmePingMsg;
+int NetIPing(char *conn, unsigned int idx, int x)
+{
+    DmePingMsg m;
+    int slot;
+    DmePingEnt *pi;
+
+    if (conn == NULL) return 0x17;
+    if (idx >= 256 && idx != 0xFFFF) return 0x17;
+    if (x == 0) return 0x17;
+    if (idx == -1) return 8;
+    slot = FindFreePingSlot();
+    if (slot == 0x7F) return 0x19;
+    pi = (DmePingEnt *)(slot * 32 + (int)gPingInfo);
+    m.one = 1;
+    m.slot = slot;
+    m.z = 0;
+    NetSendMessage(-0x80, conn, idx, 0, 1, 8, &m);
+    if (idx == 0xFFFF) {
+        pi->addr = NetGetServerIpAddress(conn);
+        if (gUDPInterfacePtr != NULL) pi->port = *(int *)((char *)gUDPInterfacePtr + 0x84);
+        else pi->port = 0;
+        pi->idx = 0x100;
+        pi->conn = NULL;
+    } else {
+        int *ci = NetGetClientInfo(conn, idx);
+        if (ci == NULL) return 0x17;
+        pi->addr.a = ci[0];
+        pi->conn = conn;
+        pi->addr.b = ci[1];
+        pi->port = ci[2];
+        pi->idx = idx;
+    }
+    pi->x = x;
+    pi->st = 0;
+    pi->time = NetIGetLocalTime();
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIPingIP);
 
