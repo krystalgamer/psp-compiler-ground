@@ -95,7 +95,6 @@ int mes_string_new(void *ctx, const void *str, int len);
 extern const double D_0013BFD8;
 void mes_object_init(void *o, int cls, int proto);
 int mes_error_syntax(void *ctx, int s);
-extern int D_00585360;
 int mes_util_is_line_terminator(unsigned short c);
 typedef struct RxVals { int v0; int v1; int v2; } RxVals;
 int mes_util_octal(unsigned short c);
@@ -110,7 +109,7 @@ RxObj *mes_regexp_new(void *ctx, int source, int flags) {
 
     re = mes_gc_alloc(ctx, 8);
     if (re != NULL) {
-        mes_object_init(re, 0xC, D_00585360);
+        mes_object_init(re, 0xC, (*(int *)((char *)&mes_classes + 0x30)));
         re->source = source;
         re->node = NULL;
         re->lastIndex = 0;

@@ -2,6 +2,7 @@
 #include "common.h"
 #include "mes_js.h"
 #include "m2c_macros.h"
+extern MesObject *mes_classes[];
 extern const double D_0013BD88;       /* 86400000.0 */
 extern const double D_0013BD90;       /* 86400000.0 */
 int mes_date_month_days(int year, int month);
@@ -24,7 +25,6 @@ typedef struct MesTimeval {
 int CLIB_gettimeofday(MesTimeval *tv, void *tz);
 int mes_eval_to_int32(MesContext *ctx, MesValue v);
 extern unsigned int mes_ids[];
-extern MesObject *D_00585354;
 extern void *mes_date_table;
 extern void *mes_date_table1;
 MesValue mes_date_constructor(MesContext *ctx, MesValue y, MesValue mo, MesValue da, MesValue h, MesValue mi, MesValue s, MesValue ms);
@@ -46,7 +46,6 @@ typedef struct MesDate {
 #define MES_DATE_BAD(d) (((int)(d) & 3) != 0 || (unsigned int)(d) <= 0x20 || (d)->obj.gc->kind != 7)
 extern int mes_date_local_gmtoff;
 extern int mes_date_local_zone;
-extern MesObject *D_00585338;
 MesValue mes_eval_type_error(MesContext *ctx, void *v);
 void mes_date_set_gmtoff(MesDate *d, int gmtoff);
 int mes_date_week(int year, int month, int mday);
@@ -75,7 +74,7 @@ MesDate *mes_date_new(MesContext *ctx)
     MesDate *d = mes_gc_alloc(ctx, 7);
 
     if (d != NULL) {
-        mes_object_init(&d->obj, 2, D_00585338);
+        mes_object_init(&d->obj, 2, (*(MesObject * *)((char *)mes_classes + 0x8)));
         d->valid = 0;
         d->year = -1;
         d->month = -1;
@@ -943,8 +942,8 @@ void mes_date_setup(MesContext *ctx)
 
     proto = (MesObject *)mes_date_new(ctx);
     if (proto != NULL)
-        proto->proto = D_00585354;
-    D_00585338 = proto;
+        proto->proto = (*(MesObject * *)((char *)mes_classes + 0x24));
+    (*(MesObject * *)((char *)mes_classes + 0x8)) = proto;
     ctor = mes_native_new(ctx, mes_ids[2], mes_date_constructor, 7, 1);
     mes_object_set(ctx->global, mes_ids[2], (MesValue)ctor, 7);
     mes_object_set(ctor, mes_ids[59], (MesValue)proto, 7);

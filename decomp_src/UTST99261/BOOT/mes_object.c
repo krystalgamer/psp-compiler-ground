@@ -2,15 +2,13 @@
 #include "common.h"
 #include "mes_js.h"
 #include "m2c_macros.h"
+extern MesObject *mes_classes[];
 typedef struct ObjStr {
     unsigned short *chars;            /* 0x0 */
     int slen;                         /* 0x4 */
 } ObjStr;
 int mes_is_number(MesValue v);
 MesValue mes_eval_to_object(MesContext *ctx, MesValue v);
-extern MesObject *D_00585334;
-extern MesObject *D_00585350;
-extern MesObject *D_00585364;
 void mes_object_set(MesObject *obj, unsigned int id, int value, int flags);
 unsigned short *mes_util_strcp(unsigned short *d, const char *s);
 void mes_memory_copy(const void *src, void *dst, int n);
@@ -36,7 +34,6 @@ void mes_error_setup(MesContext *ctx);
 extern int mes_stack_bottom;
 extern int mes_stack_limit;
 extern int mes_stack_max;
-extern MesObject *D_00585354;
 void *mes_gc_alloc(MesContext *ctx, int kind);
 void mes_object_init(MesObject *obj, int cls, MesObject *proto);
 int mes_eval_to_index(MesContext *ctx, MesValue v);
@@ -339,18 +336,18 @@ MesValue mes_object_object(MesContext *ctx, MesValue v)
     if (ctx->frame->construct) {
         o = ctx->frame->thisobj;
         if (v == 0 || v == 4) {
-            o->proto = D_00585354;
+            o->proto = (*(MesObject * *)((char *)mes_classes + 0x24));
         } else if (v == 0xC || v == 8) {
             o->cls = 1;
-            o->proto = D_00585334;
+            o->proto = (*(MesObject * *)((char *)mes_classes + 0x4));
             o->fC = v;
         } else if (mes_is_number(v)) {
             o->cls = 8;
-            o->proto = D_00585350;
+            o->proto = (*(MesObject * *)((char *)mes_classes + 0x20));
             o->fC = v;
         } else if ((v & 3) == 3) {
             o->cls = 13;
-            o->proto = D_00585364;
+            o->proto = (*(MesObject * *)((char *)mes_classes + 0x34));
             o->fC = v;
             mes_object_set(o, mes_ids[51], MES_INT(((ObjStr *)(v & ~3))->slen), 7);
         } else
@@ -358,7 +355,7 @@ MesValue mes_object_object(MesContext *ctx, MesValue v)
         return (MesValue)o;
     }
     if (v == 0 || v == 4)
-        return (MesValue)mes_object_new(ctx, 9, D_00585354);
+        return (MesValue)mes_object_new(ctx, 9, (*(MesObject * *)((char *)mes_classes + 0x24)));
     return mes_eval_to_object(ctx, v);
 }
 
@@ -432,12 +429,12 @@ MesValue mes_object_property_is_enumerable(MesContext *ctx, MesValue v)
 
 MesObject *mes_object_class_setup(MesContext *ctx)
 {
-    return D_00585354 = mes_object_new(ctx, 9, 0);
+    return (*(MesObject * *)((char *)mes_classes + 0x24)) = mes_object_new(ctx, 9, 0);
 }
 
 void mes_object_object_setup(MesContext *ctx)
 {
-    MesObject *proto = D_00585354;
+    MesObject *proto = (*(MesObject * *)((char *)mes_classes + 0x24));
     MesObject *ctor;
 
     ctor = mes_native_new(ctx, mes_ids[9], mes_object_object, 1, 1);

@@ -2,6 +2,7 @@
 #include "common.h"
 #include "mes_js.h"
 #include "m2c_macros.h"
+extern MesObject *mes_classes[];
 extern unsigned int mes_ids[];
 typedef struct MesNatEnt {
     const char *name;
@@ -16,7 +17,6 @@ typedef struct MesNative {
     unsigned char nargs;              /* 0x1C */
     unsigned char f1D;
 } MesNative;
-extern MesObject *D_00585344;
 void mes_object_set(MesObject *obj, unsigned int id, MesValue value, int flags);
 MesValue mes_object_get(MesObject *obj, unsigned int id);
 void *mes_gc_alloc(MesContext *ctx, int kind);
@@ -30,7 +30,7 @@ MesNative *mes_native_new(MesContext *ctx, int a, void *fn, int nargs, int flags
     MesNative *n = mes_gc_alloc(ctx, 4);
 
     if (n != NULL) {
-        mes_object_init(&n->obj, 5, D_00585344);
+        mes_object_init(&n->obj, 5, (*(MesObject * *)((char *)mes_classes + 0x14)));
         n->f14 = a;
         n->fn = fn;
         n->nargs = nargs;
@@ -55,7 +55,7 @@ void mes_native_setup(MesContext *ctx, MesObject *obj, MesNatEnt *table, int n)
 MesValue mes_native_get(MesContext *ctx, MesNative *n, unsigned int id)
 {
     if (n->obj.proto == NULL)
-        n->obj.proto = D_00585344;
+        n->obj.proto = (*(MesObject * *)((char *)mes_classes + 0x14));
     if (id == mes_ids[51])
         return MES_INT(n->nargs);
     return mes_object_get(&n->obj, id);

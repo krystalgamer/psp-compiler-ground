@@ -11,7 +11,6 @@ void mes_object_set(MesObject *obj, unsigned int id, MesValue value, int flags);
 typedef struct MesValueObj {
     struct MesObject obj;
 } MesValueObj;
-extern MesObject *D_00585334;
 MesValue mes_eval_to_boolean(MesContext *ctx, MesValue v);
 MesValue mes_eval_type_error(MesContext *ctx);
 MesObject *mes_object_new(MesContext *ctx, int cls, MesObject *proto);
@@ -22,7 +21,7 @@ MesValue mes_boolean_constructor(MesContext *ctx, MesValue v)
     MesObject *o;
 
     if (ctx->frame->construct) {
-        o = mes_object_new(ctx, 1, D_00585334);
+        o = mes_object_new(ctx, 1, mes_classes[1]);
         o->fC = b;
         return (MesValue)o;
     }

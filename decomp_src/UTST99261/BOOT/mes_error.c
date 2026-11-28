@@ -21,7 +21,6 @@ MesValue mes_eval_object_get(MesContext *ctx, MesValue o, unsigned int id);
 extern MesObject *mes_classes[];
 extern unsigned int mes_ids[];
 MesValue mes_error_syntax(MesContext *ctx, MesValue msg);
-extern MesObject *D_0058533C;
 MesValue mes_error_native(MesContext *ctx, MesValue msg, int type);
 MesValue mes_string_new2(MesContext *ctx, const char *s, int len);
 MesObject *mes_object_new(MesContext *ctx, int cls, MesObject *proto);
@@ -30,7 +29,7 @@ MesValue mes_error_internal(MesContext *ctx, MesValue msg);
 
 MesObject *mes_error_constructor(MesContext *ctx, MesValue msg)
 {
-    MesObject *o = mes_object_new(ctx, 3, D_0058533C);
+    MesObject *o = mes_object_new(ctx, 3, mes_classes[3]);
 
     if (msg != 0) {
         *--ctx->sp = (MesValue)o;

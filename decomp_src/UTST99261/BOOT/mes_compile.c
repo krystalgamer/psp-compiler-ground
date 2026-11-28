@@ -1,6 +1,7 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+extern void *mes_classes[];
 int mes_list_member(int l, int v);
 int mes_compile_body(void *ctx, void *node, int id, void *args, void *vars);
 void *mes_list_cons(void *l, int v);
@@ -23,7 +24,6 @@ void mes_compile_function_declaration(CompState *c, void *node);
 void mes_compile_statement(CompState *c, void *node);
 void *mes_gc_alloc(void *ctx, int kind);
 void mes_object_init(void *obj, int cls, void *proto);
-extern void *D_00585344;
 int mes_byte_code_label_fix(int code);
 int mes_byte_code_pack(int code);
 typedef struct CNest {
@@ -567,7 +567,7 @@ int mes_compile_body(void *ctx, void *node, int id, void *a, void *v)
     f = mes_gc_alloc(ctx, 3);
     if (f != NULL) {
         *--M2C_FIELD(ctx, int **, 0x18) = (int)f;
-        mes_object_init(f, 5, D_00585344);
+        mes_object_init(f, 5, (*(void * *)((char *)mes_classes + 0x14)));
         M2C_FIELD(f, int *, 0x14) = id;
         M2C_FIELD(f, int *, 0x18) = mes_byte_code_label_fix(c.code);
         M2C_FIELD(f, int *, 0x1C) = mes_byte_code_pack(c.code);
@@ -623,7 +623,7 @@ void *mes_compile(void *ctx, void *node)
     f = mes_gc_alloc(ctx, 3);
     if (f != NULL) {
         *--M2C_FIELD(ctx, int **, 0x18) = (int)f;
-        mes_object_init(f, 5, D_00585344);
+        mes_object_init(f, 5, (*(void * *)((char *)mes_classes + 0x14)));
         M2C_FIELD(f, int *, 0x14) = 0;
         M2C_FIELD(f, int *, 0x18) = mes_byte_code_label_fix(c.code);
         M2C_FIELD(f, int *, 0x1C) = mes_byte_code_pack(c.code);

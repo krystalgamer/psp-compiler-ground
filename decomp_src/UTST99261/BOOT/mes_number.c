@@ -2,6 +2,7 @@
 #include "common.h"
 #include "mes_js.h"
 #include "m2c_macros.h"
+extern MesObject *mes_classes[];
 extern const double D_0013B780;       /* 10.0 */
 void mes_util_string_put(void *s, unsigned short c);
 MesValue mes_number_to_special(MesValue v);
@@ -14,7 +15,6 @@ typedef struct MesSBuf {
 } MesSBuf;
 double mes_number_fmod(double a, double b);
 int mes_util_string_get(MesSBuf *s, int i);
-extern MesObject *D_00585350;
 int isnan(double d);
 int isinf(double d);
 MesValue mes_eval_to_number(MesContext *ctx, MesValue v);
@@ -359,7 +359,7 @@ MesValue mes_number_constructor(MesContext *ctx, MesValue v)
         v = 1;
     if (ctx->frame->construct) {
         *--ctx->sp = v;
-        o = mes_object_new(ctx, 8, D_00585350);
+        o = mes_object_new(ctx, 8, (*(MesObject * *)((char *)mes_classes + 0x20)));
         ctx->sp++;
         o->fC = v;
         return (MesValue)o;

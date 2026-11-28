@@ -1,6 +1,7 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+extern void *mes_classes[];
 extern unsigned int mes_ids[];
 extern void *mes_function_table;
 int mes_function_constructor();
@@ -10,7 +11,6 @@ typedef struct MesNative {
     int f0, f4;
     int f8;
 } MesNative;
-extern MesNative *D_00585344;
 int mes_function_undefined();
 MesNative *mes_native_new(void *ctx, int proto, int (*fn)(), int a, int b);
 
@@ -35,12 +35,12 @@ void mes_function_class_setup(void *ctx, int x)
     MesNative *n = mes_native_new(ctx, (*(int *)((char *)&mes_ids + 0x108)), mes_function_undefined, 0, 0);
 
     n->f8 = x;
-    D_00585344 = n;
+    (*(MesNative * *)((char *)mes_classes + 0x14)) = n;
 }
 
 void mes_function_setup(void *ctx)
 {
-    MesNative *proto = D_00585344;
+    MesNative *proto = (*(MesNative * *)((char *)mes_classes + 0x14));
     MesNative *ctor;
 
     ctor = mes_native_new(ctx, mes_ids[5], mes_function_constructor, 1, 1);

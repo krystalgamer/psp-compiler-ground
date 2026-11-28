@@ -1,7 +1,7 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
-extern void *D_00585354;
+extern void *mes_classes[];
 int *mes_util_vals(int n, int a);
 int mes_eval(void *ctx, int code, int *args, void *thisobj, int f);
 int mes_eval_to_string(void *ctx, int v);
@@ -76,7 +76,7 @@ MesUser *mes_class_init(void *ctx, ClassDef *def)
 
     o = mes_gc_alloc(ctx, 12);
     if (o != NULL) {
-        mes_object_init(o, 9, D_00585354);
+        mes_object_init(o, 9, (*(void * *)((char *)mes_classes + 0x24)));
         o->def = def;
         o->priv = NULL;
         *--*(int **)((char *)ctx + 0x18) = (int)o;

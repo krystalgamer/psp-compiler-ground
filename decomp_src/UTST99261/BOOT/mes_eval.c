@@ -1,7 +1,6 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
-extern void *D_00585334, *D_00585350, *D_00585364;
 struct EvCtx;
 typedef struct EvSc {
     char pad[0x14];
@@ -39,7 +38,6 @@ typedef struct EvNum {
     int f4;
     double d;                         /* 0x8 */
 } EvNum;
-extern void *D_00585354;
 void *mes_gc_alloc(struct EvCtx *ctx, int kind);
 void mes_object_init(void *obj, int cls, void *proto);
 void *mes_util_string_new(void);
@@ -129,7 +127,7 @@ void *mes_eval_scope_new(EvCtx *ctx, int a, int b, int c)
     char *o = mes_gc_alloc(ctx, 5);
 
     if (o != NULL) {
-        mes_object_init(o, 9, D_00585354);
+        mes_object_init(o, 9, mes_classes[9]);
         o[0x14] = a;
         o[0x15] = 0;
         o[0x16] = 0;
@@ -533,13 +531,13 @@ int mes_eval_object_get(EvCtx *ctx, int obj, unsigned int id)
         if (obj == 4)
             return 0x20;
         if (obj == 0xC || obj == 8)
-            obj = (int)D_00585334;
+            obj = (int)mes_classes[1];
         else if ((unsigned int)(obj - 0x10) <= 0xC)
-            obj = (int)D_00585350;
+            obj = (int)mes_classes[8];
         break;
     case 1:
     case 2:
-        obj = (int)D_00585350;
+        obj = (int)mes_classes[8];
         break;
     case 3:
         if (id == mes_ids[51])
@@ -550,7 +548,7 @@ int mes_eval_object_get(EvCtx *ctx, int obj, unsigned int id)
                 return 0;
             return mes_string_new(ctx, ((EvStr *)(obj & ~3))->str + n, 1);
         }
-        obj = (int)D_00585364;
+        obj = (int)mes_classes[13];
         break;
     }
     if (id == mes_ids[34]) {
@@ -630,17 +628,17 @@ int mes_eval_object_put2(EvCtx *ctx, int obj, unsigned int id, int v)
         if (obj == 4)
             return 0;
         if (obj == 0xC || obj == 8)
-            return mes_eval_object_canput(ctx, (EvObj *)D_00585334, id);
+            return mes_eval_object_canput(ctx, (EvObj *)mes_classes[1], id);
         if ((unsigned int)(obj - 0x10) <= 0xC)
-            return mes_eval_object_canput(ctx, (EvObj *)D_00585350, id);
+            return mes_eval_object_canput(ctx, (EvObj *)mes_classes[8], id);
         break;
     case 1:
     case 2:
-        return mes_eval_object_canput(ctx, (EvObj *)D_00585350, id);
+        return mes_eval_object_canput(ctx, (EvObj *)mes_classes[8], id);
     case 3:
         if (id == mes_ids[51])
             return 0;
-        return mes_eval_object_canput(ctx, (EvObj *)D_00585364, id);
+        return mes_eval_object_canput(ctx, (EvObj *)mes_classes[13], id);
     }
     if (v == 0x20)
         return mes_eval_object_delete(ctx, (void *)obj, id) == 0xC;

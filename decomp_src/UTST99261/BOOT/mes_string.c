@@ -2,6 +2,7 @@
 #include "common.h"
 #include "mes_js.h"
 #include "m2c_macros.h"
+extern MesObject *mes_classes[];
 typedef struct StrChunk {
     struct StrChunk *next;
     unsigned short data[100];         /* 0x4 */
@@ -15,7 +16,6 @@ MesValue mes_number_alloc_int32(MesContext *ctx, int n);
 MesValue mes_number_alloc_uint32(MesContext *ctx, unsigned int n);
 unsigned int mes_eval_to_uint32(MesContext *ctx, MesValue v);
 MesValue mes_eval_to_integer(MesContext *ctx, MesValue v);
-extern MesObject *D_00585364;
 int mes_eval_to_int32(MesContext *ctx, MesValue v);
 void *mes_util_string_new(void);
 void mes_util_string_put_string(void *s, MesValue v);
@@ -251,7 +251,7 @@ MesValue mes_string_constructor(MesContext *ctx, MesValue v)
         s = mes_empty;
     if (ctx->frame->construct) {
         *--ctx->sp = s;
-        o = mes_object_new(ctx, 13, D_00585364);
+        o = mes_object_new(ctx, 13, (*(MesObject * *)((char *)mes_classes + 0x34)));
         ctx->sp++;
         o->fC = s;
         mes_object_set(o, mes_ids[51], MES_INT(((MesStr *)(s & ~3))->len), 7);
