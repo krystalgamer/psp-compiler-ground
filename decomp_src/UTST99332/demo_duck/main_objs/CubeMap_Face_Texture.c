@@ -81,7 +81,33 @@ void CubeMap::init_texture(Face::Texture &_T)
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/CubeMap_Face_Texture", _ZN7CubeMap17load_face_textureENS_8FaceEnumE);
+extern const char D_001638E0[];     /* ".tga" */
+extern const char D_001638E8[];     /* " *** warning " */
+extern const char D_001638F8[];     /* "w == h" */
+extern const char lft_name[] __asm__("_ZZN7CubeMap17load_face_textureENS_8FaceEnumEE19__PRETTY_FUNCTION__");
+void CubeMap::load_face_texture(FaceEnum f)
+{
+    Face &face = faces[f];
+    std::string name = basename;
+    name += GetFaceName(f);
+    name += D_001638E0;
+    textures::Texture::OverrideAlpha(-2);
+    textures::Texture::OverrideAlpha(0);
+    if (face.tex.t.load(name.c_str()))
+        return;
+    face.tex.t.convert32();
+    if (resize)
+        face.tex.t.resize(resize, resize, false);
+    init_texture(face.tex);
+    float w = face.tex.t.width();
+    float h = face.tex.t.height();
+    if (!(w == h)) {
+        common::common_internal::assert_display(D_001638E8, D_001638F8, D_00163874, lft_name, 227, D_001638A8);
+        common::common_internal::on_warning();
+    }
+    face.tc_min = 0.5f / w;
+    face.tc_max = 1.0f - face.tc_min;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/CubeMap_Face_Texture", _ZN7CubeMap16face_setup_debugENS_8FaceEnumE);
 

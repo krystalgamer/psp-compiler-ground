@@ -37,6 +37,7 @@ void glColor3ub(unsigned char, unsigned char, unsigned char);
 #define GL_LINES 0x0001
 #define GL_LINE_LOOP 0x0002
 #define GL_QUADS 0x0007
+#define GL_TEXTURE_2D 0x0DE1
 #define GL_LIGHTING 0x0B50
 #define GL_ENABLE_BIT 0x00002000
 
