@@ -968,6 +968,14 @@ libgcc/libsupc++ DWARF names `gcc-3.3.6/` paths.
   middleware is `-O2 -fno-strict-aliasing` (8 functions match only with it,
   none of ~1,350 matched ones changes, while SDK gim_* units lose 4 matches
   with it as a control).
+- rs4_main's game-code Allegrex `max`/`min` instructions come from volatile
+  inline asm, not ternaries or a builtin: the compiler never moves anything
+  across them (the `TtrStr` helpers keep their prologue above the clamp).
+  With `amax`/`amin` asm macros (decomp_src/rb/rs4_main/src/minmax.h; the
+  original spelling is unknown) a dozen functions match (`TtrStr*`,
+  `gameChkChange`, `gameChgModule`, `ttrGetMaxNumber`, `menuGetNextFlowID`,
+  …).  Not every clamp is asm: `_memRealloc` matches with a plain ternary
+  `min`.
 - rs4_main `bxAnmTerm` keeps the original's `m == NULL` test with no flag:
   `template <class T> inline void SafeDelete(T *&p) { delete p; }` applied to
   `m->file` and `m` — the pointer taken by non-const reference.  Not a 1.9.2
