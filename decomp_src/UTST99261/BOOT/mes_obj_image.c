@@ -18,6 +18,11 @@ MesObject *mes_image_new(MesContext *ctx, MesImagePriv *priv);
 
 
 
+typedef struct MesStrI { DOMChar *str; int len; } MesStrI;
+typedef struct ImgSrcMsg { int has; void *elem; int len; DOMChar *str; } ImgSrcMsg;
+extern DOMString _DOMlowsrc, _DOMsrc;
+void Element_setAttribute(void *elem, DOMString *name, DOMString *value);
+void *memcpy(void *d, const void *s, unsigned int n);
 int mes_image_handle_event(MesContext *ctx, MesObject *obj)
 {
     short type = g_JS_EVENT_REC_->type;
@@ -50,7 +55,98 @@ int mes_image_constructor(int arg0) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_image", mes_image_get);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_image", mes_image_put);
+int mes_image_put(MesContext *ctx, MesObject *o, MesImagePriv *p, int id, MesValue v)
+{
+    MesStrI *s;
+    DOMString ds;
+    IpcMsg msg;
+    void *elem;
+    int obj;
+    ImgSrcMsg *m;
+    DOMString *nd;
+    int sid;
+    int ret;
+
+    ret = 0;
+    if (p == NULL)
+        goto out;
+    if ((v & 3) != 3)
+        goto out;
+    obj = p->v;
+    elem = (void *)p->f4;
+    switch (id) {
+    case 5:
+        ret = 0;
+        if (elem == NULL)
+            break;
+        s = (MesStrI *)(v & ~3);
+        ds.size = ds.len = s->len;
+        ds.str = MEM_malloc(0, s->len * 2);
+        memcpy(ds.str, s->str, s->len * 2);
+        Element_setAttribute(elem, &_DOMlowsrc, &ds);
+        MEM_free(0, ds.str);
+        ret = 1;
+        break;
+    case 7:
+        s = (MesStrI *)(v & ~3);
+        ds.size = ds.len = s->len;
+        ds.str = MEM_malloc(0, s->len * 2);
+        if (ds.str != NULL) {
+            m = MEM_malloc(0, s->len * 2 + 0x10);
+            if (m != NULL) {
+                memcpy(ds.str, s->str, s->len * 2);
+                if (elem != NULL) {
+                    if (id == 5)
+                        Element_setAttribute(elem, &_DOMlowsrc, &ds);
+                    else
+                        Element_setAttribute(elem, &_DOMsrc, &ds);
+                    m->has = 1;
+                    m->elem = elem;
+                    sid = Node_getSid(Node_getOwnerDocument(elem));
+                } else {
+                    m->has = 0;
+                    m->elem = NULL;
+                    elem = *(void **)mes_class_private_get((MesObject *)obj);
+                    sid = Node_getSid(elem);
+                    nd = MEM_malloc(0, s->len * 2 + 0xE);
+                    nd->size = s->len;
+                    nd->len = s->len;
+                    nd->str = (DOMChar *)(nd + 1);
+                    memcpy(nd->str, s->str, s->len * 2);
+                    if (id == 5) {
+                        if (p->f8 != NULL)
+                            MEM_free(0, p->f8);
+                        p->f8 = nd;
+                    } else {
+                        if (p->fC != NULL)
+                            MEM_free(0, p->fC);
+                        p->fC = nd;
+                    }
+                }
+                m->len = s->len;
+                m->str = (DOMChar *)(m + 1);
+                memcpy(m->str, s->str, s->len * 2);
+                SetIpcMember(&msg, 8, sid, 0, 0x80E, 0, s->len * 2 + 0x10, m);
+                JSSendMail(&msg, "/tmp/mq_lo");
+            }
+            MEM_free(0, ds.str);
+        }
+        ret = 1;
+        break;
+    case 0:
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 6:
+    case 8:
+    case 9:
+        ret = 0;
+        break;
+    }
+out:
+    return ret;
+}
 
 void mes_image_mark(void) {
 }
