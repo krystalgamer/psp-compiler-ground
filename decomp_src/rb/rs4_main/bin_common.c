@@ -3472,7 +3472,12 @@ int I3rRoot__TextDump(void) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", PrintVec);
+int I3dTtyPrintf(const char *fmt, ...);
+extern const char D_00109720[];
+void PrintVec(const float *v)
+{
+	I3dTtyPrintf(D_00109720, v[0], v[1], v[2], v[3]);
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/bin_common", D_00109720);
 
@@ -3526,6 +3531,14 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/bin_common", D_001098E0);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/bin_common", D_001098F4);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", Print16Vec);
+extern const char D_00109720[];
+extern const float D_001098F8;
+void Print16Vec(long long v)
+{
+	float s = D_001098F8;
+	short *p = (short *)&v;
+	I3dTtyPrintf(D_00109720, (float)p[0] * s, (float)p[1] * s, (float)p[2] * s, (float)p[3] * s);
+}
+const float D_001098F8 = 3.051850945e-05f;
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3mRoot__TextDump);
