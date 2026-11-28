@@ -442,9 +442,42 @@ int sgxResGetWaveSurroundCount(int id, int idx) {
     return *(int *)(t + idx * 8 + 8);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResGetWaveSurroundInfo);
+int sgxResGetWaveSurroundInfo(int id, int idx, int m, unsigned char *out) {
+    char *p = ResGetSlot(id, SLOT_NAME("GetWaveSurroundInfo"));
+    char *t, *e;
+    unsigned char *k;
+    int ret;
+    if (p == NULL || (t = *(char **)(p + 0x2C)) == NULL || idx < 0 || *(int *)(p + 0x30) - 1 < idx) {
+        ret = 0;
+    } else if (m < 0 || (e = (char *)(idx * 8 + (int)t), *(int *)(e + 8) - 1 < m)) {
+        ret = 0;
+    } else {
+        k = (unsigned char *)(*(char **)(p + 0x14) + *(int *)(e + 0xC) + m * 8);
+        if (out != NULL) {
+            out[0] = k[0];
+            out[1] = k[1];
+            *(unsigned short *)(out + 2) = *(unsigned short *)(k + 2);
+            *(unsigned short *)(out + 4) = *(unsigned short *)(k + 4);
+            *(unsigned short *)(out + 6) = *(unsigned short *)(k + 6);
+        }
+        ret = 1;
+    }
+    return ret;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResFindWaveSurround);
+char *sgxResFindWaveSurround(int id, int idx, int *num) {
+    char *p = ResGetSlot(id, SLOT_NAME("GetWaveSurroundTop"));
+    char *t, *e;
+    char *ret;
+    if (p == NULL || (t = *(char **)(p + 0x2C)) == NULL || idx < 0 || *(int *)(p + 0x30) - 1 < idx) {
+        ret = NULL;
+    } else {
+        e = (char *)(idx * 8 + (int)t);
+        *num = *(int *)(e + 8);
+        ret = *(char **)(p + 0x14) + *(int *)(e + 0xC);
+    }
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResFindCopyWaveSurroundInfo);
 
@@ -459,9 +492,42 @@ int sgxResGetWaveMarkerCount(int id, int idx) {
     return *(int *)(t + idx * 8 + 8);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResGetWaveMarkerInfo);
+int sgxResGetWaveMarkerInfo(int id, int idx, int m, int *out) {
+    char *p = ResGetSlot(id, SLOT_NAME("GetWaveMarkerInfo"));
+    char *t, *e;
+    int *k;
+    char *base;
+    int ret;
+    if (p == NULL || (t = *(char **)(p + 0x28)) == NULL || idx < 0 || *(int *)(p + 0x30) - 1 < idx) {
+        ret = 0;
+    } else if (m < 0 || (e = (char *)(idx * 8 + (int)t), *(int *)(e + 8) - 1 < m)) {
+        ret = 0;
+    } else {
+        base = *(char **)(p + 0x14);
+        k = (int *)(base + *(int *)(e + 0xC) + m * 12);
+        if (out != NULL) {
+            out[0] = (int)(base + k[0]);
+            out[1] = k[1];
+            out[2] = k[2];
+        }
+        ret = 1;
+    }
+    return ret;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResFindWaveMarker);
+char *sgxResFindWaveMarker(int id, int idx, int *num) {
+    char *p = ResGetSlot(id, SLOT_NAME("GetWaveMarkerTop"));
+    char *t, *e;
+    char *ret;
+    if (p == NULL || (t = *(char **)(p + 0x28)) == NULL || idx < 0 || *(int *)(p + 0x30) - 1 < idx) {
+        ret = NULL;
+    } else {
+        e = (char *)(idx * 8 + (int)t);
+        *num = *(int *)(e + 8);
+        ret = *(char **)(p + 0x14) + *(int *)(e + 0xC);
+    }
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", RoundWavePos);
 
