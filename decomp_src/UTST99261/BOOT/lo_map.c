@@ -58,6 +58,9 @@ extern LmUiGlobal *ui_global;
 extern char *gPREF_UI;
 LmBox *getBodyBox(LmBox *box);
 int colorValue(char *s);
+typedef struct { int x1; int y1; int x2; int y2; } MAPRECT;
+extern const double D_001392F8;
+int checkInterior(MAPPOLY *p, double x, double y);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", parseCoords);
 
 #ifndef NULL
@@ -353,7 +356,49 @@ signed char getAreaIndex(void *arg0, int arg1) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", getAreaList);
+MAPAREA *getAreaList(void *map, LmBox *box, int px, int py) {
+    MAPAREA *a;
+    double dx;
+    double dy;
+    double r;
+    MAPRECT *rc;
+    MAPCIRCLE *c;
+
+    px -= (M2C_FIELD(box->style, s16 *, 0x26) + M2C_FIELD(box, int *, 0x10) + M2C_FIELD(box->style, s16 *, 0x36) + M2C_FIELD(box->style, s16 *, 0x2E));
+    py -= (M2C_FIELD(box->style, s16 *, 0x20) + M2C_FIELD(box, int *, 0x14) + M2C_FIELD(box->style, s16 *, 0x30) + M2C_FIELD(box->style, s16 *, 0x28));
+
+    for (a = M2C_FIELD(M2C_FIELD(map, void **, 0xC), MAPAREA **, 0xC); a != NULL; a = a->next) {
+        if (a->type == 2) {
+            rc = (MAPRECT *)&a->poly;
+            if (px >= rc->x1 && px <= rc->x2 && py >= rc->y1 && py <= rc->y2) {
+                break;
+            }
+        } else if (a->type == 3) {
+            c = (MAPCIRCLE *)&a->poly;
+            dx = px - c->x;
+            dy = py - c->y;
+            if (c->r <= D_001392F8) {
+                if (M2C_FIELD(box, int *, 0x18) < M2C_FIELD(box, int *, 0x1C)) {
+                    r = M2C_FIELD(box, int *, 0x18) * c->r;
+                } else {
+                    r = M2C_FIELD(box, int *, 0x1C) * c->r;
+                }
+            } else {
+                r = c->r;
+            }
+            if (dx * dx + dy * dy < r * r) {
+                break;
+            }
+        } else if (a->type == 4) {
+            if (checkInterior(&a->poly, px, py) & 1) {
+                break;
+            }
+        } else if (a->type == 1) {
+            break;
+        }
+    }
+    return a;
+}
 
 void adaptArea(void *ctx, void *map, void *link, s8 type) {
     void *info = createAreaInfo(type, map, M2C_FIELD(link, void **, 0));
