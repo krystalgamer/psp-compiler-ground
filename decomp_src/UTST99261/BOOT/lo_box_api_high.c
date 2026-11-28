@@ -7,6 +7,7 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+#define CBPAD(s) ((s)->unk26 + (s)->unk36 + (s)->unk2E + (s)->unk2A + (s)->unk32 + (s)->unk22)
 BOX *getBoxByContent(BOX *box, int content) {
     while (box != NULL && box->content != content) {
         box = box->parent;
@@ -157,7 +158,100 @@ void *getPageRegion(BOX *box) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_api_high", calcBoxMinWidth);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_api_high", calcBoxMaxWidth);
+int calcBoxMaxWidth(int ctx, BOX *root)
+{
+    int tw;
+    int line;
+    int mx;
+    int ofs;
+    int cbw;
+    int m;
+    int p;
+    BOX *n;
+    BOXSTYLE *st;
+
+    line = 0;
+    mx = 0;
+    ofs = 0;
+    cbw = getContainingBlockWidth(getParentBlockBox(root));
+    n = root->child;
+    while (n != NULL && n != root) {
+        if (n->content == 4) {
+            mx = mx < ofs + line ? ofs + line : mx;
+            box_calcTableWidth(ctx, n, &tw, &line, cbw);
+            st = n->style;
+            m = st->unk26 + st->unk22;
+            if ((st->flags & 3) == 1) {
+                if (st->width >= tw - m)
+                    line = m + st->width;
+                else
+                    line = tw;
+            }
+            mx = mx < ofs + line ? ofs + line : mx;
+            line = 0;
+            goto next;
+        } else if (n->content == 11) {
+            mx = mx < ofs + line ? ofs + line : mx;
+            line = 0;
+            if ((n->style->flags & 3) == 1 && mx < ofs + n->style->width)
+                mx = ofs + n->style->width;
+        } else if (n->display == 0) {
+            mx = mx < ofs + line ? ofs + line : mx;
+            line = 0;
+            st = n->style;
+            p = CBPAD(st);
+            ofs += p;
+            if ((st->flags & 3) == 1 && mx < p + st->width) {
+                mx = n->width;
+                goto next;
+            }
+        } else if (n->content == 10 && (n->html != 0x66 || getListBox(n) == NULL)) {
+            resizeImageSize(n);
+            line += n->width;
+        } else if (n->content != 0) {
+            if (n->content == 9) {
+                resizeTextSize(n);
+                line += n->width;
+            } else if (n->content == 0x10) {
+                resizeButtonSize(n);
+                line += n->width;
+            } else if (n->content == 0xD) {
+                resizeTextFieldSize(n);
+                line += n->width;
+            } else {
+                if (n->content == 0x12)
+                    resizeSelectSize(n);
+                line += n->width;
+            }
+        } else if (n->html == 0x10) {
+            mx = mx < ofs + line ? ofs + line : mx;
+            line = 0;
+        }
+        if (n->child != NULL) {
+            n = n->child;
+            continue;
+        }
+    next:
+        if (n->next != NULL) {
+            n = n->next;
+            continue;
+        }
+        for (n = n->parent; n != NULL && n != root; n = n->parent) {
+            if (n->content != 11 && n->content != 4 && n->display == 0) {
+                mx = mx < ofs + line ? ofs + line : mx;
+                line = 0;
+                ofs -= CBPAD(n->style);
+            }
+            if (n->next != NULL) {
+                n = n->next;
+                break;
+            }
+        }
+    }
+    mx = mx < line ? line : mx;
+    mx += CBPAD(root->style);
+    return mx;
+}
 
 BOX *getFixedHeightBox(BOX *box) {
     BOX *b;
