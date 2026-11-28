@@ -52,7 +52,11 @@ INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", atk_v);
 
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", mode_stop);
 
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", mode_int);
+const SEL_INIT mode_int[3] = {
+	{ 2, 108, 0, 108, -300 },
+	{ 0, 88, 272, 88, 168 },
+	{ 1, 0, -80, 0, -40 },
+};
 
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", D_0002F3B8);
 
@@ -261,9 +265,6 @@ int PlayerSelect(void)
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", PlayerSelect);
 #endif
 
-#ifdef NON_MATCHING
-/* diff 2 with every cc1 (and every order of the five stores): the tx load is scheduled
- * one slot before the SelWork index add instead of after it. */
 int ModeSelInt(void)
 {
 	int i;
@@ -281,9 +282,6 @@ int ModeSelInt(void)
 	OldError = 0;
 	return 0;
 }
-#else
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", ModeSelInt);
-#endif
 
 #ifdef NON_MATCHING
 /* One instruction long: %hi(D_00154020) and %hi(SelWork) swap s2/s3, and in the key & 0x20
