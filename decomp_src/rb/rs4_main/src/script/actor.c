@@ -70,7 +70,35 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/actor", D_000FEC48);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/actor", ActorSetVariable);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/actor", ActorRecvMotion);
+int rsvKeyState(void *p, int k);
+int ActorRecvMotion(char *a, char *name)
+{
+	char *m = *(char **)(a + 0x34);
+	void *t = *(void **)(m + 4);
+	int st;
+	char *x;
+
+	if (t == NULL)
+		return 0;
+	st = rsvKeyState(t, *(int *)(m + 8));
+	x = *(char **)(a + 0x38);
+	if (sceKernelGetGPI() & 1)
+		consPrintf("%s : %s : %d\n", "ActorRecvMotion", name, *(int *)(x + 8));
+	switch (st) {
+	default:
+		return 0;
+	case 2:
+		*(void **)(m + 4) = NULL;
+		*(int *)(m + 8) = 0;
+		taskProc(t, 100, a, 0);
+		return 1;
+	case 3:
+	case 4:
+		*(void **)(m + 4) = NULL;
+		*(int *)(m + 8) = 0;
+		return 1;
+	}
+}
 
 int SequenceExec(void *, int, unsigned int, float);
 int ActorScriptRun(char *t)
