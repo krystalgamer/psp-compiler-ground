@@ -99,8 +99,17 @@ void SHAFinal(SHA_CTX *shsInfo, BYTE *output, unsigned int len)
 #endif
 extern unsigned short D_0010D700;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/SHA1", endianTest);
+void endianTest(int *endian_ness)
+{
+    if ((D_0010D700 >> 8) == '#')
+        *endian_ness = !(0);
+    else
+        *endian_ness = 0;
+}
 
+/* SHSTransform, longReverse and SHAtoByte are hand-written assembly, each
+   16-byte aligned (the .s files' .align is lowered by split.py) */
+__asm__(".align 4");
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/SHA1", SHSTransform);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/SHA1", longReverse);

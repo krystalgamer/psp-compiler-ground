@@ -99,8 +99,15 @@ void randomMTSetCharArray(unsigned char *buf, unsigned int len)
     }
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_mtrandgen", setNewSeed);
+void setNewSeed_platform(uint32);
+void setNewSeed(uint32 seed)
+{
+    setNewSeed_platform(seed);
+}
 
+/* ScrambleSeed and setNewSeed_platform are hand-written assembly, each
+   16-byte aligned (the .s files' .align is lowered by split.py) */
+__asm__(".align 4");
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_mtrandgen", ScrambleSeed);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_mtrandgen", setNewSeed_platform);
