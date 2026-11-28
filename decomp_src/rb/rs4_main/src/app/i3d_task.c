@@ -105,7 +105,51 @@ void *i3dTask_EzDraw(void *arg0, unsigned int arg1, int arg2, int arg3) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", i3dTask_EzModel);
+int sceKernelGetGPI();
+int *resGetPtrTable(int, int);
+int resGetSizeTable(int, int);
+void *i3dTask_Model(void *arg0, unsigned int arg1, void *arg2, int arg3);
+#define cassertE(e, l, s) if (!(e)) consPrintf(&D_000FD5C4, &D_000FD5E0, l, "i3dTask_EzModel", s)
+void *i3dTask_EzModel(void *Tp, unsigned int msg, void *Vp, int prio)
+{
+	switch (msg) {
+	case 0:
+		{
+		int *tbl;
+		int n;
+		int res, idx;
+		int arg[2];
+		cassertE(Tp, 0xEC, &D_000FD608);
+		cassertE(Vp, 0xED, &D_000FD60C);
+		*(int *)((char *)Tp + 0x28) = 0;
+		*(unsigned char *)((char *)Tp + 0x24) = 0;
+		*(int *)((char *)Tp + 0x2C) = 0;
+		res = ((int *)Vp)[0];
+		idx = ((int *)Vp)[1];
+		tbl = resGetPtrTable(res, idx);
+		n = resGetSizeTable(res, idx);
+		if (sceKernelGetGPI() & 1)
+			consPrintf("%s : Prio %d {\n", "i3dTask_EzModel", prio);
+		for (; n != 0; n--, tbl++) {
+			arg[0] = res;
+			arg[1] = *tbl;
+			taskMake(Tp, i3dTask_Model, arg, prio);
+		}
+		if (sceKernelGetGPI() & 1)
+			consPrintf("}\n");
+		}
+		return Tp;
+	case 4:
+		return Tp;
+	case 1:
+		return NULL;
+	case 2:
+		return NULL;
+	case 3:
+		return NULL;
+	}
+	return (void *)taskDefaultMsg((int)Tp, msg, (int)Vp, prio);
+}
 
 M2C_UNK copInitAttr(void *);                        /* extern */
 M2C_UNK i3dDrawMdl(void *, void *, void *);         /* extern */
