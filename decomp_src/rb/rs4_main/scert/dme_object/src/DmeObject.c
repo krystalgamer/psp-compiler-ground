@@ -393,7 +393,18 @@ void RemoteObjectCreation(unsigned int ci, int id)
     if (cb != NULL) cb(ci, id);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", RemoteObjectUpdate);
+typedef void (*RemObjCb3)(unsigned int, int, unsigned int);
+extern RemObjCb3 *D_00132A58;
+void RemoteObjectUpdate(unsigned int ci, int id, unsigned int x)
+{
+    unsigned char *o;
+    RemObjCb3 cb;
+    if (x >= *(unsigned int *)((char *)gObjectInterfacePtr + 0xFC) && x != 0xFFFFFFFE && x != 0xFFFFFFFF) return;
+    o = NetIGetObject(id);
+    if (o == NULL) return;
+    cb = D_00132A58[o[8]];
+    if (cb != NULL) cb(ci, id, x);
+}
 
 extern RemObjCb *D_00132A5C;
 void RemoteObjectDelete(unsigned int ci, int id)
