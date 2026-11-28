@@ -124,7 +124,15 @@ void KM_SHA1(void *data, int len, void *out, int outlen)
     SHAFinal(ctx, out, outlen);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_Salted_SHA1);
+void KM_Salted_SHA1(void *salt, int slen, void *data, int len, void *out, int outlen)
+{
+    char ctx[0x60];
+    SHAInit(ctx);
+    if (salt != NULL && slen != 0)
+        SHAUpdate(ctx, salt, slen);
+    SHAUpdate(ctx, data, len);
+    SHAFinal(ctx, out, outlen);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_Create);
 
@@ -151,9 +159,40 @@ int KM_GetPublicKey(int a, unsigned int id, void *out)
     return -1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_SetLocalKeyPair);
+int rt_memory_allocate();
+int KM_SetLocalKeyPair(int a, char *keys)
+{
+    char *km;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_SetGameSessionKey);
+    km = (char *)GetKeyMaster(a);
+    if (km == NULL) return -1;
+    if (IsNullRSAKey(keys) || IsNullRSAKey(keys + 0x40)) {
+        if (*(void **)(km + 0x1C) != NULL) memset(*(void **)(km + 0x1C), 0, 0x40);
+        if (*(void **)(km + 0x20) != NULL) memset(*(void **)(km + 0x20), 0, 0x40);
+        return 0;
+    }
+    if (*(void **)(km + 0x1C) == NULL) rt_memory_allocate(km + 0x1C, 0x40);
+    if (*(void **)(km + 0x20) == NULL) rt_memory_allocate(km + 0x20, 0x40);
+    memcpy(*(void **)(km + 0x1C), keys, 0x40);
+    memcpy(*(void **)(km + 0x20), keys + 0x40, 0x40);
+    return 0;
+}
+
+void RCInitialize();
+int KM_SetGameSessionKey(int a, int id, unsigned char *key)
+{
+    char *km = GetKeyMaster(a);
+
+    if (km == NULL || IsNullRCKey(key)) return -1;
+    if (*(void **)(km + 0x2C) == NULL) rt_memory_allocate(km + 0x2C, 0x40);
+    if (*(void **)(km + 0x24) == NULL) rt_memory_allocate(km + 0x24, 0x10C);
+    if (*(void **)(km + 0x28) == NULL) rt_memory_allocate(km + 0x28, 0x10C);
+    *(int *)(km + 0x18) = id;
+    memcpy(*(void **)(km + 0x2C), key, 0x40);
+    RCInitialize(*(void **)(km + 0x24), key);
+    RCInitialize(*(void **)(km + 0x28), key);
+    return 0;
+}
 
 void *memset(void *, int, unsigned long);
 int KM_GetGameSessionKey(int a, int b, unsigned char *out)
@@ -169,7 +208,29 @@ int KM_GetGameSessionKey(int a, int b, unsigned char *out)
     return -1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_AddSymmetricKey);
+char *NewKeyChain();
+int rt_memory_allocate();
+void RCInitialize();
+int KM_AddSymmetricKey(int a, unsigned int id, unsigned char *key)
+{
+    char *km, *kc;
+
+    km = (char *)GetKeyMaster(a);
+    if (km == NULL || IsNullRCKey(key)) return -1;
+    kc = (char *)GetKeyChain(km, id);
+    if (kc == NULL) {
+        kc = NewKeyChain();
+        *(unsigned int *)(kc + 8) = id;
+        AppendKeyChain(km, kc);
+    }
+    if (*(void **)(kc + 0x1C) == NULL) rt_memory_allocate(kc + 0x1C, 0x40);
+    if (*(void **)(kc + 0x14) == NULL) rt_memory_allocate(kc + 0x14, 0x10C);
+    if (*(void **)(kc + 0x18) == NULL) rt_memory_allocate(kc + 0x18, 0x10C);
+    memcpy(*(void **)(kc + 0x1C), key, 0x40);
+    RCInitialize(*(void **)(kc + 0x14), key);
+    RCInitialize(*(void **)(kc + 0x18), key);
+    return 0;
+}
 
 int KM_GetSymmetricKey(int a, unsigned int id, void *out)
 {
@@ -188,7 +249,18 @@ int KM_GetSymmetricKey(int a, unsigned int id, void *out)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_CompareSymmetricKey);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_DeleteSymmetricKey);
+void KM_DeleteSymmetricKey(int a, unsigned int id)
+{
+    char *km, *kc;
+
+    km = (char *)GetKeyMaster(a);
+    if (km == NULL) return;
+    kc = (char *)GetKeyChain(km, id);
+    if (kc == NULL) return;
+    if (*(void **)(kc + 0x1C) != NULL) memset(*(void **)(kc + 0x1C), 0, 0x40);
+    if (*(void **)(kc + 0x14) != NULL) memset(*(void **)(kc + 0x14), 0, 0x10C);
+    if (*(void **)(kc + 0x18) == NULL) memset(NULL, 0, 0x10C);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_CopyKeys);
 
