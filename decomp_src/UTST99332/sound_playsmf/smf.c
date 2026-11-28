@@ -96,7 +96,47 @@ int smf_unbindSmf(unsigned int id)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/smf", smf_atick);
+int smf_atick(void)
+{
+	unsigned int i;
+	unsigned int t;
+	int tempo;
+	int r;
+	SmfData *p, *q;
+
+	t = (unsigned int)(g_smfmax * 1000000) / 44100;
+	for (i = 0; i < 128; i++) {
+		if (g_smf[i] != NULL) {
+			if (g_smf[i]->status == 1) {
+				for (;;) {
+					if (g_smf[i]->unkC != 0) {
+						func_0000A2C4(g_smf[i]);
+						p = g_smf[i];
+						tempo = p->tempo + p->addTempo;
+						if (tempo < 0)
+							tempo = 0;
+						p->unk30 += p->delta * (tempo / p->division);
+					}
+					if (g_smf[i]->unk30 >= t) {
+						g_smf[i]->unk30 -= t;
+						g_smf[i]->unkC = 0;
+						break;
+					}
+					r = func_00009FA4(g_smf[i]);
+					q = g_smf[i];
+					if (q->status == 0) {
+						q->unkC = 1;
+						break;
+					}
+					q->unkC = 1;
+					if (r == -1)
+						return 0;
+				}
+			}
+		}
+	}
+	return 0;
+}
 
 int smf_play(unsigned int id, unsigned int vel, unsigned int pan, unsigned int sendVel, unsigned int sendPan, int count)
 {
