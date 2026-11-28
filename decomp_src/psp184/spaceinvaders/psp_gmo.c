@@ -78,7 +78,20 @@ int gmo_addr_load(void *buf)
 	return -1;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_gmo", gmo_file_unload);
+int gmo_file_unload(int no)
+{
+	int ret;
+
+	ret = 0;
+	if ((unsigned int)no < 50 && GMO_FILE_W[no].used != 0) {
+		sceGmoModelDelete(GMO_FILE_W[no].model);
+		ret = 1;
+		gmo_file_max--;
+		GMO_FILE_W[no].used = 0;
+		GMO_FILE_W[no].model = 0;
+	}
+	return ret;
+}
 
 int gmo_file_unload(int no);
 int gmo_unload(int no);
