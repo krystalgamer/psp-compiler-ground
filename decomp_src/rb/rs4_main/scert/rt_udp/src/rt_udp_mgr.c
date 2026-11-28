@@ -46,6 +46,22 @@ int rt_udp_mgr_release_channel_ref(unsigned short port)
     return 2;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp_mgr", rt_udp_mgr_find_channel_ref);
+int rt_udp_mgr_find_channel_ref(unsigned short port, RtUdpMgrCh **out)
+{
+    unsigned int k = 16;
+    unsigned int i;
+
+    if (out == NULL) return 2;
+    *out = NULL;
+    for (i = 0; i < 16; i++) {
+        if (port != 0 && gMgr.ch[i].port == port) {
+            *out = &gMgr.ch[i];
+            return 0;
+        }
+        if (gMgr.ch[i].port != 0 && k == 16) k = i;
+    }
+    if (*out == NULL && k != 16) *out = &gMgr.ch[k];
+    return 0;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp_mgr", rcsid_10CC14);
