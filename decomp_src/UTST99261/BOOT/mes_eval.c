@@ -125,6 +125,8 @@ typedef struct NatCtx { char pad[0x10]; NatFrame *frame; } NatCtx;
 extern unsigned int D_005852C0;
 EvArr *mes_util_vals(int n, int a);
 int mes_util_is_white_space(unsigned short c);
+int mes_string_new(EvCtx *ctx, unsigned short *s, int len);
+typedef int (*EvGetFn)(EvCtx *, EvObj *, unsigned int);
 void *mes_eval_scope_new(EvCtx *ctx, int a, int b, int c)
 {
     char *o = mes_gc_alloc(ctx, 5);
@@ -520,7 +522,62 @@ void mes_eval_def_var(EvCtx *ctx, EvSc *s, unsigned int id)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_delete_var);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_object_get);
+int mes_eval_object_get(EvCtx *ctx, int obj, unsigned int id)
+{
+    EvGc *gc;
+    EvProp *p;
+    int n;
+    int r;
+
+    if (obj == 0)
+        return 0x20;
+    switch ((unsigned int)obj & 3) {
+    case 0:
+        if (obj == 4)
+            return 0x20;
+        if (obj == 0xC || obj == 8)
+            obj = (int)D_00585334;
+        else if ((unsigned int)(obj - 0x10) <= 0xC)
+            obj = (int)D_00585350;
+        break;
+    case 1:
+    case 2:
+        obj = (int)D_00585350;
+        break;
+    case 3:
+        if (id == D_005852E4)
+            return (((EvStr *)(obj & ~3))->len << 2) | 1;
+        if ((id & 3) == 1) {
+            n = (int)id >> 2;
+            if (n < 0 || (unsigned int)n >= ((EvStr *)(obj & ~3))->len)
+                return 0;
+            return mes_string_new(ctx, ((EvStr *)(obj & ~3))->str + n, 1);
+        }
+        obj = (int)D_00585364;
+        break;
+    }
+    if (id == D_005852A0) {
+        r = ((EvObj *)obj)->f8;
+        if (r != 0)
+            return r;
+        return 4;
+    }
+    for (; obj != 0; obj = ((EvObj *)obj)->f8) {
+        EvGetFn get;
+        gc = (EvGc *)((EvObj *)obj)->gc;
+        get = (EvGetFn)gc->f10;
+        if (get != NULL) {
+            r = get(ctx, (EvObj *)obj, id);
+            if (r != 0x20)
+                return r;
+        } else {
+            p = mes_object_search((void *)obj, id);
+            if (p != NULL)
+                return p->value;
+        }
+    }
+    return 0x20;
+}
 
 int mes_eval_object_canput(EvCtx *ctx, EvObj *o, unsigned int id)
 {
