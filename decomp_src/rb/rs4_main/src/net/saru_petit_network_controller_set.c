@@ -1,7 +1,5 @@
 /* lang: c++ */
 /* cflags: -Os -fno-strength-reduce -fno-merge-constants -fno-exceptions */
-/* #pragma interface: the vtables, typeinfo and implicit destructors stay in the module's asm */
-#pragma interface "rodata"
 #include "common.h"
 
 struct Task {
@@ -9,8 +7,16 @@ struct Task {
 	unsigned char f24;
 };
 
+extern "C" {
+void _memFree(void *p, const char *file, int line);
+void *_memAllocMBL(unsigned int size, const char *file, int line);
+}
+
 namespace Ys {
 class Object {
+public:
+	static void *operator new(unsigned int size) { return _memAllocMBL(size, "src/ys/ys_object.h", 23); }
+	static void operator delete(void *p) { _memFree(p, "src/ys/ys_object.h", 25); }
 };
 class TaskState;
 class Task : public Object {
@@ -43,6 +49,13 @@ public:
 }
 
 namespace SaruNet {
+class Game {
+public:
+	char _0[0x40];
+	void *controller_set_p;
+	static Game *_instance_p;
+};
+
 namespace PetitGame {
 class NetworkTask : public Ys::Task {
 };
@@ -56,12 +69,14 @@ public:
 }
 }
 
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_petit_network_controller_set", _ZN7SaruNet9PetitGame13ControllerSetD2Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_petit_network_controller_set", _ZN7SaruNet9PetitGame13ControllerSetD1Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_petit_network_controller_set", _ZN7SaruNet9PetitGame13ControllerSetD0Ev); }
 
 namespace SaruNet {
 namespace PetitGame {
+
+ControllerSet::~ControllerSet()
+{
+	SaruNet::Game::_instance_p->controller_set_p = 0;
+}
 
 ControllerSet *ControllerSet::Init(NetworkTask &t)
 {
@@ -73,10 +88,3 @@ ControllerSet *ControllerSet::Init(NetworkTask &t)
 }
 
 
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_petit_network_controller_set", _ZThn12_N7SaruNet9PetitGame13ControllerSetD1Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_petit_network_controller_set", _ZThn12_N7SaruNet9PetitGame13ControllerSetD0Ev); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_petit_network_controller_set", _ZTVN7SaruNet9PetitGame13ControllerSetE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_petit_network_controller_set", D_00108AB8); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_petit_network_controller_set", _ZTIN7SaruNet9PetitGame13ControllerSetE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_petit_network_controller_set", _ZTSN7SaruNet9PetitGame13ControllerSetE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_petit_network_controller_set", D_00108B18); }

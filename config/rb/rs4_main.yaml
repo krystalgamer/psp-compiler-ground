@@ -654,7 +654,7 @@ segments:
       - [0x108620, .rodata, src/net/saru_network_task]
       - [0x108A20, .rodata, src/net/saru_petit_network_card_battle_player]
       - [0x108B5C, .rodata, src/net/saru_petit_network_controller_set]
-      - [0x108BEC, .rodata, src/net/saru_petit_network_game]
+      - [0x108BD8, .rodata, src/net/saru_petit_network_game]
       - [0x108DA4, .rodata, src/net/saru_petit_network_host]
       - [0x108E80, .rodata, src/net/saru_petit_network_task]
       - [0x108F18, .rodata, src/net/saru_petit_network_task_cif]

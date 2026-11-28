@@ -114,6 +114,7 @@ rodata 0x106D08 src/net/network_lobby_state
 rodata 0x1079B4 src/net/saru_netlib_host
 rodata 0x107F60 src/net/saru_network_lobby_menu
 rodata 0x108560 src/net/saru_network_task
+rodata 0x108B18 src/net/saru_petit_network_game
 # ys/net/bx objects without local symbols: placed by class (the STT_FILE link order and the
 # file names in _memAlloc/new calls: ys_card_anim, ys_task, network_lobby_message_queue, ...)
 0x41F08 src_ys_vfs_tartefs 1.9.2           src/ys/vfs_tartefs.cc

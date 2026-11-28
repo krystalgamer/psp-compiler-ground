@@ -16,6 +16,7 @@ void _memFree(void *p, const char *file, int line);
 void *_memAllocMBL(unsigned int size, const char *file, int line);
 void consPrintf(const char *fmt, ...);
 extern const char D_00108B18[];
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_petit_network_game", D_00108B18);
 }
 
 #define cassert(e) if (!(e)) consPrintf("cassert : %s %d : %s : %s\n", "src/net/saru_petit_network_game.cc", __LINE__, __FUNCTION__, #e)
