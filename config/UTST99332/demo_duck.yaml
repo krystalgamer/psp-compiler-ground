@@ -549,7 +549,6 @@ segments:
       - [0x17389C, .rodata, main_objs/sh_sh_rot_Rmn]
       - [0x1738B8, rodata, asm/rodata_173838]
       - [0x173AE8, .rodata, main_objs/math_factorial]
-      - [0x173B04, rodata, asm/rodata_173A84]
       - [0x173C20, .rodata, main_objs/sh_SphereSampling_Sample]
       - [0x173C3C, rodata, asm/rodata_173BBC]
       - [0x173F10, .rodata, main_objs/sh_SphericalRGBFn]
