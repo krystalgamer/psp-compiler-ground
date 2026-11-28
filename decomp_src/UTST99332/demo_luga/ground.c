@@ -1,4 +1,5 @@
-/* cflags: -O2 -frename-registers */
+/* cflags: -O3 -fno-inline */
+/* data-align: 16 */
 #include "common.h"
 
 /* declarations recovered from DWARF */
@@ -140,8 +141,47 @@ void set_nextgnd(void);
 void texture_gorund(SceGimPicture *picture);
 void init_ground(void);
 void draw_ground(void);
-static void __sort_gnd(int *lst);
-static uint set_ground_light(float z);
+static void __sort_gnd(int *lst)
+{
+	geOBJECT *o0, *o1;
+	int tmp;
+	int i, j;
+
+	for (i = 0; i < 4; i++)
+		lst[i] = i;
+
+	for (i = 0; i < 3; i++) {
+		for (j = i + 1; j < 4; j++) {
+			o0 = &md->obj[i + 2];
+			o1 = &md->obj[j + 2];
+			if (o0->t.z > o1->t.z) {
+				tmp = lst[i];
+				lst[i] = lst[j];
+				lst[j] = tmp;
+			}
+		}
+	}
+}
+
+static uint set_ground_light(float z)
+{
+	uint c;
+
+	z += 240.0f;
+	if (0.0f < z && z <= 126.0f) {
+		c = 255.0f - z;
+		c *= 0x20202;
+		return c | 0xff000000;
+	} else if (126.0f < z && z <= 264.0f) {
+		c = 0xff030303;
+		return c;
+	} else if (264.0f < z && z <= 390.0f) {
+		c = 255.0f - (390.0f - z);
+		c *= 0x20202;
+		return c | 0xff000000;
+	}
+	return 0xffffffff;
+}
 
 
 /* module functions defined in other units */
@@ -225,18 +265,6 @@ void set_nextgnd(void)
 		break;
 	}
 }
-
-INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/ground", D_00020E40);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/ground", D_00020E44);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/ground", D_00020E48);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/ground", D_00020E4C);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/ground", D_00020E50);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/ground", D_00020E54);
 
 void texture_gorund(SceGimPicture *picture)
 {
@@ -334,50 +362,7 @@ void term_ground(void) {
     geModelDelete(8);
 }
 
-#ifdef NON_MATCHING
-/* diff1: addu operand order of md + i*176 (the source defines it at line 30, before its callers; the original emits it after draw_ground, as a deferred static inline that was not inlined) */
-static void __sort_gnd(int *lst)
-{
-	int i, j, t;
 
-	for (i = 0; i < 4; i++)
-		lst[i] = i;
-
-	for (i = 0; i < 3; i++) {
-		for (j = i + 1; j < 4; j++) {
-			if (md->obj[j + 2].t.z < md->obj[i + 2].t.z) {
-				t = lst[i];
-				lst[i] = lst[j];
-				lst[j] = t;
-			}
-		}
-	}
-}
-#else
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ground", __sort_gnd);
-#endif
-
-#ifdef NON_MATCHING
-/* 0x120/0x124: block layout of the 0xff030303 return (defined at line ~80 in the source, emitted last like __sort_gnd) */
-static uint set_ground_light(float z)
-{
-	uint c;
-
-	z += 240.0f;
-	if (0.0f < z && z <= 126.0f) {
-		c = 255.0f - z;
-		return c * 0x20202 | 0xff000000;
-	} else if (126.0f < z && z <= 264.0f) {
-		return 0xff030303;
-	} else if (264.0f < z && z <= 390.0f) {
-		c = 255.0f - (390.0f - z);
-		return c * 0x20202 | 0xff000000;
-	}
-	return 0xffffffff;
-}
-#else
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ground", set_ground_light);
-#endif
 
 
 
