@@ -22,7 +22,82 @@ void getButtonExtents(int font, char *s, int len, int *w, int *h);
 typedef struct SELOPT { struct SELOPT *next; int x4; char *text; } SELOPT;
 void getPulldownExtents(int font, char *s, int n, int *w, int *h);
 void getListExtents(int font, char *s, int n, int *w, int *h);
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_size", calcInLineBoxSize);
+int lineFeedProc(void *ctx, BOX *box);
+#define LBS_MIN(a, b) ((a) < (b) ? (a) : (b))
+#define LBS_MAX(a, b) ((a) < (b) ? (b) : (a))
+void calcInLineBoxSize(void *ctx, BOX *box)
+{
+    BOX *b;
+    int x0, y0, x1, y1;
+
+    if (box->html == 1) {
+        x1 = -1;
+        x0 = -1;
+        y1 = -1;
+        b = box->child;
+        y0 = -1;
+        if (b != NULL && b->html != 1) {
+            do {
+                if (x0 == -1) {
+                    x0 = b->x;
+                    x1 = x0 + b->width;
+                    y0 = b->y;
+                    y1 = y0 + b->height;
+                }
+                x0 = LBS_MIN(x0, b->x);
+                x1 = LBS_MAX(x1, b->x + b->width);
+                y0 = LBS_MIN(y0, b->y);
+                y1 = LBS_MAX(y1, b->y + b->height);
+                if (b->child != NULL) {
+                    b = b->child;
+                } else if (b->next != NULL) {
+                    b = b->next;
+                } else {
+                    b = b->parent;
+                    while (b != box && b->next == NULL)
+                        b = b->parent;
+                    if (b == box)
+                        break;
+                    b = b->next;
+                }
+            } while (b != NULL && b->html != 1);
+        }
+        if (y0 != -1) {
+            box->x = x0;
+            box->y = y0;
+            box->width = x1 - x0;
+            box->height = y1 - y0;
+        }
+    } else if (box->content == 0) {
+        x1 = -1;
+        x0 = -1;
+        y1 = -1;
+        b = box->child;
+        y0 = -1;
+        for (; b != NULL; b = b->next) {
+            if (x0 == -1) {
+                x0 = b->x;
+                x1 = x0 + b->width;
+                y0 = b->y;
+                y1 = y0 + b->height;
+            }
+            x0 = LBS_MIN(x0, b->x);
+            x1 = LBS_MAX(x1, b->x + b->width);
+            y0 = LBS_MIN(y0, b->y);
+            y1 = LBS_MAX(y1, b->y + b->height);
+        }
+        if (y0 != -1) {
+            box->x = x0;
+            box->y = y0;
+            box->width = x1 - x0;
+            box->height = y1 - y0;
+        }
+    }
+    if (box->next != NULL && box->next->display == 0) {
+        int lf = lineFeedProc(ctx, box);
+        M2C_FIELD(M2C_FIELD(ctx, void **, 4), int *, 0x34) += lf;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_size", calcBlockBoxSize);
 
