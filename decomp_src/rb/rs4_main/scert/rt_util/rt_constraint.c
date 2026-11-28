@@ -123,7 +123,14 @@ int rt_constraint_check_RT_4BYTE_FP(float *arg0, void *arg1) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_constraint", rt_constraint_check_RT_8BYTE_FP);
+int rt_constraint_check_RT_8BYTE_FP(double *v, double *r)
+{
+    double t = *v;
+    int ret = 0;
+
+    if (!(t < r[0]) && !(t > r[1])) ret = 1;
+    return ret;
+}
 
 unsigned int rt_strnlen();
 int rt_constraint_check_RT_CSTRING(const char *s, unsigned int *c)
