@@ -424,6 +424,8 @@ segments:
       - [0x166DC4, rodata, asm/rodata_166D44]
       - [0x166E70, .rodata, main_objs/glutils_TurnTable]
       - [0x166EBC, rodata, asm/rodata_166E3C]
+      - [0x166F28, .rodata, main_objs/glutils_vertex_cache1]
+      - [0x166F98, rodata, asm/rodata_166F18]
       - [0x167074, .rodata, main_objs/gl_ext_pglBlendEquationExt]
       - [0x167090, rodata, asm/rodata_167010]
       - [0x1676B4, .rodata, main_objs/glutils__arrow_pstack]

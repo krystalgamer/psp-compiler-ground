@@ -617,3 +617,6 @@ rodata 0x163718 -
 # textures_Texture float pools
 rodata 0x1763D4 main_objs/textures_Texture
 rodata 0x17641C -
+# vertex_cache1 float pools
+rodata 0x166EA8 main_objs/glutils_vertex_cache1
+rodata 0x166F18 -

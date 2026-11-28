@@ -5,7 +5,12 @@
 #include "../main.hpp"
 #include "UTST99332/demo_duck/gl.hpp"
 
-extern "C" const float D_00166EC4, D_00166EC8, D_00166EE0, D_00166EE4, D_00166EE8;
+/* this object's .gnu.linkonce.t sections in the original's order */
+DEMO_LINKONCE_ORDER(
+    DEMO_LINKONCE(_ZN6common9tmp_arrayIN7glutils6vertexEEC1Ej)
+    DEMO_LINKONCE(_ZN6common9tmp_arrayIN7glutils6vertexEE3getEj)
+);
+
 extern "C" const char D_00166F58[], D_00166F64[], D_00166F6C[], D_00166F88[], D_00166FD4[];
 extern const char tmp_array_get_name[] __asm__("_ZZN6common9tmp_arrayIN7glutils6vertexEE3getEjE19__PRETTY_FUNCTION__");
 extern const char tmp_array_release_name[] __asm__("_ZZN6common9tmp_arrayIN7glutils6vertexEE7releaseEvE19__PRETTY_FUNCTION__");
@@ -77,18 +82,18 @@ void glutils::sample_unit_circle(vertex *v, int n, float a)
 {
     float c = cosf(a);
     float s = sinf(a);
-    float x = D_00166EC4, y = 0;
+    float x = 1.0f, y = 0;
     v[0].pos.x = x;
     v[0].pos.y = y;
     v[0].pos.z = 0;
-    v[0].pos.w = D_00166EC4;
+    v[0].pos.w = 1.0f;
     for (int i = 1; i < n; i++) {
         float nx = x * c - y * s;
         float ny = y * c + x * s;
         v[i].pos.x = nx;
         v[i].pos.y = ny;
         v[i].pos.z = 0;
-        v[i].pos.w = D_00166EC4;
+        v[i].pos.w = 1.0f;
         x = nx;
         y = ny;
     }
@@ -97,9 +102,9 @@ void glutils::sample_unit_circle(vertex *v, int n, float a)
 void glutils::DrawRevolution(vertex *v, int n, int m)
 {
     if (!wireframe)
-        solid_revolution(v, n, m, 0, D_00166EC8);
+        solid_revolution(v, n, m, 0, 6.28318548f);
     else
-        wire_revolution(v, n, m, 0, D_00166EC8);
+        wire_revolution(v, n, m, 0, 6.28318548f);
 }
 
 void glutils::DrawCircle(float r, int n, float a0, float a1)
@@ -154,7 +159,25 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_vertex_c
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_vertex_cache1", _ZN7glutils9DrawTorusEffiiffb);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_vertex_cache1", _ZN7glutils12DrawCylinderEffii);
+void glutils::DrawCylinder(float h, float r, int n, int m)
+{
+    vertex *v = vertex_cache1.get(m + 1);
+    for (int i = m; i >= 0; i--) {
+        v[i].pos.x = r;
+        v[i].pos.y = 0;
+        v[i].pos.z = -h * 0.5f + h * (i / (float)m);
+        v[i].pos.w = 1.0f;
+        v[i].f30.x = 1.0f;
+        v[i].f30.y = 0;
+        v[i].f30.z = 0;
+        v[i].f30.w = 0;
+    }
+    if (!wireframe)
+        solid_revolution(v, m + 1, n, 0, 6.2831855f);
+    else
+        wire_revolution(v, m + 1, n, 0, 6.2831855f);
+    vertex_cache1.release();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_vertex_cache1", _ZN7glutils8DrawConeEffii);
 
