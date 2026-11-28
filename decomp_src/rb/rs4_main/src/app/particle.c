@@ -107,7 +107,29 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", _PartCusConvEmi
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FE0C4);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", _partInit2DBaseCntx);
+extern unsigned char D_000FE100;
+unsigned int I3dPicture__Get_wPixel(void *pic, int lv);
+unsigned int I3dPicture__Get_hPixel(void *pic, int lv);
+typedef struct { void *res; int u, v; float w, h; } PartTex;
+typedef struct { int inst; PartTex tex; } Part2DBase;
+void *_partInit2DBaseCntx(int inst, char *res)
+{
+	Part2DBase *p = _memAlloc(sizeof(Part2DBase), &D_000FE0C4, 0x199);
+	PartTex *t;
+	void *pic;
+
+	if (!(p != NULL))
+		consPrintf(&D_000FE100, &D_000FE0C4, 0x19B, "_partInit2DBaseCntx", "pPart2DBCntx!= NULL");
+	t = &p->tex;
+	p->inst = inst;
+	t->res = res;
+	pic = (void *)(((*(int *)(res + 0x10) + 15) & ~15) + 16);
+	t->v = 0;
+	t->u = 0;
+	t->w = I3dPicture__Get_wPixel(pic, 0);
+	t->h = I3dPicture__Get_hPixel(pic, 0);
+	return p;
+}
 
 int _partFree2DBaseCntx(void *p)
 {
@@ -117,7 +139,25 @@ int _partFree2DBaseCntx(void *p)
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FE100);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", _partInit3DBaseCntx);
+typedef struct { int inst; PartTex tex; } Part3DBase;
+void *_partInit3DBaseCntx(int inst, char *res)
+{
+	Part3DBase *p = _memAlloc(sizeof(Part3DBase), &D_000FE0C4, 0x1D6);
+	PartTex *t;
+	void *pic;
+
+	if (!(p != NULL))
+		consPrintf(&D_000FE100, &D_000FE0C4, 0x1D8, "_partInit3DBaseCntx", "pPart3DBCntx!= NULL");
+	t = &p->tex;
+	p->inst = inst;
+	t->res = res;
+	pic = (void *)(((*(int *)(res + 0x10) + 15) & ~15) + 16);
+	t->v = 0;
+	t->u = 0;
+	t->w = I3dPicture__Get_wPixel(pic, 0);
+	t->h = I3dPicture__Get_hPixel(pic, 0);
+	return p;
+}
 
 int _partFree3DBaseCntx(void *p)
 {
