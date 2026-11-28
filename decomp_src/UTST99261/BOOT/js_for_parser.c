@@ -71,6 +71,39 @@ void JSI_freeURLRec(void *u);
 int mes_document_new(void *ctx, int *priv);
 typedef struct JDUrlStr { int f0; int len; UCSChar *str; } JDUrlStr;
 typedef struct JDUrl { int f0; int f4; JDUrlStr *s; } JDUrl;
+void mes_context_global_initialize(void);
+void mes_gc_table_clear(void);
+void mes_initialize(void);
+void *mes_setup(int size);
+void mes_navigator_class_init(void *ctx);
+void mes_window_class_init(void *ctx);
+void mes_document_class_init(void *ctx);
+void mes_event_class_init(void *ctx);
+void mes_history_class_init(void *ctx);
+void mes_location_class_init(void *ctx);
+void mes_screen_class_init(void *ctx);
+void mes_anchor_class_init(void *ctx);
+void mes_form_class_init(void *ctx);
+void mes_link_class_init(void *ctx);
+void mes_button_class_init(void *ctx);
+void mes_checkbox_class_init(void *ctx);
+void mes_fileupload_class_init(void *ctx);
+void mes_hidden_class_init(void *ctx);
+void mes_password_class_init(void *ctx);
+void mes_radio_class_init(void *ctx);
+void mes_reset_class_init(void *ctx);
+void mes_select_class_init(void *ctx);
+void mes_submit_class_init(void *ctx);
+void mes_text_class_init(void *ctx);
+void mes_textarea_class_init(void *ctx);
+void mes_option_class_init(void *ctx);
+void mes_image_class_init(void *ctx, int win);
+int mes_window_new(void *ctx, void *priv);
+int EventSetInternal();
+int ScreenSetInternal(int a, int b);
+void *NavigatorSetInternal(void *arg0, int arg1);
+typedef struct JWinPriv { void *dom; int f4; int f8; } JWinPriv;
+typedef struct JWin { void *ctx; int win; } JWin;
 int JSObjGetCharsLength(const UCSChar *s)
 {
     int n = 0;
@@ -275,7 +308,66 @@ int js_setChildOfSelect(ctx, parent, elem)
     return opt;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", WindowSetInternal);
+void *WindowSetInternal(int a, int b, void *hist)
+{
+    JWin *w;
+    void *ctx;
+    JWinPriv *priv;
+    int win;
+
+    w = MEM_malloc(0, 0x10);
+    if (w == NULL)
+        return NULL;
+    mes_context_global_initialize();
+    mes_gc_table_clear();
+    mes_initialize();
+    ctx = mes_setup(0x4000);
+    mes_navigator_class_init(ctx);
+    mes_window_class_init(ctx);
+    mes_document_class_init(ctx);
+    mes_event_class_init(ctx);
+    mes_history_class_init(ctx);
+    mes_location_class_init(ctx);
+    mes_screen_class_init(ctx);
+    mes_anchor_class_init(ctx);
+    mes_form_class_init(ctx);
+    mes_link_class_init(ctx);
+    mes_button_class_init(ctx);
+    mes_checkbox_class_init(ctx);
+    mes_fileupload_class_init(ctx);
+    mes_hidden_class_init(ctx);
+    mes_password_class_init(ctx);
+    mes_radio_class_init(ctx);
+    mes_reset_class_init(ctx);
+    mes_select_class_init(ctx);
+    mes_submit_class_init(ctx);
+    mes_text_class_init(ctx);
+    mes_textarea_class_init(ctx);
+    mes_option_class_init(ctx);
+    priv = MEM_malloc(0, 0xC);
+    if (priv != NULL) {
+        priv->dom = HST_getDomObject(hist);
+        priv->f4 = 0;
+        priv->f8 = 0;
+        win = mes_window_new(ctx, priv);
+        *--M2C_FIELD(ctx, int **, 0x18) = win;
+        mes_image_class_init(ctx, win);
+        mes_class_property_setup(ctx, win, "window", win, 7);
+        mes_class_property_setup(ctx, win, "self", win, 7);
+        mes_class_property_setup(ctx, win, "opener", 4, 4);
+        if (b == 0) {
+            mes_class_property_setup(ctx, win, "parent", win, 7);
+            mes_class_property_setup(ctx, win, "top", win, 7);
+        }
+        M2C_FIELD(ctx, int **, 0x18)++;
+    }
+    EventSetInternal(ctx, win);
+    ScreenSetInternal((int)ctx, win);
+    NavigatorSetInternal(ctx, win);
+    w->ctx = ctx;
+    w->win = win;
+    return w;
+}
 
 int DocumentSetInternal(int a, int b, void *dom, int c)
 {
