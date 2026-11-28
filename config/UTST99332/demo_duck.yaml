@@ -412,6 +412,8 @@ segments:
       - [0x163A00, .rodata, main_objs/glutils_Material]
       - [0x163A74, .rodata, main_objs/interp_Path]
       - [0x163A90, rodata, asm/rodata_163A10]
+      - [0x165458, .rodata, main_objs/glutils_Picking]
+      - [0x165474, rodata, asm/rodata_1653F4]
       - [0x1654D8, .rodata, main_objs/glutils_PickingBase]
       - [0x1654E8, rodata, asm/rodata_165468]
       - [0x165558, .rodata, main_objs/glutils_PositioningInterface]
@@ -519,8 +521,7 @@ segments:
       - [0x170B10, .rodata, main_objs/sgl_MeshBuilder_extruded_var_extruded_var]
       - [0x170BD8, rodata, asm/rodata_170B58]
       - [0x1711D8, .rodata, main_objs/sgl_MeshParams]
-      - [0x171208, rodata, asm/rodata_171188]
-      - [0x171B84, .rodata, main_objs/sgl_Stripper]
+      - [0x171208, .rodata, main_objs/sgl_Stripper]
       - [0x171B94, rodata, asm/rodata_171B14]
       - [0x171C38, .rodata, main_objs/sgl_TransformSet_Transform]
       - [0x171C64, rodata, asm/rodata_171BE4]
@@ -574,7 +575,6 @@ segments:
       - [0x1762CC, .rodata, main_objs/FloatImage]
       - [0x17631C, rodata, asm/rodata_17629C]
       - [0x176454, .rodata, main_objs/textures_Texture]
-      - [0x17649C, rodata, asm/rodata_17641C]
       - [0x17700C, .rodata, main_objs/textures_Texture_2]
       - [0x177260, rodata, asm/rodata_1771E0]
       - [0x177948, .rodata, menu]
@@ -689,7 +689,7 @@ segments:
       - { start: 0x18CFCC, type: bss, vram: 0x18DFE4, name: bss_18DFE4 }
       - { start: 0x18CFCC, type: .bss, vram: 0x18E198, name: main_objs/glutils_Material }
       - { start: 0x18CFCC, type: .bss, vram: 0x18E21C, name: main_objs/interp_Path }
-      - { start: 0x18CFCC, type: bss, vram: 0x18E2E0, name: bss_18E2E0 }
+      - { start: 0x18CFCC, type: .bss, vram: 0x18E2E0, name: main_objs/glutils_Picking }
       - { start: 0x18CFCC, type: .bss, vram: 0x18E364, name: main_objs/glutils_PositioningInterface }
       - { start: 0x18CFCC, type: .bss, vram: 0x18E428, name: main_objs/glutils_Query }
       - { start: 0x18CFCC, type: .bss, vram: 0x18E42C, name: main_objs/glutils_RectanglePicking }
@@ -759,7 +759,7 @@ segments:
       - { start: 0x18CFCC, type: .bss, vram: 0x190830, name: main_objs/sgl_Mesh_3 }
       - { start: 0x18CFCC, type: bss, vram: 0x190934, name: bss_190934 }
       - { start: 0x18CFCC, type: .bss, vram: 0x190B3C, name: main_objs/sgl_MeshParams }
-      - { start: 0x18CFCC, type: bss, vram: 0x190C40, name: bss_190C40 }
+      - { start: 0x18CFCC, type: .bss, vram: 0x190C40, name: main_objs/sgl_Stripper }
       - { start: 0x18CFCC, type: .bss, vram: 0x190D44, name: main_objs/sgl_TransformSet_Transform }
       - { start: 0x18CFCC, type: .bss, vram: 0x190DC4, name: main_objs/math_TransformStack }
       - { start: 0x18CFCC, type: .bss, vram: 0x190E44, name: main_objs/math_TransformStackFunc }
@@ -796,7 +796,8 @@ segments:
       - { start: 0x18CFCC, type: .bss, vram: 0x191C78, name: main_objs/sys_timer_GetDeltaTime }
       - { start: 0x18CFCC, type: .bss, vram: 0x191CE0, name: main_objs/textures_textures_internal_Bmp }
       - { start: 0x18CFCC, type: .bss, vram: 0x191D64, name: main_objs/FloatImage }
-      - { start: 0x18CFCC, type: bss, vram: 0x191DE8, name: bss_191DE8 }
+      - { start: 0x18CFCC, type: .bss, vram: 0x191DE8, name: main_objs/textures_Texture }
+      - { start: 0x18CFCC, type: bss, vram: 0x191E6C, name: bss_191E6C }
       - { start: 0x18CFCC, type: .bss, vram: 0x191E70, name: main_objs/textures_Texture_2 }
       - { start: 0x18CFCC, type: bss, vram: 0x191EF4, name: bss_191EF4 }
       - { start: 0x18CFCC, type: .bss, vram: 0x191EF4, name: main_objs/textures_textures_internal_Tga }

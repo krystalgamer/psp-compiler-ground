@@ -131,8 +131,9 @@ rodata 0x16C918 -
 # and allocate()'s stay data: SGL_POSITION_ONE)
 rodata 0x170A90 main_objs/sgl_MeshBuilder_extruded_var_extruded_var
 rodata 0x170B58 -
-# sgl_Stripper: vector<int>::reserve()'s "vector::reserve" (after Stripper's strings)
-rodata 0x171B04 main_objs/sgl_Stripper
+# sgl_Stripper: whole .rodata (the float pools in .rodata.cst4 first, then the strings)
+rodata 0x171188 main_objs/sgl_Stripper
+cst4 0x171188-0x1711A8 main_objs/sgl_Stripper
 rodata 0x171B14 -
 # sh_* objects whose static initializer (the header statics) is C++: .rodata after the vtable, .bss
 rodata 0x172C44 main_objs/sh_Matrix
@@ -427,9 +428,9 @@ bss 0x190314 main_objs/BVH
 rodata 0x163980 main_objs/glutils_Material
 bss 0x18E198 main_objs/glutils_Material
 rodata 0x171158 main_objs/sgl_MeshParams
-rodata 0x171188 -
 bss 0x190B3C main_objs/sgl_MeshParams
-bss 0x190C40 -
+# sgl_Stripper: the header statics
+bss 0x190C40 main_objs/sgl_Stripper
 # math_Trackball: C++ static initializer; .rodata: the float pools (track()'s THRESHOLD after them stays asm); .bss
 rodata 0x166C74 main_objs/math_Trackball
 rodata 0x166CB4 -
@@ -492,7 +493,9 @@ rodata 0x175E90 main_objs/textures_textures_internal_Bmp
 rodata 0x175EAC -
 bss 0x191CE0 main_objs/textures_textures_internal_Bmp
 bss 0x191D64 main_objs/FloatImage
-bss 0x191DE8 -
+# textures_Texture: the header statics (override_alpha_on after them stays asm: defining it would key the static ctor to it)
+bss 0x191DE8 main_objs/textures_Texture
+bss 0x191E6C -
 rodata 0x1686B0 main_objs/math_bspline_curve_curve
 rodata 0x168700 -
 bss 0x18ECEC main_objs/math_bspline_curve_curve
@@ -541,7 +544,10 @@ bss 0x18E428 main_objs/glutils_Query
 rodata 0x1639F4 main_objs/interp_Path
 rodata 0x163A10 -
 bss 0x18E21C main_objs/interp_Path
-bss 0x18E2E0 -
+# glutils_Picking: C++ static initializer; .rodata: its float pool; .bss: the header statics
+bss 0x18E2E0 main_objs/glutils_Picking
+rodata 0x1653D8 main_objs/glutils_Picking
+rodata 0x1653F4 -
 rodata 0x17449C main_objs/interp_VectorRGBAnim
 rodata 0x1744B8 -
 bss 0x191A74 main_objs/interp_VectorRGBAnim
@@ -611,9 +617,9 @@ bss 0x18DFE4 -
 rodata 0x163330 main_objs/HouseKeeping_AttribStack
 rodata 0x163718 -
 bss 0x18DDF0 main_objs/HouseKeeping_AttribStack
-# textures_Texture float pools
+# textures_Texture: whole .rodata (the asm functions' float pools in .rodata.cst4 first, then the strings and jump tables)
 rodata 0x1763D4 main_objs/textures_Texture
-rodata 0x17641C -
+cst4 0x1763D4-0x17641C main_objs/textures_Texture
 # vertex_cache1 float pools
 rodata 0x166EA8 main_objs/glutils_vertex_cache1
 rodata 0x166F18 -

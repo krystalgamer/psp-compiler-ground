@@ -1393,7 +1393,7 @@ public:
     int saveBmp(const std::string &) const;
     void blur(int, float);
     void allocate(unsigned int, unsigned int);
-    int setAlphaCount(int *, int *, int *, unsigned char, unsigned char);
+    const bool setAlphaCount(int *, int *, int *, unsigned char, unsigned char);
     void allocate_for(Format);
     template<class D, class S> void convert();
     CopiableMembers m;              /* 0x00 */

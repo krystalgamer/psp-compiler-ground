@@ -543,7 +543,7 @@ public:
     int count_strips();
     int get_adjacent_triangle(int, int);
     void add_index(int *, int, int);
-    int cmp_orientation(int *, int *);
+    bool cmp_orientation(int *, int *);
     void fix_cullface();
     void convert_to_new_format();
     void reverse_strip(int);

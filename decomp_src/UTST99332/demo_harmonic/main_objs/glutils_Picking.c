@@ -2,7 +2,15 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
+#include <iostream>
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor (the original keyed them to
+   Picking::THRESHOLD, defined in this object's .data, which stays asm) */
+__asm__(".globl _GLOBAL__I__ZN7glutils7Picking9THRESHOLDE\n_GLOBAL__I__ZN7glutils7Picking9THRESHOLDE = _GLOBAL__I__ZN7glutils7PickingC2ERKS0_");
+__asm__(".globl _GLOBAL__D__ZN7glutils7Picking9THRESHOLDE\n_GLOBAL__D__ZN7glutils7Picking9THRESHOLDE = _GLOBAL__D__ZN7glutils7PickingC2ERKS0_");
 
 extern "C" {
 void glPopMatrix(void);
@@ -27,8 +35,6 @@ DEMO_LINKONCE_ORDER(
     DEMO_LINKONCE(_ZN7glutils11PickingBaseD1Ev)
     DEMO_LINKONCE(_ZN7glutils11PickingBaseD0Ev)
 );
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_Picking", _Z41__static_initialization_and_destruction_0ii_2F334);
 
 glutils::Picking::Picking(const Picking &o)
 {
@@ -158,22 +164,6 @@ void glutils::Picking::end()
     glPopMatrix();
     glMatrixMode(0x1700);
     glPopMatrix();
-}
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_2F334");
-void _GLOBAL__I__ZN7glutils7Picking9THRESHOLDE(void);
-void _GLOBAL__D__ZN7glutils7Picking9THRESHOLDE(void);
-}
-
-void _GLOBAL__I__ZN7glutils7Picking9THRESHOLDE(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN7glutils7Picking9THRESHOLDE(void)
-{
-    static_init(0, 0xFFFF);
 }
 
 /* PickingBase's inline virtual dtor: only its vtable (asm data) refers to it */

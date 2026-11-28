@@ -7657,3 +7657,7 @@ D_00163320 = 0x00163320; // size:0x8 nosplit (a double, loaded as two words)
 D_00163328 = 0x00163328; // size:0x8 nosplit (a double, loaded as two words)
 D_00165400 = 0x00165400; // size:0x8 nosplit (a double, loaded as two words)
 D_001771D8 = 0x001771D8; // size:0x8 nosplit (a double, loaded as two words)
+D_001767DC = 0x001767DC; // size:0x8 nosplit function_owner:_ZN8textures7Texture4loadEPKc
+D_001767E4 = 0x001767E4; // size:0x8 nosplit function_owner:_ZN8textures7Texture4loadEPKc
+D_0017693C = 0x0017693C; // size:0x4 nosplit function_owner:_ZN8textures7Texture9convert32Ev
+D_00176940 = 0x00176940; // size:0x8 nosplit function_owner:_ZN8textures7Texture9convert32Ev

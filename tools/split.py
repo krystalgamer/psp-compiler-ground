@@ -286,6 +286,7 @@ def cst_pools(asm_dir: Path, config_path: Path):
                 vram = next((int(m[1], 16) for l in block
                              for m in [re.match(r"\s*/\* [0-9A-F]+ ([0-9A-F]{8})\b", l)] if m), None)
                 want = cur if vram is None else sec if lo <= vram < hi else ".section .rodata"
+                want = want or ".section .rodata"
                 if want != cur:
                     out.append(want + "\n")
                     cur = want
@@ -300,8 +301,9 @@ def cst_pools(asm_dir: Path, config_path: Path):
                         flush()
                     in_ro = s == ".section .rodata"
                     if in_ro:
-                        cur = ".section .rodata"
-                        out.append(line)
+                        # switched to by the first block (no empty .rodata
+                        # before a pool that starts in .rodata.cst*)
+                        cur = None
                         continue
                 if not in_ro:
                     out.append(line)

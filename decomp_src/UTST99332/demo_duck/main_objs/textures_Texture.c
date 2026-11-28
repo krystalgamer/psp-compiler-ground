@@ -1,12 +1,16 @@
 /* lang: c++ */
-/* cflags: -O3 -fno-exceptions */
+/* cflags: -O3 -fno-exceptions -fmerge-constants */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
-/* the "" of Texture::CopiableMembers() stays in the module's .rodata (asm) */
-extern const char D_0017641C[];
-#define TEXTURE_EMPTY_PATH D_0017641C
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
+#include <iostream>
 #define DEMO_TEMPLATE_DEFS
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN8textures7TextureaSERKS0_");
+__asm__(".globl _GLOBAL__D__ZN8textures7TextureaSERKS0_");
 
 /* this object's .gnu.linkonce.t sections in the original's order */
 DEMO_LINKONCE_ORDER(
@@ -19,67 +23,15 @@ DEMO_LINKONCE_ORDER(
 );
 
 /* the strings stay in the module's .rodata (asm) */
-extern const char D_0017641C[];     /* "" */
-extern const char D_0017645C[];     /* " *** error " */
-extern const char D_00176468[];     /* "_Value == ALPHA_BLEND || _Value == ALPHA_TEST || _Value == 0" */
-extern const char D_001764A8[];     /* "../lib/textures/Texture.cpp" */
-extern const char D_001764C4[];     /* " " */
-extern const char D_00176504[];     /* "value == GetBitField( reg, start_bit, bit_size )" */
-extern const char SetBitField_name[] __asm__("_ZZN8textures11SetBitFieldERjiiiE19__PRETTY_FUNCTION__");
-extern const char setAlphaFlags_name[] __asm__("_ZZN8textures7Texture13setAlphaFlagsENS_9AlphaMaskEE19__PRETTY_FUNCTION__");
-extern const char D_0017693C[];     /* "\n" */
-extern const char D_00176A88[];     /* "_m._format == ABGR32 || _m._format == BGR24" */
-extern const char psp_reorder_name[] __asm__("_ZZN8textures7Texture11psp_reorderEvE19__PRETTY_FUNCTION__");
-extern const char invertChannel_name[] __asm__("_ZZN8textures7Texture13invertChannelENS_7ChannelEE19__PRETTY_FUNCTION__");
+extern const char D_0017693C[];
 namespace textures { namespace psp { void SwizzleBitmap(unsigned char *, unsigned char *, Format, int, int); } }
-extern const char D_00176940[];     /* "valid()" */
-extern const char D_00176CC4[];     /* "_Src" */
-extern const char D_00176D18[];     /* "copyChannel " */
-extern const char D_00176D28[];     /* " <- " */
-extern const char D_00176C28[];     /* "setChannel " */
-extern const char D_00176C34[];     /* " <- val=" */
-extern const char setAlphaCount_name[] __asm__("_ZZN8textures7Texture13setAlphaCountEPiS1_S1_hhE19__PRETTY_FUNCTION__");
-extern const char copyChannelP_name[] __asm__("_ZZN8textures7Texture11copyChannelENS_7ChannelEPhE19__PRETTY_FUNCTION__");
-extern const char copyChannelC_name[] __asm__("_ZZN8textures7Texture11copyChannelENS_7ChannelES1_E19__PRETTY_FUNCTION__");
-extern const char setChannel_name[] __asm__("_ZZN8textures7Texture10setChannelENS_7ChannelEhE19__PRETTY_FUNCTION__");
-extern const char D_00176DD4[];     /* "_m._format == _Src._m._format" */
-extern const char copy_name[] __asm__("_ZZN8textures7Texture4copyERKS0_iiiiiiE19__PRETTY_FUNCTION__");
-extern const char resize_nearest_name[] __asm__("_ZZN8textures7Texture14resize_nearestEiiE19__PRETTY_FUNCTION__");
-extern const char D_001767DC[];     /* ".tga" */
-extern const char D_001767E4[];     /* ".bmp" */
-extern const char D_00176E30[];     /* "bitsize != 0" */
-extern const char saveChannel_name[] __asm__("_ZZNK8textures7Texture11saveChannelENS_7ChannelEPKcE19__PRETTY_FUNCTION__");
-extern const char saveTga_name[] __asm__("_ZZNK8textures7Texture7saveTgaERKSsE19__PRETTY_FUNCTION__");
-extern const char saveBmp_name[] __asm__("_ZZNK8textures7Texture7saveBmpERKSsE19__PRETTY_FUNCTION__");
+extern const char D_00176940[];
+extern const char D_001767DC[];
+extern const char D_001767E4[];
 namespace common { std::string GetFileExtension(std::string, bool); }
-extern const char D_00176B54[];     /* "(" */
-extern const char D_00176B58[];     /* "," */
-extern const char D_00176B5C[];     /* ")->(" */
-extern const char D_00176B64[];     /* ")\n" */
-extern const char D_00176B68[];     /* " bicubic\n" */
-extern const char D_00176B74[];     /* " nearest\n" */
-extern const char resize_name[] __asm__("_ZZN8textures7Texture6resizeEiibE19__PRETTY_FUNCTION__");
-extern const char resize_func[] __asm__("_ZZN8textures7Texture6resizeEiibE12__FUNCTION__");
-extern const char D_001766AC[];     /* "-------------------------[texture info]-------------------------" */
-extern const char D_001766F0[];     /* "path " */
-extern const char D_001766F8[];     /* "x" */
-extern const char D_001766FC[];     /* "image add:" */
-extern const char D_00176708[];     /* " clut add:" */
-extern const char D_00176714[];     /* "filtering: " */
-extern const char D_00176720[];     /* "NEAREST" */
-extern const char D_00176728[];     /* "LINEAR" */
-extern const char D_00176730[];     /* "alpha flags:" */
-extern const char D_00176740[];     /* " alpha ON " */
-extern const char D_0017674C[];     /* " alpha OFF" */
-extern const char D_00176758[];     /* "ALPHA_BLEND " */
-extern const char D_00176768[];     /* "ALPHA_TEST " */
-extern const char D_00176774[];     /* "HAS_0x00 " */
-extern const char D_00176780[];     /* "HAS_0xFF " */
-extern const char D_0017678C[];     /* "HAS_0x7E " */
-extern const char D_00176798[];     /* "----------------------------------------------------------------" */
 #define TEX_ASSERT(c, s, fn, line) \
     do if (!(c)) { \
-        common::common_internal::assert_display(D_0017645C, s, D_001764A8, fn, line, D_001764C4); \
+        common::common_internal::assert_display(" *** error ", s, "../lib/textures/Texture.cpp", fn, line, " "); \
         common::common_internal::on_error(); \
         common::common_internal::clash(); \
     } while (0)
@@ -96,11 +48,9 @@ inline void SetBitField(unsigned int &reg, int value, int start_bit, int bit_siz
     unsigned int v = value & mask;
     reg &= ~(mask << start_bit);
     reg |= v << start_bit;
-    TEX_ASSERT(value == GetBitField(reg, start_bit, bit_size), D_00176504, SetBitField_name, 229);
+    TEX_ASSERT(value == GetBitField(reg, start_bit, bit_size), "value == GetBitField( reg, start_bit, bit_size )", __PRETTY_FUNCTION__, 229);
 }
 }
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _Z41__static_initialization_and_destruction_0ii_101494);
 
 textures::Texture &textures::Texture::operator=(const Texture &t)
 {
@@ -196,7 +146,7 @@ int textures::Texture::getLoadedAlphaflags() const
 
 void textures::Texture::setAlphaFlags(AlphaMask _Value)
 {
-    TEX_ASSERT(_Value == ALPHA_BLEND || _Value == ALPHA_TEST || _Value == 0, D_00176468, setAlphaFlags_name, 201);
+    TEX_ASSERT(_Value == ALPHA_BLEND || _Value == ALPHA_TEST || _Value == 0, "_Value == ALPHA_BLEND || _Value == ALPHA_TEST || _Value == 0", __PRETTY_FUNCTION__, 201);
     m.alpha_flags = _Value;
     if (_Value == ALPHA_BLEND || _Value == ALPHA_TEST)
         m.alpha_flags = (AlphaMask)(_Value | 1);
@@ -333,21 +283,21 @@ void textures::Texture::print(std::ostream &o)
 {
     unsigned char *img = image.addr();
     unsigned char *cl = clut.addr();
-    o << D_001766AC << std::endl
-      << D_001766F0 << m.path << D_001764C4 << m.width << D_001766F8 << m.height << D_001764C4
+    o << "-------------------------[texture info]-------------------------" << std::endl
+      << "path " << m.path << " " << m.width << "x" << m.height << " "
       << FormatName(m.format) << std::endl
-      << D_001766FC << (void *)img << D_00176708 << (void *)cl << std::endl
-      << D_00176714 << (getFiltering() == 1 ? D_00176720 : D_00176728) << std::endl
-      << D_00176730 << (m.alpha_flags & 1 ? D_00176740 : D_0017674C);
+      << "image add:" << (void *)img << " clut add:" << (void *)cl << std::endl
+      << "filtering: " << (getFiltering() == 1 ? "NEAREST" : "LINEAR") << std::endl
+      << "alpha flags:" << (m.alpha_flags & 1 ? " alpha ON " : " alpha OFF");
     if (m.alpha_flags & 1) {
-        o << (m.alpha_flags & ALPHA_BLEND ? D_00176758 : D_0017641C)
-          << (m.alpha_flags & ALPHA_TEST ? D_00176768 : D_0017641C)
-          << (m.alpha_flags & 8 ? D_00176774 : D_0017641C)
-          << (m.alpha_flags & 0x10 ? D_00176780 : D_0017641C)
-          << (m.alpha_flags & 0x20 ? D_0017678C : D_0017641C);
+        o << (m.alpha_flags & ALPHA_BLEND ? "ALPHA_BLEND " : "")
+          << (m.alpha_flags & ALPHA_TEST ? "ALPHA_TEST " : "")
+          << (m.alpha_flags & 8 ? "HAS_0x00 " : "")
+          << (m.alpha_flags & 0x10 ? "HAS_0xFF " : "")
+          << (m.alpha_flags & 0x20 ? "HAS_0x7E " : "");
     }
     o << std::endl;
-    o << D_00176798 << std::endl;
+    o << "----------------------------------------------------------------" << std::endl;
 }
 
 void textures::Texture::swap(Texture &t)
@@ -375,12 +325,10 @@ void textures::Texture::alphaHalfBias()
     }
 }
 
-extern const char D_00176960[];     /* "width or height or both are non power of 2\n" */
-
 void textures::Texture::finish_load()
 {
     if (!isPow2())
-        common::Log() << D_00176960;
+        common::Log() << "width or height or both are non power of 2\n";
     m.load.width = m.width;
     m.load.height = m.height;
     if (m.format == FORMAT_1 || m.format == FORMAT_2)
@@ -396,7 +344,7 @@ void textures::Texture::psp_reorder()
     Texture copy(*this);
     int unused[4];      /* the original's frame has 16 more bytes after copy */
     (void)unused;
-    common::Log() << psp_reorder_name << D_001764C4 << m.path << D_0017693C;
+    common::Log() << __PRETTY_FUNCTION__ << " " << m.path << D_0017693C;
     psp::SwizzleBitmap(image.addr(), copy.image.addr(), m.format, m.width, m.height);
     m.loaded = true;
 }
@@ -436,7 +384,7 @@ void textures::Texture::resize_nearest(int w, int h)
 {
     if (m.width == 0 || m.height == 0)
         return;
-    TEX_ASSERT(m.format == FORMAT_1 || m.format == FORMAT_2, D_00176A88, resize_nearest_name, 1295);
+    TEX_ASSERT(m.format == FORMAT_1 || m.format == FORMAT_2, "_m._format == ABGR32 || _m._format == BGR24", __PRETTY_FUNCTION__, 1295);
     Texture tmp(w, h, *this);
     int unused[4];      /* the original's frame has 16 more bytes after tmp */
     (void)unused;
@@ -464,13 +412,13 @@ bool textures::Texture::resize(int w, int h, bool bicubic)
         return false;
     if (w == m.width && h == m.height)
         return false;
-    TEX_ASSERT(m.format == FORMAT_1 || m.format == FORMAT_2, D_00176A88, resize_name, 1386);
-    common::Log() << resize_func << D_00176B54 << m.width << D_00176B58 << m.height << D_00176B5C << w << D_00176B58 << h << D_00176B64;
+    TEX_ASSERT(m.format == FORMAT_1 || m.format == FORMAT_2, "_m._format == ABGR32 || _m._format == BGR24", __PRETTY_FUNCTION__, 1386);
+    common::Log() << __FUNCTION__ << "(" << m.width << "," << m.height << ")->(" << w << "," << h << ")\n";
     if (bicubic) {
-        common::Log() << D_00176B68;
+        common::Log() << " bicubic\n";
         resize_bicubic(w, h);
     } else {
-        common::Log() << D_00176B74;
+        common::Log() << " nearest\n";
         resize_nearest(w, h);
     }
     return true;
@@ -505,24 +453,40 @@ bool textures::Texture::isPow2()
     return IsPow2(m.width) && IsPow2(m.height);
 }
 
-/* FormatName matches as tmp/cxx/drafts/s32/fn3.v (cases 2,1,3,4,5,0), but its jump table (0x176BC8) is outside the unit's carved .rodata */
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures10FormatNameENS_6FormatE);
+const char *textures::FormatName(Format f)
+{
+    switch (f) {
+    case FORMAT_2:
+        return "BGR24";
+    case FORMAT_1:
+        return "ABGR32";
+    case FORMAT_3:
+        return "ABGR16";
+    case FORMAT_4:
+        return "ABGR32_8IDX";
+    case FORMAT_5:
+        return "ABGR32_4IDX";
+    case FORMAT_0:
+        return "BLANK_FORMAT";
+    }
+    return "UNKNOWN";
+}
 
 void textures::Texture::setChannel(Channel c, unsigned char v)
 {
-    TEX_ASSERT(m.format == FORMAT_1 || m.format == FORMAT_2, D_00176A88, setChannel_name, 1482);
+    TEX_ASSERT(m.format == FORMAT_1 || m.format == FORMAT_2, "_m._format == ABGR32 || _m._format == BGR24", __PRETTY_FUNCTION__, 1482);
     unsigned char *p = image.addr();
     p += c;
     for (unsigned int i = 0; i < (unsigned int)(m.width * m.height); i++) {
         *p = v;
         p += 4;
     }
-    common::Log() << D_00176C28 << (int)c << D_00176C34 << (int)v << D_0017693C;
+    common::Log() << "setChannel " << (int)c << " <- val=" << (int)v << D_0017693C;
 }
 
 void textures::Texture::invertChannel(Channel c)
 {
-    TEX_ASSERT(m.format == FORMAT_1 || m.format == FORMAT_2, D_00176A88, invertChannel_name, 1504);
+    TEX_ASSERT(m.format == FORMAT_1 || m.format == FORMAT_2, "_m._format == ABGR32 || _m._format == BGR24", __PRETTY_FUNCTION__, 1504);
     unsigned char *p = image.addr() + c;
     for (int i = 0; i < m.width * m.height; i++) {
         *p = ~*p;
@@ -532,8 +496,8 @@ void textures::Texture::invertChannel(Channel c)
 
 void textures::Texture::copyChannel(Channel c, unsigned char *_Src)
 {
-    TEX_ASSERT(m.format == FORMAT_1 || m.format == FORMAT_2, D_00176A88, copyChannelP_name, 1524);
-    TEX_ASSERT(_Src, D_00176CC4, copyChannelP_name, 1525);
+    TEX_ASSERT(m.format == FORMAT_1 || m.format == FORMAT_2, "_m._format == ABGR32 || _m._format == BGR24", __PRETTY_FUNCTION__, 1524);
+    TEX_ASSERT(_Src, "_Src", __PRETTY_FUNCTION__, 1525);
     unsigned char *dst = image.addr();
     unsigned char *src = _Src;
     dst += c;
@@ -546,7 +510,7 @@ void textures::Texture::copyChannel(Channel c, unsigned char *_Src)
 
 void textures::Texture::copyChannel(Channel dst_c, Channel src_c)
 {
-    TEX_ASSERT(m.format == FORMAT_1 || m.format == FORMAT_2, D_00176A88, copyChannelC_name, 1544);
+    TEX_ASSERT(m.format == FORMAT_1 || m.format == FORMAT_2, "_m._format == ABGR32 || _m._format == BGR24", __PRETTY_FUNCTION__, 1544);
     if (src_c != dst_c) {
         unsigned char *dst = image.addr();
         unsigned char *src = image.addr();
@@ -557,13 +521,13 @@ void textures::Texture::copyChannel(Channel dst_c, Channel src_c)
             src += 4;
             dst += 4;
         }
-        common::Log() << D_00176D18 << (int)dst_c << D_00176D28 << (int)src_c << D_0017693C;
+        common::Log() << "copyChannel " << (int)dst_c << " <- " << (int)src_c << D_0017693C;
     }
 }
 
 int textures::Texture::saveChannel(Channel c, const char *filename) const
 {
-    TEX_ASSERT(m.format == FORMAT_1 || m.format == FORMAT_2, D_00176A88, saveChannel_name, 1578);
+    TEX_ASSERT(m.format == FORMAT_1 || m.format == FORMAT_2, "_m._format == ABGR32 || _m._format == BGR24", __PRETTY_FUNCTION__, 1578);
     Texture tmp(*this);
     int unused[4];      /* the original's frame has 16 more bytes after tmp */
     (void)unused;
@@ -576,8 +540,8 @@ int textures::Texture::saveChannel(Channel c, const char *filename) const
 
 void textures::Texture::copy(const Texture &_Src, int sx, int sy, int w, int h, int dx, int dy)
 {
-    TEX_ASSERT(m.format == FORMAT_1 || m.format == FORMAT_2, D_00176A88, copy_name, 1598);
-    TEX_ASSERT(m.format == _Src.m.format, D_00176DD4, copy_name, 1600);
+    TEX_ASSERT(m.format == FORMAT_1 || m.format == FORMAT_2, "_m._format == ABGR32 || _m._format == BGR24", __PRETTY_FUNCTION__, 1598);
+    TEX_ASSERT(m.format == _Src.m.format, "_m._format == _Src._m._format", __PRETTY_FUNCTION__, 1600);
     unsigned int *src = (unsigned int *)const_cast<Texture &>(_Src).image.addr();
     unsigned int *dst = (unsigned int *)image.addr();
     for (int i = 0; i < w; i++) {
@@ -614,7 +578,7 @@ int textures::Texture::save(const std::string &path) const
 
 int textures::Texture::saveTga(const std::string &path) const
 {
-    TEX_ASSERT(valid(), D_00176940, saveTga_name, 1648);
+    TEX_ASSERT(valid(), D_00176940, __PRETTY_FUNCTION__, 1648);
     Texture tmp(*this);
     int unused[4];      /* the original's frame has 16 more bytes after tmp */
     (void)unused;
@@ -627,14 +591,14 @@ int textures::Texture::saveTga(const std::string &path) const
         bitsize = 24;
     else if (tmp.m.format == FORMAT_3)
         bitsize = 16;
-    TEX_ASSERT(bitsize != 0, D_00176E30, saveTga_name, 1667);
+    TEX_ASSERT(bitsize != 0, "bitsize != 0", __PRETTY_FUNCTION__, 1667);
     SaveTga(path.c_str(), tmp.width(), tmp.height(), tmp.imagedata(), bitsize);
     return 0;
 }
 
 int textures::Texture::saveBmp(const std::string &path) const
 {
-    TEX_ASSERT(valid(), D_00176940, saveBmp_name, 1682);
+    TEX_ASSERT(valid(), D_00176940, __PRETTY_FUNCTION__, 1682);
     Texture tmp(*this);
     int unused[4];      /* the original's frame has 16 more bytes after tmp */
     (void)unused;
@@ -652,7 +616,7 @@ int textures::Texture::saveBmp(const std::string &path) const
         bitsize = 8;
     else if (tmp.m.format == FORMAT_5)
         bitsize = 4;
-    TEX_ASSERT(bitsize != 0, D_00176E30, saveBmp_name, 1703);
+    TEX_ASSERT(bitsize != 0, "bitsize != 0", __PRETTY_FUNCTION__, 1703);
     SaveBmp(path.c_str(), tmp.width(), tmp.height(), tmp.imagedata(), tmp.clutdata(), bitsize);
     return 0;
 }
@@ -668,9 +632,9 @@ void textures::Texture::blur(int radius, float sigma)
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZNK8textures7Texture4saveERKSsiiii);
 
-int textures::Texture::setAlphaCount(int *n_lo, int *n_hi, int *n_mid, unsigned char lo, unsigned char hi)
+const bool textures::Texture::setAlphaCount(int *n_lo, int *n_hi, int *n_mid, unsigned char lo, unsigned char hi)
 {
-    TEX_ASSERT(valid(), D_00176940, setAlphaCount_name, 1807);
+    TEX_ASSERT(valid(), D_00176940, __PRETTY_FUNCTION__, 1807);
     int c_lo = 0;
     int c_hi = 0;
     int c_mid = 0;
@@ -727,22 +691,28 @@ void textures::Texture::allocate(unsigned int n, unsigned int nclut)
     clut.resize(nclut);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture12allocate_forENS_6FormatE);
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_101494");
-void _GLOBAL__I__ZN8textures7TextureaSERKS0_(void);
-void _GLOBAL__D__ZN8textures7TextureaSERKS0_(void);
-}
-
-void _GLOBAL__I__ZN8textures7TextureaSERKS0_(void)
+void textures::Texture::allocate_for(Format f)
 {
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN8textures7TextureaSERKS0_(void)
-{
-    static_init(0, 0xFFFF);
+    switch (f) {
+    case FORMAT_1:
+    case FORMAT_2:
+        allocate(m.width * m.height * 4, 0);
+        break;
+    case FORMAT_3:
+        allocate(m.width * m.height * 2, 0);
+        break;
+    case FORMAT_4:
+        allocate(m.width * m.height, 256 * 4);
+        break;
+    case FORMAT_5:
+        allocate((m.width * m.height + 1) / 2, 16 * 4);
+        break;
+    default:
+        common::common_internal::assert_display(" *** error ", "", "../lib/textures/Texture.cpp", __PRETTY_FUNCTION__, 1906, "unknown texture format");
+        common::common_internal::on_error();
+        common::common_internal::clash();
+    }
+    m.format = f;
 }
 
 /* out-of-line inline members / instances that stay asm */
@@ -782,3 +752,10 @@ void textures_Texture_uses()
     v.push_back(0);
     ((textures::Texture *)0)->convert<textures::ABGR, textures::ARGB>();
 }
+
+/* asm functions of this object use strings that the C++ above emits first: their labels (the original layout) */
+__asm__("D_0017641C = _ZZN8textures7Texture13setAlphaFlagsENS_9AlphaMaskEE19__PRETTY_FUNCTION__ - 0x4\n"
+        "D_0017645C = _ZZN8textures7Texture13setAlphaFlagsENS_9AlphaMaskEE19__PRETTY_FUNCTION__ + 0x3C\n"
+        "D_001764A8 = _ZZN8textures7Texture13setAlphaFlagsENS_9AlphaMaskEE19__PRETTY_FUNCTION__ + 0x88\n"
+        "D_001764C4 = _ZZN8textures7Texture13setAlphaFlagsENS_9AlphaMaskEE19__PRETTY_FUNCTION__ + 0xA4\n"
+        "D_00176A88 = _ZZN8textures7Texture14resize_nearestEiiE19__PRETTY_FUNCTION__ + 0x34\n");
