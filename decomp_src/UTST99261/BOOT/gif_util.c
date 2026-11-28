@@ -144,7 +144,28 @@ fail:
     return -1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gif_util", getFrameNumber);
+int getFrameNumber(u8 *p, int size)
+{
+    u8 *data;
+    int err;
+    int n;
+    int x;
+
+    data = p;
+    n = 0;
+    x = -1;
+    p = skipDataSubBlocks(p, data, size, &err);
+    if (err != 1) {
+        n++;
+    } else {
+        n++;
+        p = moveByte(p, data, size, 1, &err);
+        if ((err == -1) | (p == NULL))
+            return n;
+        glanceDataBlock(p, data, size, &n, &x);
+    }
+    return n;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gif_util", isCompletedImage);
 
