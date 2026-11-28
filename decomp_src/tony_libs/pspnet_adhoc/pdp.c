@@ -31,7 +31,45 @@ void func_00002304(struct pdpcb *pcb)
 
 INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc/nonmatchings/pdp", func_000023C4);
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc/nonmatchings/pdp", sceNetAdhocGetPdpStat);
+int sceNetAdhocGetPdpStat(int *buflen, void *buf)
+{
+	struct pdpcb *pcb;
+	struct SceNetAdhocPdpStat *st, *prev;
+	int s;
+	int ret;
+	int len;
+
+	ret = 0;
+	prev = NULL;
+	len = 0;
+	if (buflen == NULL)
+		return 0x80410711;
+	s = _sce_pspnet_spllock();
+	if (D_00007400 == 0) {
+		ret = 0x80410712;
+		goto out;
+	}
+	for (pcb = D_00007424.tqh_first; pcb != NULL; pcb = pcb->link.tqe_next) {
+		if (buf != NULL) {
+			if (*buflen < len + sizeof(*st))
+				break;
+			st = (struct SceNetAdhocPdpStat *)((char *)buf + len);
+			st->next = NULL;
+			st->id = pcb->so->id;
+			st->laddr = pcb->laddr;
+			st->lport = pcb->lport;
+			st->rcv_sb_cc = pcb->rcv_cc;
+			if (prev != NULL)
+				prev->next = st;
+			prev = st;
+		}
+		len += sizeof(*st);
+	}
+out:
+	_sce_pspnet_splunlock(s);
+	*buflen = len;
+	return ret;
+}
 
 int func_000029AC(void)
 {
