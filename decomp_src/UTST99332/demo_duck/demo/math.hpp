@@ -155,7 +155,8 @@ struct T2UB_V3F {
 
 namespace math {
 struct quaternion {
-    quaternion() : x(0), y(0), z(0), w(MATH_QUAT_ONE) {}
+    /* STAND-IN: float pointer view (array-based original), as vector_xyzw; Trackball(const matrix &) store order */
+    quaternion() { float *p = &x; p[0] = 0; p[1] = 0; p[2] = 0; p[3] = MATH_QUAT_ONE; }
     quaternion(const matrix &);
     quaternion(float x, float y, float z, float w);
     quaternion(vector_xyzw v);

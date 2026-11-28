@@ -11,9 +11,12 @@
 __asm__(".globl _GLOBAL__I__ZN4math9TrackballC2ERKNS_6matrixE\n_GLOBAL__I__ZN4math9TrackballC2ERKNS_6matrixE = _GLOBAL__I__ZN4math9TrackballC2ERKNS_6matrixE__asm");
 __asm__(".globl _GLOBAL__D__ZN4math9TrackballC2ERKNS_6matrixE\n_GLOBAL__D__ZN4math9TrackballC2ERKNS_6matrixE = _GLOBAL__D__ZN4math9TrackballC2ERKNS_6matrixE__asm");
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_Trackball", _ZN4math9TrackballC2ERKNS_6matrixE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_Trackball", _ZN4math9TrackballC1ERKNS_6matrixE);
+math::Trackball::Trackball(const matrix &m) : _transform(m), _f90(0)
+{
+    _transform[3][0] = 0;
+    _transform[3][1] = 0;
+    _transform[3][2] = 0;
+}
 
 void math::Trackball::mode(math::Trackball::Mode v)
 {
