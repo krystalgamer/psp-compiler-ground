@@ -1,4 +1,4 @@
-/* cflags: -O2 -fno-merge-constants */
+/* cflags: -O2 */
 #include "common.h"
 #include "m2c_macros.h"
 #include "PuzzleMain.h"
@@ -128,9 +128,9 @@ void SetCharacters(PZL_STAT *st, int chara, int which)
  * registers (the second one in s0, which the original keeps for the 1/6 constant).
  * chara_anim goes through an int local: `s8 / 6` is shortened and adds a seb. */
 extern int *CHRTABLES[][8];
-extern SPRDATA D_00038A18;
 void DoCharacters(PZL_STAT *st)
 {
+	static SPRDATA PARTZBUF = { 0, 0, 64, 64, 0, 0 };
 	int low = GetBallLine(st) < 8;
 	int m = st->mapsub;
 	int *tbl;
@@ -141,11 +141,11 @@ void DoCharacters(PZL_STAT *st)
 	tbl = CHRTABLES[st->player][st->chara];
 	a = st->chara_anim;
 	c = tbl[a / 6];
-	D_00038A18.u = (c % 8) * 64;
-	D_00038A18.v = (c / 8) * 64;
-	D_00038A18.no = st->player + 16;
-	D_00038A18.flag = m == 2;
-	SpriteDrawC(0.0f, m == 2 ? 0x1AC : 0x33, 0x86, &D_00038A18);
+	PARTZBUF.u = (c % 8) * 64;
+	PARTZBUF.v = (c / 8) * 64;
+	PARTZBUF.no = st->player + 16;
+	PARTZBUF.flag = m == 2;
+	SpriteDrawC(0.0f, m == 2 ? 0x1AC : 0x33, 0x86, &PARTZBUF);
 	a = ++st->chara_anim;
 	c = tbl[a / 6];
 	if (c == -3)
@@ -499,22 +499,6 @@ void SetBubCrushEz(PZL_STAT *st, int x, int y, int col)
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", bgmsort);
 
 const BCPOS BallCollisionPosition[] = { -2, -5, 2, -5, -5, -2, 6, -2, -5, 2, 6, 2, -2, 5, 2, 5 };
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", D_0002E508);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", D_0002E5AC);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", D_0002E5C8);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", D_0002E5DC);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", D_0002E5F0);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", D_0002E694);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", SHUTTER_PARTZ);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", D_0002E750);
 
 #ifdef NON_MATCHING
 /* One instruction short: logic complete, but the original keeps x = bubx[i] + 80 in a
@@ -2069,13 +2053,13 @@ int CheckRoundClear(PZL_STAT *st)
 /* Rough (13 instructions long): logic complete (16.16 fixed-point trajectory with wall
  * bounces, dots every 4 frames into gx/gy, hit test, CPU neighbour copy); ours spills
  * more (frame 112 vs 96) and computes |vx| once per branch. */
-extern int D_0014E888;
-extern int D_0014E88C;
-extern int D_0014E890;
-extern int D_0014E894;
 extern u8 CpuCheckBall[];
 void CheckBallGuide(PZL_STAT *st)
 {
+	static int X;
+	static int Y;
+	static int DX;
+	static int DY;
 	int lx, ly;
 	int left, right, top, bottom;
 	int end, match;
@@ -2097,29 +2081,29 @@ void CheckBallGuide(PZL_STAT *st)
 	n = 0;
 	top = 0x200000 - (st->scroll * 14 << 16);
 	frame = 0;
-	D_0014E890 = -Cos(st->unk454);
-	D_0014E894 = -Sin(st->unk454);
-	D_0014E888 = st->bx << 16;
-	D_0014E88C = st->by << 16;
+	DX = -Cos(st->unk454);
+	DY = -Sin(st->unk454);
+	X = st->bx << 16;
+	Y = st->by << 16;
 	anim = st->guide_anim;
 	while (1) {
-		D_0014E888 += D_0014E890;
-		D_0014E88C += D_0014E894;
-		if (D_0014E888 < left) {
-			D_0014E890 = D_0014E890 < 0 ? -D_0014E890 : D_0014E890;
-			D_0014E888 = left;
-		} else if (right < D_0014E888) {
-			D_0014E890 = -(D_0014E890 < 0 ? -D_0014E890 : D_0014E890);
-			D_0014E888 = right;
+		X += DX;
+		Y += DY;
+		if (X < left) {
+			DX = DX < 0 ? -DX : DX;
+			X = left;
+		} else if (right < X) {
+			DX = -(DX < 0 ? -DX : DX);
+			X = right;
 		}
-		if (D_0014E88C < top) {
-			D_0014E88C = top;
-			D_0014E894 = D_0014E894 < 0 ? -D_0014E894 : D_0014E894;
+		if (Y < top) {
+			Y = top;
+			DY = DY < 0 ? -DY : DY;
 		}
-		if (bottom < D_0014E88C)
+		if (bottom < Y)
 			end = 1;
-		iy = D_0014E88C >> 16;
-		ix = *(s16 *)((char *)&D_0014E888 + 2);
+		iy = Y >> 16;
+		ix = *(s16 *)((char *)&X + 2);
 		if ((frame & 3) == 0 && n < 256) {
 			st->gx[n] = ix;
 			st->gy[n] = iy + st->scroll * 14;
@@ -2183,14 +2167,15 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckBallGuide
  * single steps (restoring the previous position) at the ceiling or on a hit; most locals
  * live in stack slots in the original. */
 extern u8 CpuCheckBall[];
-extern int D_0014E898;
-extern int D_0014E89C;
-extern int D_0014E8A0;
-extern int D_0014E8A4;
-extern int D_0014E8A8;
-extern int D_0014E8AC;
 void CheckBallGuideVS(PZL_STAT *st)
 {
+	static int X;
+	static int Y;
+	static int DX;
+	static int DY;
+	static int AX;
+	static int AY;
+	static short PushTime1;
 	int lx, ly;
 	int left, right, top, bottom;
 	int n, frame, anim, end, match;
@@ -2211,38 +2196,38 @@ void CheckBallGuideVS(PZL_STAT *st)
 	bottom = 0x1180000 - (st->scroll * 14 << 16);
 	top = 0x200000 - (st->scroll * 14 << 16);
 	step = 2;
-	D_0014E8A0 = -Cos(st->unk454);
+	DX = -Cos(st->unk454);
 	n = 0;
 	frame = 0;
-	D_0014E8A4 = -Sin(st->unk454);
-	D_0014E898 = st->bx << 16;
-	D_0014E89C = st->by << 16;
+	DY = -Sin(st->unk454);
+	X = st->bx << 16;
+	Y = st->by << 16;
 	anim = st->guide_anim;
 	while (1) {
-		D_0014E8A8 = D_0014E898;
-		D_0014E898 += D_0014E8A0 * step;
-		D_0014E8AC = D_0014E89C;
-		D_0014E89C += D_0014E8A4 * step;
-		if (D_0014E898 < left) {
-			D_0014E8A0 = D_0014E8A0 < 0 ? -D_0014E8A0 : D_0014E8A0;
-			D_0014E898 = left;
-		} else if (right < D_0014E898) {
-			D_0014E8A0 = -(D_0014E8A0 < 0 ? -D_0014E8A0 : D_0014E8A0);
-			D_0014E898 = right;
+		AX = X;
+		X += DX * step;
+		AY = Y;
+		Y += DY * step;
+		if (X < left) {
+			DX = DX < 0 ? -DX : DX;
+			X = left;
+		} else if (right < X) {
+			DX = -(DX < 0 ? -DX : DX);
+			X = right;
 		}
-		if (D_0014E89C < top) {
-			D_0014E89C = top;
+		if (Y < top) {
+			Y = top;
 			if (step != 1) {
 				step = 1;
-				D_0014E898 = D_0014E8A8;
-				D_0014E89C = D_0014E8AC;
+				X = AX;
+				Y = AY;
 			} else
 				end = 1;
 		}
-		if (bottom < D_0014E89C)
+		if (bottom < Y)
 			end = 1;
-		iy = D_0014E89C >> 16;
-		ix = *(s16 *)((char *)&D_0014E898 + 2);
+		iy = Y >> 16;
+		ix = *(s16 *)((char *)&X + 2);
 		if ((frame & 3) == 0 && n < 256) {
 			n++;
 			st->gx[n - 1] = ix;
@@ -2258,8 +2243,8 @@ void CheckBallGuideVS(PZL_STAT *st)
 		if (i < 8) {
 			if (step != 1) {
 				step = 1;
-				D_0014E898 = D_0014E8A8;
-				D_0014E89C = D_0014E8AC;
+				X = AX;
+				Y = AY;
 			} else {
 				GetBallCoordinate(st, GetBallMapAddr(st, lx, ly, 0), &lx, &ly);
 				end = 1;
@@ -2511,15 +2496,6 @@ extern int Ti;
 extern int TimeBonus;
 extern int minY;
 extern int maxY;
-extern int D_0014E8B8;
-extern int D_0014E8BC;
-extern int D_0014E8C0;
-extern int D_0014E8C4;
-extern int D_0014E8C8;
-extern int D_0014E8CC;
-extern int D_0014E8D0;
-extern int D_00038A4C;
-extern float D_00038A48;
 extern PARTZ ChrData_Zen[];
 extern PARTZ ChrData_Count[];
 extern const SPRDATA PUZZLE_PARTZ[];
@@ -2566,10 +2542,19 @@ static inline void DrawPat47(int x, int y, int t)
 
 int PuzzleBody(void)
 {
+	static int Ticks;
+	static int X;
+	static int Y;
+	static float zoom = 1.0f;
+	static int frame;
+	static int zen;
+	static int eye = 20;
+	static int bgnum;
+	static int LCount;
 	PZL_STAT *st;
 	int ret = 0;
 	int light;
-	int zen;
+	int pat;
 	int i;
 	int k;
 	short ang;
@@ -2594,7 +2579,7 @@ int PuzzleBody(void)
 		st->unk47F = 0;
 		if (CheckGuideLine(st))
 			st->unk47F = 1;
-		D_0014E8B8 = (D_0014E8B8 + 1) % 8;
+		Ticks = (Ticks + 1) % 8;
 		st->unk430++;
 	}
 	DoCharacters(st);
@@ -2617,13 +2602,13 @@ int PuzzleBody(void)
 			if (st->unk428 && SaveDataBuf[4]) {
 				for (i = 0; i < 32; i++) {
 					if (i < st->guide_n && st->drop.unk2 == 2) {
-						if (st->guide_col == 2 && (D_0014E8B8 / 2) & 1)
+						if (st->guide_col == 2 && (Ticks / 2) & 1)
 							k = 10;
 						else {
 							k = st->cur;
 							k = k == 9 ? 7 : k % 8;
 						}
-						DrawBubble(0.3f, st->gx[i * 8 + D_0014E8B8] + 72, st->gy[i * 8 + D_0014E8B8], k, 0);
+						DrawBubble(0.3f, st->gx[i * 8 + Ticks] + 72, st->gy[i * 8 + Ticks], k, 0);
 					}
 				}
 			}
@@ -2643,30 +2628,30 @@ int PuzzleBody(void)
 		case 2: {
 			int flag, left, right;
 
-			D_0014E8BC = st->vx;
-			D_0014E8C0 = st->vy;
+			X = st->vx;
+			Y = st->vy;
 			left = (GetMapLeft(st->mapno) << 16) + 0x80000;
 			right = (GetMapRight(st->mapno) << 16) - 0x90000;
 			minY = 0x200000 - (st->scroll * 14 << 16);
 			maxY = 0x1180000 - (st->scroll * 14 << 16);
 			flag = 0;
 			for (i = 0; i < 12; i++) {
-				st->fx += D_0014E8BC;
+				st->fx += X;
 				st->unk008++;
-				st->fy += D_0014E8C0;
+				st->fy += Y;
 				if (st->fx < left) {
-					D_0014E8BC = D_0014E8BC < 0 ? -D_0014E8BC : D_0014E8BC;
+					X = X < 0 ? -X : X;
 					st->vx = st->vx < 0 ? -st->vx : st->vx;
 					st->fx = left;
 					se_play(19);
 				} else if (st->fx > right) {
-					D_0014E8BC = -(D_0014E8BC < 0 ? -D_0014E8BC : D_0014E8BC);
+					X = -(X < 0 ? -X : X);
 					st->vx = -(st->vx < 0 ? -st->vx : st->vx);
 					st->fx = right;
 					se_play(19);
 				}
 				if (st->fy < minY) {
-					D_0014E8C0 = D_0014E8C0 < 0 ? -D_0014E8C0 : D_0014E8C0;
+					Y = Y < 0 ? -Y : Y;
 					st->vy = st->vy < 0 ? -st->vy : st->vy;
 					st->fy = minY;
 					se_play(20);
@@ -3052,7 +3037,7 @@ int PuzzleBody(void)
 		DrawMapData(st, StageNum);
 	DoBubCrush();
 	i = st->unk454;
-	DrawSpriteEx(1, 2.0f, 0, -15.5f, 0, 0, 0, 0, 0, 0, 0, 11.0f, 0, 0, (i - 256) * -3.14f * 0.001953125f, D_00038A48, 0);
+	DrawSpriteEx(1, 2.0f, 0, -15.5f, 0, 0, 0, 0, 0, 0, 0, 11.0f, 0, 0, (i - 256) * -3.14f * 0.001953125f, zoom, 0);
 	if (st->unk006 != 17 && st->unk006 != 32)
 		DrawBubble(0, st->bx + 72, st->by + st->scroll * 14, st->cur, 0);
 	DrawBubble(0, 292, 222, st->next, 0);
@@ -3062,49 +3047,49 @@ int PuzzleBody(void)
 		DrawSpriteEz(3.0f, 104.0f, 184.0f, 272.0f, 8.0f, 0, 0, 7);
 	else
 		DrawSpriteEz(3.0f, 144.0f, 184.0f, 192.0f, 8.0f, 0, 0, 7);
-	zen = 0;
+	pat = 0;
 	if (GetBallLine(st) >= 8) {
-		if (D_0014E8C8 != 1) {
-			D_0014E8C4 = 0;
-			D_0014E8C8 = 1;
+		if (zen != 1) {
+			frame = 0;
+			zen = 1;
 		}
-	} else if (D_0014E8C8 == 1) {
-		D_0014E8C4 = 0;
-		D_00038A4C = 0;
-		D_0014E8C8 = 0;
-	}
-	switch (D_0014E8C8) {
-	case 0:
+	} else if (zen == 1) {
+		frame = 0;
+		eye = 0;
 		zen = 0;
-		if (--D_00038A4C < 0) {
-			D_00038A4C = rand() % 20 + 10;
-			D_0014E8C8 = 2;
+	}
+	switch (zen) {
+	case 0:
+		pat = 0;
+		if (--eye < 0) {
+			eye = rand() % 20 + 10;
+			zen = 2;
 		}
 		break;
 	case 1:
-		D_0014E8C4 = (D_0014E8C4 + 1) % 32;
-		zen = D_0014E8C4 / 8 + 4;
+		frame = (frame + 1) % 32;
+		pat = frame / 8 + 4;
 		break;
 	case 2:
-		zen = 1;
-		if (--D_00038A4C < 0) {
-			D_00038A4C = rand() % 80 + 20;
-			D_0014E8C8 = 0;
+		pat = 1;
+		if (--eye < 0) {
+			eye = rand() % 80 + 20;
+			zen = 0;
 		}
 		break;
 	}
 	if (st->unk00E > 0 && st->unk00E < 330) {
-		zen = 0;
+		pat = 0;
 		i = (short)(st->unk00E / 60);
 		if ((short)(st->unk00E % 60) < 30) {
 			DrawCharcter(2, 190, 188, ChrData_Count, i);
-			zen = 2;
+			pat = 2;
 		}
 	} else if (st->unk47F) {
-		D_0014E8C4 = (D_0014E8C4 + 1) % 20;
-		zen = D_0014E8C4 / 5 + 8;
+		frame = (frame + 1) % 20;
+		pat = frame / 5 + 8;
 	}
-	DrawCharcter(2, 160, 204, ChrData_Zen, zen);
+	DrawCharcter(2, 160, 204, ChrData_Zen, pat);
 	DrawSpriteEz(8.0f, 0.0f, 0.0f, 240.0f, 136.0f, 0.0f, 0.0f, 0);
 	DrawSpriteEz(8.0f, 0.0f, 136.0f, 240.0f, 136.0f, 0.0f, 136.0f, 0);
 	DrawSpriteEz(8.0f, 240.0f, 0.0f, 240.0f, 136.0f, 240.0f, 0.0f, 0);
@@ -3112,21 +3097,21 @@ int PuzzleBody(void)
 	DrawSpriteEz(1.0f, 0.0f, 0.0f, 480.0f, 32.0f, 0.0f, 0.0f, 0);
 	SpriteDrawC(1.0f, 200, 16, GAMEMODE_PARTZ);
 	DrawScore(1, 300, 22, st->unk434);
-	DrawSpriteEz(9.0f, 0.0f, 0.0f, 240.0f, 272.0f, 0.0f, 0.0f, D_0014E8CC + 22);
-	DrawSpriteEz(9.0f, 240.0f, 0.0f, 240.0f, 272.0f, 240.0f, 0.0f, D_0014E8CC + 22);
+	DrawSpriteEz(9.0f, 0.0f, 0.0f, 240.0f, 272.0f, 0.0f, 0.0f, bgnum + 22);
+	DrawSpriteEz(9.0f, 240.0f, 0.0f, 240.0f, 272.0f, 240.0f, 0.0f, bgnum + 22);
 	SpriteDrawC(6.0f, 240, 222, &PUZZLE_PARTZ[12]);
 	z = 7.0f;
 	SpriteDrawEz(10, z, -1, 4.0f, 165.0f, 96.0f, 48.0f, 0.0f, 0.0f);
 	SpriteDrawEz(11, z, -1, 381.0f, 165.0f, 96.0f, 48.0f, 0.0f, 0.0f);
 	DrawAnk(1, 427, 136, StageNum + 1);
 	SpriteDrawC(6.0f, 240, 261, &PUZZLE_PARTZ[25]);
-	D_0014E8D0 = (D_0014E8D0 + 1) % 50;
+	LCount = (LCount + 1) % 50;
 	SpriteDrawC(1.0f, 52, 216, &PUZZLE_PARTZ[6]);
 	SpriteDrawC(1.0f, 428, 216, &PUZZLE_PARTZ[8]);
-	SpriteDrawC(0, 44, 28, &PUZZLE_PARTZ[2 + D_0014E8D0 / 25]);
-	SpriteDrawC(0, 436, 28, &PUZZLE_PARTZ[4 + D_0014E8D0 / 25]);
-	SpriteDrawC(1.0f, 50, 241, &PUZZLE_PARTZ[D_0014E8D0 / 25]);
-	SpriteDrawC(1.0f, 430, 241, &PUZZLE_PARTZ[D_0014E8D0 / 25]);
+	SpriteDrawC(0, 44, 28, &PUZZLE_PARTZ[2 + LCount / 25]);
+	SpriteDrawC(0, 436, 28, &PUZZLE_PARTZ[4 + LCount / 25]);
+	SpriteDrawC(1.0f, 50, 241, &PUZZLE_PARTZ[LCount / 25]);
+	SpriteDrawC(1.0f, 430, 241, &PUZZLE_PARTZ[LCount / 25]);
 	SpriteDrawEz(12, 1.0f, -1, 16.0f, 190.0f, 72.0f, 16.0f, 0.0f, ChNamePos[st->player]);
 	DrawLight(38, 79, light, 0);
 	DrawLight(65, 52, light, 1);
@@ -3170,14 +3155,14 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", PuzzleBody);
 #ifdef NON_MATCHING
 /* Byte-matches (fntest) but cannot be installed while the unit is mixed: its jump table
  * must sit at D_0002E5AC, before rodata of functions that precede it in .text. */
-extern int D_0014E8D8;
-extern int D_0014E8DC;
-extern s16 D_0014E8D4;
-extern s16 D_0014E8D6;
-extern int D_00038A50;
 extern u8 CpuCheckBall[];
 int CPUThinking(PZL_STAT *st)
 {
+	static short PushTime0;
+	static short PushTime1;
+	static int ArrowDir;
+	static int ArrowTime;
+	static int ArrowType = 1;
 	int ret = 1;
 	int i, f, c;
 
@@ -3185,23 +3170,23 @@ int CPUThinking(PZL_STAT *st)
 	switch (st->cpu) {
 	case 0:
 	think:
-		D_0014E8D8 = D_00038A50 == -1 ? 0x80 : 0x20;
-		D_0014E8DC = rand() % 20 + 2;
+		ArrowDir = ArrowType == -1 ? 0x80 : 0x20;
+		ArrowTime = rand() % 20 + 2;
 		st->cpu = 1;
 	case 1:
-		if (--D_0014E8DC == 0) {
+		if (--ArrowTime == 0) {
 			st->cpu = 3;
-			D_0014E8DC = 0;
-			D_0014E8D8 = 0;
+			ArrowTime = 0;
+			ArrowDir = 0;
 		}
 		break;
 	case 2:
-		D_0014E8D8 = 0;
-		if (--D_0014E8DC <= 0)
+		ArrowDir = 0;
+		if (--ArrowTime <= 0)
 			st->cpu = 3;
 		break;
 	case 3:
-		D_0014E8D8 = 0;
+		ArrowDir = 0;
 		f = 0;
 		for (i = 0; i < 6; i++) {
 			if (CpuCheckBall[i] == st->cur + 1 || CpuCheckBall[i] == 9)
@@ -3225,31 +3210,31 @@ int CPUThinking(PZL_STAT *st)
 			st->cpu = 0;
 		break;
 	}
-	if (D_0014E8D8 & 0x20) {
-		D_0014E8D4++;
-		D_0014E8D6 = 0;
+	if (ArrowDir & 0x20) {
+		PushTime0++;
+		PushTime1 = 0;
 		st->unk454 += 4;
-		if (D_0014E8D4 >= 5)
-			D_0014E8D4 = 4;
+		if (PushTime0 >= 5)
+			PushTime0 = 4;
 		if (st->unk454 >= 472) {
-			D_00038A50 = -1;
+			ArrowType = -1;
 			st->unk454 = 464;
 		}
 		st->drop.unk2 = 0;
-	} else if (D_0014E8D8 & 0x80) {
-		D_0014E8D6++;
-		D_0014E8D4 = 0;
+	} else if (ArrowDir & 0x80) {
+		PushTime1++;
+		PushTime0 = 0;
 		st->unk454 -= 4;
-		if (D_0014E8D6 >= 5)
-			D_0014E8D6 = 4;
+		if (PushTime1 >= 5)
+			PushTime1 = 4;
 		if (st->unk454 < 35 || st->unk454 >= 504) {
-			D_00038A50 = 1;
+			ArrowType = 1;
 			st->unk454 = 34;
 		}
 		st->drop.unk2 = 0;
 	} else {
-		D_0014E8D4 = 0;
-		D_0014E8D6 = 0;
+		PushTime0 = 0;
+		PushTime1 = 0;
 		if (st->drop.unk2 == 0)
 			st->drop.unk2 = 1;
 	}
@@ -3307,17 +3292,6 @@ extern int Ti;
 extern int TimeBonus;
 extern int minY;
 extern int maxY;
-extern int D_0014E8E0;
-extern int D_0014E8E4;
-extern int D_0014E8E8;
-extern int D_0014E8EC;
-extern int D_0014E8F0[3];
-extern int D_0014E8FC[3];
-extern int D_0014E908;
-extern int D_0014E90C;
-extern int D_00038A78[3];
-extern int D_00038A54[7];
-extern float D_00038A74;
 extern int SurvPush;
 extern int ColorTableVS[];
 extern int ColorRndMaxVS;
@@ -3378,10 +3352,21 @@ static inline void DrawPat47(int x, int y, int t)
 
 int VSModeBody(int pl)
 {
+	static int Ticks;
+	static int X;
+	static int Y;
+	static int AtkNum;
+	static int AtkPos[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
+	static float zoom = 1.0f;
+	static int frame[3];
+	static int zen[3];
+	static int eye[3] = { 20, 20, 20 };
+	static int bgnum;
+	static int LCount;
 	PZL_STAT *st;
 	int ret = 0;
 	int light;
-	int zen;
+	int pat;
 	int i;
 	int k;
 	short ang;
@@ -3412,7 +3397,7 @@ int VSModeBody(int pl)
 				st->unk47F = 1;
 		} else if (CPUThinking(st))
 			st->unk47F = 1;
-		D_0014E8E0 = (D_0014E8E0 + 1) % 8;
+		Ticks = (Ticks + 1) % 8;
 		st->unk430++;
 	}
 	DoCharacters(st);
@@ -3434,13 +3419,13 @@ int VSModeBody(int pl)
 			if (st->unk428) {
 				for (i = 0; i < 32; i++) {
 					if (i < st->guide_n && st->drop.unk2 == 2) {
-						if (st->guide_col == 2 && (D_0014E8E0 / 2) & 1)
+						if (st->guide_col == 2 && (Ticks / 2) & 1)
 							k = 10;
 						else {
 							k = st->cur;
 							k = k == 9 ? 7 : k % 8;
 						}
-						DrawBubble(0.3f, st->gx[i * 8 + D_0014E8E0] + 72, st->gy[i * 8 + D_0014E8E0], k, 0);
+						DrawBubble(0.3f, st->gx[i * 8 + Ticks] + 72, st->gy[i * 8 + Ticks], k, 0);
 					}
 				}
 			}
@@ -3462,8 +3447,8 @@ int VSModeBody(int pl)
 		case 2: {
 			int flag, left, right;
 
-			D_0014E8E4 = st->vx;
-			D_0014E8E8 = st->vy;
+			X = st->vx;
+			Y = st->vy;
 			if (st->mapsub == 1) {
 				left = 0x200000;
 				right = 0x8F0000;
@@ -3475,16 +3460,16 @@ int VSModeBody(int pl)
 			maxY = 0x1180000 - (st->scroll * 14 << 16);
 			flag = 0;
 			for (i = 0; i < 12; i++) {
-				st->fx += D_0014E8E4;
+				st->fx += X;
 				st->unk008++;
-				st->fy += D_0014E8E8;
+				st->fy += Y;
 				if (st->fx < left) {
-					D_0014E8E4 = D_0014E8E4 < 0 ? -D_0014E8E4 : D_0014E8E4;
+					X = X < 0 ? -X : X;
 					st->vx = st->vx < 0 ? -st->vx : st->vx;
 					st->fx = left;
 					se_play(19);
 				} else if (st->fx > right) {
-					D_0014E8E4 = -(D_0014E8E4 < 0 ? -D_0014E8E4 : D_0014E8E4);
+					X = -(X < 0 ? -X : X);
 					st->vx = -(st->vx < 0 ? -st->vx : st->vx);
 					st->fx = right;
 					se_play(19);
@@ -3603,26 +3588,26 @@ int VSModeBody(int pl)
 				st->unk006 = 20;
 				break;
 			}
-			D_0014E8EC = st->unk474 > 7 ? 7 : st->unk474;
-			st->unk474 -= D_0014E8EC;
-			st->snd.unk3 = D_0014E8EC;
+			AtkNum = st->unk474 > 7 ? 7 : st->unk474;
+			st->unk474 -= AtkNum;
+			st->snd.unk3 = AtkNum;
 			SetMonitor(st, 21);
 			for (i = 0; i < 20; i++) {
 				int a = rand() % 7;
 				int b = rand() % 7;
 
-				k = D_00038A54[a];
-				D_00038A54[a] = D_00038A54[b];
-				D_00038A54[b] = k;
+				k = AtkPos[a];
+				AtkPos[a] = AtkPos[b];
+				AtkPos[b] = k;
 			}
-			for (i = 0; i < D_0014E8EC; i++) {
+			for (i = 0; i < AtkNum; i++) {
 				for (k = 31; k >= 0; k--) {
-					if (st->mp.map[k * 8 + D_00038A54[i]]) {
+					if (st->mp.map[k * 8 + AtkPos[i]]) {
 						k++;
 						pos[i] = k;
-						GetBallCoordinate(st, k * 8 + D_00038A54[i], &x, &y);
+						GetBallCoordinate(st, k * 8 + AtkPos[i], &x, &y);
 						st->oj[i].y = y;
-						st->oj[i].pos = D_00038A54[i] + k * 8;
+						st->oj[i].pos = AtkPos[i] + k * 8;
 						st->oj[i].x = x;
 						st->oj[i].t = 32 + i * 2;
 						st->oj[i].col = GetOjamaPat(mode % 3);
@@ -4091,54 +4076,54 @@ int VSModeBody(int pl)
 	if (st->unk006 < 29)
 		DrawMapData(st, StageNum);
 	DoBubCrush();
-	DrawSpriteEx(1, 2.0f, pl == 1 ? -15.0f : 15.0f, -15.5f, 0, 0, 0, 0, 0, 0, 0, 11.0f, 0, 0, (st->unk454 - 256) * -3.14f * 0.001953125f, D_00038A74, 0);
+	DrawSpriteEx(1, 2.0f, pl == 1 ? -15.0f : 15.0f, -15.5f, 0, 0, 0, 0, 0, 0, 0, 11.0f, 0, 0, (st->unk454 - 256) * -3.14f * 0.001953125f, zoom, 0);
 	if (st->unk006 != 17 && st->unk006 != 22 && st->unk006 != 23)
 		DrawBubble(0, st->bx + 72, st->by + st->scroll * 14, st->cur, 0);
 	DrawBubble(0, st->mapsub == 1 ? 204 : 348, 222, st->next, 0);
 	DrawSpriteEz(3.0f, 104.0f, 184.0f, 272.0f, 8.0f, 0, 0, 7);
-	zen = 0;
+	pat = 0;
 	if (GetBallLine(st) >= 8) {
-		if (D_0014E8FC[pl] != 1) {
-			D_0014E8FC[pl] = 1;
-			D_0014E8F0[pl] = 0;
+		if (zen[pl] != 1) {
+			zen[pl] = 1;
+			frame[pl] = 0;
 		}
-	} else if (D_0014E8FC[pl] == 1) {
-		D_0014E8F0[pl] = 0;
-		D_0014E8FC[pl] = 0;
-		D_00038A78[pl] = 0;
+	} else if (zen[pl] == 1) {
+		frame[pl] = 0;
+		zen[pl] = 0;
+		eye[pl] = 0;
 	}
-	switch (D_0014E8FC[pl]) {
+	switch (zen[pl]) {
 	case 0:
-		zen = 0;
-		if (--D_00038A78[pl] < 0) {
-			D_00038A78[pl] = rand() % 20 + 10;
-			D_0014E8FC[pl] = 2;
+		pat = 0;
+		if (--eye[pl] < 0) {
+			eye[pl] = rand() % 20 + 10;
+			zen[pl] = 2;
 		}
 		break;
 	case 1:
-		D_0014E8F0[pl] = (D_0014E8F0[pl] + 1) % 32;
-		zen = D_0014E8F0[pl] / 8 + 4;
+		frame[pl] = (frame[pl] + 1) % 32;
+		pat = frame[pl] / 8 + 4;
 		break;
 	case 2:
-		zen = 1;
-		if (--D_00038A78[pl] < 0) {
-			D_00038A78[pl] = rand() % 80 + 20;
-			D_0014E8FC[pl] = 0;
+		pat = 1;
+		if (--eye[pl] < 0) {
+			eye[pl] = rand() % 80 + 20;
+			zen[pl] = 0;
 		}
 		break;
 	}
 	if (st->unk00E > 0 && st->unk00E < 330 && st->mapsub == 1) {
-		zen = 0;
+		pat = 0;
 		i = (short)(st->unk00E / 60);
 		if ((short)(st->unk00E % 60) < 30) {
 			DrawCharcter(2, 134, 188, ChrData_Count, i);
-			zen = 2;
+			pat = 2;
 		}
 	} else if (st->unk47F) {
-		D_0014E8F0[pl] = (D_0014E8F0[pl] + 1) % 20;
-		zen = D_0014E8F0[pl] / 5 + 8;
+		frame[pl] = (frame[pl] + 1) % 20;
+		pat = frame[pl] / 5 + 8;
 	}
-	DrawCharcter(2, st->mapsub == 1 ? 104 : 247, 204, ChrData_Zen, zen);
+	DrawCharcter(2, st->mapsub == 1 ? 104 : 247, 204, ChrData_Zen, pat);
 	DoMonitor(st);
 	if (pl == 1) {
 		DrawLight(38, 79, light, 0);
@@ -4157,19 +4142,19 @@ int VSModeBody(int pl)
 		DrawSpriteEz(1.0f, 0.0f, 0.0f, 480.0f, 32.0f, 0.0f, 0.0f, 0);
 		SpriteDrawC(1.0f, 200, 16, isSurvival ? &GAMEMODE_PARTZ[3] : &GAMEMODE_PARTZ[2]);
 		DrawCount(1, 300, 22, StageNum);
-		DrawSpriteEz(9.0f, 0.0f, 0.0f, 240.0f, 272.0f, 0.0f, 0.0f, D_0014E908 + 22);
-		DrawSpriteEz(9.0f, 240.0f, 0.0f, 240.0f, 272.0f, 240.0f, 0.0f, D_0014E908 + 22);
+		DrawSpriteEz(9.0f, 0.0f, 0.0f, 240.0f, 272.0f, 0.0f, 0.0f, bgnum + 22);
+		DrawSpriteEz(9.0f, 240.0f, 0.0f, 240.0f, 272.0f, 240.0f, 0.0f, bgnum + 22);
 		SpriteDrawEz(10, 7.0f, -1, 4.0f, 165.0f, 96.0f, 48.0f, 0.0f, 0.0f);
 		SpriteDrawEz(11, 7.0f, -1, 381.0f, 165.0f, 96.0f, 48.0f, 0.0f, 0.0f);
 		SpriteDrawC(6.0f, 240, 261, &PUZZLE_PARTZ[25]);
 		op = pl == 1 ? &Stat[2] : &Stat[1];
-		D_0014E90C = (D_0014E90C + 1) % 50;
+		LCount = (LCount + 1) % 50;
 		SpriteDrawC(1.0f, 52, 216, &PUZZLE_PARTZ[6]);
 		SpriteDrawC(1.0f, 428, 216, &PUZZLE_PARTZ[7]);
-		SpriteDrawC(0, 44, 28, &PUZZLE_PARTZ[2 + D_0014E90C / 25]);
-		SpriteDrawC(0, 436, 28, &PUZZLE_PARTZ[4 + D_0014E90C / 25]);
-		SpriteDrawC(1.0f, 50, 241, &PUZZLE_PARTZ[D_0014E90C / 25]);
-		SpriteDrawC(1.0f, 430, 241, &PUZZLE_PARTZ[D_0014E90C / 25]);
+		SpriteDrawC(0, 44, 28, &PUZZLE_PARTZ[2 + LCount / 25]);
+		SpriteDrawC(0, 436, 28, &PUZZLE_PARTZ[4 + LCount / 25]);
+		SpriteDrawC(1.0f, 50, 241, &PUZZLE_PARTZ[LCount / 25]);
+		SpriteDrawC(1.0f, 430, 241, &PUZZLE_PARTZ[LCount / 25]);
 		SpriteDrawEz(12, 1.0f, -1, 16.0f, 190.0f, 72.0f, 16.0f, 0.0f, ChNamePos[st->player]);
 		SpriteDrawEz(12, 1.0f, -1, 392.0f, 190.0f, 72.0f, 16.0f, 0.0f, ChNamePos[op->player]);
 		SpriteDrawC(1.0f, 240, 144, &PUZZLE_PARTZ[10]);
@@ -4214,15 +4199,6 @@ extern int Ti;
 extern int TimeBonus;
 extern int minY;
 extern int maxY;
-extern int D_0014E910;
-extern int D_0014E914;
-extern int D_0014E918;
-extern int D_0014E91C;
-extern int D_0014E920;
-extern int D_0014E924;
-extern int D_0014E928;
-extern int D_00038A88;
-extern float D_00038A84;
 extern int EndressColorRndMax;
 extern int ColorTable[];
 extern const SPRDATA NEW_RECORD_PARTZ[];
@@ -4275,6 +4251,15 @@ static inline void DrawPat47(int x, int y, int t)
 
 int EndressBody(int pl)
 {
+	static int Ticks;
+	static int X;
+	static int Y;
+	static float zoom = 1.0f;
+	static int frame;
+	static int zen;
+	static int eye = 20;
+	static int bgnum;
+	static int LCount;
 	PZL_STAT *st;
 	int ret = 0;
 	int light;
@@ -4304,7 +4289,7 @@ int EndressBody(int pl)
 				st->unk47F = 1;
 		} else
 			CPUThinking(st);
-		D_0014E910 = (D_0014E910 + 1) % 8;
+		Ticks = (Ticks + 1) % 8;
 		st->unk430++;
 	}
 	DoCharacters(st);
@@ -4324,13 +4309,13 @@ int EndressBody(int pl)
 			if (st->unk428) {
 				for (i = 0; i < 32; i++) {
 					if (i < st->guide_n && st->drop.unk2 == 2) {
-						if (st->guide_col == 2 && (D_0014E910 / 2) & 1)
+						if (st->guide_col == 2 && (Ticks / 2) & 1)
 							k = 10;
 						else {
 							k = st->cur;
 							k = k == 9 ? 7 : k % 8;
 						}
-						DrawBubble(0.3f, st->gx[i * 8 + D_0014E910] + 72, st->gy[i * 8 + D_0014E910], k, 0);
+						DrawBubble(0.3f, st->gx[i * 8 + Ticks] + 72, st->gy[i * 8 + Ticks], k, 0);
 					}
 				}
 			}
@@ -4349,24 +4334,24 @@ int EndressBody(int pl)
 		case 2: {
 			int flag, left, right;
 
-			D_0014E914 = st->vx;
-			D_0014E918 = st->vy;
+			X = st->vx;
+			Y = st->vy;
 			left = (GetMapLeft(st->mapno) << 16) + 0x80000;
 			right = (GetMapRight(st->mapno) << 16) - 0x90000;
 			minY = 0x200000 - (st->scroll * 14 << 16);
 			maxY = 0x1180000 - (st->scroll * 14 << 16);
 			flag = 0;
 			for (i = 0; i < 12; i++) {
-				st->fx += D_0014E914;
+				st->fx += X;
 				st->unk008++;
-				st->fy += D_0014E918;
+				st->fy += Y;
 				if (st->fx < left) {
-					D_0014E914 = D_0014E914 < 0 ? -D_0014E914 : D_0014E914;
+					X = X < 0 ? -X : X;
 					st->vx = st->vx < 0 ? -st->vx : st->vx;
 					st->fx = left;
 					se_play(19);
 				} else if (st->fx > right) {
-					D_0014E914 = -(D_0014E914 < 0 ? -D_0014E914 : D_0014E914);
+					X = -(X < 0 ? -X : X);
 					st->vx = -(st->vx < 0 ? -st->vx : st->vx);
 					st->fx = right;
 					se_play(19);
@@ -4691,56 +4676,56 @@ int EndressBody(int pl)
 		DrawMapData(st, StageNum);
 	DoBubCrush();
 	i = st->unk454;
-	DrawSpriteEx(1, 2.0f, 0, -15.5f, 0, 0, 0, 0, 0, 0, 0, 11.0f, 0, 0, (i - 256) * -3.14f * 0.001953125f, D_00038A84, 0);
+	DrawSpriteEx(1, 2.0f, 0, -15.5f, 0, 0, 0, 0, 0, 0, 0, 11.0f, 0, 0, (i - 256) * -3.14f * 0.001953125f, zoom, 0);
 	if (st->unk006 != 17)
 		DrawBubble(0, st->bx + 72, st->by + st->scroll * 14, st->cur, 0);
 	DrawBubble(0, 292, 222, st->next, 0);
 	DrawSpriteEz(3.0f, 152.0f, 184.0f, 176.0f, 8.0f, 0, 0, 7);
 	{
-		int zen;
+		int pat;
 
 		if (GetBallLine(st) >= 8) {
-			if (D_0014E920 != 1) {
-				D_0014E91C = 0;
-				D_0014E920 = 1;
+			if (zen != 1) {
+				frame = 0;
+				zen = 1;
 			}
-		} else if (D_0014E920 == 1) {
-			D_0014E91C = 0;
-			D_00038A88 = 0;
-			D_0014E920 = 0;
-		}
-		switch (D_0014E920) {
-		case 0:
+		} else if (zen == 1) {
+			frame = 0;
+			eye = 0;
 			zen = 0;
-			if (--D_00038A88 < 0) {
-				D_00038A88 = rand() % 20 + 10;
-				D_0014E920 = 2;
+		}
+		switch (zen) {
+		case 0:
+			pat = 0;
+			if (--eye < 0) {
+				eye = rand() % 20 + 10;
+				zen = 2;
 			}
 			break;
 		case 1:
-			D_0014E91C = (D_0014E91C + 1) % 32;
-			zen = D_0014E91C / 8 + 4;
+			frame = (frame + 1) % 32;
+			pat = frame / 8 + 4;
 			break;
 		case 2:
-			zen = 1;
-			if (--D_00038A88 < 0) {
-				D_00038A88 = rand() % 80 + 20;
-				D_0014E920 = 0;
+			pat = 1;
+			if (--eye < 0) {
+				eye = rand() % 80 + 20;
+				zen = 0;
 			}
 			break;
 		}
 		if (st->unk00E > 0 && st->unk00E < 330) {
-			zen = 0;
+			pat = 0;
 			i = (short)(st->unk00E / 60);
 			if ((short)(st->unk00E % 60) < 30) {
 				DrawCharcter(2, 190, 188, ChrData_Count, i);
-				zen = 2;
+				pat = 2;
 			}
 		} else if (st->unk47F) {
-			D_0014E91C = (D_0014E91C + 1) % 20;
-			zen = D_0014E91C / 5 + 8;
+			frame = (frame + 1) % 20;
+			pat = frame / 5 + 8;
 		}
-		DrawCharcter(2, 160, 204, ChrData_Zen, zen);
+		DrawCharcter(2, 160, 204, ChrData_Zen, pat);
 	}
 	if (pl == 1) {
 		DrawSpriteEz(8.0f, 0.0f, 0.0f, 240.0f, 136.0f, 0.0f, 0.0f, 0);
@@ -4749,19 +4734,19 @@ int EndressBody(int pl)
 		DrawSpriteEz(8.0f, 240.0f, 136.0f, 240.0f, 136.0f, 240.0f, 136.0f, 0);
 		DrawSpriteEz(1.0f, 0.0f, 0.0f, 480.0f, 32.0f, 0.0f, 0.0f, 0);
 		SpriteDrawC(1.0f, 240, 16, &GAMEMODE_PARTZ[1]);
-		DrawSpriteEz(9.0f, 0.0f, 0.0f, 240.0f, 272.0f, 0.0f, 0.0f, D_0014E924 + 22);
-		DrawSpriteEz(9.0f, 240.0f, 0.0f, 240.0f, 272.0f, 240.0f, 0.0f, D_0014E924 + 22);
+		DrawSpriteEz(9.0f, 0.0f, 0.0f, 240.0f, 272.0f, 0.0f, 0.0f, bgnum + 22);
+		DrawSpriteEz(9.0f, 240.0f, 0.0f, 240.0f, 272.0f, 240.0f, 0.0f, bgnum + 22);
 		SpriteDrawEz(10, 7.0f, -1, 4.0f, 165.0f, 96.0f, 48.0f, 0.0f, 0.0f);
 		SpriteDrawEz(11, 7.0f, -1, 381.0f, 165.0f, 96.0f, 48.0f, 0.0f, 0.0f);
 		DrawAnk(1, 427, 136, st->score);
 		SpriteDrawC(6.0f, 240, 261, &PUZZLE_PARTZ[25]);
-		D_0014E928 = (D_0014E928 + 1) % 50;
+		LCount = (LCount + 1) % 50;
 		SpriteDrawC(1.0f, 52, 216, &PUZZLE_PARTZ[6]);
 		SpriteDrawC(1.0f, 428, 216, &PUZZLE_PARTZ[9]);
-		SpriteDrawC(0, 44, 28, &PUZZLE_PARTZ[2 + D_0014E928 / 25]);
-		SpriteDrawC(0, 436, 28, &PUZZLE_PARTZ[4 + D_0014E928 / 25]);
-		SpriteDrawC(1.0f, 50, 241, &PUZZLE_PARTZ[D_0014E928 / 25]);
-		SpriteDrawC(1.0f, 430, 241, &PUZZLE_PARTZ[D_0014E928 / 25]);
+		SpriteDrawC(0, 44, 28, &PUZZLE_PARTZ[2 + LCount / 25]);
+		SpriteDrawC(0, 436, 28, &PUZZLE_PARTZ[4 + LCount / 25]);
+		SpriteDrawC(1.0f, 50, 241, &PUZZLE_PARTZ[LCount / 25]);
+		SpriteDrawC(1.0f, 430, 241, &PUZZLE_PARTZ[LCount / 25]);
 		SpriteDrawEz(12, 1.0f, -1, 16.0f, 190.0f, 72.0f, 16.0f, 0.0f, ChNamePos[st->player]);
 		SpriteDrawC(6.0f, 240, 222, &PUZZLE_PARTZ[12]);
 		DrawSpriteEz(7.0f, 104.0f, 32.0f, 136.0f, 224.0f, 0.0f, 0.0f, 5);
@@ -4796,6 +4781,8 @@ __asm__("D_0014E910 = Ticks.46\nD_0014E914 = X.47\nD_0014E918 = Y.48\nD_0014E91C
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", EndressBody);
 #endif
 
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", SHUTTER_PARTZ);
+
 void MonitorPut(PZL_STAT *st)
 {
 	static int Count;
@@ -4812,105 +4799,105 @@ void MonitorPut(PZL_STAT *st)
  * switch's jump table must sit at D_0002E750, far before this function's own rodata
  * (the 1.0f at D_0002E9AC).  Needs: the case order below (found by search), and the
  * frame counter re-read before `% 2` (only a volatile read reproduces the reload). */
-extern int D_0014E930;
-extern int D_0014E934;
-extern int D_0014E938;
 extern const float D_0002E9AC;
 extern SPRDATA SHUTTER_PARTZ;
 int PollShutter(int req)
 {
+	static int Count;
+	static int Tick;
+	static int Stat;
 	int ret = 0;
 	int i;
 
 	if (req == 5)
-		return D_0014E930;
+		return Count;
 	switch (req) {
 	case 1:
-		D_0014E938 = 1;
-		D_0014E930 = 0;
+		Stat = 1;
+		Count = 0;
 		break;
 	case 6:
-		D_0014E938 = 6;
-		D_0014E930 = 0;
+		Stat = 6;
+		Count = 0;
 		break;
 	case 3:
-		D_0014E938 = 0;
-		D_0014E930 = 19;
+		Stat = 0;
+		Count = 19;
 		ret = 1;
 		break;
 	case 0:
 		break;
 	case 2:
-		D_0014E938 = 2;
-		D_0014E930 = 19;
+		Stat = 2;
+		Count = 19;
 		break;
 	case 7:
-		D_0014E938 = 7;
-		D_0014E930 = 19;
+		Stat = 7;
+		Count = 19;
 		break;
 	case 4:
-		D_0014E938 = 0;
-		D_0014E930 = 0;
+		Stat = 0;
+		Count = 0;
 		ret = 2;
 		break;
 	}
-	D_0014E934++;
-	switch (D_0014E938) {
+	Tick++;
+	switch (Stat) {
 	case 1:
-		D_0014E934 = *(volatile int *)&D_0014E934 % 2;
+		Tick = *(volatile int *)&Tick % 2;
 		break;
 	case 2:
-		D_0014E934 = *(volatile int *)&D_0014E934 % 2;
+		Tick = *(volatile int *)&Tick % 2;
 		break;
 	case 6:
-		D_0014E934 = *(volatile int *)&D_0014E934 % 2;
+		Tick = *(volatile int *)&Tick % 2;
 		break;
 	case 7:
-		D_0014E934 = *(volatile int *)&D_0014E934 % 2;
+		Tick = *(volatile int *)&Tick % 2;
 		break;
 	default:
-		D_0014E934 = 1;
+		Tick = 1;
 		break;
 	}
-	if (D_0014E934 == 0) {
-		switch (D_0014E938) {
+	if (Tick == 0) {
+		switch (Stat) {
 		case 1:
-			D_0014E930++;
-			if (D_0014E930 >= 20) {
-				D_0014E930 = 19;
+			Count++;
+			if (Count >= 20) {
+				Count = 19;
 				ret = 1;
-				D_0014E938 = 0;
+				Stat = 0;
 				se_play(7);
 			}
 			break;
 		case 2:
-			D_0014E930--;
-			if (D_0014E930 < 0) {
-				D_0014E938 = 0;
+			Count--;
+			if (Count < 0) {
+				Stat = 0;
 				ret = 2;
-				D_0014E930 = 0;
+				Count = 0;
 				se_play(7);
 			}
 			break;
 		case 6:
-			D_0014E930++;
-			if (D_0014E930 >= 20) {
-				D_0014E930 = 19;
+			Count++;
+			if (Count >= 20) {
+				Count = 19;
 				ret = 1;
-				D_0014E938 = 0;
+				Stat = 0;
 			}
 			break;
 		case 7:
-			D_0014E930--;
-			if (D_0014E930 < 0) {
-				D_0014E938 = 0;
+			Count--;
+			if (Count < 0) {
+				Stat = 0;
 				ret = 2;
-				D_0014E930 = 0;
+				Count = 0;
 			}
 			break;
 		}
 	}
-	for (i = 0; i < D_0014E930; i++)
+	for (i = 0; i < Count; i++)
 		SpriteDrawC(D_0002E9AC, 240, 28 + i * 12, &SHUTTER_PARTZ);
 	return ret;
 }

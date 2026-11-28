@@ -35,7 +35,11 @@
 rodata 0x2EA74 sound
 # gim_picture.c's libinfo (the first rodata after staff's)
 rodata 0x30000 gim_picture
-# plsel.c was built with -fmerge-constants: its .rodata (tables, jump tables)
+# PuzzleMain.c and plsel.c were built with -fmerge-constants (PuzzleMain's
+# symbol table keeps the cst8 labels $LC57/$LC58/$LC61/$LC62).  PuzzleMain:
+cst4 0x2E770-0x2EA00 PuzzleMain
+cst8 0x2EA00-0x2EA20 PuzzleMain
+# plsel: its .rodata (tables, jump tables)
 # comes first, then its floats (.rodata.cst4) in function order, then its
 # doubles (.rodata.cst8) and the strings its .data points to (probably
 # .rodata.str1.4; kept with the doubles, which they follow).
