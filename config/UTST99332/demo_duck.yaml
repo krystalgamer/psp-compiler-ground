@@ -446,7 +446,7 @@ segments:
       - [0x168ABC, .rodata, main_objs/math_safe_acosf]
       - [0x168AC4, rodata, asm/rodata_168A44]
       - [0x168BFC, .rodata, main_objs/math_matrix_matrix]
-      - [0x168C18, rodata, asm/rodata_168B98]
+      - [0x168CE4, rodata, asm/rodata_168C64]
       - [0x168E64, .rodata, main_objs/math_quaternion_quaternion]
       - [0x168E70, rodata, asm/rodata_168DF0]
       - [0x16904C, .rodata, main_objs/scene_HasBVdata]

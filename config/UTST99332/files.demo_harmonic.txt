@@ -440,7 +440,7 @@ rodata 0x170B40 main_objs/math_factorial
 rodata 0x170B5C -
 bss 0x18E2DC main_objs/math_factorial
 rodata 0x165C5C main_objs/math_matrix_matrix
-rodata 0x165C78 -
+rodata 0x165D44 -
 bss 0x18BA08 main_objs/math_matrix_matrix
 bss 0x18BA8C -
 rodata 0x168800 main_objs/scene_Group

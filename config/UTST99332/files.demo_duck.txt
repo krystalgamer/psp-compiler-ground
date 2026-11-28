@@ -454,7 +454,7 @@ rodata 0x173A68 main_objs/math_factorial
 rodata 0x173A84 -
 bss 0x19175C main_objs/math_factorial
 rodata 0x168B7C main_objs/math_matrix_matrix
-rodata 0x168B98 -
+rodata 0x168C64 -
 bss 0x18EE88 main_objs/math_matrix_matrix
 bss 0x18EF0C -
 rodata 0x16B728 main_objs/scene_Group
