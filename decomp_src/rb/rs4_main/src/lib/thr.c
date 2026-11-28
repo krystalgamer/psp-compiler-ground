@@ -242,7 +242,28 @@ int thrDelete(ThrCntx *pCntx)
 	return -1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/thr", thrProc);
+int sceKernelExitThread(int status);
+/* STAND-IN (likely): one asm block using $6 as scratch reproduces the FCR31 update
+   (rounding mode rm, exception enables cleared); separate cfc1/ins/ctc1 statements
+   give the same code in other registers. The real macro is unknown (cf. mainMain). */
+static inline void thrFpuInit(int rm)
+{
+	__asm__ volatile("cfc1 $6, $31\n\tins $6, %0, 0, 2\n\tins $6, $0, 7, 5\n\tctc1 $6, $31" : : "r"(rm) : "$6");
+}
+int thrProc(int argSize, void *argp)
+{
+	ThrCntx *pCntx = *(ThrCntx **)argp;
+
+	if (argSize != 4)
+		consPrintf(&D_000FB64C, &D_000FB680, 0x107, "thrProc", "argSize == sizeof(void **)");
+	thrFpuInit(1);
+	consPrintf("--- %s : Start : Vp 0x%08x : Arg 0x%08x ---\n", pCntx->Name, pCntx->pad[1], pCntx->pad[2]);
+	((void (*)(ThrCntx *))pCntx->pad[0])(pCntx);
+	consPrintf("--- %s : Finish ---\n", pCntx->Name);
+	if (sceKernelExitThread(1) == 0x80020064)
+		THR_ASSERT(0x115, "thrProc");
+	return 1;
+}
 
 int sceKernelWakeupThread(int thid);
 void thrVSync(void)
