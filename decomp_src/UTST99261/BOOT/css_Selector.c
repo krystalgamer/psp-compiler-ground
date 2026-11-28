@@ -13,7 +13,68 @@ void *CSSStyleDeclaration_getCssText(void *decl);
 void MEM_free(int pool, void *p);
 void *_getOneSelectorText(void *sel);
 void CSS_putSPoolBuf(void *pb, const char *s);
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_Selector", _getOneSelectorText);
+typedef struct CSSSelLst { struct CSSSelLst *next; void *name; } CSSSelLst;
+void *_getOneSelectorText(void *sel)
+{
+    void *pb;
+    void *s;
+    void *r;
+    CSSSelLst *l;
+
+    if (sel == NULL || M2C_FIELD(sel, short *, 0) != 9)
+        return NULL;
+    pb = CSS_newPoolBuf();
+    r = NULL;
+    if (pb != NULL) {
+        CSS_putsPoolBuf(pb, M2C_FIELD(sel, void **, 0x24));
+        if (M2C_FIELD(sel, void **, 0x34) != NULL) {
+            CSS_putSPoolBuf(pb, "#");
+            CSS_putsPoolBuf(pb, M2C_FIELD(sel, void **, 0x34));
+            for (l = M2C_FIELD(sel, CSSSelLst **, 0x30); l != NULL; l = l->next) {
+                if (l->name != NULL) {
+                    CSS_putSPoolBuf(pb, "#");
+                    CSS_putsPoolBuf(pb, l->name);
+                }
+            }
+        }
+        if (M2C_FIELD(sel, void **, 0x2C) != NULL) {
+            CSS_putSPoolBuf(pb, ".");
+            CSS_putsPoolBuf(pb, M2C_FIELD(sel, void **, 0x2C));
+            for (l = M2C_FIELD(sel, CSSSelLst **, 0x28); l != NULL; l = l->next) {
+                if (l->name != NULL) {
+                    CSS_putSPoolBuf(pb, ".");
+                    CSS_putsPoolBuf(pb, l->name);
+                }
+            }
+        }
+        if (M2C_FIELD(sel, void **, 0x44) != NULL) {
+            CSS_putSPoolBuf(pb, "[");
+            CSS_putsPoolBuf(pb, M2C_FIELD(sel, void **, 0x44));
+            CSS_putSPoolBuf(pb, "]");
+            for (l = M2C_FIELD(sel, CSSSelLst **, 0x40); l != NULL; l = l->next) {
+                if (l->name != NULL) {
+                    CSS_putSPoolBuf(pb, "[");
+                    CSS_putsPoolBuf(pb, l->name);
+                    CSS_putSPoolBuf(pb, "]");
+                }
+            }
+        }
+        if (M2C_FIELD(sel, void **, 0x3C) != NULL) {
+            CSS_putSPoolBuf(pb, ":");
+            CSS_putsPoolBuf(pb, M2C_FIELD(sel, void **, 0x3C));
+            for (l = M2C_FIELD(sel, CSSSelLst **, 0x38); l != NULL; l = l->next) {
+                if (l->name != NULL) {
+                    CSS_putSPoolBuf(pb, ":");
+                    CSS_putsPoolBuf(pb, l->name);
+                }
+            }
+        }
+        s = CSS_getPoolBuf(pb);
+        CSS_freePoolBuf(pb);
+        r = s;
+    }
+    return r;
+}
 
 void *_getSelectorText(void *sel)
 {
