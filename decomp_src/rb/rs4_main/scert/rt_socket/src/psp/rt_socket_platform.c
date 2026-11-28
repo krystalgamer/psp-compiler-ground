@@ -70,7 +70,23 @@ int rt_socket_set_non_blocking_platform(int s, int v)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/psp/rt_socket_platform", rt_socket_get_available_bytes_to_read_platform);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/psp/rt_socket_platform", rt_socket_check_readability_platform);
+typedef struct { int fd; short events; short revents; } RtPollFd;
+int sceNetInetPoll();
+int rt_socket_check_readability_platform(RtPollFd *fds, unsigned int n, int timeout, int *ready)
+{
+    unsigned int i;
+    int r;
+
+    for (i = 0; i < n; i++)
+        fds[i].events = 0x19;
+    r = sceNetInetPoll(fds, n, timeout);
+    if (r == -1) {
+        *ready = 0;
+        return rt_socket_get_err_platform();
+    }
+    *ready = r;
+    return 0;
+}
 
 int rt_socket_check_readability_platform();
 int rt_socket_find_sockets_with_data_platform(int *socks, int n, int timeout, int *count)
@@ -126,7 +142,42 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/psp/rt_socket_
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/psp/rt_socket_platform", rt_socket_get_dns_servers_platform);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/psp/rt_socket_platform", rt_socket_sendmsg_platform);
+typedef struct { void *buf; int len; } RtSockIov;
+typedef struct { RtSockIov e[8]; int total; int n; } RtSockVec;
+typedef struct { unsigned char len; unsigned char family; unsigned short port; unsigned int addr; char zero[8]; } RtSockAddrIn;
+typedef struct { void *name; int namelen; RtSockIov *iov; int iovlen; void *control; int controllen; int flags; } RtSockMsg;
+int sceNetInetSendmsg();
+int rt_socket_sendmsg_platform(int s, RtSockVec *v, unsigned int ip, int port, int *sent)
+{
+    RtSockMsg msg;
+    RtSockIov iov[8];
+    RtSockAddrIn sa;
+    int i;
+    int r;
+
+    *sent = 0;
+    if (ip != 0 && port != 0) {
+        sa.family = 2;
+        sa.addr = ip;
+        sa.port = __builtin_allegrex_wsbh((unsigned short)port);
+        msg.name = &sa;
+        msg.namelen = 16;
+    } else {
+        msg.name = NULL;
+        msg.namelen = 0;
+    }
+    msg.iov = iov;
+    msg.control = NULL;
+    msg.controllen = 0;
+    msg.iovlen = v->n;
+    msg.flags = 0;
+    for (i = 0; i < v->n; i++)
+        iov[i] = v->e[i];
+    r = sceNetInetSendmsg(s, &msg, 0);
+    if (r < 0) return rt_socket_get_err_platform();
+    *sent = r;
+    return 0;
+}
 
 int rt_socket_recvmsg_platform(void) {
     return 4;

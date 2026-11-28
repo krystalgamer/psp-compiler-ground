@@ -163,7 +163,24 @@ int rt_comm_adhoc_get_broadcast_ip(RtAdhocAddr *out)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/psp/rtadhocnet/src/rt_comm_platform", rt_comm_get_stat);
+typedef struct AdhocPdpStat { struct AdhocPdpStat *next; int id; int a, b, c; } AdhocPdpStat;
+extern AdhocPdpStat D_00131330[];
+int sceNetAdhocGetPdpStat();
+int rt_comm_get_stat(int id, AdhocPdpStat *out)
+{
+    int len = 0x50;
+    AdhocPdpStat *p;
+
+    if (sceNetAdhocGetPdpStat(&len, D_00131330) == 0 && len != 0) {
+        for (p = D_00131330; p != NULL; p = p->next) {
+            if (p->id == id) {
+                *out = *p;
+                return 0;
+            }
+        }
+    }
+    return 0xC350;
+}
 
 int rt_comm_adhoc_send(void) {
     return 0xC350;
