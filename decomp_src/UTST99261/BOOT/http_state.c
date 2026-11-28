@@ -29,6 +29,7 @@ typedef struct DumyArg {
 } DumyArg;
 
 
+int strncasecmp(const char *a, const char *b, unsigned int n);
 int http_state(int h)
 {
     int st;
@@ -136,7 +137,49 @@ char *htlib_strnmcat(char *dst, int n, ...)
     return dst;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_state", htlib_getstrheadervalue);
+char *htlib_getstrheadervalue(char *buf, int len, char *name, int nth)
+{
+    int nlen;
+    int i;
+    char *p;
+    char *v;
+    int vlen;
+    char *r;
+
+    nlen = strlen(name);
+    while (len > 0) {
+        i = 0;
+        while (i < len && buf[i] != '\n')
+            i++;
+        if (len < i)
+            break;
+        if (buf[i] == '\0' || buf[i] == '\n') {
+            if (i > nlen && strncasecmp(buf, name, nlen) == 0) {
+              if (nth == 0) {
+                p = buf + nlen;
+                while (*p == ' ' || *p == '\t')
+                    p++;
+                p += (*p == ':');
+                while (*p == ' ' || *p == '\t')
+                    p++;
+                v = p;
+                while (*p != '\0' && *p != '\r' && *p != '\n')
+                    p++;
+                len = p - v;
+                r = MEM_malloc(0, len + 1);
+                if (r == NULL)
+                    return NULL;
+                htlib_strnmcat(r, 1, len, v);
+                return r;
+            } else nth--;}
+            len -= i;
+            len--;
+            buf += i + 1;
+        } else
+            break;
+    }
+    return NULL;
+}
 
 int dumyFunc(int a, DumyArg *p)
 {
