@@ -250,21 +250,200 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD840);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD848);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", i3dTask_Light);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD86C);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD874);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD880);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD88C);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD898);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD8A4);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD8BC);
+void *_memAllocZero(int, const void *, int);
+void copRotVec(void *, void *, void *);
+void copAddVec(void *, void *, void *);
+void copSclVec(void *, void *, float);
+void I3dLightStatusParam__ClearA(void *);
+void I3dColCopy(void *, void *);
+void *i3dGetRender(void);
+void *i3dGetStage(void);
+void *I3dRender__CreateLightStatus(void *, void *);
+void I3dRenderStage__SetCurrentLightStatus(void *, void *);
+void *memset(void *, int, unsigned int);
+extern unsigned char D_00111880;
+extern unsigned char AmbientColor;
+typedef struct { float v[4]; } LtV4;
+typedef struct { float dir[4]; float col[4]; } LtDir;
+typedef struct { float pos[4]; float col[4]; } LtPoint;
+typedef struct { float v[16]; } LtSpot;
+typedef struct {
+	LtV4 col;
+	int nDir;
+	LtDir *pDir;
+	int nPoint;
+	LtPoint *pPoint;
+	int nSpot;
+	LtSpot *pSpot;
+	int pad28[2];
+} LtParam;
+typedef struct {
+	char pad0[0x24];
+	signed char prio;
+	char pad25[3];
+	int f28;
+	int f2C;
+	LtParam *param;
+	LtV4 *pAmb;
+	char pad38[8];
+	int nDir;
+	int nPoint;
+	int nSpot;
+	int nAmb;
+} LtTask;
+#define cassertT(e, l, s) if (!(e)) consPrintf(&D_000FD5C4, &D_000FD5E0, l, "i3dTask_Light", s)
+void *i3dTask_Light(void *arg0, unsigned int msg, void *arg2, int arg3)
+{
+	LtTask *Tp = arg0;
+	switch (msg) {
+	case 0:
+		{
+		LtParam *pParam;
+		float *pDirLight;
+		void *pPointLight, *pSpotLight, *pAmbLight;
+		cassertT(Tp, 0x35A, &D_000FD608);
+		Tp->f28 = -1;
+		Tp->prio = arg3;
+		Tp->f2C = 0;
+		pParam = _memAllocZero(0x30, &D_000FD5E0, 0x362);
+		cassertT(pParam, 0x363, "pParam");
+		Tp->param = pParam;
+		I3dLightStatusParam__ClearA(pParam);
+		pDirLight = _memAllocZero(0x80, &D_000FD5E0, 0x369);
+		cassertT(pDirLight, 0x36A, "pDirLight");
+		Tp->nDir = 1;
+		pParam->pDir = (LtDir *)pDirLight;
+		pDirLight[0] = 0.0f;
+		pDirLight[1] = -1.0f;
+		pDirLight[2] = 0.0f;
+		pDirLight[4] = 0.5f;
+		pDirLight[5] = 0.5f;
+		pDirLight[6] = 0.5f;
+		pDirLight[7] = 0.0f;
+		copRotVec(&D_00111880, pDirLight, pDirLight);
+		pPointLight = _memAllocZero(0x80, &D_000FD5E0, 0x37F);
+		cassertT(pPointLight, 0x380, "pPointLight");
+		pParam->pPoint = pPointLight;
+		Tp->nPoint = 0;
+		pSpotLight = _memAllocZero(0x100, &D_000FD5E0, 0x386);
+		cassertT(pSpotLight, 0x387, "pSpotLight");
+		pParam->pSpot = pSpotLight;
+		Tp->nSpot = 0;
+		pAmbLight = _memAllocZero(0x40, &D_000FD5E0, 0x38D);
+		cassertT(pAmbLight, 0x38E, "pAmbLight");
+		Tp->pAmb = pAmbLight;
+		Tp->nAmb = 0;
+		I3dColCopy(pParam, &AmbientColor);
+		}
+		return Tp;
+	case 4:
+		return Tp;
+	case 1:
+		{
+		LtParam *p = Tp->param;
+		Tp->param = NULL;
+		_memFree((int)p->pDir, &D_000FD5E0, 0x39F);
+		_memFree((int)p->pPoint, &D_000FD5E0, 0x3A0);
+		_memFree((int)p->pSpot, &D_000FD5E0, 0x3A1);
+		_memFree((int)Tp->pAmb, &D_000FD5E0, 0x3A2);
+		Tp->pAmb = NULL;
+		p->pDir = NULL;
+		p->pPoint = NULL;
+		p->pSpot = NULL;
+		_memFree((int)p, &D_000FD5E0, 0x3A9);
+		}
+		return NULL;
+	case 2:
+		{
+		LtParam *p = Tp->param;
+		p->nDir = 0;
+		p->nPoint = 0;
+		p->nSpot = 0;
+		Tp->nAmb = 0;
+		}
+		return NULL;
+	case 3:
+		{
+		LtParam *p = Tp->param;
+		int n = Tp->nAmb;
+		if (p->nDir + p->nPoint + p->nSpot == 0) {
+			p->nDir = Tp->nDir;
+			p->nPoint = Tp->nPoint;
+			p->nSpot = Tp->nSpot;
+		} else {
+			Tp->nDir = p->nDir;
+			Tp->nPoint = p->nPoint;
+			Tp->nSpot = p->nSpot;
+		}
+		if (n > 0) {
+			LtV4 c;
+			LtV4 *a;
+			a = Tp->pAmb;
+			memset(&c, 0, sizeof(c));
+			c.v[3] = 1.0f;
+			do {
+				copAddVec(&c, a, &c);
+				a++;
+			} while (--n);
+			p->col = c;
+		}
+		{
+			void *r = i3dGetRender();
+			void *s = i3dGetStage();
+			I3dRenderStage__SetCurrentLightStatus(s, I3dRender__CreateLightStatus(r, p));
+		}
+		}
+		return NULL;
+	case 0x14:
+		{
+		LtParam *p = Tp->param;
+		int n = p->nDir;
+		LtDir *d;
+		cassertT(n < 4, 0x3DA, "Light < PSP_LightNum");
+		d = &p->pDir[n];
+		*d = *(LtDir *)arg2;
+		copSclVec(d, d, -1.0f);
+		p->nDir = n + 1;
+		}
+		return NULL;
+	case 0x15:
+		{
+		LtParam *p = Tp->param;
+		int n = p->nPoint;
+		cassertT(n < 4, 0x3EC, "Light < PSP_LightNum");
+		{
+		LtPoint *d = &p->pPoint[n];
+		*d = *(LtPoint *)arg2;
+		}
+		p->nPoint = n + 1;
+		}
+		return NULL;
+	case 0x16:
+		{
+		LtParam *p = Tp->param;
+		int n = p->nSpot;
+		cassertT(n < 4, 0x3FB, "Light < PSP_LightNum");
+		{
+		LtSpot *d = &p->pSpot[n];
+		*d = *(LtSpot *)arg2;
+		}
+		p->nSpot = n + 1;
+		}
+		return NULL;
+	case 0x17:
+		{
+		int n = Tp->nAmb;
+		cassertT(n < 4, 0x409, "Light < PSP_LightNum");
+		{
+		LtV4 *d = &Tp->pAmb[n];
+		*d = *(LtV4 *)arg2;
+		}
+		Tp->nAmb = n + 1;
+		}
+		return NULL;
+	}
+	return (void *)taskDefaultMsg((int)Tp, msg, (int)arg2, arg3);
+}
 
 typedef struct {
 	char pad0[0x24];
@@ -442,10 +621,9 @@ void i3dCameraCardBattle(void)
 }
 
 extern char *pTypeTbl[];
-extern unsigned char D_000FD86C;
 int I3rRoot__GetNodeIndexByName(void *, char *);
 void *_memAllocZero(int, const void *, int);
-#define cassertL(e, l) if (!(e)) consPrintf(&D_000FD5C4, &D_000FD5E0, l, "i3dLightInit", &D_000FD86C)
+#define cassertL(e, l) if (!(e)) consPrintf(&D_000FD5C4, &D_000FD5E0, l, "i3dLightInit", "pParam")
 int i3dLightInit(int a, char *Tp)
 {
 	void *root = *(void **)Tp;
