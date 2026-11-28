@@ -398,7 +398,17 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", ResUpdateTuningSlot);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", ResUpdateTuningSlotAll);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", ResTuningOpen);
+#define TW ((ResWorkT *)&gWork_11FC38)
+void ResTuningOpen(char *r)
+{
+    if (*(int *)(r + 0x4C)) {
+        ResUpdateTuningSlotAll();
+        TW->nTune++;
+    }
+    if (TW->nTune > 0) ResUpdateTuningSlot(r);
+    if (TW->nOpen > 0 || TW->nOpen2 > 0) sgxSndUseTuning(1);
+}
+#undef TW
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", ResTuningClose);
 
