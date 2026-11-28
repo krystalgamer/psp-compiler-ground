@@ -327,7 +327,14 @@ int rt_udp_get_buffer_stats(void *u, unsigned int *c, int dir, unsigned int *use
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_resolve_address);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_get_resolved_address);
+int rt_upnp_get_external_address();
+int rt_udp_get_resolved_address(char *u, void *addr, int *port)
+{
+    if (u == NULL) return 0xD2F2;
+    if (*(void **)(u + 0x10) == NULL) return rt_udp_get_local_address(u, addr, port);
+    if (rt_upnp_get_external_address(*(void **)(u + 0x10), addr, port) != 0) return rt_udp_get_local_address(u, addr, port);
+    return 0;
+}
 
 int rt_udp_get_local_address(void *arg0, void *arg1, int *arg2) {
     int var_a3;
