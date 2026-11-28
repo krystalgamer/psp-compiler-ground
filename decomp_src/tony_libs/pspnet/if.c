@@ -20,7 +20,7 @@ void _sce_pspnet_if_attach(struct ifnet *ifp)
 
 	TAILQ_INIT(&ifp->if_addrlist);
 	for (;;) {
-		for (p = D_0000BB24.tqh_first; p != NULL; p = p->if_list.tqe_next) {
+		for (p = ifnet.tqh_first; p != NULL; p = p->if_list.tqe_next) {
 			if (p->if_index == index)
 				break;
 		}
@@ -29,11 +29,11 @@ void _sce_pspnet_if_attach(struct ifnet *ifp)
 		if (++index >= 8)
 			break;
 	}
-	if (D_0000B070 < index)
-		D_0000B070 = index;
-	TAILQ_INSERT_TAIL(&D_0000BB24, ifp, if_list);
+	if (if_index < index)
+		if_index = index;
+	TAILQ_INSERT_TAIL(&ifnet, ifp, if_list);
 	ifp->if_index = index;
-	D_0000B078[ifp->if_index] = ifp;
+	ifindex2ifnet[ifp->if_index] = ifp;
 
 	namelen = strlen(ifp->if_xname);
 	masklen = 8 + namelen;
@@ -51,7 +51,7 @@ void _sce_pspnet_if_attach(struct ifnet *ifp)
 	sdl->sdl_nlen = namelen;
 	sdl->sdl_index = ifp->if_index;
 	sdl->sdl_type = ifp->if_type;
-	D_0000B074[ifp->if_index] = ifa;
+	ifnet_addrs[ifp->if_index] = ifa;
 	ifa->ifa_refcnt++;
 	ifa->ifa_rtrequest = _sce_pspnet_link_rtrequest;
 	ifa->ifa_ifp = ifp;
@@ -70,7 +70,7 @@ void _sce_pspnet_if_attach(struct ifnet *ifp)
 	while (namelen != 0)
 		sdl->sdl_data[--namelen] = 0xff;
 	if (ifp->if_snd.ifq_maxlen == 0)
-		ifp->if_snd.ifq_maxlen = D_0000A0AC;
+		ifp->if_snd.ifq_maxlen = ifqmaxlen;
 	ifp->if_unkE4 = NULL;
 	ifp->if_link_state = 0;
 	if (D_0000B068 > 0)
@@ -114,7 +114,7 @@ int func_00005614(u_long cmd, void *data)
 	int space = ifc->ifc_len;
 
 	ifrp = ifc->ifc_req;
-	for (ifp = D_0000BB24.tqh_first; ifp != NULL; ifp = ifp->if_list.tqe_next) {
+	for (ifp = ifnet.tqh_first; ifp != NULL; ifp = ifp->if_list.tqe_next) {
 		bcopy(ifp->if_xname, ifr.ifr_name, 16);
 		if ((ifa = ifp->if_addrlist.tqh_first) == NULL) {
 			__builtin_memset(&ifr.ifr_ifru.ifru_addr, 0, sizeof(ifr.ifr_ifru.ifru_addr));
@@ -219,14 +219,14 @@ void func_00005A78(void *arg)
 	int s;
 
 	s = _sce_pspnet_spllock();
-	for (ifp = D_0000BB24.tqh_first; ifp != NULL; ifp = ifp->if_list.tqe_next) {
+	for (ifp = ifnet.tqh_first; ifp != NULL; ifp = ifp->if_list.tqe_next) {
 		if (ifp->if_timer == 0 || --ifp->if_timer)
 			continue;
 		if (ifp->if_watchdog)
 			(*ifp->if_watchdog)(ifp);
 	}
 	_sce_pspnet_splunlock(s);
-	_sce_pspnet_callout_reset(&D_0000BB2C, 100, func_00005A78, NULL);
+	_sce_pspnet_callout_reset(&if_slowtimo_ch, 100, func_00005A78, NULL);
 }
 
 struct ifnet *_sce_pspnet_ifunit(const char *name)
@@ -240,7 +240,7 @@ int _sce_pspnet_if_exist(const char *name)
 	int s;
 
 	s = _sce_pspnet_spllock();
-	for (ifp = D_0000BB24.tqh_first; ifp != NULL; ifp = ifp->if_list.tqe_next) {
+	for (ifp = ifnet.tqh_first; ifp != NULL; ifp = ifp->if_list.tqe_next) {
 		if (ifp->if_output == _sce_pspnet_if_nulloutput)
 			continue;
 		if (strcmp(ifp->if_xname, name) == 0) {
@@ -278,7 +278,7 @@ int _sce_pspnet_get_ifindex(const char *name)
 	int s;
 
 	s = _sce_pspnet_spllock();
-	for (ifp = D_0000BB24.tqh_first; ifp != NULL; ifp = ifp->if_list.tqe_next) {
+	for (ifp = ifnet.tqh_first; ifp != NULL; ifp = ifp->if_list.tqe_next) {
 		if (strncmp(name, ifp->if_xname, 16) == 0) {
 			idx = ifp->if_index;
 			break;
@@ -294,7 +294,7 @@ struct ifnet *_sce_pspnet_ifplookup_index(int idx)
 	int s;
 
 	s = _sce_pspnet_spllock();
-	for (ifp = D_0000BB24.tqh_first; ifp != NULL; ifp = ifp->if_list.tqe_next) {
+	for (ifp = ifnet.tqh_first; ifp != NULL; ifp = ifp->if_list.tqe_next) {
 		if (ifp->if_index == idx)
 			break;
 	}
@@ -305,13 +305,13 @@ struct ifnet *_sce_pspnet_ifplookup_index(int idx)
 int _sce_pspnet_get_if_core_variables(int *a, int *b, int *c, struct ifnet_head *d)
 {
 	if (a != NULL)
-		*a = D_0000B070;
+		*a = if_index;
 	if (b != NULL)
-		*b = D_0000B078;
+		*b = ifindex2ifnet;
 	if (c != NULL)
-		*c = D_0000B074;
+		*c = ifnet_addrs;
 	if (d != NULL)
-		*d = D_0000BB24;
+		*d = ifnet;
 	return 0;
 }
 
@@ -335,7 +335,7 @@ int _sce_pspnet_start_of_inet_module_in_if_core(void (*a)(int, void *, void *), 
 	D_0000B058 = k;
 	D_0000B05C = l;
 	D_0000B060 = m;
-	for (ifp = D_0000BB24.tqh_first; ifp != NULL; ifp = ifp->if_list.tqe_next) {
+	for (ifp = ifnet.tqh_first; ifp != NULL; ifp = ifp->if_list.tqe_next) {
 		c(ifp);
 		if (ifp->if_flags & 1)
 			j(ifp);
@@ -351,7 +351,7 @@ int _sce_pspnet_stop_of_inet_module_in_if_core(void)
 	int s, af;
 
 	D_0000B068 = 0;
-	for (ifp = D_0000BB24.tqh_first; ifp != NULL; ifp = ifp->if_list.tqe_next) {
+	for (ifp = ifnet.tqh_first; ifp != NULL; ifp = ifp->if_list.tqe_next) {
 		s = _sce_pspnet_spllock();
 		_sce_pspnet_if_down(ifp);
 		ifa = ifp->if_addrlist.tqh_first;

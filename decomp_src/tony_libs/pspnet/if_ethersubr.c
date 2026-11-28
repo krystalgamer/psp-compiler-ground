@@ -115,7 +115,7 @@ void func_00006A40(struct ifnet *ifp, const u_char *lla)
 		bcopy(lla, sdl->sdl_data + sdl->sdl_nlen, ifp->if_addrlen);
 	}
 	ifp->ec_multiaddrs = NULL;
-	ifp->if_unkE4 = D_0000A0B0;
+	ifp->if_unkE4 = etherbroadcastaddr;
 }
 
 void func_00006B10(struct ifnet *ifp)
@@ -199,7 +199,7 @@ struct ifnet *_sce_pspnet_ifplookup_lladdr(const u_char *lla)
 {
 	struct ifnet *ifp;
 
-	for (ifp = D_0000BB24.tqh_first; ifp != NULL; ifp = ifp->if_list.tqe_next) {
+	for (ifp = ifnet.tqh_first; ifp != NULL; ifp = ifp->if_list.tqe_next) {
 		if (memcmp(ifp->if_sadl->sdl_data + ifp->if_sadl->sdl_nlen, lla, 6) == 0)
 			break;
 	}

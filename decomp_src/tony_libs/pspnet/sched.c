@@ -63,7 +63,7 @@ int func_00002FC4(void)
 	int i;
 
 	for (i = 0; i < 128; i++)
-		TAILQ_INIT(&D_0000AC2C[i]);
+		TAILQ_INIT(&slpque[i]);
 	D_0000A0A0 = sceKernelCreateSema("SceNetSlpque", 0, 1, 1, 0);
 	return (D_0000A0A0 < 0) ? D_0000A0A0 : 0;
 }

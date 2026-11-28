@@ -11,7 +11,7 @@ int func_00002C74(SceSize args, void *argp);
 
 int func_000037D4(int unit, struct uio *uio)
 {
-	struct bpf_d *d = &D_0000B8E4[unit];
+	struct bpf_d *d = &bpf_dtab[unit];
 	int error;
 	int s;
 
@@ -57,7 +57,7 @@ done:
 
 int func_00003940(int unit, struct uio *uio)
 {
-	struct bpf_d *d = &D_0000B8E4[unit];
+	struct bpf_d *d = &bpf_dtab[unit];
 	struct ifnet *ifp;
 	struct mbuf *m;
 	int error, s;
@@ -126,7 +126,7 @@ bad:
 
 int func_00003B20(int unit, u_long cmd, void *addr)
 {
-	struct bpf_d *d = &D_0000B8E4[unit];
+	struct bpf_d *d = &bpf_dtab[unit];
 	int s, error = 0;
 
 	switch (cmd) {
@@ -276,7 +276,7 @@ int func_00003FA4(struct bpf_d *d, struct ifreq *ifr)
 	struct ifnet *ifp;
 	int s, error;
 
-	for (bp = D_0000B8E0; bp != NULL; bp = bp->bif_next) {
+	for (bp = bpf_iflist; bp != NULL; bp = bp->bif_next) {
 		ifp = bp->bif_ifp;
 		if (ifp == NULL || strcmp(ifp->if_xname, ifr->ifr_name) != 0)
 			continue;
@@ -327,14 +327,14 @@ void func_00004160(struct ifnet *ifp)
 	struct bpf_d *d;
 	int i, s;
 
-	for (i = 0, d = D_0000B8E4; i < 8; ++i, ++d) {
+	for (i = 0, d = bpf_dtab; i < 8; ++i, ++d) {
 		if (d != d->bd_next && d->bd_bif != NULL && d->bd_bif->bif_ifp == ifp) {
 			s = _sce_pspnet_spllock();
 			bpf_detachd(d);
 			_sce_pspnet_splunlock(s);
 		}
 	}
-	for (bp = D_0000B8E0, pbp = &D_0000B8E0; bp != NULL; pbp = &bp->bif_next, bp = bp->bif_next) {
+	for (bp = bpf_iflist, pbp = &bpf_iflist; bp != NULL; pbp = &bp->bif_next, bp = bp->bif_next) {
 		if (bp->bif_ifp == ifp) {
 			*pbp = bp->bif_next;
 			sceNetFreeInternal(bp);
@@ -347,10 +347,10 @@ void func_0000426C(int n)
 {
 	int i;
 
-	D_0000A0A8 = 0x2000;
-	D_0000B8E0 = NULL;
+	bpf_bufsize = 0x2000;
+	bpf_iflist = NULL;
 	for (i = 0; i < 8; i++)
-		D_0000B8E4[i].bd_next = &D_0000B8E4[i];
+		bpf_dtab[i].bd_next = &bpf_dtab[i];
 }
 
 int func_000042AC(u_int unit)
@@ -359,17 +359,17 @@ int func_000042AC(u_int unit)
 
 	if (unit >= 8)
 		return 6;
-	d = &D_0000B8E4[unit];
+	d = &bpf_dtab[unit];
 	if (d != d->bd_next)
 		return 16;
 	memset(d, 0, sizeof(*d));
-	d->bd_bufsize = D_0000A0A8;
+	d->bd_bufsize = bpf_bufsize;
 	return 0;
 }
 
 int func_00004318(int unit)
 {
-	struct bpf_d *d = &D_0000B8E4[unit];
+	struct bpf_d *d = &bpf_dtab[unit];
 	int s;
 
 	s = _sce_pspnet_spllock();
@@ -391,7 +391,7 @@ int func_00004318(int unit)
 
 int func_00004410(int unit, int events, struct thread_info *p)
 {
-	struct bpf_d *d = &D_0000B8E4[unit];
+	struct bpf_d *d = &bpf_dtab[unit];
 	int revents = 0;
 	int s;
 
@@ -435,8 +435,8 @@ void func_00004594(struct bpf_if **driverp, struct ifnet *ifp, u_int dlt, u_int 
 	bp->bif_driverp = driverp;
 	bp->bif_ifp = ifp;
 	bp->bif_dlt = dlt;
-	bp->bif_next = D_0000B8E0;
-	D_0000B8E0 = bp;
+	bp->bif_next = bpf_iflist;
+	bpf_iflist = bp;
 	*bp->bif_driverp = NULL;
 	bp->bif_hdrlen = ((hdrlen + 0x14 + 3) & ~3) - hdrlen;
 }

@@ -166,8 +166,8 @@ extern void (*D_0000AC1C)(void *, void *);
 extern void (*D_0000AC20)(void *);
 extern int D_0000AC24;
 extern int D_0000AC28;
-extern struct slpque { struct thread_info *tqh_first; struct thread_info **tqh_last; } D_0000AC2C[128];
-#define SLPQUE(wchan) (&D_0000AC2C[((unsigned int)(wchan) >> 8) & 127])
+extern struct slpque { struct thread_info *tqh_first; struct thread_info **tqh_last; } slpque[128];
+#define SLPQUE(wchan) (&slpque[((unsigned int)(wchan) >> 8) & 127])
 
 /* per-thread info (thread.c) */
 struct thread_info {
@@ -460,17 +460,17 @@ extern void (*D_0000B048)(struct ifnet *);
 extern int (*D_0000B058)(u_long, void *, struct ifreq *, int *);
 extern int (*D_0000B05C)(void *, int *);
 extern int (*D_0000B060)(void *, u_long, void *, struct ifnet *);
-extern struct callout D_0000BB2C;
+extern struct callout if_slowtimo_ch;
 int sceNetIfhandlePollSema(SceUID sema, int n);
 void _sce_pspnet_callout_reset(struct callout *c, unsigned int ticks, void (*func)(void *), void *arg);
 void func_00005A78(void *arg);
 extern void (*D_0000B04C)(struct ifnet *);
 extern void (*D_0000B050)(struct ifnet *);
 extern void (*D_0000B054)(struct ifnet *);
-extern int D_0000B070;
-extern struct ifaddr **D_0000B074;
-extern struct ifnet **D_0000B078;
-extern struct ifnet_head D_0000BB24;
+extern int if_index;
+extern struct ifaddr **ifnet_addrs;
+extern struct ifnet **ifindex2ifnet;
+extern struct ifnet_head ifnet;
 void func_00005404(struct ifqueue *ifq);
 void sceNetMFreem(struct mbuf *m);
 
@@ -616,7 +616,7 @@ static inline struct ifnet *if_find(const char *name)
 	int s;
 
 	s = _sce_pspnet_spllock();
-	for (ifp = D_0000BB24.tqh_first; ifp != NULL; ifp = ifp->if_list.tqe_next) {
+	for (ifp = ifnet.tqh_first; ifp != NULL; ifp = ifp->if_list.tqe_next) {
 		if (ifp->if_output == _sce_pspnet_if_nulloutput)
 			continue;
 		if (strcmp(ifp->if_xname, name) == 0) {
@@ -630,7 +630,7 @@ static inline struct ifnet *if_find(const char *name)
 
 void _sce_pspnet_link_rtrequest(int cmd, void *rt, void *info);
 
-extern int D_0000A0AC;
+extern int ifqmaxlen;
 
 extern int D_0000B06C;
 extern void (*D_0000B064)(void);
@@ -645,14 +645,14 @@ static inline void if_slowtimo_body(void)
 	int s;
 
 	s = _sce_pspnet_spllock();
-	for (ifp = D_0000BB24.tqh_first; ifp != NULL; ifp = ifp->if_list.tqe_next) {
+	for (ifp = ifnet.tqh_first; ifp != NULL; ifp = ifp->if_list.tqe_next) {
 		if (ifp->if_timer == 0 || --ifp->if_timer)
 			continue;
 		if (ifp->if_watchdog)
 			(*ifp->if_watchdog)(ifp);
 	}
 	_sce_pspnet_splunlock(s);
-	_sce_pspnet_callout_reset(&D_0000BB2C, 100, func_00005A78, NULL);
+	_sce_pspnet_callout_reset(&if_slowtimo_ch, 100, func_00005A78, NULL);
 }
 
 struct bpf_if {
@@ -685,9 +685,9 @@ struct bpf_d {
 	int bd_unk3C;
 };
 
-extern int D_0000A0A8;
-extern struct bpf_if *D_0000B8E0;
-extern struct bpf_d D_0000B8E4[8];
+extern int bpf_bufsize;
+extern struct bpf_if *bpf_iflist;
+extern struct bpf_d bpf_dtab[8];
 void _sce_pspnet_selrecord(struct thread_info *selector, struct selinfo *sip);
 
 
@@ -766,7 +766,7 @@ extern void *D_0000B084;
 extern void *D_0000B088;
 extern void *D_0000B08C;
 
-extern u_char D_0000A0B0[6];
+extern u_char etherbroadcastaddr[6];
 extern void *D_0000B0AC;
 extern int D_0000B0B0;
 void func_00006E34(struct ifnet *ifp, struct mbuf *m);
