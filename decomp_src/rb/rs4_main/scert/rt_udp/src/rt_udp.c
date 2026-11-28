@@ -84,7 +84,7 @@ int rt_udp_create();
 int rt_udp_deny(void *u, int *c);
 int rt_udp_destroy();
 int rt_udp_disable_nat_service_heartbeat(void *arg0);
-int rt_udp_disconnect();
+void rt_udp_disconnect();
 int rt_udp_event_check();
 int rt_udp_event_process();
 int rt_udp_get_address();
@@ -281,7 +281,43 @@ int rt_udp_disable_nat_service_heartbeat(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_connect);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_disconnect);
+typedef struct { unsigned char b[2]; } RtUdpRaw2;
+typedef struct { struct { void *buf; int len; } e[8]; int total; int n; } RtUdpVec;
+typedef struct { unsigned short hlen; unsigned short flags; } RtUdpSubInfo2;
+int rt_udp_buffer_data_for_send(void *u, void *list, RtUdpVec *v, unsigned short flags, int conn);
+void rt_udp_setup_packet_sub_header(char *u, char *c, unsigned short flags, int len, unsigned short *h);
+void rt_udp_disconnect(char *u, int *c)
+{
+    unsigned short sub[2];
+    RtUdpVec vec;
+    RtUdpSubInfo2 s;
+    int st;
+
+    if (u == NULL || c == NULL) {
+    } else {
+    st = c[0];
+    c[0x7C / 4] = 0;
+    c[0x80 / 4] = 0;
+    c[0x88 / 4] = 0;
+    c[0x60 / 4] = 0;
+    if (st == 13 || st == 4) {
+        if (st == 13) c[0] = 6;
+        else if (st == 4) c[0] = 5;
+        rt_udp_setup_packet_sub_header(u, (char *)c, 0x4000, 0, sub);
+        ((unsigned char *)&s.flags)[0] = ((unsigned char *)sub)[0];
+        ((unsigned char *)&s.flags)[1] = ((unsigned char *)sub)[1];
+        s.flags &= 0xF800;
+        if (s.flags & 0x6000) s.hlen = 4; else s.hlen = 2;
+        vec.e[0].buf = sub;
+        vec.e[0].len = s.hlen;
+        vec.total = s.hlen;
+        vec.n = 1;
+        if (rt_udp_buffer_data_for_send(u, c + 5, &vec, 0x2000, 0) != 0)
+            (*(unsigned short *)((char *)c + 0x64))--;
+    } else if (st != 0)
+        c[0] = 5;
+    }
+}
 
 void rt_udp_set_peer_id(void *arg0, int arg1) {
     if (arg0 != NULL) {
@@ -594,7 +630,34 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_i
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_calculate_rto);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_create_shared_channel_data);
+int rt_comm_startup(); int rt_memory_allocate_init_zero(); int rt_comm_create(); int rt_comm_get_local_port(); int rt_comm_get_local_ip(); int rt_comm_get_broadcast_ip();
+typedef struct { int type; int mtu; int a; int b; } RtUdpCommCfg;
+int rt_udp_create_shared_channel_data(char *u)
+{
+    RtUdpCommCfg cfg;
+    RtUdpLinkAddr addr;
+    int r;
+
+    r = rt_comm_startup();
+    if (r != 0) return r;
+    rt_comm_linkaddress_setnull(&addr);
+    rt_memory_allocate_init_zero(u + 0x58, 0x5AA);
+    if (*(void **)(u + 0x58) == NULL) return 100;
+    rt_memory_allocate_init_zero(u + 0x5C, 0x5AA);
+    if (*(void **)(u + 0x5C) == NULL) return 100;
+    cfg.mtu = 0x5AA;
+    cfg.type = 1;
+    cfg.a = 0;
+    cfg.b = 0;
+    r = rt_comm_create(u, &addr, *(int *)(u + 0x9C), &cfg);
+    if (r != 0) return r;
+    r = rt_comm_get_local_port(*(int *)u, u + 0x9C);
+    if (r != 0) return r;
+    r = rt_comm_get_local_ip(u + 0x94);
+    if (r != 0) return r;
+    r = rt_comm_get_broadcast_ip(u + 0x8C);
+    return r;
+}
 
 int rt_udp_destroy_shared_channel_data(void *arg0) {
     int temp_v1;
