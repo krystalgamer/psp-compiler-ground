@@ -1160,7 +1160,16 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_t
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_process_timebase_data);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_process_game_session_key);
+typedef struct { unsigned short type; unsigned char key[0x40]; } RtP2PKeyMsg;
+int rt_p2p_process_game_session_key(char *p, unsigned short idx, void *msg)
+{
+    RtP2PKeyMsg k;
+
+    if (gCryptInterfacePtr == NULL) return 0;
+    memcpy(&k, msg, sizeof(k));
+    (*(int (**)(int, int, unsigned char *))((char *)gCryptInterfacePtr + 0x24))(-1, 0, k.key);
+    return 0;
+}
 
 int rt_p2p_get_latency_info(char *p, unsigned short idx, void *info)
 {
