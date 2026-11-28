@@ -26,7 +26,41 @@ void geSetAnalogMargin(int m);
 /* SDK prototypes (tools/sdk_protos.h) */
 float sqrtf(float x);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_control", geAnalogDegree);
+float acosf(float x);
+float geAnalogDegree(int mode, uchar ax, uchar ay)
+{
+	float x, y, deg, r;
+
+	if (ax == 0x7f && ay == 0x7f)
+		return -1.0f;
+	x = ax - 127;
+	y = 127 - ay;
+	deg = acosf(x / sqrtf(x * x + y * y));
+	deg = deg * 180.0f / 3.141592741f;
+	if (y < 0.0f)
+		deg = 360.0f - deg;
+	switch (mode) {
+	case 0:
+		break;
+	case 1:
+		deg -= 90.0f;
+		if (deg < 0.0f)
+			deg += 360.0f;
+		break;
+	case 2:
+		deg -= 180.0f;
+		if (deg < 0.0f)
+			deg += 360.0f;
+		break;
+	case 3:
+		r = deg + 90.0f;
+		if (r > 360.0f)
+			r -= 360.0f;
+		deg = r;
+		break;
+	}
+	return deg;
+}
 
 void geSetAnalogMargin(int m) {
     pProg->pad_margin = m;
