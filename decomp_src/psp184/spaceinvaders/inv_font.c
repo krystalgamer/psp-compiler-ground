@@ -175,6 +175,63 @@ void inv_font_set(FONT_T *f, int c, int x, int y, int sx, int sy, unsigned short
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_font", inv_font_disp);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_font", inv_font_ascii_posf);
+void inv_font_ascii(u8 *str, int x, int y, int sx, int sy, int r, int g, int b, int a);
+void inv_font_ascii_posf(u8 *c, int x, int y, int sx, int sy, int r, int g, int b, int a, int pos)
+{
+	if (pos == 0) {
+		y -= sy * 6 / 100;
+	} else if (pos == 1) {
+		x -= inv_font_ascii_check_w(c, sx) / 2;
+		y -= sy * 6 / 100;
+	} else if (pos == 2) {
+		x -= inv_font_ascii_check_w(c, sx);
+		y -= sy * 6 / 100;
+	} else if (pos == 3) {
+		y -= sy * 12 / 100;
+	} else if (pos == 4) {
+		x -= inv_font_ascii_check_w(c, sx) / 2;
+		y -= sy * 12 / 100;
+	} else if (pos == 5) {
+		x -= inv_font_ascii_check_w(c, sx);
+		y -= sy * 12 / 100;
+	} else if (pos == 6) {
+		y -= sy * 19 / 100;
+	} else if (pos == 7) {
+		x -= inv_font_ascii_check_w(c, sx) / 2;
+		y -= sy * 19 / 100;
+	} else if (pos == 8) {
+		x -= inv_font_ascii_check_w(c, sx);
+		y -= sy * 19 / 100;
+	}
+	inv_font_ascii(c, x, y, sx, sy, r, g, b, a);
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_font", inv_font_etc_posf);
+void inv_font_etc_posf(int c, int x, int y, int sx, int sy, int r, int g, int b, int a, int pos)
+{
+	if (pos == 0) {
+		y -= sy * 6 / 100;
+	} else if (pos == 1) {
+		x -= inv_font_etc_check_w(c, sx) / 2;
+		y -= sy * 6 / 100;
+	} else if (pos == 2) {
+		x -= inv_font_etc_check_w(c, sx);
+		y -= sy * 6 / 100;
+	} else if (pos == 3) {
+		y -= sy * 12 / 100;
+	} else if (pos == 4) {
+		x -= inv_font_etc_check_w(c, sx) / 2;
+		y -= sy * 12 / 100;
+	} else if (pos == 5) {
+		x -= inv_font_etc_check_w(c, sx);
+		y -= sy * 12 / 100;
+	} else if (pos == 6) {
+		y -= sy * 19 / 100;
+	} else if (pos == 7) {
+		x -= inv_font_etc_check_w(c, sx) / 2;
+		y -= sy * 19 / 100;
+	} else if (pos == 8) {
+		x -= inv_font_etc_check_w(c, sx);
+		y -= sy * 19 / 100;
+	}
+	inv_font_etc(c, x, y, sx, sy, r, g, b, a);
+}
