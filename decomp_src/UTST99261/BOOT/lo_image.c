@@ -146,11 +146,16 @@ void proc_msg_JL15();
 void proc_msg_TM();
 int countRequestedLLIST(LLIST *list, int doc);
 void putLLIST(LLIST *list, LNODE *n);
+extern void *D_00584CB0;
+int imageDecodeSuccess(IMGENT *e, void *img, int f);
 int getRestImageTotalSquareSize(IMGLIST *list) {
     return -1;
 }
 
-void incrementImageTotalSquareSize(IMGLIST *list) {
+void incrementImageTotalSquareSize(list, sz)
+    IMGLIST *list;
+    int sz;
+{
 }
 
 void addBoxList();
@@ -472,7 +477,84 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", requestImageData);
 
 int setBrokenImageData(LNODE *n, BOX *doc);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", setImageData);
+int setImageData(LNODE *n, BOX *box, void *data, int len, int f) {
+    char *name;
+    int ret;
+    BOX *body;
+    IMGENT *e;
+    void *img;
+    int sz;
+    int *psz;
+
+    ret = 0;
+    name = n->data;
+    if (box == NULL) {
+        return -1;
+    }
+    if (data == NULL) {
+        if (box->content == 10 && setBrokenImageData(n, box) == 0) {
+            ret = -2;
+        }
+        goto dec;
+    } else if (len == 0) {
+        if (box->content != 10) {
+            return -1;
+        }
+        setImageToBoxBuffer(box, D_00584CB0);
+        ((LIMGGEOM *)box->geom)->state = 2;
+    } else {
+        body = getBodyBox(box);
+        if (body == NULL) {
+            return -1;
+        }
+        e = checkImageList((IMGLIST *)((char *)body->geom + 0x54), name);
+        if (e == NULL) {
+            return -1;
+        }
+        e->unk8 = 1;
+        sz = getRestImageTotalSquareSize((IMGLIST *)((char *)body->geom + 0x54));
+        img = NULL;
+        if (sz != 0) {
+            psz = sz > 0 ? &sz : NULL;
+            img = imageDecode(data, len, &e->unk14, M2C_FIELD(body, int *, 0x2C), psz);
+        }
+        if (img != NULL) {
+            ret = imageDecodeSuccess(e, img, f);
+            e->image = img;
+            if (sz > 0) {
+                incrementImageTotalSquareSize((IMGLIST *)((char *)body->geom + 0x54), sz);
+                return ret;
+            }
+        } else {
+            imageDecodeFailure(e);
+            e->image = NULL;
+            ret = -2;
+            goto dec;
+        }
+    }
+    return ret;
+dec:
+    body = getBodyBox(box);
+    if (body == NULL) {
+        return -1;
+    }
+    e = checkImageList((IMGLIST *)((char *)body->geom + 0x54), name);
+    if (e == NULL) {
+        return -1;
+    }
+    if (box->content == 10 && e->boxes.head->data != NULL) {
+        body = getBodyBox(e->boxes.head->data);
+        if (body != NULL && M2C_FIELD(body->geom, int *, 0xB8) == 1 && f == 1) {
+            gESPRIT_LO_GLOBAL_NDA[5] = 0;
+            relayoutAtBody(body, 0);
+            M2C_FIELD(body->geom, int *, 0xB8) = 0;
+        }
+    }
+    if (ret == -2) {
+        return 0;
+    }
+    return -1;
+}
 
 int setBrokenImageData(LNODE *n, BOX *doc) {
     char *name;
