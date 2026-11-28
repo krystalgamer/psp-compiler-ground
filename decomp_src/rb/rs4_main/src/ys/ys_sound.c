@@ -1,7 +1,5 @@
 /* lang: c++ */
-/* cflags: -Os -fno-strength-reduce -fno-merge-constants -fno-exceptions */
-/* #pragma interface: the vtables, typeinfo and implicit destructors stay in the module's asm */
-#pragma interface "rodata"
+/* cflags: -Os -fno-exceptions */
 #include "common.h"
 
 struct InstDat;
@@ -13,7 +11,6 @@ InstDat *resGetDatLocal(int a, int b);
 void scxStop(int h, int f);
 int scxPlay(InstDat *d, int a, int b);
 int scxState(int h);
-extern const char D_001051E0[];
 }
 
 struct Task;
@@ -21,10 +18,10 @@ struct Task;
 namespace Ys {
 class Object {
 public:
-	static void *operator new(unsigned int size) { return _memAllocMBL(size, D_001051E0, 23); }
-	static void operator delete(void *p) { _memFree(p, D_001051E0, 25); }
-	static void *operator new[](unsigned int size) { return _memAllocMBL(size, D_001051E0, 32); }
-	static void operator delete[](void *p) { if (p) _memFree(p, D_001051E0, 37); }
+	static void *operator new(unsigned int size) { return _memAllocMBL(size, "src/ys/ys_object.h", 23); }
+	static void operator delete(void *p) { _memFree(p, "src/ys/ys_object.h", 25); }
+	static void *operator new[](unsigned int size) { return _memAllocMBL(size, "src/ys/ys_object.h", 32); }
+	static void operator delete[](void *p) { if (p) _memFree(p, "src/ys/ys_object.h", 37); }
 };
 
 class Task : public Object {
@@ -126,7 +123,27 @@ Sound::~Sound()
 
 }
 
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_sound", _ZN2Ys5Sound4InitEiPKNS_16SoundCreateParamEPNS_4TaskE); }
+namespace Ys {
+Sound *Sound::Init(int n, const SoundCreateParam *param, Task *parent)
+{
+	Task::Init(0, 0, parent);
+	count = n;
+	SoundInfo *info = new SoundInfo[count];
+	info_p = info;
+	for (int i = 0; i < n; i++) {
+		InstDat *d = resGetDatLocal(param[i].res, param[i].id);
+		int a = param[i].a;
+		info[i].dat = d;
+		info[i].a = a;
+		int b = param[i].b;
+		info[i].b = b;
+		info[i].loop = param[i].loop;
+		info[i].f = param[i].f;
+	}
+	_instance_p = this;
+	return this;
+}
+}
 
 namespace Ys {
 
@@ -172,8 +189,3 @@ void Sound::Receive_RunMessage(::Task *t, void *p, unsigned int n_)
 }
 
 
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_sound", D_001051E0); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_sound", _ZTVN2Ys5SoundE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_sound", D_00105200); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_sound", _ZTIN2Ys5SoundE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_sound", _ZTSN2Ys5SoundE); }
