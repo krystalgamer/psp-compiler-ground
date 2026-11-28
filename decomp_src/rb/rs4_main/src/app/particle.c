@@ -123,9 +123,84 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FDF64);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FDF70);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", _PartCusConvPart2D);
+extern char D_000FDEFC[], D_000FDF08[], D_000FDF10[], D_000FDF18[], D_000FDF20[], D_000FDF28[], D_000FDF30[], D_000FDF38[], D_000FDF40[], D_000FDF4C[], D_000FDF58[], D_000FDF64[], D_000FDF70[];
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", _PartCusConvPart3D);
+int cusGetInt(int, int, char *, int);
+int _PartCusConvPart2D(char *p, int cus)
+{
+	char name[0x200];
+	int r;
+
+	cusGetString(cus, D_000FDE1C, D_000FDEFC, name, 0x200, D_000FDE18);
+	if (name[0] == 0)
+		return 0;
+	r = cusSetSection(cus, name);
+	if (r != 1)
+		return 0;
+	if ((*(int *)p = cusGetInt(cus, 0, D_000FDF08, -1)) != 0)
+		return 0;
+	r = _PartCusConvPart_c(p, cus);
+	if (r == 0)
+		return 0;
+	*(float *)(p + 0x40) = cusGetFloat(cus, 0, D_000FDF10, -1.0f);
+	*(float *)(p + 0x44) = cusGetFloat(cus, 0, D_000FDF18, -1.0f);
+	*(int *)(p + 0x48) = cusGetInt(cus, 0, D_000FDF20, 0);
+	*(float *)(p + 0x50) = cusGetFloat(cus, 0, D_000FDF28, 1.0f);
+	*(float *)(p + 0x54) = cusGetFloat(cus, 0, D_000FDF30, 1.0f);
+	*(float *)(p + 0x58) = cusGetFloat(cus, 0, D_000FDF38, 1.0f);
+	*(float *)(p + 0x5C) = cusGetFloat(cus, 0, D_000FDF40, 1.0f);
+	*(float *)(p + 0x60) = cusGetFloat(cus, 0, D_000FDF4C, 0.0f);
+	*(float *)(p + 0x64) = cusGetFloat(cus, 0, D_000FDF58, 0.0f);
+	*(float *)(p + 0x68) = cusGetFloat(cus, 0, D_000FDF64, 0.0f);
+	*(float *)(p + 0x6C) = cusGetFloat(cus, 0, D_000FDF70, 0.0f);
+	*(float *)(p + 0x70) = cusGetFloat(cus, 0, "BaseRot", 0.0f) * 0.01745329238f;
+	*(float *)(p + 0x74) = cusGetFloat(cus, 0, "RangeRot", 0.0f) * 0.01745329238f;
+	*(float *)(p + 0x78) = cusGetFloat(cus, 0, "BaseRotSpd", 0.0f) * 0.01745329238f;
+	*(float *)(p + 0x7C) = cusGetFloat(cus, 0, "RangeRotSpd", 0.0f) * 0.01745329238f;
+	return r;
+}
+
+int _PartCusConvPart3D(char *p, int cus)
+{
+	char name[0x200];
+	int r;
+
+	cusGetString(cus, D_000FDE1C, D_000FDEFC, name, 0x200, D_000FDE18);
+	if (name[0] == 0)
+		return 0;
+	r = cusSetSection(cus, name);
+	if (r != 1)
+		return 0;
+	if ((*(int *)p = cusGetInt(cus, 0, D_000FDF08, -1)) != 1)
+		return 0;
+	r = _PartCusConvPart_c(p, cus);
+	if (r == 0)
+		return 0;
+	*(float *)(p + 0x40) = cusGetFloat(cus, 0, D_000FDF10, -1.0f);
+	*(float *)(p + 0x44) = cusGetFloat(cus, 0, D_000FDF18, -1.0f);
+	*(int *)(p + 0x48) = cusGetInt(cus, 0, D_000FDF20, 0);
+	*(float *)(p + 0x50) = cusGetFloat(cus, 0, D_000FDF28, 1.0f);
+	*(float *)(p + 0x54) = cusGetFloat(cus, 0, D_000FDF30, 1.0f);
+	*(float *)(p + 0x58) = cusGetFloat(cus, 0, D_000FDF38, 1.0f);
+	*(float *)(p + 0x5C) = cusGetFloat(cus, 0, D_000FDF40, 1.0f);
+	*(float *)(p + 0x60) = cusGetFloat(cus, 0, D_000FDF4C, 0.0f);
+	*(float *)(p + 0x64) = cusGetFloat(cus, 0, D_000FDF58, 0.0f);
+	*(float *)(p + 0x68) = cusGetFloat(cus, 0, D_000FDF64, 0.0f);
+	*(float *)(p + 0x6C) = cusGetFloat(cus, 0, D_000FDF70, 0.0f);
+	*(float *)(p + 0x70) = cusGetFloat(cus, 0, "RotRangeX", 0.0f) * 0.01745329238f;
+	*(float *)(p + 0x74) = cusGetFloat(cus, 0, "RotRangeY", 0.0f) * 0.01745329238f;
+	*(float *)(p + 0x78) = cusGetFloat(cus, 0, "RotRangeZ", 0.0f) * 0.01745329238f;
+	*(float *)(p + 0x7C) = 0.0f;
+	*(float *)(p + 0x80) = cusGetFloat(cus, 0, "RotSpdX", *(float *)(p + 0x7C)) * 0.01745329238f;
+	*(float *)(p + 0x84) = cusGetFloat(cus, 0, "RotSpdY", 0.0f) * 0.01745329238f;
+	*(float *)(p + 0x88) = cusGetFloat(cus, 0, "RotSpdZ", 0.0f) * 0.01745329238f;
+	*(float *)(p + 0x8C) = 0.0f;
+	*(float *)(p + 0x90) = cusGetFloat(cus, 0, "RotSpdRX", *(float *)(p + 0x8C)) * 0.01745329238f;
+	*(float *)(p + 0x94) = cusGetFloat(cus, 0, "RotSpdRY", 0.0f) * 0.01745329238f;
+	*(float *)(p + 0x98) = cusGetFloat(cus, 0, "RotSpdRZ", 0.0f) * 0.01745329238f;
+	*(float *)(p + 0x9C) = 0.0f;
+	return r;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", _PartCusConvEmit);
 
