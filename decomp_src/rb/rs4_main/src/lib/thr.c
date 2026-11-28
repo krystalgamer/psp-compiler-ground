@@ -192,7 +192,55 @@ void thrChange(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/thr", thrDelete);
+int sceKernelTerminateThread(int thid);
+int sceKernelDeleteThread(int thid);
+int thrDelete(ThrCntx *pCntx)
+{
+	int intr;
+	ThrCntx *pPrev, *pNext;
+
+	switch (sceKernelTerminateThread(pCntx->Thid)) {
+	case 0:
+	case 0x800201A2:
+		switch (sceKernelDeleteThread(pCntx->Thid)) {
+		case 0:
+			intr = sceKernelCpuSuspendIntr();
+			pPrev = pCntx->pPrev;
+			pNext = pCntx->pNext;
+			if (pPrev != NULL)
+				pPrev->pNext = pNext;
+			else
+				pThrEntry = pNext;
+			if (pNext != NULL)
+				pNext->pPrev = pPrev;
+			sceKernelCpuResumeIntr(intr);
+			return 0;
+		default:
+			THR_ASSERT(0xEE, "thrDelete");
+			break;
+		case 0x80020198:
+			THR_ASSERT(0xEF, "thrDelete");
+			break;
+		case 0x80020064:
+			THR_ASSERT(0xF0, "thrDelete");
+			break;
+		case 0x800201A4:
+			THR_ASSERT(0xF1, "thrDelete");
+			break;
+		}
+		break;
+	default:
+		THR_ASSERT(0xF5, "thrDelete");
+		break;
+	case 0x80020198:
+		THR_ASSERT(0xF6, "thrDelete");
+		break;
+	case 0x80020197:
+		THR_ASSERT(0xF7, "thrDelete");
+		break;
+	}
+	return -1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/thr", thrProc);
 
