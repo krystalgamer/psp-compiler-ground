@@ -153,7 +153,11 @@ int rt_upnp_set_memory_ceiling(void) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_upnp/src/rt_upnp", upnp_iresolve_cb);
+typedef struct { char pad[0x44]; void (*cb)(void *, int, void *, RtUpnpAddr, int, long); long user; } RtUpnp;
+void upnp_iresolve_cb(RtUpnp *u, int x, RtUpnpAddr addr, int st)
+{
+    u->cb(u, x, NULL, addr, st, u->user);
+}
 
 int process_heartbeat_timeslice(char *u)
 {
