@@ -124,7 +124,81 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/actor", D_000FEDA4);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/actor", D_000FEDAC);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/actor", ActorCameraMove);
+#ifndef FALSE
+#define FALSE 0
+#endif
+extern const float D_000FF25C, D_000FF260, D_000FF264, D_000FF268, D_000FF26C;
+extern char *D_00112390[];
+extern unsigned char D_000FEB58;
+float tanf(float);
+void copLetMat(void *, void *);
+void copMulMat(void *, void *, void *);
+void copSubVec(void *, void *, void *);
+void copNomMat(void *, void *);
+int taskSendProc(void *, void *, int, void *, int);
+void *i3dTask_View();
+int I3rRoot__GetNodeIndexByName(void *, char *);
+typedef struct { void *root; char *node; } AcmMdl;
+typedef struct { char pad[0x38]; AcmMdl **mdl; char pad3c[0xD0 - 0x3C]; char m1[0x40]; } AcmTask;
+int ActorCameraMove(AcmTask *Tp)
+{
+	float cam[16];
+	float mat[4][4];
+	AcmMdl *m = *Tp->mdl;
+	void *root = m->root;
+	float nearz = D_000FF25C;
+	float farz = D_000FF260;
+	float aspect = D_000FF264;
+	float fov = D_000FF268;
+	float w, h;
+	unsigned int i;
+	int n;
+	float *node;
+	taskSendProc(Tp, i3dTask_View, 0x10, cam, 0);
+	taskSendProc(Tp, i3dTask_View, 0x12, mat, 0);
+	for (i = 0; i < 6; i++) {
+		n = I3rRoot__GetNodeIndexByName(root, D_00112390[i]);
+		if (n < 0)
+			continue;
+		node = (float *)(m->node + n * 64);
+		switch (i) {
+		default:
+			consPrintf(&D_000FEAB4, &D_000FEA94, 0x22F, "ActorCameraMove", &D_000FEB58);
+			break;
+		case 0:
+			copLetMat(node, mat);
+			break;
+		case 1:
+			copSubVec(node + 12, mat[3], mat[2]);
+			copNomMat(mat, mat);
+			break;
+		case 2:
+			nearz = node[14];
+			break;
+		case 3:
+			farz = node[14];
+			break;
+		case 4:
+			aspect = node[12];
+			break;
+		case 5:
+			fov = node[12];
+			break;
+		}
+	}
+	w = nearz * tanf(fov * D_000FF26C);
+	h = w * aspect;
+	cam[0] = nearz;
+	cam[1] = farz;
+	cam[2] = -h;
+	cam[3] = h;
+	cam[4] = -w;
+	cam[5] = w;
+	copMulMat(Tp->m1, mat, mat);
+	taskSendProc(Tp, i3dTask_View, 0x11, cam, 0);
+	taskSendProc(Tp, i3dTask_View, 0x13, mat, 0);
+	return 1;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/actor", D_000FEDDC);
 
