@@ -775,4 +775,77 @@ static void func_00004670(int ch, void *dst)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr/nonmatchings/libwave", func_00004B88);
+static void func_00004B88(int ch, char *out_, void *src_)
+{
+	short *out = (short *)out_;
+	short *src = (short *)src_;
+	int i;
+	int l, r, x;
+
+	for (i = 0; i < 28; i++) {
+		if (D_00011AEC[ch].flags & 0x100000) {
+			D_00011AEC[ch].unk38 = (D_00011AEC[ch].unk3C - D_00011AEC[ch].unk40) * 127 / D_00011AEC[ch].unk3C;
+			if (D_00011AEC[ch].unk38 < 0)
+				D_00011AEC[ch].unk38 = 0;
+			D_00011AEC[ch].unk40++;
+			if (D_00011AEC[ch].unk40 >= D_00011AEC[ch].unk3C) {
+				D_00011AEC[ch].flags &= ~0x100000;
+				D_00011AEC[ch].unk40 = 0;
+				if (D_00011AEC[ch].flags & 0x10000) {
+					D_00011AEC[ch].flags &= ~0x10000;
+					D_00011AEC[ch].stat = D_00011D4C[ch].stat;
+					D_00011AEC[ch].pos = D_00011D4C[ch].pos;
+					D_00011AEC[ch].vol_l = D_00011D4C[ch].vol_l;
+					D_00011AEC[ch].vol_r = D_00011D4C[ch].vol_r;
+					D_00011AEC[ch].unk30 = D_00011D4C[ch].unk30;
+					D_00011AEC[ch].unk34 = D_00011D4C[ch].unk34;
+					D_00011AEC[ch].unk28 = D_00011D4C[ch].unk28;
+					D_00011AEC[ch].unk2C = D_00011D4C[ch].unk2C;
+				} else if (D_00011AEC[ch].flags & 0x20000) {
+					D_00011AEC[ch].flags &= ~0x20000;
+					D_00011AEC[ch].stat = D_00011D4C[ch].stat;
+					D_00011AEC[ch].pos = D_00011D4C[ch].pos;
+					D_00011AEC[ch].unk30 = D_00011D4C[ch].unk30;
+					D_00011AEC[ch].unk34 = D_00011D4C[ch].unk34;
+					D_00011AEC[ch].unk28 = D_00011D4C[ch].unk28;
+					D_00011AEC[ch].unk2C = D_00011D4C[ch].unk2C;
+				} else if (D_00011AEC[ch].flags & 0x40000) {
+					D_00011AEC[ch].flags &= ~0x40000;
+					D_00011AEC[ch].stat = D_00011D4C[ch].stat;
+				}
+			}
+		} else {
+			D_00011AEC[ch].unk38 = 127;
+		}
+		if (!(D_00011AEC[ch].flags & 0x100)) {
+			l = D_00011AEC[ch].vol_l * D_00011AEC[ch].unk38 / 127;
+			r = D_00011AEC[ch].vol_r * D_00011AEC[ch].unk38 / 127;
+			l = l * src[i] / 4096;
+			r = r * src[i] / 4096;
+		} else if (!(D_00011AEC[ch].flags & 0x200)) {
+			l = D_00011AEC[ch].vol_l * D_00011AEC[ch].unk38 / 127;
+			r = D_00011AEC[ch].vol_r * D_00011AEC[ch].unk38 / 127;
+			l = l * src[i] / 4096;
+			r = r * src[i] / 4096;
+		} else {
+			l = D_00011AEC[ch].vol_l * D_00011AEC[ch].unk38 / 127;
+			r = D_00011AEC[ch].vol_r * D_00011AEC[ch].unk38 / 127;
+			l = l * src[i * 2] / 4096;
+			r = r * src[i * 2 + 1] / 4096;
+		}
+		x = out[i * 2];
+		x += l;
+		if (x > 32767)
+			x = 32767;
+		if (x < -32768)
+			x = -32768;
+		out[i * 2] = x;
+		x = out[i * 2 + 1];
+		x += r;
+		if (x > 32767)
+			x = 32767;
+		if (x < -32768)
+			x = -32768;
+		out[i * 2 + 1] = x;
+	}
+}
