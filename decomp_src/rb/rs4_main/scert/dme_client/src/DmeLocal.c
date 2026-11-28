@@ -773,7 +773,36 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", Ec
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetProcessEchoRequests);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetDisablePingIPs);
+typedef struct { unsigned char state; char pad[3]; DmeLinkAddr addr; char pad2[0x10]; void (*cb)(int, char *, int); } DmeEchoReq;
+extern DmeEchoReq gPendingEchoRequest[256];
+extern int gbEchoRequestsEnabled;
+int rt_comm_echo_shutdown(); int NetMapRtError();
+int NetDisablePingIPs(void)
+{
+    char buf[16];
+    unsigned int i;
+    DmeEchoReq *e;
+    int r;
+
+    for (i = 0, e = gPendingEchoRequest; i < 256; i++, e++) {
+        if ((unsigned char)(e->state - 1) < 2) e->state = 4;
+        if (e->state == 4) {
+            rt_comm_linkaddress_toext(buf, e->addr);
+            if (e->cb != NULL) {
+                e->cb(0xE, buf, 0);
+                e->cb = NULL;
+            }
+            e->state = 0;
+        }
+    }
+    if (gbEchoRequestsEnabled) {
+        r = NetMapRtError(rt_comm_echo_shutdown());
+        if (r != 0) return r;
+        gbEchoRequestsEnabled = 0;
+    }
+    memset(gPendingEchoRequest, 0, sizeof(gPendingEchoRequest));
+    return 0;
+}
 
 void *NetGetClientInfo();
 int NetGetClientConnectStatus(void *c, unsigned int idx, int *st)
