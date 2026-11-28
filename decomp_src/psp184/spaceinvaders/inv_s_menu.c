@@ -221,26 +221,146 @@ INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_menu", D_0007CAC
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_menu", D_0007CADC);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_menu", inv_classic_name_entry);
-
+extern int nx, ny, nret, ntbl, nnanm, nc, nnanmcnt;
+extern unsigned char Name[];
+void ASC_SetString(const char *s, int x, int y);
+void classic_inv_name_entry_cur(int x, int y);
+void classic_inv_name_entry_cur_erase(int x, int y);
+void spr_boxfill(unsigned char *buf, int x, int y, int w, int h, int col);
+const char D_0007CAF8[27] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ.";
+const char D_0007CB14[] = "HI-SCORER REGISTRATION";
+const char D_0007CB2C[] = "A B C D E F G H I J K";
+const char D_0007CB44[] = "L M N O P Q R S T U V";
+const char D_0007CB5C[] = "W X Y Z . ";
+extern char D_0007CB68[];
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_menu", D_0007CB68);
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_menu", D_0007CB78);
+int inv_classic_name_entry(int no, unsigned char *buf)
+{
+	char tbl[27];
+	int ret;
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_menu", D_0007CB88);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_menu", D_0007CB98);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_menu", D_0007CBA8);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_menu", D_0007CBB8);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_menu", D_0007CBC8);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_menu", D_0007CBD8);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_menu", D_0007CBE8);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_menu", D_0007CBF8);
+	__builtin_memcpy(tbl, D_0007CAF8, 27);
+	ret = 0;
+	spr_boxfill(buf, 0x48, 0xD0, 0x80, 0x10, 0);
+	ASC_SetString(D_0007CB14, 0x18, 0x40);
+	ASC_SetString(D_0007CB2C, 0x18, 0x68);
+	ASC_SetString(D_0007CB44, 0x18, 0x78);
+	ASC_SetString(D_0007CB5C, 0x18, 0x88);
+	if (pad_sw() & 0x100010) {
+		classic_inv_name_entry_cur_erase(nx, ny);
+		ny -= 16;
+		if (ntbl == 28) {
+			ntbl = 19;
+			nx = 0x98;
+		} else if (ntbl == 27) {
+			ntbl = 17;
+			nx = 0x78;
+		} else
+			ntbl -= 11;
+		if (ny < 0x70) {
+			ntbl += 11;
+			ny = 0x70;
+		}
+	} else if (pad_sw() & 0x200040) {
+		classic_inv_name_entry_cur_erase(nx, ny);
+		ny += 16;
+		if (ntbl < 16)
+			ntbl += 11;
+		else if (ntbl >= 16 && ntbl < 22) {
+			ntbl = 22;
+			nx = 0x18;
+			ny = 0x90;
+		} else if (ntbl >= 22)
+			ny = 0x90;
+		if (ny > 0x90) {
+			ntbl -= 11;
+			ny = 0x90;
+		}
+	} else if (pad_sw() & 0x400080) {
+		classic_inv_name_entry_cur_erase(nx, ny);
+		nx -= 16;
+		ntbl -= 1;
+		if (ntbl == 26) {
+			nx = 0x58;
+			ny = 0x90;
+		} else if (ntbl == 27) {
+			nx = 0x78;
+			ny = 0x90;
+		}
+		if (nx < 0x18) {
+			nx = 0x18;
+			ntbl += 1;
+		}
+	} else if (pad_sw() & 0x800020) {
+		classic_inv_name_entry_cur_erase(nx, ny);
+		ntbl += 1;
+		nx += 16;
+		if (ntbl >= 29)
+			ntbl = 28;
+		if (ntbl == 28) {
+			nx = 0x90;
+			ny = 0x90;
+		} else if (ntbl == 27) {
+			nx = 0x78;
+			ny = 0x90;
+		} else if (nx > 0xB8) {
+			ntbl -= 1;
+			nx = 0xB8;
+		}
+	} else if (pad_sw() & pad_ret_button()) {
+		if (ntbl == 28) {
+			__builtin_memcpy(((SD_HISCORE *)&save_data)->name[no], Name, 8);
+			classic_inv_name_entry_cur(0x48, 0xE0);
+			ret = 1;
+		} else if (ntbl == 27) {
+			Name[nret] = 0;
+			spr_boxfill(buf, nret * 8 + 0x48, 0xC0, 8, 8, 0);
+			nret--;
+			if (nret < 0)
+				nret = 0;
+		} else {
+			Name[nret] = tbl[ntbl];
+			nret++;
+			if (nret >= 8) {
+				__builtin_memcpy(((SD_HISCORE *)&save_data)->name[no], Name, 8);
+				classic_inv_name_entry_cur(0x48, 0xE0);
+				ret = 1;
+			}
+		}
+	} else if (pad_sw() & pad_cansel_button()) {
+		Name[nret] = 0;
+		spr_boxfill(buf, nret * 8 + 0x48, 0xC0, 8, 8, 0);
+		nret--;
+		if (nret < 0)
+			nret = 0;
+	}
+	if (nret != 0)
+		ASC_SetString(Name, 0x48, 0xC0);
+	classic_inv_name_entry_cur(nx, ny);
+	if ((nnanmcnt & 3) == 0) {
+		if (nnanm != 0)
+			nnanm = 0;
+		else
+			nnanm = 1;
+	}
+	if (nnanm != 0)
+		ASC_SetString(D_0007CB68, 0x18, 0xC8);
+	else {
+		switch (nret) {
+		case 0: ASC_SetString("NAME ' ~~~~~~~'", 0x18, 0xC8); break;
+		case 1: ASC_SetString("NAME '~ ~~~~~~'", 0x18, 0xC8); break;
+		case 2: ASC_SetString("NAME '~~ ~~~~~'", 0x18, 0xC8); break;
+		case 3: ASC_SetString("NAME '~~~ ~~~~'", 0x18, 0xC8); break;
+		case 4: ASC_SetString("NAME '~~~~ ~~~'", 0x18, 0xC8); break;
+		case 5: ASC_SetString("NAME '~~~~~ ~~'", 0x18, 0xC8); break;
+		case 6: ASC_SetString("NAME '~~~~~~ ~'", 0x18, 0xC8); break;
+		case 7: ASC_SetString("NAME '~~~~~~~ '", 0x18, 0xC8); break;
+		}
+	}
+	nc = 0;
+	nnanmcnt++;
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_menu", inv_classic_name_entry2);
