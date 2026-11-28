@@ -1,5 +1,5 @@
 /* lang: c++ */
-/* cflags: -Os -fno-strength-reduce -fno-merge-constants -fno-exceptions */
+/* cflags: -Os -fno-strength-reduce -fno-exceptions */
 #pragma interface "rodata"
 #include "common.h"
 
@@ -48,8 +48,35 @@ float Fade::Set_Time(float time)
 	return time;
 }
 
-extern "C" {
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_fx_fade", _ZN2Ys6Effect4Fade3RunEv);
+int Fade::Run()
+{
+	if (!busy)
+		return 0;
+	float d = delta;
+	float l = level;
+	if (d >= 0.0f && l >= 1.0f) {
+		level = 1.0f;
+		busy = false;
+		a = 255;
+		return 0;
+	}
+	if (d < 0.0f && l <= 0.0f) {
+		level = 0.0f;
+		busy = false;
+		a = 0;
+		return 0;
+	}
+	l += d;
+	if (d >= 0.0f) {
+		if (l >= 1.0f)
+			l = 1.0f;
+	} else {
+		if (l <= 0.0f)
+			l = 0.0f;
+	}
+	level = l;
+	a = (unsigned char)(l * 255.0f);
+	return 1;
 }
 
 void Fade::Draw()
@@ -64,9 +91,19 @@ void Fade::Draw()
 	}
 }
 
-}
+void Fade::Start_Fade(bool in, float to)
+{
+	if (in)
+		level = to;
+	float d;
+	if (to == 0.0f)
+		d = speed;
+	else
+		d = -speed;
+	delta = d;
+	busy = true;
+	visible = true;
 }
 
-extern "C" {
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_fx_fade", _ZN2Ys6Effect4Fade10Start_FadeEbf);
+}
 }
