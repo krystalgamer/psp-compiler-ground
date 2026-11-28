@@ -1,8 +1,6 @@
 /* lang: c++ */
-/* cflags: -Os -fno-merge-constants -fno-exceptions */
+/* cflags: -Os -fno-exceptions */
 /* strength reduction on: find__node matches only with it (pointer IV) */
-/* #pragma interface: the vtables, typeinfo and implicit destructors stay in the module's asm */
-#pragma interface "rodata"
 #include "common.h"
 
 extern "C" {
@@ -15,17 +13,16 @@ void *memmove(void *d, const void *s, unsigned long n);
 int sceGzipDecompress(void *dst, unsigned int size, const void *src, unsigned int *crc);
 void _memFree(void *p, const char *file, int line);
 void *_memAllocMBL(unsigned int size, const char *file, int line);
-extern const char D_001049E4[];
 }
 
-inline void *operator new[](unsigned int size) { return _memAllocMBL(size, D_001049E4, 32); }
-inline void operator delete[](void *p) { _memFree(p, D_001049E4, 37); }
+inline void *operator new[](unsigned int size) { return _memAllocMBL(size, "src/ys/ys_object.h", 32); }
+inline void operator delete[](void *p) { _memFree(p, "src/ys/ys_object.h", 37); }
 
 namespace Ys {
 class Object {
 public:
-	static void *operator new(unsigned int size) { return _memAllocMBL(size, D_001049E4, 23); }
-	static void operator delete(void *p) { _memFree(p, D_001049E4, 25); }
+	static void *operator new(unsigned int size) { return _memAllocMBL(size, "src/ys/ys_object.h", 23); }
+	static void operator delete(void *p) { _memFree(p, "src/ys/ys_object.h", 25); }
 };
 }
 
@@ -93,6 +90,12 @@ struct Header {
 };
 }
 
+class FileSystemMounter : public Internal::FileSystemMounter {
+public:
+	virtual bool Check_Image(void *image);
+	virtual Internal::FileSystem *Create_FileSystem(const char *name, void *image);
+};
+
 class FileSystem : public Internal::FileSystem {
 public:
 	Format::Header *image_p;
@@ -115,11 +118,6 @@ public:
 	virtual int Read(void *buf, unsigned int n);
 };
 
-class FileSystemMounter : public Internal::FileSystemMounter {
-public:
-	virtual bool Check_Image(void *image);
-	virtual Internal::FileSystem *Create_FileSystem(const char *name, void *image);
-};
 
 }
 }
@@ -216,7 +214,49 @@ namespace Tarte {
 
 }
 }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_tartefs", _ZN3Vfs5Tarte10FileSystem11Create_FileERiPKci); }
+Vfs::Internal::File *Vfs::Tarte::FileSystem::Create_File(int &err, const char *name, int mode)
+{
+	char buf[0x200];
+	const Format::Node::Base *n = root_p;
+	const char *p = name + 1;
+	Internal::File *f;
+	err = 0;
+	buf[0x1FF] = 0;
+	if (*p == 0)
+		goto error;
+	for (;;) {
+		const char *s = strchr(p, '/');
+		if (s == 0) {
+			n = find__node(*n, p);
+			if (n == 0)
+				goto error;
+			break;
+		}
+		((char *)memccpy(buf, p, '/', 0x1FF))[-1] = 0;
+		p = s + 1;
+		n = find__node(*n, buf);
+		if (n == 0)
+			goto error;
+	}
+	f = 0;
+	switch (n->type) {
+	case 2:
+		f = new File(*this, *(const Format::Node::File *)n);
+		break;
+	case 3:
+		f = new CompressFile(*this, *(const Format::Node::File *)n);
+		break;
+	default:
+		err = -3;
+		break;
+	}
+	goto done;
+error:
+	err = -3;
+	return 0;
+done:
+	return f;
+}
 namespace Vfs {
 namespace Tarte {
 
@@ -292,28 +332,3 @@ int CompressFile::Read(void *buf, unsigned int n)
 }
 
 
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_tartefs", _ZN3Vfs5Tarte17FileSystemMounterD1Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_tartefs", _ZN3Vfs5Tarte17FileSystemMounterD0Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_tartefs", _ZN3Vfs5Tarte10FileSystemD1Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_tartefs", _ZN3Vfs5Tarte10FileSystemD0Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_tartefs", _ZN3Vfs5Tarte4FileD0Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_tartefs", _ZN3Vfs5Tarte4FileD1Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_tartefs", _ZN3Vfs5Tarte12CompressFileD1Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_tartefs", _ZN3Vfs5Tarte12CompressFileD0Ev); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_tartefs", D_001049E4); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_tartefs", _ZTVN3Vfs5Tarte12CompressFileE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_tartefs", D_00104A00); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_tartefs", _ZTVN3Vfs5Tarte4FileE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_tartefs", D_00104A18); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_tartefs", _ZTVN3Vfs5Tarte10FileSystemE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_tartefs", D_00104A30); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_tartefs", _ZTVN3Vfs5Tarte17FileSystemMounterE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_tartefs", D_00104A48); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_tartefs", _ZTIN3Vfs5Tarte17FileSystemMounterE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_tartefs", _ZTIN3Vfs5Tarte10FileSystemE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_tartefs", _ZTIN3Vfs5Tarte4FileE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_tartefs", _ZTIN3Vfs5Tarte12CompressFileE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_tartefs", _ZTSN3Vfs5Tarte12CompressFileE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_tartefs", _ZTSN3Vfs5Tarte4FileE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_tartefs", _ZTSN3Vfs5Tarte10FileSystemE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_tartefs", _ZTSN3Vfs5Tarte17FileSystemMounterE); }
