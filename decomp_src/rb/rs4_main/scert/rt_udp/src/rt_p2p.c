@@ -958,7 +958,46 @@ int rt_p2p_generate_grid(char *p, unsigned int n)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_get_peer_grid_edges);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_update_grid);
+int rt_p2p_get_peer_grid_edges();
+int rt_p2p_update_grid(char *p, RtP2POvlTab *o, unsigned short me)
+{
+    signed char *edges;
+    unsigned short pos = 0xFFFE;
+    unsigned int i, j;
+    signed char k;
+    int r;
+
+    edges = NULL;
+    j = 0;
+    for (i = 0; i < *(unsigned short *)(p + 0x19C); i++) {
+        if (o->peers[i] != NULL) {
+            if (me == i) {
+                pos = j;
+                break;
+            }
+            j++;
+        }
+    }
+    r = rt_p2p_get_peer_grid_edges(p, o->count, pos, &edges);
+    if (r != 0) return r;
+    for (j = 0; j < 3; j++) {
+        if (edges[j] == -1) {
+            o->x[j] = 0;
+            continue;
+        }
+        k = 0;
+        for (i = 0; i < *(unsigned short *)(p + 0x19C); i++) {
+            if (o->peers[i] != NULL) {
+                if (edges[j] == k) {
+                    o->x[j] = (int)o->peers[i];
+                    break;
+                }
+                k++;
+            }
+        }
+    }
+    return 0;
+}
 
 int rt_token_build_token_msg();
 int rt_msg_set_u2byte();
