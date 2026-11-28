@@ -557,7 +557,6 @@ segments:
       - [0x1741C8, .rodata, main_objs/sh_TestEnvSet_TestEnv]
       - [0x1741F8, rodata, asm/rodata_174178]
       - [0x174390, .rodata, main_objs/sh_Vector]
-      - [0x1743AC, rodata, asm/rodata_17432C]
       - [0x17451C, .rodata, main_objs/interp_VectorRGBAnim]
       - [0x174538, rodata, asm/rodata_1744B8]
       - [0x17527C, .rodata, main_objs/sh_VerticesVector]

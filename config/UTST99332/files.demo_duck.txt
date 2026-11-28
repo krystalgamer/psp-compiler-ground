@@ -484,7 +484,6 @@ rodata 0x173BBC -
 bss 0x1917E0 main_objs/sh_SphereSampling_Sample
 bss 0x191864 -
 rodata 0x174310 main_objs/sh_Vector
-rodata 0x17432C -
 bss 0x1919F0 main_objs/sh_Vector
 rodata 0x17381C main_objs/sh_sh_rot_Rmn
 rodata 0x173838 -

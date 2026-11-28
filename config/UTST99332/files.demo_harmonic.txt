@@ -470,7 +470,6 @@ rodata 0x170C94 -
 bss 0x18E360 main_objs/sh_SphereSampling_Sample
 bss 0x18E3E4 -
 rodata 0x1713E8 main_objs/sh_Vector
-rodata 0x171404 -
 bss 0x18E570 main_objs/sh_Vector
 rodata 0x1708F4 main_objs/sh_sh_rot_Rmn
 rodata 0x170910 -
