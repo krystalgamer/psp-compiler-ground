@@ -966,7 +966,18 @@ int NetIGetHostByName(char *req)
     return NetMapRtError(ret);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIGetClientBufferStatus);
+int NetIGetClientBufferStatus(char *ctx, int idx, int *a, int *b, int *c, int *d)
+{
+    int v[4];
+
+    if (*(int *)(ctx + 0x468) != 2) return 0xF;
+    if ((*(int (**)())((char *)gP2PInterfacePtr + 0x24))(*(int *)(ctx + 0x474), (unsigned short)idx, &v[0], &v[1], &v[2], &v[3]) != 0) return 0x25;
+    if (a != NULL) *a = v[0];
+    if (c != NULL) *c = v[2];
+    if (b != NULL) *b = v[1];
+    if (d != NULL) *d = v[3];
+    return 0;
+}
 
 typedef struct { char s[16][16]; int count; int err; } DmeLookupOut;
 typedef struct { DmeLinkAddr addr[16]; int count; int err; } DmeLookupIn;
