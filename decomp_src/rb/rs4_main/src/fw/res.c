@@ -449,7 +449,23 @@ int resInstGetEntrySect(void *arg0, int arg1) {
     return M2C_FIELD(((arg1 * 8) + M2C_FIELD(arg0, int *, 4)), int *, 4);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resInstGetDatSect);
+char *resInstGetDatSect(char *hdr, int sect, int label)
+{
+	int n;
+	char *r;
+	if (sect < 0)
+		consPrintf(&D_000FBA08, &D_000FB9F8, 0x52C, "resInstGetDatSect", &D_000FBF14);
+	if (label < 0)
+		consPrintf(&D_000FBA08, &D_000FB9F8, 0x52D, "resInstGetDatSect", &D_000FBF20);
+	n = resInstGetEntrySect(hdr, sect);
+	r = 0;
+	if (n > 0) {
+		if (!(label < n))
+			consPrintf(&D_000FBA08, &D_000FB9F8, 0x530, "resInstGetDatSect", "Label < resInstGetEntrySect(Hdr, Sect)");
+		r = *(char **)(sect * 8 + *(int *)(hdr + 4)) + label * 32;
+	}
+	return r;
+}
 
 int resGetDatPackModel(void) {
     void *temp_s0;
