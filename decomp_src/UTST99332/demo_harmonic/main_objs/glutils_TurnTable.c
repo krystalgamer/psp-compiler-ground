@@ -21,9 +21,13 @@ DEMO_LINKONCE_ORDER(
     DEMO_LINKONCE(_ZThn8_N7glutils9TurnTableD1Ev)
 );
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_TurnTable", _ZN7glutils9TurnTableC2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_TurnTable", _ZN7glutils9TurnTableC1Ev);
+glutils::TurnTable::TurnTable() : _pivot(0, 0, 5, 1), _f1A0(false)
+{
+    set_transform(math::matrix::Identity());
+    speed(Speed(0), 0.005f);
+    speed(Speed(1), 0.01f);
+    speed(Speed(2), 0.01f);
+}
 
 void glutils::TurnTable::speed(Speed s, float v)
 {
