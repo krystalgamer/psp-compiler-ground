@@ -140,7 +140,80 @@ int mes_date_month_days(int year, int month)
     return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_date", mes_date_normalize);
+void mes_date_normalize(MesDate *d)
+{
+    int n;
+
+    if (d == NULL)
+        return;
+    if (d->ms < 0) {
+        n = (999 - d->ms) / 1000;
+        d->seconds -= n;
+        d->ms += n * 1000;
+    } else if (d->ms >= 1000) {
+        d->seconds += d->ms / 1000;
+        d->ms %= 1000;
+    }
+    if (d->seconds < 0) {
+        n = (59 - d->seconds) / 60;
+        d->minutes -= n;
+        d->seconds += n * 60;
+    } else if (d->seconds >= 60) {
+        d->minutes += d->seconds / 60;
+        d->seconds %= 60;
+    }
+    if (d->minutes < 0) {
+        n = (59 - d->minutes) / 60;
+        d->hours -= n;
+        d->minutes += n * 60;
+    } else if (d->minutes >= 60) {
+        d->hours += d->minutes / 60;
+        d->minutes %= 60;
+    }
+    if (d->hours < 0) {
+        n = (23 - d->hours) / 24;
+        d->mday -= n;
+        d->hours += n * 24;
+    } else if (d->hours >= 24) {
+        d->mday += d->hours / 24;
+        d->hours %= 24;
+    }
+    while (d->mday <= 0) {
+        if (d->month >= 3) {
+            d->mday += mes_date_year_days(d->year);
+            d->year--;
+        } else {
+            d->year--;
+            d->mday += mes_date_year_days(d->year);
+        }
+    }
+    if (d->month >= 3) {
+        while ((n = mes_date_year_days(d->year + 1)) < d->mday) {
+            d->mday -= n;
+            d->year++;
+        }
+    } else {
+        while ((n = mes_date_year_days(d->year)) < d->mday) {
+            d->mday -= n;
+            d->year++;
+        }
+    }
+    while (d->month <= 0) {
+        d->month += 12;
+        d->year--;
+    }
+    while (d->month > 12) {
+        d->month -= 12;
+        d->year++;
+    }
+    while ((n = mes_date_month_days(d->year, d->month)) < d->mday) {
+        d->mday -= n;
+        if (++d->month > 12) {
+            d->month -= 12;
+            d->year++;
+        }
+    }
+}
 
 MesDate *mes_date_now(MesContext *ctx)
 {
