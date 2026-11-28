@@ -53,7 +53,20 @@ int SprHeadGet(void) {
     return spr_head;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_spr", SprLinkAdd);
+/* pointer-typed link fields (the int view of SPRL swaps the last two stores) */
+typedef struct SPRL2 { u8 pad[0x90]; int linked; struct SPRL2 *next; struct SPRL2 *prev; } SPRL2;
+extern SPRL2 *spr_head2 __asm__("spr_head");
+void SprLinkAdd(SPRL2 *s)
+{
+	if (s->linked == 0) {
+		if (spr_head2 != 0)
+			spr_head2->prev = s;
+		s->prev = 0;
+		s->next = spr_head2;
+		spr_head2 = s;
+		s->linked = 1;
+	}
+}
 
 void SprLinkDelete(SPRL *s)
 {
