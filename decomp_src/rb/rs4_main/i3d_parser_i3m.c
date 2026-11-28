@@ -78,6 +78,14 @@ unsigned short I3mRoot__Get_nSection(char *r, unsigned short i)
 	return 0xFFFF;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_parser_i3m", I3mRoot__GetKeyTime);
+float I3mRoot__GetKeyTime(char *r, unsigned short node, unsigned short key)
+{
+	char *na;
+	if (I3mRoot__CheckIdString(r) != 0) return 0.0f;
+	if (node >= *(unsigned short *)(r + 0x14)) return 0.0f;
+	na = (char *)(node * 12 + *(int *)(r + 0x1C));
+	if (key >= *(unsigned short *)(na + 6)) return 0.0f;
+	return (*(float **)(r + 0x24))[(*(unsigned short **)(na + 8))[*(unsigned short *)(r + 0x12) * key]];
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_parser_i3m", I3mRoot__GetKeyTimeTable);
