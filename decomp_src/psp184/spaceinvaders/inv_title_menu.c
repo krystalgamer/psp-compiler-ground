@@ -326,7 +326,83 @@ INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", D_000
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", D_0007EB34);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", title_main_return);
+typedef struct { int f0, f4, f8, fc, f10, f14, f18, f1c, f20, f24; u8 pad[0xD4 - 0x28]; float speed; } TM_RET;
+#define TMR (*(TM_RET *)&title_main)
+typedef struct { int on, f4, f8, f0c, f10, w, h, f1c, f20, f24, f28, f2c, r, g, b, a; } SBLUR_T;
+extern SBLUR_T screen_blur;
+extern int D_00349170;
+typedef struct { int x, y; } SELPOS_T;
+extern SELPOS_T select_pos[];
+extern char *select_text[];
+float sinf_nb(float) __asm__("sinf");
+void inv_font_ascii_posf(char *str, int x, int y, int w, int h, int r, int g, int b, int a, int mode);
+void title_main_return(void)
+{
+	int k, x;
+
+	if (TMR.f4 == 0) {
+		if (TMR.f8 == 0) {
+			/* volatile: the original emits these stores in source order (no reg-pressure reordering) */
+			volatile SBLUR_T *b = &screen_blur;
+			b->on = 1;
+			b->f8 = 2;
+			b->f0c = -12;
+			b->f10 = -7;
+			b->f28 = 105;
+			b->w = 480;
+			b->h = 272;
+			*(volatile int *)&D_00349170 = 255;
+			b->f1c = 0;
+			b->f20 = 0;
+			b->f2c = 0;
+			b->r = 255;
+			b->g = 255;
+			b->b = 255;
+			b->a = 0;
+			b->f24 = 105;
+		}
+		TMR.f8 += 6;
+		if (TMR.f8 > 90)
+			TMR.f8 = 90;
+		if (TMR.f8 >= 90) {
+			TMR.f4++;
+			TMR.f8 = 0;
+		}
+	} else if (TMR.f4 == 1) {
+		TMR.f8++;
+		if (TMR.f8 > 90)
+			TMR.f8 = 90;
+		if (TMR.f8 >= 90) {
+			TMR.f4 = 2;
+			TMR.f8 = 0;
+		}
+	} else if (TMR.f4 == 2) {
+		TMR.f8 += 2;
+		if (TMR.f8 > 90)
+			TMR.f8 = 90;
+		TMR.f20 = sinf_nb(TMR.f8 / 180.0f * 3.1415927f) * 255.0f;
+		D_00349170 = sinf_nb((90 - TMR.f8) / 180.0f * 3.1415927f) * 255.0f;
+		if (TMR.f8 == 90) {
+			screen_blur.on = 0;
+			TMR.fc = 0;
+			TMR.f10 = TMR.f14;
+		}
+	}
+	TMR.speed += 0.1f;
+	screen_blur.a += 4;
+	if (screen_blur.a > 255)
+		screen_blur.a = 255;
+	TMR.f24 -= 16;
+	if (TMR.f24 < 0)
+		TMR.f24 = 0;
+	k = TMR.f8;
+	if (TMR.f4 > 0)
+		k = 90;
+	x = select_pos[TMR.f14 + 2].x;
+	inv_font_ascii_posf(select_text[TMR.f14 + 2], x,
+		sinf_nb((90 - k) / 180.0f * 3.1415927f) * (select_pos[TMR.f14 + 2].y - 148) + 148.0f,
+		100, 100, 0, 255, 255, D_00349170, 4);
+}
 
 void title_init(void)
 {
