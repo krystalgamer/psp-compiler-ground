@@ -1,8 +1,8 @@
 /* lang: c++ */
 /* cflags: -Os -fno-strength-reduce -fno-merge-constants -fno-exceptions */
-/* #pragma interface: the vtables, typeinfo and implicit destructors stay in the module's asm */
-#pragma interface "rodata"
 #include "common.h"
+
+extern "C" void _memFree(void *p, const char *file, int line);
 
 struct Task {
 	char _0[0x24];
@@ -10,7 +10,12 @@ struct Task {
 };
 
 namespace Ys {
-class Task {
+class Object {
+public:
+	static void operator delete(void *p) { _memFree(p, "src/ys/ys_object.h", 25); }
+};
+
+class Task : public Object {
 public:
 	::Task *task_p;
 	void *state_p;
@@ -71,10 +76,3 @@ void FadeTask::Receive_DrawMessage(::Task *t, void *p, unsigned int n)
 
 }
 }
-
-
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_fx_fade_task", D_00104C54); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_fx_fade_task", _ZN2Ys6Effect8FadeTaskD0Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_fx_fade_task", _ZN2Ys6Effect8FadeTaskD1Ev); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_fx_fade_task", _ZTIN2Ys6Effect8FadeTaskE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_fx_fade_task", _ZTSN2Ys6Effect8FadeTaskE); }

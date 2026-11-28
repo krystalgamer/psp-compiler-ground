@@ -1,27 +1,39 @@
 /* lang: c++ */
 /* cflags: -Os -fno-strength-reduce -fno-merge-constants -fno-exceptions */
 /* data-align: 8 */
-/* #pragma interface: the vtable, typeinfo and implicit destructors stay in the module's asm */
-#pragma interface "rodata"
 #include "common.h"
+
+extern "C" void _memFree(void *p, const char *file, int line);
 
 struct Task;
 
 namespace Ys {
 struct Anim2D_LoadParam;
-class Task {
+class Object {
+public:
+	static void operator delete(void *p) { _memFree(p, "src/ys/ys_object.h", 25); }
+};
+class Task : public Object {
 public:
 	virtual ~Task();
+	virtual void Receive_InitMessage(::Task *t, void *p, unsigned int n);
+	virtual void Receive_KillMessage(::Task *t, void *p, unsigned int n);
+	virtual void Receive_FreeMessage(::Task *t, void *p, unsigned int n);
+	virtual void Receive_RunMessage(::Task *t, void *p, unsigned int n);
+	virtual void Receive_DrawMessage(::Task *t, void *p, unsigned int n);
+	virtual void Receive_KillChildMessage(::Task *t, ::Task *c, unsigned int n);
 };
 class AnimTask : public Task {
 public:
+	virtual ~AnimTask();
 	AnimTask *Init(int mode, Anim2D_LoadParam *param, Task *parent);
-	int Receive_RunMessage(::Task *t, void *p, unsigned int n);
+	virtual void Receive_RunMessage(::Task *t, void *p, unsigned int n);
+	virtual void Receive_DrawMessage(::Task *t, void *p, unsigned int n);
 };
 class InfoPanel : public AnimTask {
 public:
 	InfoPanel *Init(Anim2D_LoadParam &param, Task *parent);
-	int Receive_RunMessage(::Task *t, void *p, unsigned int n);
+	virtual void Receive_RunMessage(::Task *t, void *p, unsigned int n);
 };
 
 InfoPanel *InfoPanel::Init(Anim2D_LoadParam &param, Task *parent)
@@ -30,17 +42,8 @@ InfoPanel *InfoPanel::Init(Anim2D_LoadParam &param, Task *parent)
 	return this;
 }
 
-int InfoPanel::Receive_RunMessage(::Task *t, void *p, unsigned int n)
+void InfoPanel::Receive_RunMessage(::Task *t, void *p, unsigned int n)
 {
-	return AnimTask::Receive_RunMessage(t, p, n);
+	AnimTask::Receive_RunMessage(t, p, n);
 }
-}
-
-extern "C" {
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_info_panel", _ZN2Ys9InfoPanelD1Ev);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_info_panel", _ZTVN2Ys9InfoPanelE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_info_panel", D_00104D98);
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_info_panel", _ZN2Ys9InfoPanelD0Ev);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_info_panel", _ZTIN2Ys9InfoPanelE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_info_panel", _ZTSN2Ys9InfoPanelE);
 }

@@ -342,6 +342,4 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message_q
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message_queue", _ZTSN3Net17LobbyMessageQueueE);
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message_queue", _ZTSN3Net17LobbyMessageTableE);
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message_queue", _ZTSN3Net16LobbyMessageNodeE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message_queue", _ZTVN3Net10LobbyState5SleepE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message_queue", D_00106D10);
 }

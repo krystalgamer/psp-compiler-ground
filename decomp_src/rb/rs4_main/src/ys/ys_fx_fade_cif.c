@@ -103,6 +103,4 @@ void YsFx__WhiteFade__Draw(Fade *f)
 	f->Draw();
 }
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_fx_fade_cif", _ZTVN2Ys6Effect8FadeTaskE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_fx_fade_cif", D_00104C50);
 }

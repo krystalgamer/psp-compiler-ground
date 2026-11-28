@@ -106,7 +106,9 @@ rodata 0x10473C src/ys/libmm_semaphore
 rodata 0x1047E4 src/ys/libmm_thread
 rodata 0x104898 src/ys/vfs_internal
 rodata 0x105238 src/ys/ys_task
+rodata 0x104C48 src/ys/ys_fx_fade_task
 rodata 0x104D90 src/ys/ys_info_panel
+rodata 0x106D08 src/net/network_lobby_state
 # ys/net/bx objects without local symbols: placed by class (the STT_FILE link order and the
 # file names in _memAlloc/new calls: ys_card_anim, ys_task, network_lobby_message_queue, ...)
 0x41F08 src_ys_vfs_tartefs 1.9.2           src/ys/vfs_tartefs.cc
