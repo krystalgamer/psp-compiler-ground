@@ -15,7 +15,24 @@ void sgxEI();
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsndnote", WaveInit);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsndnote", NoteInit);
+int NoteInit(char *n)
+{
+	int cmd[12];
+	int port = -1;
+	*(int *)(n + 0x94) = port;
+	port = sgxPortAlloc(0, n);
+	if (port < 0)
+		return 0;
+	cmd[0] = 0;
+	cmd[1] = 0;
+	cmd[2] = *(short *)(n + 0x12);
+	cmd[3] = *(int *)(n + 0x14);
+	cmd[4] = *(int *)(n + 0x18);
+	cmd[5] = 0x1000;
+	sgxPortCommand(port, cmd);
+	*(int *)(n + 0x94) = port;
+	return 1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

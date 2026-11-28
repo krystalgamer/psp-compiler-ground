@@ -226,9 +226,36 @@ void CmdPlaySeqStr(char *s, int *cmd)
     if (bmg >= 0) sgxBmgFree(bmg);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", CmdRel);
+void CmdRel(void *pv, int *cmd)
+{
+    char *p = pv;
+    char *u;
+    int id = cmd[1];
+    int a = cmd[2];
+    for (u = SeqListFirst(p + 0x14); u != NULL; u = SeqListNext(u)) {
+        if (*(int *)(u + 8) == id) {
+            int c[12];
+            c[0] = 6;
+            c[1] = a;
+            sgxPortCommand(*(short *)(u + 0x1A), (int)c);
+            u[0x51] = 1;
+        }
+    }
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", CmdRelAll_822E0);
+void CmdRelAll_822E0(void *pv, int *cmd)
+{
+    char *p = pv;
+    char *u;
+    int a = cmd[1];
+    for (u = SeqListFirst(p + 0x14); u != NULL; u = SeqListNext(u)) {
+        int c[12];
+        c[0] = 6;
+        c[1] = a;
+        sgxPortCommand(*(short *)(u + 0x1A), (int)c);
+        u[0x51] = 1;
+    }
+}
 
 void UnitFreeByID_81E8C(void *, int);
 void CmdStop(void *t, void *cmd)
