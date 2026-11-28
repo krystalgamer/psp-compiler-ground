@@ -1712,7 +1712,29 @@ void udp_resolve_cb(int a, int err, DmeLinkAddr addr, int port, char *ci)
     ((void (*)(void *))gpfNatServiceCallback)(&gNatServiceStatus);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", p2p_peer_update_cb);
+void p2p_peer_update_cb(unsigned short idx, unsigned int ev, char *ci)
+{
+    if (ci == NULL) return;
+    if (ev != 0) {
+        if (ev < 3) {
+            if (*(int *)(ci + 0x468) == 2) {
+                if (gStreamMediaInterfacePtr != NULL && (*(DmeFn0 *)((char *)gStreamMediaInterfacePtr + 0x18))(ci) != 0)
+                    (*(DmeFn0 *)((char *)gStreamMediaInterfacePtr + 0x14))(ci, idx);
+                RemoteClientDisconnectEvent(ci, idx);
+            }
+        }
+    } else {
+        if (*(int *)(ci + 0x468) == 2) {
+            long t = -1;
+            if ((*(DmeFn0 *)((char *)gP2PInterfacePtr + 8))(*(int *)(ci + 0x474), idx, &t) != 0) return;
+            if ((*(DmeFn0 *)((char *)gP2PInterfacePtr + 0xC))(*(int *)(ci + 0x474), idx, t, (char *)gDmeGlobals + 0x18, (char *)gDmeGlobals + 0x20) != 0) return;
+            (*(int *)(ci + 0x45C))++;
+            RemoteClientConnects(ci, idx, *(DmeLinkAddr *)((char *)gDmeGlobals + 0x18), *(int *)((char *)gDmeGlobals + 0x20));
+        }
+        if (gStreamMediaInterfacePtr != NULL && (*(DmeFn0 *)((char *)gStreamMediaInterfacePtr + 0x18))(ci) != 0)
+            (*(DmeFn0 *)((char *)gStreamMediaInterfacePtr + 0x1C))(ci, idx, 0);
+    }
+}
 
 void p2p_incoming_data_cb(unsigned short peer, void *data, int len, int flag, char *ci)
 {
