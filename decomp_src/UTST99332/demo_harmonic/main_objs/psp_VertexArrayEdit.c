@@ -181,7 +181,17 @@ std::string psp::GetPixelFormatBitMaskName(PixelFormatBitMask _Mask)
     return D_0015E888;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_VertexArrayEdit", _ZN3psp29GetPixelFormatBitMaskNameFillENS_18PixelFormatBitMaskEb);
+std::string psp::GetPixelFormatBitMaskNameFill(PixelFormatBitMask m, bool fill)
+{
+    std::string s = GetPixelFormatBitMaskName(m);
+    if (fill)
+        if (m == 0x10 || m == 0x1 || m == 0x200 || m == 0x10000)
+            s = D_0015E9A4;
+    /* STAND-IN: the pad count as ~size + 16 (the original's nor/addiu); 15 - size and 16 - (size + 1) fold differently */
+    for (int n = ~s.size() + 16; n != 0; n--)
+        s += ' ';
+    return s;
+}
 
 template<> float psp::convert<float, float>(const float &x)
 {
