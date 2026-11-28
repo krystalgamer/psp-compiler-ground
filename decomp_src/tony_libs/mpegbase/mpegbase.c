@@ -245,13 +245,7 @@ int sceMpegBasePESpacketCopy(PesPacket *pkt)
 	for (i = 0, ctx = &D_00001780; i < 100; i++) {
 		size = pkt[i].size & 0xFFF;
 		src = pkt[i].src;
-		if (dynBufBad(src, size))
-			goto err;
-		dst = pkt[i].dst;
-		if (K1_USER() && (int)(dst | (dst + size)) < 0) {
-			/* STAND-IN?: the shared error exit sits inside this check (block order for
-			 * -frename-registers); a label after the final return gives other registers. */
-err:
+		if (dynBufBad(src, size) || staBufBad(dst = pkt[i].dst, size)) {
 			sceKernelSignalSema(ctx->sema, 1);
 			K1_RESTORE(oldk1);
 			return 0x80000023;
