@@ -1,7 +1,7 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
-int UTL_mfileseek(void *f, int pos);
+void UTL_mfileseek(void *f, int pos);
 int http_auth_passwdcb();
 typedef struct UserAuth {
     char *user;                       /* 0x0 ua */
@@ -51,6 +51,8 @@ typedef struct HHdr { int f0; struct HHdr *next; char *name; char *value; } HHdr
 typedef struct { int error; char pad4[0xD4]; int req; HHdr *hdrs; HHdr *phdrs; } HHObj;
 int strcmp(const char *a, const char *b);
 int sceHttpDeleteHeader(int id, const char *name);
+void *MEM_malloc(void *, unsigned int size);
+void MEM_free(void *, void *p);
 int http_setproxyheader_Accept(int h, int v)
 {
     return http_setproxyheader(h, htlib_cstrACCEPT, v);

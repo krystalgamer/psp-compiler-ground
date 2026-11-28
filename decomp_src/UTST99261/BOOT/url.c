@@ -129,6 +129,7 @@ M2C_UNK setGifBuffer();                             /* extern */
 char *strcpy(char *d, const char *s);
 
 typedef struct { char *start; char *end; } UTLWORD;
+int sprintf(char *, const char *, ...);
 char *trimspace(char *s) {
     char *buf;
     char *p;
@@ -1172,7 +1173,7 @@ void ESP_free(void *p);
 void *ESP_malloc(int n);
 void *memset(void *d, int c, unsigned int n);
 void createInterlaceOrder(GIFCTX *ctx, int n);
-void deleteInterlaceOrder(GIFCTX *ctx);
+int deleteInterlaceOrder(GIFCTX *ctx);
 int getGifScanLines(GIFCTX *ctx, int n);
 int getGifScanLinesInterlace(GIFCTX *ctx, int n);
 

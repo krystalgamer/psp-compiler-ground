@@ -76,16 +76,16 @@ void *mes_native_new(void *ctx, int a, void *fn, int nargs, int flags);
 void mes_native_setup(void *ctx, void *o, void *table, int n);
 void mes_object_set(void *obj, unsigned int id, int value, int flags);
 unsigned int mes_context_id2(void *ctx, const char *name);
-M2C_UNK mes_gc_mark(int);                           /* extern */
-M2C_UNK mes_util_vals_mark(int);                    /* extern */
-M2C_UNK MEM_free(M2C_UNK, int);                     /* extern */
-M2C_UNK mes_gc_register(M2C_UNK *, M2C_UNK, M2C_UNK, M2C_UNK); /* extern */
+void mes_gc_mark(int);                           /* extern */
+void mes_util_vals_mark(int);                    /* extern */
+void MEM_free(M2C_UNK, int);                     /* extern */
+void mes_gc_register(M2C_UNK *, M2C_UNK, M2C_UNK, M2C_UNK); /* extern */
 extern unsigned char mes_cap_method;
 extern unsigned char mes_closure_method;
 extern unsigned char mes_regexp_method;
 extern unsigned char mes_state_method;
 
-M2C_UNK mes_util_vals_free(int);                    /* extern */
+void mes_util_vals_free(int);                    /* extern */
 
 
 int mes_regexp_execute(void *ctx, RxObj *re, int s, int flag);
@@ -104,6 +104,8 @@ typedef struct RxVals { int v0; int v1; int v2; } RxVals;
 int mes_util_octal(unsigned short c);
 int mes_util_hex(unsigned short c);
 int mes_util_char_in(unsigned short c, const char *s);
+void mes_object_mark(void *arg0);
+void *MEM_malloc(void *, unsigned int size);
 RxObj *mes_regexp_new(void *ctx, int source, int flags) {
     RxObj *re;
     unsigned short *p;

@@ -30,6 +30,27 @@ extern int buf_ps_sts;
 M2C_UNK ps_dmy();                                   /* extern */
 
 
+int OS_mq_getattr(int id, void *);
+int OS_mq_setattr(int id, void *, void *);
+int OS_mq_receive(int id, char *buf, int len, unsigned int *prio);
+void MEM_free(void *, void *p);
+int OS_thread_join(int th, void **retp);
+void ps_ParseDomBuildFree(void);
+void HST_flushHistoryGarbageList(void);
+int HST_freeAuthorizationDB(void);
+int HST_freeHistory(void);
+int HST_httpHeaderFree(int arg);
+void ps_freeRecvInfo(void);
+int ps_deleteExMsgBoxList(void);
+int OS_mq_send(int id, const char *buf, int len, unsigned int prio);
+int ps_sndmsg(PsIpc *msg, int dest);
+void ps_save(PsIpc *msg, int sid);
+void initMPU_SIG_LAYOUT_COMPLETE(void *arg0);
+int HST_getHistoryWithOffset(int arg0);
+int ps_sessionURL(void);
+void initMPI_SIG_REQUEST_ABORTED(void *arg0);
+void ps_sendGetStop(PsIpc *m);
+void initMPL_REQ_ABORT_PAGE(void *arg0);
 void ps_cleaning_mq(int *mq) {
     struct {
         int x00;

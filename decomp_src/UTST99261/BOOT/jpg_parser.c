@@ -64,6 +64,7 @@ int png_setBuffer();                                /* extern */
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+void *memcpy(void *, const void *, unsigned int);
 int mrkRES(void) {
     return 1;
 }

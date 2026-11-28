@@ -31,7 +31,7 @@ extern int mq_js;
 extern char D_0013559C[];
 extern const char _ctype_[];
 extern int buf_ps_sts;
-M2C_UNK MEM_free(M2C_UNK, int);                     /* extern */
+void MEM_free(M2C_UNK, int);                     /* extern */
 int ps_isMoveHistory(int, int, int);                /* extern */
 extern int buf_sessionID;
 extern int buf_sessionURL;
@@ -140,6 +140,44 @@ int UTL_guessMIMETypeFromName(char *name);
 void ps_HeadSend(int len1, char *p1, int len2, char *p2, int a, int b, int id);
 void ps_postsend(int len1, char *p1, int len2, char *p2, int a, int hdrlen, char *hdr, int bodylen, char *body, int z, int id);
 char *strcat(char *d, const char *s);
+int OS_mq_send(int id, const char *buf, int len, unsigned int prio);
+void ps_halt(char *msg);
+void ps_save(PsIpc *msg, int sid);
+int ps_initExMsgBoxList(void);
+void *HST_searchRequestFlagHistoryNode(int flag);
+int HST_setRequestFlag(void *arg0, int arg1);
+HstNode *HST_getParentExtHistoryURI(HstNode *top, int sid, char *type);
+void *HST_getExtHistoryURI(HstNode *top, int sid, char *type);
+void initMPU_SIG_RECV_STARTED(void *arg0);
+void *GetMQUEUE(int q, void *buf);
+void *HST_searchSessionIDHistoryNode(int sid);
+void Encoding(ENCDOC *d, int *flag, int *enc);
+int *parseDomBuild(int *msg);
+void initMPL_REQ_LOAD_PAGE(void *arg0);
+void *HST_getJSURI(void *node, int idx);
+int HST_getJSURIlen(void *arg0);
+void *HST_getCSSURI(void *node, int idx);
+int HST_getCSSURIlen(void *arg0);
+int OS_thread_mutex_unlock(void *);
+int OS_mq_getattr(int id, void *);
+int OS_mq_setattr(int id, void *, void *);
+int OS_mq_receive(int id, char *buf, int len, unsigned int *prio);
+int OS_mq_close(int id);
+int OS_mq_unlink(const char *name);
+void OS_thread_exit(void *ret);
+M2C_UNK *HST_getFragmentIDs(void *arg0, int arg1);
+void initMPU_SIG_RECV_COMPLETE(void *arg0);
+unsigned int strlen(const char *);
+void initMPU_RPL_LOAD_PAGE(void *arg0);
+int HST_getSessionID(void *arg0);
+int HST_getParentHistoryNode(void *arg0);
+int strcmp(const char *, const char *);
+int HST_setSessionID(void *arg0, int arg1);
+int ps_deleteExMsgBox(int id);
+int ps_freeExMsgBox(int id);
+void initMPL_REQ_ABORT_PAGE(void *arg0);
+int HST_getRequestFlag(void *arg0);
+void *HST_searchTargetNameHistoryNode(void *a, void *b);
 unsigned short UDomiString_ToLower(unsigned short c) {
     if (c < 0x80) {
         return tolower(c);

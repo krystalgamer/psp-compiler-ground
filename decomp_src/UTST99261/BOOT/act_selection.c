@@ -25,7 +25,7 @@ extern unsigned char _DOMcenter;
 extern unsigned char _DOMborder;
 char *getDOMAttributeValue(void *node, void *name);
 long strtol(const char *s, char **end, int base);
-void Element_getAttribute(DOMString *s, void *node, void *name);
+int Element_getAttribute(DOMString *s, void *node, void *name);
 int DOMStringcasecmpFast(DOMString *s, void *str);
 void *createBox(void *ctx, int type);
 void linkBox(void *box, void *parent, void *prev);
@@ -38,7 +38,7 @@ extern unsigned char _DOMmarginheight;
 extern unsigned char _DOMmarginwidth;
 extern unsigned char _DOMspan;
 extern unsigned char _DOMvspace;
-M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
+void MEM_free(M2C_UNK, void *);                  /* extern */
 void *getBodyBox(int);                              /* extern */
 int lo_fullUrl(int, signed char *);                          /* extern */
 M2C_UNK requestImageData(int, int, int);            /* extern */
@@ -68,6 +68,10 @@ extern unsigned char _DOMlhs;
 extern unsigned char _DOMrhs;
 extern unsigned char _DOMvsides;
 extern unsigned char _DOMbox;
+int equalsChar(char a, char b, int cs);
+int getDOMAttributeValue_PositiveNum(void *elem, void *name);
+void applyCSSExtStyleSheetToBox(void *node, BOX *box);
+void applyCSSInlinePropertyToBox(void *node, BOX *box);
 int addSelectionTarget(SelList *l, BOX *box, int a, int b) {
     SelTgt *t;
     int s, e;

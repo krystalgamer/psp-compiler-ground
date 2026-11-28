@@ -103,6 +103,13 @@ typedef struct { int f0; int len; char ssid[0x28]; char key[0x40]; } AossWpa;
 typedef struct { AossWep w0; AossWep w1; AossWpa p0; AossWpa p1; } AossSec;
 extern AossSec D_002DC6F0;
 int aoss_check_str(unsigned char *s, int n);
+int CheckRecvSeqID(unsigned char *a, unsigned char *b);
+int AOSS_Ntohl(int arg0);
+int CheckSeqID(unsigned short id, unsigned char *seq);
+void SetPacketHeader(short *hdr, short a, short b, short c, char d, char e, unsigned char *key);
+int SendPacketUDP(void *buf, int len, unsigned char bcast, int sock);
+unsigned char crc(unsigned char *buf, int len);
+void AddKey(unsigned char *key, unsigned char *buf, int len);
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", D_00141118);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", AOSS_Init_old);

@@ -10,7 +10,7 @@ void initBoxProperty(BOX *b);
 void initTextBoxSize(BOX *b);
 char *strcpy(char *d, const char *s);
 typedef struct { int size; unsigned int len; unsigned short *str; } PTDStr;
-void CharacterData_getData(PTDStr *s, void *node);
+int CharacterData_getData(PTDStr *s, void *node);
 void *Node_getFirstChild(void *node);
 int ucs2ToUtf8(char *d, unsigned short *s, int n);
 BOX *html_BR(void *node, BOX *parent, BOX *prev);

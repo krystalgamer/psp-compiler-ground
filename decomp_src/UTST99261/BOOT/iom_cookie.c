@@ -10,7 +10,7 @@ void *memcpy(void *d, const void *s, unsigned int n);
 void *UTL_peekqueue(int, void *);                   /* extern */
 int iom_diffexpire(int, int);                       /* extern */
 extern int iomCookie;
-M2C_UNK UTL_relqueue(int, void *);                  /* extern */
+void UTL_relqueue(int, void *);                  /* extern */
 int UTL_sizequeue(int);                             /* extern */
 
 M2C_UNK cookieFile_init();                          /* extern */
@@ -34,6 +34,11 @@ int iom_translateMsg(void *msg);
 void *iom_freeMsg(void *msg);
 int iom_evStartup(void *msg);
 void OS_thread_exit(void *r);
+int CLIB_time(int *out);
+void iom_deleteCookie(void *c);
+void iom_freeCookie(void *arg0);
+void iom_deleteDomainCookie(void *arg0);
+int iom_mfree(int arg0);
 void iom_cookieFile_init(void) {
     cookieFile_init();
 }

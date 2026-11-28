@@ -30,6 +30,12 @@ typedef struct DumyArg {
 
 
 int strncasecmp(const char *a, const char *b, unsigned int n);
+int OS_thread_mutex_lock(OSMutex *m);
+int OS_thread_mutex_unlock(OSMutex *m);
+unsigned int strlen(const char *);
+int sceKernelTerminateThread(int);
+int sceKernelDeleteThread(int);
+void delThreadTbl(void *);
 int http_state(int h)
 {
     int st;

@@ -4,7 +4,7 @@
 extern u16 CSSSTR_ASTERISK[];
 void insCSSNode(void *pos, void *node);
 void pushCSSNode(void *list, void *node);
-void CSS_mediaRuleSingle(void *ss, void *rule, u16 *text);
+void *CSS_mediaRuleSingle(void *ss, void *rule, u16 *text);
 u16 *CSSRule_getCssText(void *rule);
 void CSS_StyleSheetRuleSingle(void *ss, u16 *text);
 typedef struct {
@@ -30,20 +30,33 @@ u16 *CSS_SkipQuotedString(u16 *p, u16 q);
 int CSS_putcPoolBuf(void *p, u16 c);
 void ParseCSSDeclaration(void *ctx, void *str, void **out);
 void *UCS_strdup(void *s);
-void CSS_mediaList(void *str, u16 *media);
+void *CSS_mediaList(void *str, u16 *media);
 extern u16 D_001F70A8[];
 extern char D_0025BA4C[];
-M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
+void MEM_free(M2C_UNK, void *);                  /* extern */
 u16 *CSS_getMediaTypeString(short);                 /* extern */
 M2C_UNK newCSSRule(M2C_UNK, M2C_UNK, int, int);     /* extern */
-M2C_UNK freeCSSRule(void *);                        /* extern */
+void freeCSSRule(void *);                        /* extern */
 void *MEM_calloc(M2C_UNK, M2C_UNK);                 /* extern */
 
 M2C_UNK CSS_ParseStyleSheet(short);                   /* extern */
-M2C_UNK freeCSSStyleDeclaration(void *);            /* extern */
-M2C_UNK addCSSRule();                               /* extern */
+void freeCSSStyleDeclaration(void *);            /* extern */
+void addCSSRule();                               /* extern */
 
 
+int UCS_strcasecmp(void *, void *);
+void freeCSSStyleSheet(void *ss);
+void *newCSSNode(int type, int size);
+void freeCSSNode(void *n);
+void addCSSNode(void *list, void *node);
+void *CSS_newPoolBuf(void);
+int CSS_putSPoolBuf(void *pb, u8 *s);
+int CSSMediaRule_getMedia(void *arg0);
+int CSS_putsPoolBuf(void *pb, u16 *s);
+int CSS_getPoolBuf(unsigned short *);
+void CSS_freePoolBuf(u16 *pb);
+void *MEM_malloc(void *, unsigned int size);
+void *UCS_strncpy(void *, void *, int n);
 int CSS_matchChainMenber(u16 *name, void **e) {
     int found = 0;
     for (; e != NULL && e[1] != NULL; e = *e) {

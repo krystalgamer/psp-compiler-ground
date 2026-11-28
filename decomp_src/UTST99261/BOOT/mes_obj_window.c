@@ -12,8 +12,8 @@ typedef struct WinDS {
     unsigned short *buf;              /* 0x8 */
 } WinDS;
 void *JSI_getDocumentURL(void *elem);
-void mes_link_common_set_href(MesContext *ctx, void *dom, unsigned short *str, int len);
-void JSI_setWindowName(void *dom, WinDS *ds);
+int mes_link_common_set_href(MesContext *ctx, void *dom, unsigned short *str, int len);
+int JSI_setWindowName(void *dom, WinDS *ds);
 typedef struct WinPriv {
     void *dom;                        /* 0x0 */
     MesValue f4;                      /* 0x4 */
@@ -24,7 +24,7 @@ typedef struct WinRec {
 } WinRec;
 int mes_class_property_get(void *ctx, void *obj, const char *name);
 char *HST_getTargetName(void *node);
-void JSI_getWindowRec(void *dom, WinRec *rec);
+int JSI_getWindowRec(void *dom, WinRec *rec);
 int strncmp(const char *a, const char *b, int n);
 unsigned int strlen(const char *s);
 DOMString *JSI_newDOMString(const char *s, int len);
@@ -74,7 +74,7 @@ extern char D_0013C3E8[];
 extern char mes_window_native_table[];
 MesObject *mes_class_new(MesContext *ctx, MesClass *cls);
 MesValue mes_array_new(MesContext *ctx, int n);
-void mes_class_property_setup(MesContext *ctx, MesObject *o, const char *name, MesValue v, int flags);
+int mes_class_property_setup(MesContext *ctx, MesObject *o, const char *name, MesValue v, int flags);
 void mes_native_setup(MesContext *ctx, MesObject *o, void *table, int n);
 void mes_object_setup(MesContext *ctx, MesObject *o, const char *name, MesValue v, int flags, int x);
 extern char D_0013C3D0[];

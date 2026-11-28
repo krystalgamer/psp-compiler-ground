@@ -3,15 +3,15 @@
 #include "dom_domi.h"
 #include "m2c_macros.h"
 typedef struct COLCONTENT { int x0; int span; int x8; u8 align; int x10; int x14; int x18; } COLCONTENT;
-void CharacterData_getData(DOMString *s, void *node);
+int CharacterData_getData(DOMString *s, void *node);
 char *DOMStringtoUTF8(DOMString *s);
 int Node_getNodeType(void *node);
 void *Node_getOwnerDocument(void *node);
-void Node_getNodeName(DOMString *s, void *node);
+int Node_getNodeName(DOMString *s, void *node);
 int ucs2ToUtf8(char *dst, DOMChar *src, unsigned int len);
 extern char tag_global[];
 void *MEM_malloc(M2C_UNK, M2C_UNK);                 /* extern */
-M2C_UNK initMapList(void *);                        /* extern */
+void initMapList(void *);                        /* extern */
 extern void *ui_global;
 extern int D_00584CAC;
 int getDOMAttributeValue(int, M2C_UNK *);           /* extern */
@@ -24,7 +24,7 @@ extern unsigned char _DOMimmode;
 extern unsigned char _DOMmaxlength;
 extern unsigned char _DOMreadonly;
 extern unsigned char _DOMchecked;
-M2C_UNK MEM_free(M2C_UNK, int);                     /* extern */
+void MEM_free(M2C_UNK, int);                     /* extern */
 int atoi(int);                                      /* extern */
 extern unsigned char _DOMmultiple;
 extern unsigned char _DOMsize;
@@ -36,6 +36,11 @@ int NamedNodeMap_getLength(void *map);
 void *NamedNodeMap_item(void *map, int i);
 void *memset(void *p, int c, unsigned int n);
 char *getRawTextFromDomNode(void *n);
+int strcmp(const char *, const char *);
+SDomiNode *Node_getFirstChild(SDomiNode *n);
+char *strcpy(char *, const char *);
+SDomiNode *Node_getNextSibling(SDomiNode *n);
+SDomiNode *Node_getParentNode(SDomiNode *n);
 void DomStringToUtf8(DOMString *s, char *buf, int size) {
     unsigned int n = (size - 1) / 3;
     unsigned int len = s->len;

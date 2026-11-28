@@ -3,7 +3,7 @@
 #include "m2c_macros.h"
 typedef struct REGION { u8 unk0[0x10]; struct REGION *next; } REGION;
 void *MEM_malloc(M2C_UNK, M2C_UNK);                 /* extern */
-M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
+void MEM_free(M2C_UNK, void *);                  /* extern */
 
 
 

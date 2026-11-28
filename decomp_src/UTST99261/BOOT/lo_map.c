@@ -2,12 +2,12 @@
 #include "common.h"
 #include "dom_domi.h"
 #include "m2c_macros.h"
-void Element_getAttribute(DOMString *s, void *elem, void *name);
+int Element_getAttribute(DOMString *s, void *elem, void *name);
 char *DOMStringtoUTF8(DOMString *s);
 int strcmp(const char *a, const char *b);
 void adaptArea(void *a0, void *area, void *a2, s8 n);
 int MEM_malloc(M2C_UNK, M2C_UNK);                   /* extern */
-M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
+void MEM_free(M2C_UNK, void *);                  /* extern */
 
 
 struct MAPAREA;
@@ -30,7 +30,7 @@ extern TagBranch jt[];
 extern int D_001F5E1C;
 extern int D_00584D08;
 extern char D_00139428[], D_00139430[], D_0013950C[];
-void Element_getTagName(DOMString *s, void *elem);
+int Element_getTagName(DOMString *s, void *elem);
 int DOMStringcasecmpChar(DOMString *s, char *str);
 typedef struct { s8 kind; int x; int y; int w; int h; MAPAREA *area; } MAPINFO;
 typedef struct { int x; int y; double r; } MAPCIRCLE;

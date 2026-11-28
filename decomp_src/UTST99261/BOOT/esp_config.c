@@ -12,12 +12,21 @@ extern int timezone;
 extern int dylight;
 int *CLIB_gmtime(int *t);
 extern char D_00133E78[];
-M2C_UNK MEM_free(M2C_UNK, int);                     /* extern */
+void MEM_free(M2C_UNK, int);                     /* extern */
 
 M2C_UNK do_string();                                /* extern */
 M2C_UNK __floatsidf(int);                           /* extern */
 
 
+int strcasecmp(const char *, const char *);
+void *memset(void *, int, unsigned int);
+void *MEM_malloc(void *, unsigned int size);
+char *strcpy(char *, const char *);
+unsigned int strlen(const char *);
+int sceKernelCreateSema(const char *, unsigned int, int, int, void *);
+int sceKernelWaitSema(int, int, unsigned int *);
+int write(int, const void *, unsigned int);
+int sceKernelSignalSema(int, int);
 int do_bool(int *cfg, int id, char *str) {
     int val;
 

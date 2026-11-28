@@ -14,7 +14,7 @@ M2C_UNK OS_thread_mutex_lock(int);                  /* extern */
 M2C_UNK OS_thread_mutex_unlock(int);                /* extern */
 int HST_httpHeaderDuplicate(int);                   /* extern */
 M2C_UNK HST_httpHeaderFree(int);                    /* extern */
-M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
+void MEM_free(M2C_UNK, void *);                  /* extern */
 M2C_UNK HST_deleteHistoryNode(int);                 /* extern */
 
 
@@ -24,6 +24,17 @@ int strncmp(const char *a, const char *b, unsigned int n);
 typedef struct { void *x0; void *x4; } HPAIR;
 typedef struct HCOOK { void *x0; void *x4; void *x8; void *xC; void *x10; int x14; struct HCOOK *next; } HCOOK;
 typedef struct { void *x00; int x04; int x08; void *x0C; void *x10; void *x14; void *x18; void *x1C; void *x20; HPAIR *x24; HPAIR *x28; HCOOK *x2C; } HHDRF;
+void *OS_thread_mutex_create(void);
+int OS_thread_mutex_init(void *, void *attr);
+void addHistoryGarbage(void *p);
+void deleteHistory(void *arg0);
+void OS_thread_mutex_destroy(void *);
+int HST_freePostData(void *arg0);
+void *memcpy(void *, const void *, unsigned int);
+void URL_splitURL(void **parts, char *url);
+unsigned int strlen(const char *);
+char *strcpy(char *, const char *);
+int strcmp(const char *, const char *);
 int HST_initHistory(void) {
     int *p;
     int *h;

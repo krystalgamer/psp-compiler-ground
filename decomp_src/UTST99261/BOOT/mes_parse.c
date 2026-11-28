@@ -7,7 +7,7 @@ typedef struct StopMap {
 } StopMap;
 extern StopMap mes_parse_stop_map[14];
 void *mes_parse_node_set1(void *n, int i, void *v);
-M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
+void MEM_free(M2C_UNK, void *);                  /* extern */
 M2C_UNK mes_parse_node_free(int);                   /* extern */
 void *MEM_malloc(M2C_UNK, M2C_UNK);                 /* extern */
 int mes_error_parse(void *, M2C_UNK *, unsigned short, unsigned short);   /* extern */
@@ -19,6 +19,13 @@ void *mes_parse_node_new(int, int);
 
 
 int mes_lex_peek_lf(void *);
+void mes_memory_zero(void *arg0, unsigned int arg1);
+int mes_string_new3(struct EvCtx *ctx, void *s);
+int mes_lex_regex(void *, int eq);
+int mes_lex_regex_flags(void *);
+void *mes_parse_assignment_expression(void *p, void *lx, int flags);
+int mes_stack_check(void *);
+void *mes_parse_source_elements(void *p, void *lx, int flags);
 void *mes_parse_node_new(int type, int n)
 {
     void *node = MEM_malloc(0, 0x10);

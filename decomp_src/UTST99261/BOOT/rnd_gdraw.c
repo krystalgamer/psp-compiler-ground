@@ -22,7 +22,7 @@ int GUI_TextArea_insert();
 int GUI_TextArea_selectAll();
 int GUI_List_select();
 int GUI_List_deselect();
-int getStringsExtents();
+void getStringsExtents();
 int GUI_Graphics_drawPixmap();
 int strlen();
 int GUI_TextField_getText();
@@ -33,7 +33,7 @@ int GUI_Graphics_setColor();
 int GUI_Graphics_drawRect();
 int GUI_Graphics_fillRect();
 int GUI_Graphics_getPixmapSize();
-int GUI_Graphics_getAnimationGIFFrameProperty();
+void GUI_Graphics_getAnimationGIFFrameProperty();
 int GUI_Graphics_getAnimationGIFNextFrame();
 int GUI_Graphics_getBrokenLinePattern();
 int GUI_Graphics_drawTiledPixmap();
@@ -59,9 +59,9 @@ void rnd_drawRepaintCallback(void);
 int GUI_Component_getParent(int);                   /* extern */
 M2C_UNK GUI_ScrollPane_add(int, int);               /* extern */
 int GUI_createPanel();                              /* extern */
-M2C_UNK GUI_Graphics_freeAnimationGIF(int);         /* extern */
-M2C_UNK GUI_Graphics_freePixmap(int);               /* extern */
-M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
+void GUI_Graphics_freeAnimationGIF(int);         /* extern */
+void GUI_Graphics_freePixmap(int);               /* extern */
+void MEM_free(M2C_UNK, void *);                  /* extern */
 
 int GUI_createCheckbox();
 int GUI_createList();

@@ -13,11 +13,11 @@ void CSS_StyleSheetRuleList(void *ss, u16 *text);
 void *newCSSStyleRule();
 u16 *CSS_selectorList(void *r, u16 *p);
 u16 *CSS_SkipRule(u16 *p);
-M2C_UNK freeCSSCharsetRule();                       /* extern */
-M2C_UNK freeCSSImportRule();                        /* extern */
-M2C_UNK freeCSSStyleRule();                         /* extern */
-M2C_UNK freeCSSUnknownRule();                       /* extern */
-M2C_UNK addCSSNode(int, void *);                    /* extern */
+void freeCSSCharsetRule();                       /* extern */
+void freeCSSImportRule();                        /* extern */
+void freeCSSStyleRule();                         /* extern */
+void freeCSSUnknownRule();                       /* extern */
+void addCSSNode(int, void *);                    /* extern */
 int CSSCharsetRule_getType();                       /* extern */
 int CSSImportRule_getType();                        /* extern */
 int CSSMediaRule_getType();                         /* extern */
@@ -31,7 +31,7 @@ int CSSUnknownRule_getCssText();                    /* extern */
 M2C_UNK CSSCharsetRule_setCssText();                /* extern */
 M2C_UNK CSSImportRule_setCssText();                 /* extern */
 M2C_UNK CSSMediaRule_setCssText();                  /* extern */
-M2C_UNK CSSStyleRule_setCssText();                  /* extern */
+void CSSStyleRule_setCssText();                  /* extern */
 M2C_UNK CSSUnknownRule_setCssText();                /* extern */
 int CSSCharsetRule_getParentStyleSheet();           /* extern */
 int CSSImportRule_getParentStyleSheet();            /* extern */
@@ -42,8 +42,8 @@ int CSSImportRule_getParentRule();                  /* extern */
 int CSSStyleRule_getParentRule();                   /* extern */
 int CSSUnknownRule_getParentRule();                 /* extern */
 void *newCSSNode(M2C_UNK, M2C_UNK);                 /* extern */
-M2C_UNK MEM_free(M2C_UNK, int);                     /* extern */
-M2C_UNK freeCSSStyleDeclaration(void *);            /* extern */
+void MEM_free(M2C_UNK, int);                     /* extern */
+void freeCSSStyleDeclaration(void *);            /* extern */
 M2C_UNK MEM_calloc(M2C_UNK, M2C_UNK);               /* extern */
 
 
@@ -53,7 +53,7 @@ void *newCSSUnknownRule(void *a0, void *a1);
 void addCSSUnknownRule(void *r);
 int UCS_strlen(u16 *s);
 void *MEM_malloc(int pool, int size);
-void UCS_strcpy(void *d, u16 *s);
+void *UCS_strcpy(void *d, u16 *s);
 u16 *ParseCSSDeclaration(void *parent, u16 *p, CSSNODE **out);
 u16 *CSS_SkipProperty(u16 *p);
 void *newCSSImportRule(void *a0, void *a1);
@@ -95,6 +95,18 @@ u16 *CSS_attrib(u16 *p, u16 **out);
 extern u16 CSSSTR_ASTERISK[];
 #define CSS_CT(c) ((_ctype_ + 1)[(int)(c)])
 #define CSS_TOLOWER(c) ({ int __x = (c); (CSS_CT(__x) & 1) ? __x - 'A' + 'a' : __x; })
+u16 *CSS_charsetRule(void *a0, void *a1, u16 *p);
+u16 *CSS_importRule(void *a0, void *a1, u16 *p);
+u16 *CSS_styleRule(void *a0, void *a1, u16 *p);
+u16 *CSS_mediaRule(void *a0, void *a1, u16 *p);
+u16 *CSS_pageRule(void *a0, void *a1, u16 *p);
+u16 *CSS_fontfaceRule(void *a0, void *a1, u16 *p);
+u16 *CSS_unknownRule(void *a0, void *a1, u16 *p);
+u16 *CSS_pseudo(u16 *p, u16 **out);
+int CSSMediaRule_getParentStyleSheet(void *arg0);
+int CSSMediaRule_getParentRule(void *arg0);
+void freeCSSChain(void **arg0);
+void freeCSSNode(void *n);
 void CSS_StyleSheetRuleList(void *ss, u16 *p) {
     u16 c;
     u16 t;

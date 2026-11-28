@@ -11,11 +11,12 @@ void *MEM_malloc(int pool, unsigned int size);
 int fileContentType(char *path);
 int directoryCheck(char *path);
 void *readCFData(char *path, int *size);
-M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
+void MEM_free(M2C_UNK, void *);                  /* extern */
 extern unsigned char search;
 
 
 int sprintf(char *buf, const char *fmt, ...);
+void deleteFileData(void *arg0);
 char *URLencode(char *p, int c) {
     char *dst = p;
 

@@ -38,10 +38,10 @@ void zWindSetFontClip();
 void zWindFontDraw();
 void zWindFontDrawSJ();
 unsigned int utf8nlen(void *, int);                          /* extern */
-M2C_UNK ESP_free(signed char *);                             /* extern */
+void ESP_free(signed char *);                             /* extern */
 signed char *ESP_malloc(int);                                /* extern */
-M2C_UNK UTL_enqueue(int, signed char *);                     /* extern */
-M2C_UNK zWindDrawClipSet();                         /* extern */
+void UTL_enqueue(int, signed char *);                     /* extern */
+void zWindDrawClipSet();                         /* extern */
 extern int _i_pspBrowserFontState;
 
 typedef struct EXTCB {
@@ -78,7 +78,7 @@ void UTL_initqueue(void *);
 void *UTL_dequeue(void *);
 
 void *UTL_peekqueue(void *q, void *e);
-int UTL_relqueue(void *q, void *e);
+void UTL_relqueue(void *q, void *e);
 int strcmp(const char *, const char *);
 extern u8 D_0025B0DC[];
 extern u8 D_0025B0EC[];
@@ -363,10 +363,10 @@ void pspBrowserExecuteImageExtensionCallback(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", pspBrowserInit);
 
-void ESP_destroyCore();
+int ESP_destroyCore();
 int GUI_Component_remove();
 int zWindExit();
-int OS_thread_mutex_destroy();
+void OS_thread_mutex_destroy();
 
 int pspBrowserExit(void) {
     void **p;

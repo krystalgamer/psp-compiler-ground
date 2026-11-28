@@ -51,7 +51,7 @@ extern int buf_Message_cnt;
 extern int buf_ps_sts;
 M2C_UNK ps_setExMsg(int, int);                      /* extern */
 extern int D_00584FB8;
-M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
+void MEM_free(M2C_UNK, void *);                  /* extern */
 
 M2C_UNK ps_i2314();                                 /* extern */
 
@@ -68,6 +68,26 @@ extern char D_00137B1C[];
 extern char D_00137BF4[];
 int ps_i221A();
 int *ps_searchRequestFlagHistoryNode();
+int OS_mq_send(int id, const char *buf, int len, unsigned int prio);
+void ps_halt(char *msg);
+int HST_httpHeaderFree(int arg);
+int UTL_guessMIMEType(char *mime);
+int ps_i2414_auth(PsIpc *msg);
+void initMPI_SIG_REQUEST_ABORTED(void *arg0);
+int ps_sndmsg(PsIpc *msg, int dest);
+int ps_freeExMsgBox(int id);
+int ps_sendAbortPage(int sid, int a, int b, int name, int len);
+void *MEM_malloc(void *, unsigned int size);
+int ps_JSMailBoxClean(void);
+int HST_setRequestFlag(void *arg0, int arg1);
+void Encoding(void *, int *flag, int *enc);
+int *parseDomBuild(int *msg);
+void initMPL_REQ_LOAD_PAGE(void *arg0);
+int HST_getJSURIlen(void *arg0);
+int HST_getCSSURIlen(void *arg0);
+int ps_isGetRequest(void *node);
+void ps_errStringParseDomBuild(int *node, char *str);
+int HST_getMethodType(void *arg0);
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/ps_i2400", D_00137B18);
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/ps_i2400", D_00137B1C);

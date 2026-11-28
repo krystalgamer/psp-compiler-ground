@@ -9,8 +9,8 @@ int FIO_fwrite(void *buf, int size, int n, void *fp);
 int FIO_fclose(void *fp);
 void *memset(void *p, int c, unsigned int n);
 void *CSS_newPoolBuf(void);
-void CSS_putSPoolBuf(void *pb, const char *s);
-void CSS_putsPoolBuf(void *pb, void *s);
+int CSS_putSPoolBuf(void *pb, const char *s);
+int CSS_putsPoolBuf(void *pb, void *s);
 void *CSS_getMediaTypeString(int t);
 void CSS_freePoolBuf(void *pb);
 void *newCSSNode(int a, int size);
@@ -38,9 +38,11 @@ void freeCSSNode(void *node);
 M2C_UNK FIO_remove();                               /* extern */
 int CSS_getPoolBuf(unsigned short *);                          /* extern */
 
-M2C_UNK addCSSRule();                               /* extern */
+void addCSSRule();                               /* extern */
 
 
+void *MEM_malloc(void *, unsigned int size);
+void *newCSSRule(int type, int size, void *a2, void *a3);
 int mes_input_inner(MesContext *ctx, int cmd, int kind)
 {
     InpMsg msg;

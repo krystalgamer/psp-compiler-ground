@@ -7,6 +7,32 @@ extern const PDStr D_00137E04;
 #define CF(c, o) M2C_FIELD(c, int *, o)
 extern const PDocDesc D_00137DEC;
 
+void DOMAPI_Initialize(void);
+void *Util_DOMAPI_NewHTMLDOMImplementation(void);
+int HST_setDomObject(void *arg0, int arg1);
+void *HST_searchSessionIDHistoryNode(int sid);
+void Node_setSid(void *, void *sid);
+void parseJSDocumentSet(void *arg0);
+void *Util_HTMLDocument_getBody(void *);
+int DOMAPI_AddDocument(void *, void *);
+void parseCheckEncodeType(PCtx *c, int *src);
+int HST_setCharSet(void *arg0, int arg1);
+void *MEM_malloc(void *, unsigned int size);
+int parseConvertEncode(void *dst, void *src, int n, int enc);
+int parseDataInputBuf(PCtx *c, PChar *data, int n);
+void MEM_free(void *, void *p);
+int parseDocumentTEXT(PCtx *c);
+void *Document_createElement(void *, void *);
+void *Node_appendChild(void *, void *);
+void parseConvertUTF8toUCS2(char *src, int len, PChar **out, int *outLen);
+void parseElementSetAttribute(int elem, PDStr *name, void *val);
+void parseJSImgSet(PCtx *c);
+void *memcpy(void *, const void *, unsigned int);
+int parseWellFormedTag(PChar *buf, int n);
+void *parseNewCtxt(void);
+void parseCtxtDataCopy(PCtx *d, PCtx *s);
+int parseDocument(PCtx *c);
+void parseFreeCtxt(PCtx *c);
 int *parseTEXTStart(PCtx *c, int *src) {
     PDocDesc desc;
     void *buf;

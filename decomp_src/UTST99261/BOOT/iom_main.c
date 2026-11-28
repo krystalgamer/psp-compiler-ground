@@ -4,10 +4,10 @@
 #include "m2c_macros.h"
 extern int D_00139D90[];
 extern int D_00139DC4[];
-void iom_detachCache(void);
-void iom_detachCookie(void);
-void iom_detachHttpCtx(void);
-M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
+int iom_detachCache(void);
+int iom_detachCookie(void);
+int iom_detachHttpCtx(void);
+void MEM_free(M2C_UNK, void *);                  /* extern */
 extern void *D_005850D4;
 extern void *D_005850D8;
 extern void *D_005850DC;
@@ -30,6 +30,8 @@ typedef struct IomErr { int code; char *msg; } IomErr;
 void iom_end(void);
 void iom_finalizeEnvironment(void);
 int OS_mq_open(char *name, int flags);
+void OS_thread_exit(void *ret);
+void iom_sendMsg(IOMMSG *msg, int mq);
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_main", D_00139D0C);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_main", iom_initializeEnvironment);

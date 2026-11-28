@@ -7,7 +7,7 @@ typedef struct ArrStr {
     int slen;                         /* 0x4 */
 } ArrStr;
 int mes_util_digit(int c);
-void mes_eval_type_error(MesContext *ctx, MesValue v);
+int mes_eval_type_error(MesContext *ctx, MesValue v);
 extern const double D_0013B890;
 MesValue mes_eval_object_get(MesContext *ctx, MesValue o, unsigned int id);
 MesValue mes_eval_object_put(MesContext *ctx, MesValue o, unsigned int id, MesValue v);
@@ -37,7 +37,7 @@ void mes_util_string_puti(void *s, int n, int w, int base);
 MesValue mes_string_new3(MesContext *ctx, void *s);
 void mes_util_string_free(void *s);
 unsigned int mes_context_index(MesValue v);
-M2C_UNK mes_gc_register(M2C_UNK *, M2C_UNK, M2C_UNK, M2C_UNK); /* extern */
+void mes_gc_register(M2C_UNK *, M2C_UNK, M2C_UNK, M2C_UNK); /* extern */
 extern unsigned char mes_array_method;
 
 
@@ -51,6 +51,7 @@ void mes_util_string_put_string(void *s, MesValue v);
 MesValue mes_eval_to_object(MesContext *ctx, MesValue v);
 MesValue mes_error_range(MesContext *ctx, MesValue v);
 extern const double D_0013B898;
+void mes_object_delete(void *obj, unsigned int id);
 MesArray *mes_array_new(MesContext *ctx, unsigned int len)
 {
     MesArray *a = mes_gc_alloc(ctx, 6);

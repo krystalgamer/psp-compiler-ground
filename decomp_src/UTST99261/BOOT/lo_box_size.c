@@ -17,7 +17,7 @@ void calcBlockBoxSize(void *ctx, BOX *box, int f);
 void calcBlockButtonBoxSize(void *ctx, BOX *box);
 void calcTdBoxSize(void *ctx, BOX *box);
 void getTextlineExtents(int font, int cols, int *w, int *h);
-void GUI_Component_setFont(void *c, int font);
+int GUI_Component_setFont(void *c, int font);
 void getButtonExtents(int font, char *s, int len, int *w, int *h);
 typedef struct SELOPT { struct SELOPT *next; int x4; char *text; } SELOPT;
 void getPulldownExtents(int font, char *s, int n, int *w, int *h);
@@ -32,6 +32,7 @@ void moveBoxPosition(BOX *box, int dx, int dy);
 void moveBoxPositionChild(BOX *box, int dx, int dy);
 void turnupContent(void *ctx, BOX *box);
 #define LBS_HTYPE(b) (((b)->style->flags & 0xC) >> 2)
+void setBoxSize(void *arg0, int arg1, int arg2);
 void calcInLineBoxSize(void *ctx, BOX *box)
 {
     BOX *b;

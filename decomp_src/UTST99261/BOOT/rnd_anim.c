@@ -9,12 +9,12 @@ void *Node_getParentNode(void *node);
 void *getBodyBox(void *);
 M2C_UNK *MEM_malloc(M2C_UNK, M2C_UNK);              /* extern */
 extern M2C_UNK *head;
-M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
+void MEM_free(M2C_UNK, void *);                  /* extern */
 int Node_getBox(int);                               /* extern */
 M2C_UNK drawScroll(int, int, int);                  /* extern */
 extern void *gESPRIT_LO_GLOBAL_NDA;
 
-M2C_UNK clearSearchStrings();                       /* extern */
+void clearSearchStrings();                       /* extern */
 M2C_UNK searchStrings();                            /* extern */
 
 
@@ -23,7 +23,7 @@ M2C_UNK searchStrings();                            /* extern */
 #endif
 typedef struct RPOS { int x; int y; } RPOS;
 void *rnd_findParentBoxnode(void *bn, int type);
-void GUI_ScrollPane_getScrollPosition(void *pane, int *x, int *y);
+int GUI_ScrollPane_getScrollPosition(void *pane, int *x, int *y);
 void rnd_gdrawGetViewClientSize(void *pane, int *w, int *h);
 typedef struct RLIST { struct RLIST *next; void *data; void *x8; } RLIST;
 typedef struct RNDGLOBAL { int x0; int x4; int x8; RLIST *xC; } RNDGLOBAL;
@@ -31,11 +31,11 @@ extern RNDGLOBAL rnd_global;
 extern RLIST *D_00584D4C;
 extern RLIST *D_00584D50;
 extern void *ui_global;
-void OS_clock_gettime(int id, RPOS *ts);
+int OS_clock_gettime(int id, RPOS *ts);
 int rnd_gdrawImageReset(void *img, RPOS *t);
 int rnd_resetAnimImageBoxnode(void *bn);
 int rnd_updateAnimTextBoxnode(void *bn);
-void GUI_Component_update(void *c, int x, int y, int w, int h);
+int GUI_Component_update(void *c, int x, int y, int w, int h);
 typedef struct RRECT { int x; int y; int w; int h; } RRECT;
 extern const unsigned int D_00139028[];
 int rnd_updateAnimMarqueeBoxnode(void *bn, RPOS *t);
@@ -44,19 +44,20 @@ int rnd_updateAnimImageBoxnode(void *bn);
 void rnd_updateUpdateWidgetList(void);
 void rnd_clearUpdateWidgetList(void);
 typedef struct UWNODE { struct UWNODE *next; void *pane; RRECT *rect; } UWNODE;
-void GUI_ScrollPane_getViewportSize(void *pane, int *w, int *h);
+int GUI_ScrollPane_getViewportSize(void *pane, int *w, int *h);
 typedef struct MARQUEE { int dir; int pos; int start; int len; int amount; int x14; int interval; RPOS t; int x24; } MARQUEE;
 typedef struct MARQATTR { int behavior; int direction; int amount; } MARQATTR;
 typedef struct RDOMSTR { void *p; int len; int x8; int xC; } RDOMSTR;
 extern unsigned char _DOMid;
 extern unsigned char _DOMname;
 int Node_getNodeType(int node);
-void Element_getTagName(RDOMSTR *ret, int node);
-void Element_getAttribute(RDOMSTR *ret, int node, void *name);
+int Element_getTagName(RDOMSTR *ret, int node);
+int Element_getAttribute(RDOMSTR *ret, int node, void *name);
 int DOMStringcasecmpFast(RDOMSTR *a, void *b);
 char *DOMStringtoUTF8(RDOMSTR *s);
 int strcmp(const char *, const char *);
 int Util_Node_TraceNode(int node, int root);
+int rnd_resetAnimMarqueeBoxnode(void *bn, RPOS *pos);
 int checkParentBox(M2C_UNK *arg0, int arg1) {
     M2C_UNK *var_a0;
     int var_v0;

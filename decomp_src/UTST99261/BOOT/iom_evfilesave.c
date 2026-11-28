@@ -5,7 +5,7 @@ int iom_preferenceDownloadStop(void);
 
 
 
-int UTL_mfileseek(void *f, int pos);
+void UTL_mfileseek(void *f, int pos);
 int UTL_mfileread(void *f, void *buf, int len);
 int iom_sendReceiveStatus(void *a, int b, int c, int d);
 typedef struct { void *f; int pos; unsigned int size; } FSSRC;

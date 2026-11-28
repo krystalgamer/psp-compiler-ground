@@ -61,6 +61,7 @@ void attr_HEIGHT_td(void *node, BOX *box);
 void attr_NOWRAP_td(void *node, BOX *box);
 void attr_ALIGN_td(void *node, BOX *box);
 void attr_VALIGN_td(void *node, BOX *box);
+void linkBox(BOX *box, BOX *parent, BOX *prev);
 BOX *getTableBoxFromDOM(void *node) {
     BOX *box;
     for (node = Node_getParentNode(node); node != NULL; node = Node_getParentNode(node)) {

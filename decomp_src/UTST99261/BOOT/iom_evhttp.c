@@ -4,7 +4,7 @@
 typedef struct { int mq; u8 pad[0xFC]; int x100; } IOMG_T;
 #define IOMG ((IOMG_T *)&iom)
 extern int (*D_0013F290[])(void *msg, void *data);
-M2C_UNK UTL_initqueue(M2C_UNK *);                   /* extern */
+void UTL_initqueue(M2C_UNK *);                   /* extern */
 int http_attach(M2C_UNK, int);                      /* extern */
 extern int D_005850FC;
 extern unsigned char D_005851FC;

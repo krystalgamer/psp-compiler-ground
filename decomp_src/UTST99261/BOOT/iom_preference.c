@@ -2,7 +2,7 @@
 #include "common.h"
 #include "m2c_macros.h"
 M2C_UNK MEM_malloc(M2C_UNK, int);                   /* extern */
-M2C_UNK MEM_free(M2C_UNK, int);                     /* extern */
+void MEM_free(M2C_UNK, int);                     /* extern */
 
 extern void *esp_context;
 
@@ -19,11 +19,12 @@ IomTm *CLIB_gmtime(int *t);
 int sprintf(char *buf, const char *fmt, ...);
 void *FIO_opendir(char *path);
 char *FIO_readdir(void *d);
-void FIO_closedir(void *d);
-void FIO_remove(char *path);
+int FIO_closedir(void *d);
+int FIO_remove(char *path);
 int strcmp(const char *a, const char *b);
 int strncasecmp(const char *a, const char *b, unsigned int n);
 char *iom_strnmcat(char *dst, int n, ...);
+unsigned int strlen(const char *);
 int iom_preferenceCache(void) {
     int r;
 

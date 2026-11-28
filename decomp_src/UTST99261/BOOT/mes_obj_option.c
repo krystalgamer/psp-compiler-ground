@@ -13,7 +13,7 @@ extern DOMString _DOMvalue;
 void Element_setAttribute(void *elem, DOMString *name, DOMString *value);
 void Element_removeAttribute(void *elem, DOMString *name);
 void JSI_setOptionState(void *elem, int on);
-void JSI_setOptionText(void *elem, DOMString *s);
+int JSI_setOptionText(void *elem, DOMString *s);
 void *memcpy(void *d, const void *s, unsigned int n);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_option", mes_option_get);
 

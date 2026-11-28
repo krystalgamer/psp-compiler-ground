@@ -13,8 +13,8 @@ typedef struct UICOLORS { int color[4][7]; int unk70; int unk74; } UICOLORS;
 #define TEXTCOLOR(b) ((b)->style->unk64 = ((UICOLORS *)ui_global)->color[(b)->style->unk6A][(b)->style->fontSize])
 BOX *createInlineBox(void *ctx, BOX *parent, BOX *prev);
 BOX *createBlockBox(void *ctx, BOX *parent, BOX *prev);
-M2C_UNK applyCSSExtStyleSheetToBox(int, void *);    /* extern */
-M2C_UNK applyCSSInlinePropertyToBox(int, void *);   /* extern */
+void applyCSSExtStyleSheetToBox(int, void *);    /* extern */
+void applyCSSInlinePropertyToBox(int, void *);   /* extern */
 M2C_UNK initBoxProperty(void *);                    /* extern */
 extern void *ui_global;
 

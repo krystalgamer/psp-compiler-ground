@@ -12,7 +12,7 @@ void *UTL_peekqueue(void *q, int a1);
 void iom_freeCache(void *c);
 signed char *MEM_malloc(M2C_UNK, int);                       /* extern */
 extern signed char D_0013F28C;
-M2C_UNK UTL_initqueue(M2C_UNK *);                   /* extern */
+void UTL_initqueue(M2C_UNK *);                   /* extern */
 extern unsigned char D_00585130;
 extern unsigned char D_00585138;
 extern unsigned char D_00585144;
@@ -30,6 +30,8 @@ void *MEM_calloc(int, unsigned int);
 char *strcat(char *d, const char *s);
 char *strcpy(char *d, const char *s);
 extern char *roman_uc[4][9];
+void *memcpy(void *, const void *, unsigned int);
+int iom_loadCache(void);
 signed char *getListNumCharAtIU(int n) {
     int d[4];
     int i;

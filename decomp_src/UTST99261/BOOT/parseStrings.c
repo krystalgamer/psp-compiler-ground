@@ -4,7 +4,7 @@
 #include "parse_str.h"
 #include "m2c_macros.h"
 #define CI(c, C) (((c) >= 'a' && (c) <= 'z') ? ((c) == (C) + 0x20) : ((c) == (C)))
-void HST_addAuthorizationDB();
+int HST_addAuthorizationDB();
 extern int DOM_NODE_MAX_SIZE;
 extern PChar DomMaxAlert[];
 extern PChar ds_font[];
@@ -18,10 +18,26 @@ void *MEM_malloc();
 void MEM_free();
 int OS_clock_gettime();
 int rnd_newMarquee();
-void rnd_gdrawImageReset();
+int rnd_gdrawImageReset();
 extern PTag htmlElementTable[];
 
 
+unsigned int strlen(const char *);
+int strncasecmp(const char *, const char *, unsigned int);
+int strncmp(const char *, const char *, unsigned int);
+char *strncpy(char *, const char *, unsigned int);
+int checkEncode(unsigned char *s, int n);
+void *memcpy(void *, const void *, unsigned int);
+int parseStrEqual(char *a, PChar *b);
+int parseDStrEqual(char *a, PDStr *s);
+int utf8ToUcs2(unsigned short *d, const char *s, int n);
+void *MEM_realloc(void *, void *p, unsigned int size);
+int sjisToUcs2(u16 *dst, const u8 *src, int len);
+int eucToUcs2(u16 *dst, const u8 *src, int len);
+int asciiToUcs2(u16 *dst, const u8 *src, int len);
+void *Node_appendChild(void *, void *);
+void parseElementSetAttribute(int elem, PDStr *name, void *val);
+void CharacterData_setData(void *, void *);
 void parseFindValue(char *s, int *start, int *end, int *next) {
     int b;
     int st;

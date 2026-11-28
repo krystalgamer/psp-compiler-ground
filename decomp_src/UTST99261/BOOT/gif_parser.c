@@ -5,7 +5,7 @@ unsigned char getByte(int);                                    /* extern */
 short getWord(int, M2C_UNK);                          /* extern */
 M2C_UNK skipByte(int, M2C_UNK);                     /* extern */
 void *ESP_malloc(M2C_UNK);                          /* extern */
-M2C_UNK ESP_free(void *);                           /* extern */
+void ESP_free(void *);                           /* extern */
 void *memset(void *p, int c, unsigned int n);
 int memcmp(const void *a, const void *b, unsigned int n);
 int copyByte(int bs, void *dst, int n);

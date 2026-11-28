@@ -78,10 +78,15 @@ M2C_UNK GUI_Component_getParent();                  /* extern */
 M2C_UNK rnd_gdrawImageDecode();                     /* extern */
 M2C_UNK rnd_gdrawImageDecodeByGifFile();            /* extern */
 M2C_UNK rnd_gdrawImageProperty();                   /* extern */
-M2C_UNK rnd_gdrawImageDelete();                     /* extern */
-M2C_UNK rnd_updateAnimBoxnode();                    /* extern */
+void rnd_gdrawImageDelete();                     /* extern */
+void rnd_updateAnimBoxnode();                    /* extern */
 
 
+void GUI_Toolkit_mutexLock(void);
+void GUI_Toolkit_mutexUnlock(void);
+M2C_UNK *rnd_findParentBoxnode(M2C_UNK *arg0, int arg1);
+void *MEM_malloc(void *, unsigned int size);
+int strcmp(const char *, const char *);
 void drawEachFrame(BNODE *node) {
     BLIST *l;
 

@@ -176,13 +176,16 @@ extern int _zWindDrawTexClipOffY;
 
 
 
-void GUI_Choice_select(ZW *w, int idx);
+int GUI_Choice_select(ZW *w, int idx);
 typedef struct { u8 unk0[0x4C]; char *text; s16 len; s16 scroll; s16 lines; s16 unk56; int bar; } ZTEXTAREA;
 int zWindFontDrawArea(void *font, int x, int y, char *s, short color, int w, int len, int bottom);
 typedef struct { u16 code; u16 base; } KJTBL;
 extern KJTBL kanji_0_table_1F2FD4[];
 extern KJTBL kanji_1_table_1F3020[];
 extern KJTBL kanji_2_table[];
+int GUI_List_isIndexSelected(void *, int idx);
+int GUI_List_deselect(void *, int idx);
+int GUI_List_select(void *, int idx);
 int zWindDraw(void) {
     int r;
 

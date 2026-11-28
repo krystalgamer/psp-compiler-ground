@@ -5,9 +5,9 @@
 extern unsigned char _DOMform;
 int Node_getNodeType(void *node);
 void *Node_getParentNode(void *node);
-void Element_getTagName(DOMString *s, void *node);
+int Element_getTagName(DOMString *s, void *node);
 int DOMStringcasecmpFast(DOMString *s, void *str);
-M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
+void MEM_free(M2C_UNK, void *);                  /* extern */
 
 int Node_getBox(int);                               /* extern */
 M2C_UNK resetFormData(int, M2C_UNK);                /* extern */
@@ -30,8 +30,8 @@ void *Node_getLastChild(void *node);
 void *Node_getPreviousSibling(void *node);
 int HST_getSessionID(void *h);
 extern unsigned char _DOMinput, _DOMtype, _DOMbutton, _DOMcheckbox, _DOMfile, _DOMhidden, _DOMimage, _DOMpassword, _DOMradio, _DOMreset, _DOMsubmit, _DOMselect, _DOMtextarea;
-void Node_getNodeName(DOMString *s, void *node);
-void Element_getAttribute(DOMString *s, void *node, void *name);
+int Node_getNodeName(DOMString *s, void *node);
+int Element_getAttribute(DOMString *s, void *node, void *name);
 typedef struct FormElem { void *elem; struct FormElem *next; } FormElem;
 typedef struct { int type; int unk4; int unk8; int unkC; int unk10; int unk14; int unk18; int unk1C; } LFMSG;
 typedef struct { int unk0; LFMSG m; } LFBUF;
@@ -44,6 +44,8 @@ void proc_msg_TM(LFMSG *m);
 typedef struct RadioItem { struct RadioItem *prev; struct RadioItem *next; void *box; } RadioItem;
 void *getBodyBox(void *box);
 typedef struct FBOX { u8 pad0[0x6C]; void *form; u8 pad70[0x38]; struct FBOX *parent; struct FBOX *child; struct FBOX *next; } FBOX;
+unsigned int strlen(const char *);
+char *strcpy(char *, const char *);
 RadioEnt *getRadioListByName(void *ctx, void *box) {
     RadioEnt *r = M2C_FIELD(M2C_FIELD(ctx, void **, 0x20), RadioEnt **, 0x80);
 

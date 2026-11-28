@@ -76,7 +76,7 @@ void imageDecodeFailure(IMGENT *e);
 void setImageToBoxBuffer(BOX *b, void *image);
 void rnd_removeAnimBoxnode(BOX *b);
 int rnd_gdrawImageProperty(void *img, int *w, int *h);
-void rnd_addAnimBoxnode(BOX *b, BOX *body);
+int rnd_addAnimBoxnode(BOX *b, BOX *body);
 void delLLISTByDocumentSession(LLIST *list, int doc);
 typedef struct {
     u8 unk0[0x48];
@@ -107,8 +107,8 @@ void delLLIST(LLIST *list, LNODE *n);
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
-void OS_timer_stop();
-void OS_timer_start();
+int OS_timer_stop();
+int OS_timer_start();
 void proc_msg_PL1();
 void proc_msg_PL2();
 void proc_msg_PL3();
@@ -145,6 +145,8 @@ void proc_msg_JL13();
 void proc_msg_JL14();
 void proc_msg_JL15();
 void proc_msg_TM();
+int countRequestedLLIST(LLIST *list, int doc);
+void putLLIST(LLIST *list, LNODE *n);
 int getRestImageTotalSquareSize(IMGLIST *list) {
     return -1;
 }
@@ -919,11 +921,11 @@ void initJSEvent(LJSEVENT *ev, int type, int node, int a, int b);
 void sendJSEvent(int obj, LJSEVENT *ev);
 int Node_getJSObj(int node);
 int isLoadedAllChild(HISTNODE *h);
-void GUI_ScrollPane_setScrollPosition(int w, int x, int y);
+int GUI_ScrollPane_setScrollPosition(int w, int x, int y);
 LNODE *make_msg_LP4(int sid, int w, int h);
 LNODE *make_msg_LP21(int sid, BOX *body);
-void drawPaint(BOX *b);
-void drawObject(BOX *b);
+int drawPaint(BOX *b);
+int drawObject(BOX *b);
 
 void proc_msg_IL4(LOMSG *msg) {
     LNODE *n;

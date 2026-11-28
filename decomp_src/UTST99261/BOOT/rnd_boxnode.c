@@ -13,6 +13,7 @@ typedef struct {
     int *minor;
 } TRAPEZOID;
 
+void rnd_gdrawFillrectangle(int g, int color, int x, int y, int w, int h);
 void initTrapezoidPoint(TRAPEZOID *t, int x0, int y0, int x1, int y1) {
     int dx;
     int dy;

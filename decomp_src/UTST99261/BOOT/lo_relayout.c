@@ -128,7 +128,7 @@ void MEM_free(int pool, void *p);
 int adjustLineVposition();
 int getLineHeight(void **);                         /* extern */
 extern void *D_00584CD8;
-M2C_UNK HST_flushHistoryGarbageList();              /* extern */
+void HST_flushHistoryGarbageList();              /* extern */
 void *HST_getHistoryGarbageList();                  /* extern */
 
 
@@ -137,6 +137,22 @@ void setBoxSize(RBOX *b, int w, int h);
 typedef struct UIFTBL { int v[1][7]; } UIFTBL;
 extern int D_00584CEC;
 #define UIG(o) (((int *)ui_global)[(o) / 4])
+void *MEM_malloc(void *, unsigned int size);
+void *memcpy(void *, const void *, unsigned int);
+void adjustLineHposition(void *ctx, void *line);
+void updateLiFirstLineList(void *arg0);
+void initBoxList(void *);
+void initLinePosition(void *);
+void lfm_resetPageRegion(void *arg0, int arg1);
+void *getBodyBox(void *);
+void initButtonBoxSize(void *);
+void initTextAreaBoxSize(void *, int cols, int rows);
+void initTextFieldBoxSize(void *, int cols);
+void initSelectBoxSize(void *);
+void *getBoxByHTML(void *, int html);
+void copyBoxList(void *, void *);
+int confirmScrollInfo(void *ev);
+void actClearForm(void *f);
 int restoreSpaceText(RBOX *box) {
     char *old;
     char *p;

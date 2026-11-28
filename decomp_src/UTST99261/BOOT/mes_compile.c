@@ -52,15 +52,18 @@ Vals *mes_util_vals(int n, int x);
 M2C_UNK mes_compile_vars_list(int, int);            /* extern */
 int mes_list_tail_new();                            /* extern */
 M2C_UNK mes_list_tail_to_vals(int);                 /* extern */
-M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
-M2C_UNK mes_byte_code_jump(int, M2C_UNK, int);      /* extern */
-M2C_UNK mes_byte_code_op(int, M2C_UNK);             /* extern */
+void MEM_free(M2C_UNK, void *);                  /* extern */
+void mes_byte_code_jump(int, M2C_UNK, int);      /* extern */
+void mes_byte_code_op(int, M2C_UNK);             /* extern */
 
 
 
 void mes_byte_code_opw(int code, int op, int v);
 int mes_list_tail_find(int l, int v);
 void mes_compile_expression(CompState *c, Node *n, int keep);
+unsigned char mes_byte_code_reachable(void *arg0);
+void *mes_object_prop(void *, unsigned int id);
+void mes_object_set(void *, unsigned int id, int value, int flags);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_compile", mes_compile_vars_list);
 
 #ifndef NULL

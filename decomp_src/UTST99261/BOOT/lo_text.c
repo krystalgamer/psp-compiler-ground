@@ -1,8 +1,8 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
-M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
-M2C_UNK OS_timer_clear(int);                        /* extern */
+void MEM_free(M2C_UNK, void *);                  /* extern */
+void OS_timer_clear(int);                        /* extern */
 M2C_UNK OS_timer_stop(int);                         /* extern */
 extern void *D_00584CDC;
 void *MEM_malloc();
@@ -11,13 +11,13 @@ M2C_UNK OS_timer_start(int);                        /* extern */
 void *HST_searchSessionIDHistoryNode(int);          /* extern */
 int checkBoxValidity(int);                          /* extern */
 void *Node_getBox(int);                             /* extern */
-M2C_UNK actSetFocusByBox(int, void *, M2C_UNK);     /* extern */
+void actSetFocusByBox(int, void *, M2C_UNK);     /* extern */
 int getBodyBox(void *);                             /* extern */
 int getInputType(int);                              /* extern */
 M2C_UNK selectText(void *);                         /* extern */
 
 int make_msg_LP1();                                 /* extern */
-M2C_UNK putLLIST(M2C_UNK *, int);                   /* extern */
+void putLLIST(M2C_UNK *, int);                   /* extern */
 extern unsigned char REQUEST_LLIST;
 
 typedef struct TIMER {
@@ -69,7 +69,7 @@ typedef struct {
 
 void *getViewClientSize();
 void getBodyAbsolutePos();
-void actDefaultClickAction();
+int actDefaultClickAction();
 void actFormInput();
 void *HST_getHeadHistoryNode(void);
 void GUI_Toolkit_mutexLock(void);
@@ -601,11 +601,11 @@ typedef struct {
     JMSG m;
 } JL3BUF;
 int OS_thread_join();
-int OS_thread_exit();
+void OS_thread_exit();
 int OS_mq_close();
 int OS_mq_unlink();
 int OS_mq_send();
-int OS_thread_mutex_destroy();
+void OS_thread_mutex_destroy();
 void actClearSearchString();
 void freeSessionSaveDataList();
 void destroySelectList();
@@ -904,7 +904,7 @@ int requestImageData();
 JAUTH *HST_searchAuthorizationDB();
 void reserveGetRequest();
 void relayoutAtBody();
-void drawObject();
+int drawObject();
 extern void *ui_global;
 
 void proc_msg_JL14(JMSG *m) {

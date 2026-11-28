@@ -20,12 +20,13 @@ int iom_attachHttpCtx(void);
 int iom_attachCache(void);
 int iom_attachCookie(void);
 void iom_stopHttpCtx(int);
-void iom_freeMsg(IOMMSG *msg);
+int iom_freeMsg(IOMMSG *msg);
 IOMMSG *iom_newMsg(IOMMSG *msg);
 void iom_sendMsg(IOMMSG *msg, int mq);
 
 
 
+void iom_end(void);
 int iom_evStartup(IOMMSG *msg) {
     MQATTR attr = { 0, 0x80, 0x24, 0 };
     int q;

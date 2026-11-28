@@ -7,7 +7,7 @@ int http_state(int h);
 int UTL_mfilesize(void *f);
 int UTL_mfilepos(void *f);
 int UTL_mfileread(void *f, void *buf, int len);
-int UTL_mfileclean(void *f);
+void UTL_mfileclean(void *f);
 int OS_thread_mutex_lock(void *m);
 int OS_thread_mutex_unlock(void *m);
 int sceParseHttpStatusLine(const char *line, int len, int *major, int *minor, int *status, const char **reason, int *reasonlen);

@@ -42,6 +42,24 @@ int ps_i2212();
 int ps_i2208();
 int ps_i2D14();
 int ps_i2D06();
+int ps_sessionGen(void);
+int ps_sndmsg(PsIpc *msg, int dest);
+void *MEM_malloc(void *, unsigned int size);
+void MEM_free(void *, void *p);
+void *HST_getHeadHistoryNode(void);
+int HST_getTitlelen(void *arg0);
+void ps_halt(char *msg);
+void *memset(void *, int, unsigned int);
+int HST_getTitle(void *arg0);
+void initMPI_SIG_REQUEST_ABORTED(void *arg0);
+void ps_sendGetStop(PsIpc *m);
+void *GetMQUEUE(int q, void *buf);
+void ps_saveCacheMode(int m);
+void ps_JSMailBoxfree(void);
+int icmpstr(char *a, char *b, int n);
+int initMPU_REQ_SHOW_DIALOG(void *arg0, int arg1);
+void ps_save(PsIpc *msg, int sid);
+int ps_submit(PsIpc *msg);
 void sendMPL_REQ_DATA_ATTR(PsIpc *msg) {
     PsIpc m;
 

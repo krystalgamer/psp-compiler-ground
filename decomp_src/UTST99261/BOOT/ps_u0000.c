@@ -21,6 +21,14 @@ M2C_UNK ps_dmy();                                   /* extern */
 #define NULL ((void *)0)
 #endif
 
+int OS_mq_send(int id, const char *buf, int len, unsigned int prio);
+int ps_isMoveHistory(int off, int sid, int local);
+void MEM_free(void *, void *p);
+void initMPI_SIG_REQUEST_ABORTED(void *arg0);
+void ps_sendGetStop(PsIpc *m);
+void ps_save(PsIpc *msg, int sid);
+void initMPL_REQ_ABORT_PAGE(void *arg0);
+int ps_sndmsg(PsIpc *msg, int dest);
 int ps_u0000(void *arg0) {
     buf_sessionUI = M2C_FIELD(arg0, int *, 4);
     buf_localUI = M2C_FIELD(arg0, int *, 0x14);

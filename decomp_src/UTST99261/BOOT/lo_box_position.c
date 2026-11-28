@@ -26,6 +26,18 @@ typedef struct { LIST l; int f; } URLL;
 extern URLL D_00584CF0;
 void lfm_resetPageRegion(void *r, int w);
 extern char D_00139244[];
+void getBaseBlockPosition(void *arg0, int *arg1, int *arg2);
+int lfm_getHorizontalArea(void *, void *, int y, int *off, int *wout);
+int getLineWidth(LINE *l);
+int getContainingBlockWidth(BOX *box);
+void turnupContent(void *ctx, BOX *box);
+void initLinePosition(BOX *box);
+int lineFeedProc(void *ctx, BOX *box);
+BOX *getTableBox(BOX *box);
+void adjustLineHposition(void *ctx, void *line);
+int adjustLineVposition(void *ctx, BOX *box, LIST *line);
+void updateLiFirstLineList(void *arg0);
+int GUI_Graphics_getStringSize(int font, char *s, int len, int *w, int *h);
 int getPrevLineHeight(void *arg0) {
     return M2C_FIELD(M2C_FIELD(arg0, void **, 4), int *, 0x34);
 }

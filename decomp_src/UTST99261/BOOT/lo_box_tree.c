@@ -2,17 +2,17 @@
 #include "common.h"
 #include "m2c_macros.h"
 int Node_getBox();                                  /* extern */
-M2C_UNK htmlTagBranchAfter(int);                    /* extern */
+void htmlTagBranchAfter(int);                    /* extern */
 int Util_HTMLDocument_getBody(int);                 /* extern */
-M2C_UNK applyCSSExtStyleSheetToBox(int, int);       /* extern */
-M2C_UNK applyCSSInlinePropertyToBox(int, int);      /* extern */
-M2C_UNK attr_BACKGROUND(int, int);                  /* extern */
-M2C_UNK attr_BGCOLOR(int, int);                     /* extern */
-M2C_UNK attr_LINK(int, int);                        /* extern */
-M2C_UNK attr_MARGINHEIGHT(int, int);                /* extern */
-M2C_UNK attr_MARGINWIDTH(int, int);                 /* extern */
-M2C_UNK attr_TEXT(int, int);                        /* extern */
-M2C_UNK attr_VLINK(int, int);                       /* extern */
+void applyCSSExtStyleSheetToBox(int, int);       /* extern */
+void applyCSSInlinePropertyToBox(int, int);      /* extern */
+void attr_BACKGROUND(int, int);                  /* extern */
+void attr_BGCOLOR(int, int);                     /* extern */
+void attr_LINK(int, int);                        /* extern */
+void attr_MARGINHEIGHT(int, int);                /* extern */
+void attr_MARGINWIDTH(int, int);                 /* extern */
+void attr_TEXT(int, int);                        /* extern */
+void attr_VLINK(int, int);                       /* extern */
 void nodeTreeLoop(void *, int);
 int getTargetBodyBox();                             /* extern */
 

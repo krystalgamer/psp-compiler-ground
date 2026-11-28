@@ -50,10 +50,29 @@ extern int before_ps_sts;
 extern int buf_Message_cnt;
 extern int buf_ps_sts;
 M2C_UNK ps_setExMsg(int, int);                      /* extern */
-M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
+void MEM_free(M2C_UNK, void *);                  /* extern */
 
 M2C_UNK ps_i2314();                                 /* extern */
 
+void *HST_searchSessionIDHistoryNode(int sid);
+int *parseDomBuild(int *msg);
+void ps_halt(char *msg);
+int HST_setCharSet(void *arg0, int arg1);
+int HST_setRequestResult(void *arg0, int arg1);
+void initMPL_REQ_LOAD_PAGE(void *arg0);
+int ps_sndmsg(PsIpc *msg, int dest);
+void ps_DomTerm(int sid);
+int HST_getDomObject(void *arg0);
+void *HST_searchRequestFlagHistoryNode(int flag);
+void *ps_ExternalSearchRequestFlag(int arg0, int arg1);
+void initMPU_SIG_RECV_COMPLETE(void *arg0);
+int OS_mq_send(int id, const char *buf, int len, unsigned int prio);
+int ps_sessionGen(void);
+int HST_setUnitId(void *arg0, int arg1);
+int HST_setRequestFlag(void *arg0, int arg1);
+int HST_getJSURIlen(void *arg0);
+int HST_getCSSURIlen(void *arg0);
+int ps_JSMailBoxClean(void);
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/ps_i2200", D_0013794C);
 
 int ps_i2206(PsIpc *msg) {

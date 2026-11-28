@@ -49,10 +49,34 @@ extern int before_ps_sts;
 extern int buf_Message_cnt;
 extern int buf_ps_sts;
 M2C_UNK ps_setExMsg(int, int);                      /* extern */
-M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
+void MEM_free(M2C_UNK, void *);                  /* extern */
 
 M2C_UNK ps_i2314();                                 /* extern */
 
+void *HST_searchSessionIDHistoryNode(int sid);
+int *parseDomBuild(int *msg);
+void sendMPL_REQ_LOAD_PAGE(PsIpc *m, int sid);
+int HST_setRequestFlag(void *arg0, int arg1);
+int ps_ParseDomBuildCall(PsIpc *msg);
+int OS_mq_send(int id, const char *buf, int len, unsigned int prio);
+void ps_halt(char *msg);
+int HST_getJSURIlen(void *arg0);
+int HST_getCSSURIlen(void *arg0);
+void ps_DomTerm(int sid);
+void initMPL_REQ_LOAD_PAGE(void *arg0);
+int ps_sndmsg(PsIpc *msg, int dest);
+void *HST_searchRequestFlagHistoryNode(int flag);
+void *ps_ExternalSearchRequestFlag(int arg0, int arg1);
+void initMPU_SIG_RECV_COMPLETE(void *arg0);
+void sendComplete(PsIpc *m);
+void *GetMQUEUE(int q, void *buf);
+void *HST_getHeadHistoryNode(void);
+int HST_getCurURIlen(void *arg0);
+void *MEM_malloc(void *, unsigned int size);
+void *memcpy(void *, const void *, unsigned int);
+int HST_getCurURI(int *arg0);
+void sendStart(PsIpc *a, PsIpc *b, int *data);
+void ps_freeRecvInfo(void);
 int ps_i2306(PsIpc *msg) {
     PsIpc m;
     PsDomBuild b;

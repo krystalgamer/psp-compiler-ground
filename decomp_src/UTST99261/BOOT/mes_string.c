@@ -45,7 +45,7 @@ void *mes_gc_alloc(MesContext *ctx, int kind);
 void mes_memory_copy(const void *src, void *dst, int n);
 MesValue mes_eval_type_error(MesContext *ctx, ...);
 
-M2C_UNK mes_gc_register(M2C_UNK *, M2C_UNK, M2C_UNK, M2C_UNK); /* extern */
+void mes_gc_register(M2C_UNK *, M2C_UNK, M2C_UNK, M2C_UNK); /* extern */
 extern unsigned char mes_string_method;
 
 

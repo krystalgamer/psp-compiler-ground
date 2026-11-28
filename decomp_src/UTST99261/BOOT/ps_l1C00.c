@@ -103,6 +103,18 @@ PsIpc *msg;
 #define NULL ((void *)0)
 #endif
 
+void *HST_getHeadHistoryNode(void);
+int HST_setSessionID(void *arg0, int arg1);
+void *HST_searchTargetNameHistoryNode(void *a, void *b);
+void *HST_searchSessionIDHistoryNode(int sid);
+void initMPI_SIG_REQUEST_ABORTED(void *arg0);
+void *HST_searchRequestFlagHistoryNode(int flag);
+int HST_getSessionID(void *arg0);
+void *ps_ExternalSearchRequestFlag(int arg0, int arg1);
+void initMPL_REQ_ABORT_PAGE(void *arg0);
+int OS_mq_getattr(int id, void *);
+int OS_mq_setattr(int id, void *, void *);
+int OS_mq_receive(int id, char *buf, int len, unsigned int *prio);
 int ps_l1C03(void) {
     RequestEnd();
     return 3;

@@ -10,14 +10,14 @@ extern void *CSSPropertyNames[];
 extern u16 CSSSTR_important[];
 void *MEM_calloc();
 int CSSValue_getCssText(int);                       /* extern */
-M2C_UNK CSS_freePoolBuf(void *);                    /* extern */
+void CSS_freePoolBuf(void *);                    /* extern */
 int CSS_getPoolBuf(void *);                         /* extern */
 M2C_UNK CSS_putSPoolBuf(void *, M2C_UNK *);         /* extern */
 M2C_UNK CSS_putsPoolBuf(void *, int);               /* extern */
-M2C_UNK MEM_free(M2C_UNK, int);                     /* extern */
+void MEM_free(M2C_UNK, int);                     /* extern */
 M2C_UNK newCSSRule(M2C_UNK, M2C_UNK, int, int);     /* extern */
 
-M2C_UNK addCSSRule();                               /* extern */
+void addCSSRule();                               /* extern */
 
 
 typedef struct CSSSELN { s16 type; s16 pad; int pad2[5]; struct CSSSELN *next; } CSSSELN;
@@ -30,6 +30,15 @@ typedef struct CSSPV {
     void *v[4];
 } CSSPV;
 void *UCS_strdup(void *);
+void freeCSSStyleDeclaration(void *arg0);
+void *CSS_newPoolBuf(void);
+void freeCSSSelectorList(void *arg0);
+void freeCSSNode(void *n);
+void *newCSSNode(int type, int size);
+void CSS_StyleSheetRuleSingle(void *ss, u16 *p);
+void popCSSNode(void *node);
+void freeCSSStyleSheet(void *ss);
+void freeCSSPrimitiveValue(void *v, int all);
 void *CSSStyleDeclaration_getPropertyDeclaration(void *d, u16 *name) {
     void *p;
     for (p = d; p != NULL; p = M2C_FIELD(p, void **, 0x18)) {

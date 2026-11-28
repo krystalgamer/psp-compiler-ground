@@ -61,11 +61,15 @@ MesValue mes_date_set_utc_hours(MesContext *ctx, int h, int mi, int s, int ms);
 void mes_date_normalize(MesDate *d);
 void *mes_gc_alloc(MesContext *ctx, int kind);
 void mes_object_init(MesObject *obj, int cls, MesObject *proto);
-M2C_UNK mes_gc_register(M2C_UNK *, M2C_UNK, M2C_UNK, M2C_UNK); /* extern */
+void mes_gc_register(M2C_UNK *, M2C_UNK, M2C_UNK, M2C_UNK); /* extern */
 extern unsigned char mes_date_method;
 
 
 MesDate *mes_date_from_string(MesContext *ctx, MesValue s);
+MesValue mes_number_alloc(MesContext *ctx, double d);
+int mes_eval_to_primitive(void *, int v, int hint);
+int mes_eval_to_number(void *, int v);
+void mes_object_set(MesObject *obj, unsigned int id, int value, int flags);
 MesDate *mes_date_new(MesContext *ctx)
 {
     MesDate *d = mes_gc_alloc(ctx, 7);

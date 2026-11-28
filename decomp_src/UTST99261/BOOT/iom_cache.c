@@ -9,7 +9,7 @@ void *UTL_peekqueue(void *q, void *e);
 int strcasecmp(const char *a, const char *b);
 void iom_freeCache(void *c);
 M2C_UNK UTL_mfiledelete(int);                       /* extern */
-M2C_UNK UTL_relqueue(M2C_UNK *, void *);            /* extern */
+void UTL_relqueue(M2C_UNK *, void *);            /* extern */
 extern unsigned char D_00585130;
 int UTL_sizequeue(int);                             /* extern */
 extern unsigned char D_00585138;
@@ -21,6 +21,9 @@ extern unsigned char D_00585138;
 #endif
 int CLIB_time(int *t);
 int iom_diffexpire(int, int);
+void iom_deleteCacheId(int id);
+void iom_deleteDomainCache(void *arg0);
+int iom_mfree(int arg0);
 int iom_loadCache(void) {
     return 0;
 }

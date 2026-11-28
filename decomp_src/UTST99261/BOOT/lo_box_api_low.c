@@ -9,7 +9,7 @@ void initBoxProperty(BOX *box);
 BOX *getParentBlockBox(BOX *box);
 int getContainingBlockWidth(BOX *box);
 void *getSessionSaveData(int id);
-void getViewPort(BOX *box, int *x, int *y);
+int getViewPort(BOX *box, int *x, int *y);
 void drawDelete(BOX *box);
 
 
@@ -30,7 +30,9 @@ void actSaveForm(BOX *body, BOX *box);
 HISTNODE *HST_getChildHistoryNode(HISTNODE *n);
 HISTNODE *HST_getSiblingHistoryNode(HISTNODE *n);
 int HST_getRequestFlag(HISTNODE *n);
-void HST_deleteHistoryNode(HISTNODE *n);
+int HST_deleteHistoryNode(HISTNODE *n);
+void linkBox(BOX *box, BOX *parent, BOX *prev);
+void insLinkBox(BOX *box, BOX *parent, BOX *prev);
 int checkTableHierarchy(BOX *box, BOX **table) {
     while (box != NULL) {
         if (box->content == 6) {

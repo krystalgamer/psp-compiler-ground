@@ -59,6 +59,7 @@ extern const double D_0013B7A8;
 extern const double D_0013B7B0;
 extern const double D_0013B798;
 extern const double D_0013B7A0;
+void mes_gc_register(void *, int objsize, int perpage, int threshold);
 MesValue mes_number_alloc_int32(MesContext *ctx, int n)
 {
     MesValue v = MES_INT(n);

@@ -50,24 +50,24 @@ void mes_object_free_page(MesPage *pg);
 int mes_object_insert_page(MesPage *pg, MesProp *item, MesPage **split);
 MesPage *mes_object_page_new(void);
 
-M2C_UNK mes_gc_register(M2C_UNK *, M2C_UNK, M2C_UNK, M2C_UNK); /* extern */
+void mes_gc_register(M2C_UNK *, M2C_UNK, M2C_UNK, M2C_UNK); /* extern */
 extern unsigned char mes_object_method;
-M2C_UNK mes_array_initialize();                     /* extern */
-M2C_UNK mes_byte_initialize();                      /* extern */
-M2C_UNK mes_class_initialize();                     /* extern */
-M2C_UNK mes_date_initialize();                      /* extern */
-M2C_UNK mes_eval_initialize();                      /* extern */
-M2C_UNK mes_id_initialize();                        /* extern */
-M2C_UNK mes_lex_initialize();                       /* extern */
-M2C_UNK mes_native_initialize();                    /* extern */
-M2C_UNK mes_number_initialize();                    /* extern */
-M2C_UNK mes_regexp_initialize();                    /* extern */
-M2C_UNK mes_string_initialize();                    /* extern */
+void mes_array_initialize();                     /* extern */
+void mes_byte_initialize();                      /* extern */
+void mes_class_initialize();                     /* extern */
+void mes_date_initialize();                      /* extern */
+void mes_eval_initialize();                      /* extern */
+void mes_id_initialize();                        /* extern */
+void mes_lex_initialize();                       /* extern */
+void mes_native_initialize();                    /* extern */
+void mes_number_initialize();                    /* extern */
+void mes_regexp_initialize();                    /* extern */
+void mes_string_initialize();                    /* extern */
 extern int mes_gc_enabled;
-M2C_UNK mes_context_free(int);                      /* extern */
-M2C_UNK mes_context_hash_free();                    /* extern */
-M2C_UNK mes_gc_free();                              /* extern */
-M2C_UNK mes_id_free();                              /* extern */
+void mes_context_free(int);                      /* extern */
+void mes_context_hash_free();                    /* extern */
+void mes_gc_free();                              /* extern */
+void mes_id_free();                              /* extern */
 extern int mes_context_head;
 
 

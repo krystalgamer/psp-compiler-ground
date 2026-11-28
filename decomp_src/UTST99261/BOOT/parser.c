@@ -31,12 +31,12 @@ PDStr Node_getNodeName(int node);
 int DocumentSet(int, void *, M2C_UNK);              /* extern */
 void *HST_searchSessionIDHistoryNode(int);          /* extern */
 int Node_getJSObj(int);                             /* extern */
-M2C_UNK Node_setJSObj(int, int);                    /* extern */
+void Node_setJSObj(int, int);                    /* extern */
 void *MEM_malloc(M2C_UNK, M2C_UNK);                 /* extern */
-M2C_UNK MEM_free(M2C_UNK, M2C_UNK *);               /* extern */
+void MEM_free(M2C_UNK, M2C_UNK *);               /* extern */
 int MEM_realloc(M2C_UNK, int, int);                 /* extern */
 
-M2C_UNK parseHST_deleteHistoryNode(M2C_UNK, M2C_UNK); /* extern */
+void parseHST_deleteHistoryNode(M2C_UNK, M2C_UNK); /* extern */
 
 
 #ifndef NULL
@@ -47,6 +47,72 @@ typedef struct { PChar s[7]; } PS7;
 extern const PS7 D_00137E48;
 extern unsigned char NoTargetNameNumber;
 char *DOMStringEncode(PDStr *s, int enc);
+int parseCheckTag(PCtx *c);
+void parseElement(PCtx *c);
+void parseEndTag(PCtx *c, int skip);
+void parseComment(PCtx *c);
+void parseDocType(PCtx *c);
+void parseMarkedSection(PCtx *c);
+void parseProcessingInstruction(PCtx *c);
+int parseSkipChar(PCtx *c, int n);
+void parseInvalidComment(PCtx *c);
+void parseContents(PCtx *c);
+void *parseCreateBuffer(void);
+int parseNextChar(PCtx *c);
+void parseAdjustBuffer(PStrBuf *b);
+void *Document_createElement(void *, void *);
+void *Node_appendChild(void *, void *);
+PDStr *parseMBtoDScopy(PChar *s, int n);
+void *Document_createTextNode(void *, void *);
+void CharacterData_setData(void *, void *);
+int parseTagCountPlus(PCtx *c, PTag t);
+PChar *parseStrnCpy(PChar *s, int n);
+int parseWellFormedCommentWC(PCtx *c);
+void parseAlertMessage(PCtx *c);
+void parseDeleteBuffer(M2C_UNK *arg0);
+int ucs2ToUtf8(char *d, unsigned short *s, int n);
+int HST_setTitle(void *node, const char *src, int len);
+unsigned int strlen(const char *);
+void *memcpy(void *, const void *, unsigned int);
+int parseStrEqualNoCase(char *a, PChar *b);
+int parseTagCountMinus(PCtx *c, PTag t);
+void parseScriptExternal(PCtx *c);
+void parseInvalidTag(PCtx *c, PChar *name, int len);
+int parseDStrEqual(char *a, PDStr *s);
+char *strcpy(char *, const char *);
+int HST_getBaseURI(void *arg0);
+int HST_getCurURI(int *arg0);
+char *URL_toAbsoluteURL(char *base, char *rel);
+void *HST_createHistoryNode(void);
+int HST_setCurURI(void *, const char *src, int len);
+int HST_setRefURI(void *node, const char *src, int len);
+int HST_getCurURIlen(void *arg0);
+int HST_setJSURI(void *arg0, void *arg1);
+int HST_setRequestFlag(void *arg0, int arg1);
+int HST_addChildHistoryNode(void *parent, void *child);
+int HST_getStyleSheet(void *arg0);
+int HST_setStyleSheet(void *arg0, int arg1);
+void *Node_getAttributes(void *);
+unsigned int NamedNodeMap_getLength(void *);
+void *NamedNodeMap_item(void *, unsigned int i);
+char *DOMStringtoUTF8(void *);
+int HST_setBaseURI(void *node, char *url, int len);
+int HST_setDefaultTarget(void *node, const char *src, int len);
+int HST_setTargetName(void *node, const char *src, int len);
+int HST_setCharSet(void *arg0, int arg1);
+int HST_setSourceType(void *arg0, int arg1);
+int HST_getSourceType(void *arg0);
+void *HST_getHeadHistoryNode(void);
+void parseDStrTrace(PDStr *s);
+int HST_getParentHistoryNode(void *arg0);
+int HST_getDomObject(void *arg0);
+void *Util_HTMLDocument_getBody(void *);
+void EventHandlerSet(int arg0, int arg1);
+int parseJSInputTypeCmp(PDStr *s);
+void *OptionSet(int a, int b, int c);
+int UCS_strncasecmp(void *, void *, int n);
+int Attr_getSpecified(void *);
+void Element_setAttribute(void *, void *, void *);
 void parseReleaseResource(void) {
     parseDeleteMultiBuffer();
     parseHST_deleteHistoryNode(0, 0);

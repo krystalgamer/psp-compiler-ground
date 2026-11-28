@@ -27,14 +27,14 @@ void _GUI_Graphics_Pop(void);
 void zWindDrawBox();
 void zWindFontDraw();
 void zWindDrawImage();
-int pspBrowserUtf8ToSjis();
+void pspBrowserUtf8ToSjis();
 extern u8 D_00584BB6;
 void zWindDrawImageScl();
 int IMG_sortImage();
 int IMG_gifCreateContext();
 int IMG_gifInputData();
 int IMG_gifReadHeader();
-int IMG_gifDestroyContext();
+void IMG_gifDestroyContext();
 typedef struct {
     u16 w;
     u16 h;
@@ -48,6 +48,7 @@ extern int _zWindDrawTexClipOffY;
 
 
 typedef struct { u16 width; u16 height; int unk4; int anim; int unkC; int unk10; } GIMGHDR;
+void zWindDrawClipSet(int x, int y, int w, int h);
 GUIGRAPHICS *GUI_Graphics_createGraphics(GUIWIDGET *w) {
     GUIGRAPHICS *g;
 

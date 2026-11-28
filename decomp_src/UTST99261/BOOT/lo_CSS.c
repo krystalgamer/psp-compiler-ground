@@ -28,7 +28,7 @@ int OS_thread_mutex_init(int m, int a);
 int iom_loadCookie(void);
 char *iom_getCookie();
 void *iom_malloc(int size);
-void iom_mfree(void *p);
+int iom_mfree(void *p);
 unsigned int strlen(const char *s);
 int sprintf(char *buf, const char *fmt, ...);
 #define CSS_TOUPPER(c) ((c) - (((u16)((c) - 'a') < 26) << 5))
@@ -38,8 +38,8 @@ extern int *iomCookie;
 void *UTL_peekqueue(void *q, int a1);
 void iom_deleteCookie(void *c);
 int iom_saveCookie(void);
-void OS_thread_mutex_lock(int m);
-void OS_thread_mutex_unlock(int m);
+int OS_thread_mutex_lock(int m);
+int OS_thread_mutex_unlock(int m);
 
 
 
@@ -48,7 +48,7 @@ void cssBackgroundColor(void *ctx, BOX *box, CSSVALUE *val, int n);
 typedef void (*CSSFUNC)(void *ctx, BOX *box, void *val, int n);
 extern CSSFUNC CSSFuncTable[];
 extern unsigned char _DOMstyle;
-void Element_getAttribute(DOMString *s, void *node, void *name);
+int Element_getAttribute(DOMString *s, void *node, void *name);
 void *CSS2_AttributeParse(int a, u16 *s);
 void CSS2_freeCSSAttribute(void *a);
 void *CSSStyleDeclaration_getValue(void *d);
@@ -61,7 +61,7 @@ typedef struct CSSCHAINV { void *next; u16 *str; } CSSCHAINV;
 typedef struct CSSSELM { u8 x0[0x1C]; u16 flags; u16 x1E; int x20; u16 *tag; CSSCHAINV cls; CSSCHAINV id; CSSCHAINV pseudo; } CSSSELM;
 extern unsigned char _DOMclass, _DOMid;
 extern DOMString _DOMlink;
-void Element_getTagName(DOMString *s, void *node);
+int Element_getTagName(DOMString *s, void *node);
 int cssDStrCmp(u16 *s, void *ds);
 int cssDStrContains(u16 *word, void *ds);
 void *Node_getParentNode(void *n);
@@ -85,6 +85,9 @@ extern const double D_00139BA0;
 extern const double D_00139B78;
 extern const double D_00139B80;
 typedef struct BGSTYLE { int color; u8 x4[0xC]; u8 set; } BGSTYLE;
+int UCS_strlen(void *);
+void *UCS_strncpy(void *, void *, int n);
+void *UCS_strstr(void *, void *);
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", D_00139910);
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", D_00139914);

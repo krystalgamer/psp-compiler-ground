@@ -16,9 +16,46 @@ extern void *jsapi_lock;
 extern char D_001339E0[];
 int JSEventLoop();                                  /* extern */
 M2C_UNK JSInitInternal();                           /* extern */
-M2C_UNK OS_thread_exit(M2C_UNK);                    /* extern */
+void OS_thread_exit(M2C_UNK);                    /* extern */
 
 
+void SetIpcMember(void *arg0, int arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7);
+int JSSendMail(JSMsgBody *b, const char *qname);
+int get_global_ptr(void);
+void JSRunStart(void *arg0);
+void *js_common_buffer_open(unsigned char *p, int len);
+int js_common_execute(void *, void *, int mode);
+void js_common_buffer_close(int arg0);
+void *MEM_calloc(void *, unsigned int size);
+void JSRunFinish(void *arg0);
+int js_getTimerStatus(int id);
+void js_delTimerID(int id, int type, int flag);
+int OS_timer_start(int id);
+void *mes_util_vals(int n, int init);
+void JSI_free(void);
+void DOMAPI_Finalize(void);
+void js_DestroyTimer(void);
+void JSPtrListDestroy(void);
+void delete_global_ptr(void);
+void SetIpcmsg(void *m, void *b);
+int OS_mq_send(int id, const char *buf, int len, unsigned int prio);
+int OS_mq_close(int id);
+int OS_mq_unlink(const char *name);
+void OS_thread_mutex_destroy(void *);
+int OS_thread_mutex_unlock(void *);
+int OS_mq_receive(int id, char *buf, int len, unsigned int *prio);
+void mes_id_free(void);
+void *OS_thread_mutex_create(void);
+int OS_thread_mutex_init(void *, void *attr);
+void *init_global_ptr(void);
+int OS_mq_open(const char *name, int oflag, ...);
+void JSPtrListInit(void);
+void js_InitTimer(void);
+int HST_attachHistory(void);
+void DOMAPI_Initialize(void);
+void *memset(void *, int, unsigned int);
+void *MEM_addHaltCallback(void *, void *);
+int OS_thread_mutex_lock(void *);
 void JSStartInternal(int x) {
     int m[8];
 

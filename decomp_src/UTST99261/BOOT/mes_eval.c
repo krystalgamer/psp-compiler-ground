@@ -93,16 +93,16 @@ int mes_eval_string(EvCtx *ctx, int s, int thisobj, int x);
 int mes_eval_to_number(EvCtx *ctx, int v);
 int mes_error_type();                               /* extern */
 int mes_util_hex(unsigned short);                              /* extern */
-M2C_UNK mes_gc_mark(int);                           /* extern */
-M2C_UNK mes_util_vals_mark(int);                    /* extern */
-M2C_UNK mes_gc_register(M2C_UNK *, M2C_UNK, M2C_UNK, M2C_UNK); /* extern */
+void mes_gc_mark(int);                           /* extern */
+void mes_util_vals_mark(int);                    /* extern */
+void mes_gc_register(M2C_UNK *, M2C_UNK, M2C_UNK, M2C_UNK); /* extern */
 extern unsigned char mes_eval_method;
-M2C_UNK mes_native_setup(void *, int, M2C_UNK *, M2C_UNK); /* extern */
-M2C_UNK mes_object_set(int, int, M2C_UNK, M2C_UNK); /* extern */
+void mes_native_setup(void *, int, M2C_UNK *, M2C_UNK); /* extern */
+void mes_object_set(int, int, M2C_UNK, M2C_UNK); /* extern */
 extern int D_00585320;
 extern unsigned char mes_eval_native_table;
 
-M2C_UNK mes_util_vals_free(int);                    /* extern */
+void mes_util_vals_free(int);                    /* extern */
 
 
 int mes_util_is_alpha_digit(unsigned short c);
@@ -112,7 +112,7 @@ void *mes_line_new(int (*getc)(), void *buf, int n);
 void *mes_lex_new(EvCtx *ctx, void *line);
 void mes_lex_free(void *lex);
 void *mes_parse_program(EvCtx *ctx, void *lex, int mode);
-void mes_parse_node_free(void *node);
+int mes_parse_node_free(void *node);
 int mes_compile(EvCtx *ctx, void *node);
 void mes_list_free2(int list, int keep);
 int mes_error_syntax(EvCtx *ctx, int a);
@@ -127,6 +127,8 @@ EvArr *mes_util_vals(int n, int a);
 int mes_util_is_white_space(unsigned short c);
 int mes_string_new(EvCtx *ctx, unsigned short *s, int len);
 typedef int (*EvGetFn)(EvCtx *, EvObj *, unsigned int);
+void mes_object_mark(void *arg0);
+void mes_object_free(void *arg0);
 void *mes_eval_scope_new(EvCtx *ctx, int a, int b, int c)
 {
     char *o = mes_gc_alloc(ctx, 5);

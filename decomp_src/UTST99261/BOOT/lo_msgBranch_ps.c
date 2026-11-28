@@ -53,10 +53,10 @@ void *MEM_malloc(int pool, unsigned int size);
 void *memcpy(void *d, const void *s, unsigned int n);
 int lo_setTimer(int a, int b, int c, int d);
 int getJSSEM(void);
-void OS_thread_mutex_unlock(int m);
-void JSDestroy(PJSCTX *js);
+int OS_thread_mutex_unlock(int m);
+int JSDestroy(PJSCTX *js);
 void initSessionSaveDataList(void);
-void JSStart();
+int JSStart();
 void getDataAttribute();
 int make_msg_LP11();
 void putLLIST();
@@ -103,9 +103,9 @@ typedef struct {
     int y;
 } PFRAG;
 PFRAG *HST_getFragmentIDs();
-void HST_moveFragmentIDs();
-void getViewPort();
-void drawScroll();
+int HST_moveFragmentIDs();
+int getViewPort();
+int drawScroll();
 int make_msg_LP4();
 int make_msg_LP21();
 int make_msg_LP12();
@@ -128,7 +128,7 @@ typedef struct {
     char *str;                  /* 0xC */
 } PSRCH;
 int Node_getJSObj();
-void JSRun();
+int JSRun();
 typedef struct {
     int node;
     int len;                    /* 0x4 */
@@ -163,9 +163,9 @@ void setUiGlobal_browser(void);
 void GUI_Toolkit_mutexLock(void);
 void GUI_Toolkit_mutexUnlock(void);
 void relayoutAtBody(PBOX *b, int f);
-void drawPaint(PBOX *b);
+int drawPaint(PBOX *b);
 PBOX *lo_getActiveFrameBodybox(void);
-void setFocusFocusItem(PBOX *b, void *f, int n);
+int setFocusFocusItem(PBOX *b, void *f, int n);
 void drawFocusItem(void *f);
 int make_msg_LJ7();
 int setTextStrings(PBOX *b, char *s);
@@ -547,9 +547,9 @@ extern int D_00584CEC;
 void *Node_getBox(int node);
 PBOX *getNextTerminalFrame(PBOX *b, int n);
 void setFocus(PBOX *b, PBOX *t, int a, int c);
-void GUI_Component_setEnabled(int w, int on);
-void GUI_ScrollPane_setVScrollbarMode(int w, int mode);
-void GUI_ScrollPane_setHScrollbarMode(int w, int mode);
+int GUI_Component_setEnabled(int w, int on);
+int GUI_ScrollPane_setVScrollbarMode(int w, int mode);
+int GUI_ScrollPane_setHScrollbarMode(int w, int mode);
 int strcasecmp(const char *a, const char *b);
 
 void proc_msg_PL13(PMSG *m) {

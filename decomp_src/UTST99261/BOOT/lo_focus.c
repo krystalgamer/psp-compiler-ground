@@ -6,7 +6,7 @@
 #include "lo_focus.h"
 extern unsigned char _DOMname;
 int Element_hasAttribute(void *node, void *name);
-void Element_getAttribute(DOMString *s, void *node, void *name);
+int Element_getAttribute(DOMString *s, void *node, void *name);
 int DOMStringlen(DOMString *s);
 char *DOMStringtoUTF8(DOMString *s);
 int strcasecmp(const char *a, const char *b);
@@ -21,10 +21,10 @@ FOCUSLIST *scrollToNextPosition(void *frame, void *a1, FOCUSLIST *l, int dir);
 FOCUSLIST *getNext2DFocusDown(void *frame, FOCUSLIST *list, FOCUSLIST *cur, BOX *obj);
 FOCUSLIST *getNext2DFocusUp(void *frame, FOCUSLIST *list, FOCUSLIST *cur, BOX *obj);
 void *getBodyBox(void *box);
-void drawObject(BOX *box);
+int drawObject(BOX *box);
 int checkBoxValidity(void *box);
 extern void *gESPRIT_LO_GLOBAL_NDA;
-M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
+void MEM_free(M2C_UNK, void *);                  /* extern */
 extern void *ui_global;
 
 
@@ -58,6 +58,7 @@ int getTextStrings(BOX *box, char *buf, int len);
 void initJSEvent(FJSEVENT *ev, int type, void *node, int a, int b);
 int sendJSEvent(int obj, FJSEVENT *ev);
 int strcmp(const char *a, const char *b);
+int abs(int);
 void freeAllList(void *arg0) {
     void *temp_a1;
     void *temp_a1_2;

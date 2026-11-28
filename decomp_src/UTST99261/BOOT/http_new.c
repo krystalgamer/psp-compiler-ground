@@ -10,7 +10,7 @@ int sceHttpDisableCookie(int id);
 int sceHttpDisableCache(int id);
 void *OS_thread_mutex_create(void);
 int OS_thread_mutex_init(void *m, void *attr);
-int OS_thread_mutex_destroy(void *m);
+void OS_thread_mutex_destroy(void *m);
 int OS_thread_mutex_lock(void *m);
 int OS_thread_mutex_unlock(void *m);
 void UTL_initqueue(void *q);

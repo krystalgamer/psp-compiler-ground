@@ -7,8 +7,8 @@ void *js_setChildOfWindow(void *ctx, int b, int c, int type);
 void JSObjSetEventHandler(int a, int b, int c);
 typedef unsigned short UCSChar;
 int mes_event_new();                                /* extern */
-M2C_UNK mes_object_setup(void *, int, M2C_UNK *, int, M2C_UNK, M2C_UNK); /* extern */
-M2C_UNK JSPtrListAdd(void *);                       /* extern */
+void mes_object_setup(void *, int, M2C_UNK *, int, M2C_UNK, M2C_UNK); /* extern */
+void JSPtrListAdd(void *);                       /* extern */
 void *MEM_malloc(M2C_UNK, M2C_UNK);                 /* extern */
 M2C_UNK OS_thread_mutex_lock(int);                  /* extern */
 M2C_UNK OS_thread_mutex_unlock(int);                /* extern */
@@ -38,9 +38,9 @@ void *HST_getDomObject(void *hist);
 void *mes_history_new(void *ctx, int a);
 void *mes_location_new(void *ctx, int a);
 void *mes_screen_new(void *ctx, int a);
-void mes_class_property_set(void *ctx, int parent, char *name, void *o);
+int mes_class_property_set(void *ctx, int parent, char *name, void *o);
 typedef struct { int size; unsigned int len; unsigned short *str; } JDStr;
-void Element_getAttribute(JDStr *s, int node, void *name);
+int Element_getAttribute(JDStr *s, int node, void *name);
 extern int _DOMname;
 extern int _DOMhref;
 int AnchorSetInternal(int a, int b, int c, int d);
@@ -52,7 +52,7 @@ extern int mes_select_methods;
 int mes_option_new(int ctx, int *priv);
 int mes_class_property_get(int ctx, int obj, const char *name);
 void mes_array_set(int ctx, int arr, int v);
-void mes_obj_common_addNewReferenceByNameOrId(int ctx, int parent, int obj, int arr, JDStr *name, void *props, void *methods, int f);
+int mes_obj_common_addNewReferenceByNameOrId(int ctx, int parent, int obj, int arr, JDStr *name, void *props, void *methods, int f);
 extern int mes_form_properties;
 extern int mes_form_methods;
 int mes_button_new(int ctx, int *priv);
@@ -97,13 +97,18 @@ void mes_submit_class_init(void *ctx);
 void mes_text_class_init(void *ctx);
 void mes_textarea_class_init(void *ctx);
 void mes_option_class_init(void *ctx);
-void mes_image_class_init(void *ctx, int win);
+int mes_image_class_init(void *ctx, int win);
 int mes_window_new(void *ctx, void *priv);
 int EventSetInternal();
 int ScreenSetInternal(int a, int b);
 void *NavigatorSetInternal(void *arg0, int arg1);
 typedef struct JWinPriv { void *dom; int f4; int f8; } JWinPriv;
 typedef struct JWin { void *ctx; int win; } JWin;
+int mes_class_property_setup(void *ctx, void *obj, const char *name, int v, int flags);
+void MEM_free(void *, void *p);
+int HistoryObjSetInternal(int a, int b);
+int LocationSetInternal(int a, int b, int c);
+void *mes_navigator_new(void *);
 int JSObjGetCharsLength(const UCSChar *s)
 {
     int n = 0;

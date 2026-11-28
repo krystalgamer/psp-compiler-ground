@@ -21,6 +21,17 @@ void moveFrameBorderByVertical(BOX *, BOX *, int);
 
 
 
+void *MEM_realloc(void *, void *p, unsigned int size);
+char *strchr(const char *, int);
+int atoi(const char *);
+unsigned int strlen(const char *);
+void relayoutByFrameBorderMove(void *);
+void relayoutFramesetByFrameBorderMove(void *);
+int drawPaint(int arg0);
+int HST_getChildHistoryNode(void *arg0);
+int HST_getRequestFlag(void *arg0);
+int HST_getSiblingHistoryNode(void *arg0);
+int HST_getParentHistoryNode(void *arg0);
 void *newBuffer(void) {
     void **b = MEM_malloc(0, 0xC);
     if (b == NULL) {
