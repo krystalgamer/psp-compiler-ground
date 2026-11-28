@@ -3,38 +3,46 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
-typedef struct { unsigned int ip; unsigned int port; } RtLinkAddr;
-typedef struct { char mac[6]; } RtAdhocAddr;
-M2C_UNK *rt_comm_adhoc_resolve_interface(void);
 int NetUseCommAdhoc(void);
+void rt_comm_adhoc_destroy(int);
 int rt_comm_adhoc_display_state(void);
 int rt_comm_adhoc_get_avail_bytes_to_read(void);
+int rt_comm_adhoc_get_dns_servers(void *, int, int *);
 int rt_comm_adhoc_get_host_by_name(void);
 int rt_comm_adhoc_get_remote_ip(void);
 int rt_comm_adhoc_is_connected(void);
+int rt_comm_adhoc_linkaddress_isequal();
+int rt_comm_adhoc_linkaddress_isnull();
+int rt_comm_adhoc_linkaddress_toext();
+char * rt_comm_adhoc_linkaddress_tostr();
 int rt_comm_adhoc_receive(void);
 int rt_comm_adhoc_receive_echo(void);
 int rt_comm_adhoc_send(void);
+int rt_comm_adhoc_send_echo();
+void rt_comm_adhoc_shutdown(void);
+int rt_comm_adhoc_startup(void);
 int rt_comm_adhoc_update(void);
 int rt_comm_adhoc_vsend(void);
-void rt_comm_adhoc_shutdown(void);
+typedef struct { unsigned int ip; unsigned int port; } RtLinkAddr;
+typedef struct { char mac[6]; } RtAdhocAddr;
+M2C_UNK *rt_comm_adhoc_resolve_interface(void);
+
 extern void *gCommPlatformInterfacePtr;
 extern unsigned char gCommAdhocInterface;
 int rt_comm_adhoc_create();
-void rt_comm_adhoc_destroy(int);
+
 int rt_comm_adhoc_get_broadcast_ip();
-int rt_comm_adhoc_get_dns_servers();
+
 int rt_comm_adhoc_get_local_ip();
-int rt_comm_adhoc_linkaddress_isequal();
-int rt_comm_adhoc_linkaddress_isnull();
+
 void rt_comm_adhoc_linkaddress_setnull(RtLinkAddr *);
-int rt_comm_adhoc_linkaddress_toext();
+
 int rt_comm_adhoc_linkaddress_toint(RtAdhocAddr *, RtAdhocAddr *);
-char *rt_comm_adhoc_linkaddress_tostr();
+
 int rt_comm_adhoc_receive_from();
-int rt_comm_adhoc_send_echo();
+
 int rt_comm_adhoc_send_to();
-int rt_comm_adhoc_startup();
+
 int rt_comm_adhoc_vsend_to();
 extern int gbInitialized_130B2C;
 

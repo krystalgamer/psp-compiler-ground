@@ -3,17 +3,20 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+int rt_memory_align_free(void **);
+int rt_memory_allocate_init_zero(void **, unsigned int);
+int rt_memory_free(void **);
+int rt_memory_get_aligned_address(unsigned int *, unsigned int, int);
+int rt_memory_register_another_callback(int);
+int rt_memory_register_callbacks(int, int);
 typedef struct { void *base; void *aligned; } RtAlignedMem;
 void *malloc(unsigned int);
 void *realloc(void *, unsigned int);
 void free(void *);
-int rt_memory_allocate_init_zero(void **arg0, unsigned int arg1);
-int rt_memory_get_aligned_address(unsigned int *arg0, unsigned int arg1, int arg2);
-int rt_memory_free(void **);
+
 int rt_memory_align_alloc(RtAlignedMem *, unsigned int, unsigned short);
 void *memset(void *s, int c, unsigned int n);
-int rt_memory_register_another_callback(int arg0);
-int rt_memory_register_callbacks(int arg0, int arg1);
+
 int rt_memory_allocate();
 extern void *gpfFreeCallback;
 extern void *gpfMallocCallback;
@@ -22,7 +25,6 @@ extern void *gpfReallocCallback;
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_memory", rt_memory_allocate);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_memory", rt_memory_reallocate);
-
 
 int rt_memory_allocate_init_zero(void **arg0, unsigned int arg1) {
     int temp_v0;

@@ -3,8 +3,11 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+int rt_udp_destroy(char *);
+int rt_udp_mgr_create(char *, int *);
 int rt_udp_mgr_destroy(void);
-M2C_UNK rt_udp_destroy(int);                        /* extern */
+int rt_udp_mgr_release_channel_ref(unsigned short);
+
 typedef struct { unsigned short port; short pad; int a, b, c; } RtUdpMgrCh;
 typedef struct { int udp; RtUdpMgrCh ch[16]; unsigned int count; } RtUdpMgr;
 extern RtUdpMgr gMgr;

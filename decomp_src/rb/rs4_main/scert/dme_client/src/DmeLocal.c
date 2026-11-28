@@ -3,40 +3,106 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+void * DMEmalloc(int);
 void DmeFree(void **);
+void EchoRequestCallback();
+int FindFreePingSlot(void);
+int GetSoftwareID(void);
+void IncomingMessageFunc(char *, int, int, int);
+void LANFindSetLocalServer(int, int);
+int MapMsgClientFailureReason(int *, unsigned int);
+void MsgClientDisconnectCallback(char *);
+void MsgClientSystemMessageCallback(int, unsigned char, int, int, int, int, int);
+int NetBitMaskToSendMask(unsigned char *, unsigned int *, unsigned int);
+int NetCheckForPingTimeouts(void);
+int NetCleanupClientPingInfoArray(void);
+int NetClientIndexToClientIndexPacket(int);
+int NetConvertTransportFlags(signed char, unsigned short *);
+int NetCreateClientInfo(void **, unsigned int, void **);
+void * NetCreateConnInfoBare(void);
+void NetDestroyClientInfo(void **, int);
+void NetDestroyConnInfo(char *);
+void NetDestroyConnInfoBare(void *);
+int NetDisablePingIPs(void);
+int NetGetClientConnectStatus(void *, unsigned int, int *);
+void * NetGetClientInfo();
+void * NetGetClientPingInfo(unsigned int);
+void * NetGetConnInfo(unsigned int);
+int NetGetMsgClientIndex(void *);
+void NetGetMyAddressInfoInternal(void *);
+int NetGetMyWorldID(void);
+int NetGetP2PHandle(void *);
+int NetIAssignLocalServer(int, int);
+int NetIConnect(int *, int *);
+int NetIGetAverageDelayToClient(int *, unsigned int);
+int NetIGetBandwidthInfo(float *);
+int NetIGetClientBufferStatus(char *, int, int *, int *, int *, int *);
+int NetIGetClientIpAddress(void *, int, int);
+int NetIGetConnectStatus(int *, char *);
+int NetIGetConnectionStatus(int *, char *);
+int NetIGetCurrentUDPSourceBinaryIP(void *);
+int NetIGetHostByName(char *);
+int NetIGetLocalTime(void);
+int NetIGetMyClientIndex(int *, void *);
+int NetIGetMyIpAddress(void *);
+int NetIGetNetUpdateErrors(void *);
+int NetIGetServerVersion(char *, char *);
+int NetIGetTime(void *);
+int NetIGetValidClientCount(int *, char **);
+int NetIRegisterMemoryCallbacks(void **);
+int NetISetDefaultResolveAddrParams(void *);
+int NetISetMyClientReceiveBroadcast(char *, int);
+int NetISetNATServiceAddr(void *);
+int NetITick(void);
+int NetIUpdate(void);
+int NetMutexLock(void);
+void NetMutexUnlock(void);
+void NetResetTime(int);
+int NetSetConnInfo(int, int);
+int NetSetDefaultConnectParams(int *);
+int NetSetDefaultHostPeerToPeerParams(int *);
+int NetSetDefaultIncomingClientParams(int *);
+void NetSetHeartbeatInterval(int);
+int NetSetPeerToPeerHostChangeCallback(int, int);
+int NetSetServerIpAddress(char *, void *);
+int NetUseDme(void);
+void ParseMessageList(void *, char *, int, int, int);
+void RemoteClientDisconnects(int);
+int RtMsgToDmeConnectionIndex(unsigned int);
+void SendMyClientStatus(char *, int);
+void p2p_broadcast_update_cb(unsigned short, int, char *);
+void p2p_host_change_cb(unsigned short, char *);
+void p2p_system_change_cb(int, int, void *);
+unsigned int randomMT(void);
+int rt_comm_echo_shutdown(void);
+void rt_comm_get_metrics(void *);
+int rt_comm_linkaddress_isequal();
+int rt_comm_linkaddress_isnull();
+void rt_comm_linkaddress_setnull(void *);
+int rt_comm_linkaddress_toext();
+void rt_comm_linkaddress_toint();
+int rt_memory_allocate_init_zero(void **, unsigned int);
 int rt_memory_free(void **);
+int rt_memory_register_another_callback(int);
+int rt_memory_register_callbacks(int, int);
+int rt_mutex_lock(void *, int *);
+int rt_mutex_unlock(void *, int *);
+int rt_time_elapsed(void *, unsigned int *);
+int rt_timebase_get_globaltime(int *);
+int rt_timebase_restart(void);
+void udp_data_cb(void);
+void udp_event_cb(int, int, int);
+
 int rt_time_get_local();
 char *strncpy(char *, const char *, unsigned int);
-int rt_comm_linkaddress_toint();
+
 extern char gNetUpdateErrors[];
 void *memcpy(void *, const void *, unsigned long);
-int NetClientIndexToClientIndexPacket(int arg0);
-int NetGetMsgClientIndex(void *arg0);
-int NetGetMyWorldID(void);
+
 int NetGetNatService(M2C_UNK **arg0);
-int NetGetP2PHandle(void *arg0);
-int NetIGetClientIpAddress(void *arg0, int arg1, int arg2);
-int NetIGetCurrentUDPSourceBinaryIP(void *arg0);
-int NetIGetMyClientIndex(int *arg0, void *arg1);
-int NetIGetTime(void *arg0);
-int NetISetDefaultResolveAddrParams(void *arg0);
-int NetSetConnInfo(int arg0, int arg1);
-int NetSetDefaultIncomingClientParams(int *arg0);
-int NetSetPeerToPeerHostChangeCallback(int arg0, int arg1);
-int NetUseDme(void);
-int RtMsgToDmeConnectionIndex(unsigned int arg0);
-void *NetCreateConnInfoBare(void);
-void NetGetMyAddressInfoInternal(void *arg0);
-void NetMutexUnlock(void);
-void NetResetTime(int arg0);
-void NetSetHeartbeatInterval(int arg0);
-void p2p_system_change_cb(int arg0, int arg1, void *arg2);
-void udp_data_cb(void);
-int rt_comm_linkaddress_toext();
-M2C_UNK rt_mutex_unlock(int, M2C_UNK);              /* extern */
-M2C_UNK rt_timebase_get_globaltime(void *);         /* extern */
+
 typedef struct { int ip; int port; } DmeLinkAddr;
-void rt_comm_linkaddress_setnull();
+
 typedef struct { int set; DmeLinkAddr ext; int port; } DmeMyAddr;
 extern void *gObjectInterfacePtr;
 extern void *gDmeGlobals;
@@ -70,8 +136,6 @@ int NetMapRtError();
 typedef int (*DmeIfFn2)(int, int);
 typedef void (*DmeObjBcFn)(void *, int);
 
-int NetIGetConnectStatus();
-int NetIGetValidClientCount();
 typedef int (*DmeP2pHostFn)(int, unsigned short *);
 typedef struct { char *c; int a, b, cc, d; } DmeDiscMsg;
 typedef void (*DmeDiscCb)(DmeDiscMsg *);
@@ -100,7 +164,7 @@ int NetGetMsgClientIndex(void *arg0) {
 
 typedef struct { void *dest; unsigned char type; char pad[3]; int a; int b; char pad2[0x34 - 0x10]; int c; int d; void *data; } DmeMsgSend2;
 typedef struct { unsigned char b0, b1, b2, b3; unsigned short h4; short pad; int w8; int wC; } DmeClientStatus;
-int NetClientIndexToClientIndexPacket(); int NetGenerateClientList(); int NetISendMessage();
+int NetGenerateClientList(); int NetISendMessage();
 void SendMyClientStatus(char *ctx, int dest)
 {
     DmeClientStatus st;
@@ -139,7 +203,6 @@ int RtMsgToDmeConnectionIndex(unsigned int arg0) {
     return arg0 + (arg0 < 5U);
 }
 
-void *NetGetClientPingInfo(unsigned int i);
 int NetIGetAverageDelayToClient(int *out, unsigned int idx)
 {
     unsigned int t[100];
@@ -170,7 +233,6 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", Ne
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetISetSendAggregationInterval);
 
-int rt_comm_get_metrics();
 typedef struct { float f[16]; } DmeMetrics;
 int NetIGetBandwidthInfo(float *bw)
 {
@@ -219,7 +281,6 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal",
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", headerfile_rcsid_10E208);
 
-int rt_memory_allocate_init_zero();
 int puts(const char *);
 void *DMEmalloc(int size)
 {
@@ -234,8 +295,6 @@ void DmeFree(void **p)
         rt_memory_free(p);
 }
 
-int rt_memory_register_callbacks();
-int rt_memory_register_another_callback();
 int NetIRegisterMemoryCallbacks(void **cb)
 {
     int ret = 0x17;
@@ -304,7 +363,6 @@ int NetIGetClientIpAddress(void *arg0, int arg1, int arg2) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", RemoteClientConnects);
 
-void *NetGetClientInfo();
 void RemoteClientDisconnects(int a)
 {
     int *c = NetGetClientInfo(a);
@@ -443,7 +501,6 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", Re
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIInitialize);
 
-void LANFindSetLocalServer(int, int);
 int NetIAssignLocalServer(int a, int b)
 {
     if (a == 0) return 0x17;
@@ -532,7 +589,6 @@ void MsgClientDisconnectCallback(char *c)
     (*(DmeDiscCb *)(c + 0x430))((DmeDiscMsg *)&m);
 }
 
-unsigned int randomMT();
 int NetSetDefaultConnectParams(int *p)
 {
     if (p == NULL) return 0x17;
@@ -560,7 +616,7 @@ int NetSetDefaultConnectParams(int *p)
     return 0;
 }
 
-int NetConnect_ClientServerTCP(); int NetConnect_PeerToPeerUDP(); int rt_timebase_restart();
+int NetConnect_ClientServerTCP(); int NetConnect_PeerToPeerUDP();
 int NetIConnect(int *ctx, int *out)
 {
     int type;
@@ -710,7 +766,7 @@ int NetITick(void)
 }
 
 extern int gbTimebaseEnabled;
-int rt_time_get_local(); int NetUpdateAll(); int NetProcessEchoRequests(); int rt_parse_update(); int NetProcessP2PDisconnect(); int rt_timebase_get_globaltime();
+int rt_time_get_local(); int NetUpdateAll(); int NetProcessEchoRequests(); int rt_parse_update(); int NetProcessP2PDisconnect();
 int NetIUpdate(void)
 {
     int t;
@@ -757,7 +813,7 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", Ne
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetMapRtError);
 
 extern void *gppClientPingInfo[];
-void *DMEmalloc(int);
+
 void *NetGetClientPingInfo(unsigned int i)
 {
     if (i >= 256) return NULL;
@@ -811,7 +867,6 @@ void NetDestroyConnInfoBare(void *p)
     DmeFree(&p);
 }
 
-void NetDestroyClientInfo(void **, int);
 void NetDestroyConnInfo(char *c)
 {
     int i;
@@ -854,7 +909,7 @@ void NetDestroyClientInfo(void **arr, int idx)
 }
 
 typedef struct { int a, b; } LinkAddrS;
-void rt_comm_linkaddress_setnull(LinkAddrS *);
+
 LinkAddrS NetGetServerIpAddress(char *c)
 {
     LinkAddrS a;
@@ -903,7 +958,7 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", Ne
 typedef struct { unsigned char state; char pad[3]; DmeLinkAddr addr; char pad2[0x10]; void (*cb)(int, char *, int); } DmeEchoReq;
 extern DmeEchoReq gPendingEchoRequest[256];
 extern int gbEchoRequestsEnabled;
-int rt_comm_linkaddress_isnull(DmeLinkAddr); int rt_comm_linkaddress_isequal(DmeLinkAddr, DmeLinkAddr); int rt_time_elapsed();
+
 void EchoRequestCallback(DmeLinkAddr addr, int id)
 {
     unsigned int i;
@@ -921,7 +976,7 @@ void EchoRequestCallback(DmeLinkAddr addr, int id)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetProcessEchoRequests);
 
-int rt_comm_echo_shutdown(); int NetMapRtError();
+int NetMapRtError();
 int NetDisablePingIPs(void)
 {
     char buf[16];
@@ -949,7 +1004,6 @@ int NetDisablePingIPs(void)
     return 0;
 }
 
-void *NetGetClientInfo();
 int NetGetClientConnectStatus(void *c, unsigned int idx, int *st)
 {
     char *ci;
@@ -1105,7 +1159,6 @@ void MsgClientSystemMessageCallback(int a, unsigned char b, int c, int d, int e,
     gpfSystemMessageCallback(&m);
 }
 
-int rt_mutex_lock();
 int NetMutexLock(void)
 {
     char *g = gDmeGlobals;

@@ -3,11 +3,20 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+int rt_memory_allocate_init_zero(void **, unsigned int);
+int rt_memory_free(void **);
+int rt_msg_set_u2byte(unsigned char *, unsigned short);
+void rt_token_add_ownership(int, int, int *);
+int rt_token_build_token_list_msg(char *, unsigned int, unsigned int *, unsigned char, int, unsigned char, void *, void *, unsigned int);
+int rt_token_build_token_msg(char *, unsigned int, unsigned int *, unsigned char, unsigned short, int);
+void rt_token_destroy_table(int *);
+void rt_token_get_table_size(int *, int *);
+void rt_token_get_token_count(int *, int *);
+int rt_token_is_valid(unsigned int);
+void rt_token_shutdown(int *);
+int rt_token_start(int **);
 typedef struct { unsigned short owner; unsigned short pending; } RtTokEnt;
 typedef struct { int count; unsigned int size; RtTokEnt *ents; } RtTokTab;
-int rt_token_is_valid(unsigned int arg0);
-void rt_token_shutdown(int *arg0);
-M2C_UNK rt_memory_free(void *);                     /* extern */
 
 int rt_token_start(int **t)
 {
@@ -88,7 +97,6 @@ void rt_token_free_owner(int owner, RtTokTab *t)
             rt_token_remove_ownership(i, t);
 }
 
-int rt_token_start();
 void rt_token_get_table_size(int *out, int *t)
 {
     int *tt = t;
@@ -178,7 +186,6 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_list_update_ownership);
 
-int rt_memory_allocate_init_zero();
 int rt_token_create_table(unsigned int n, RtTokTab *t)
 {
     unsigned int i;
@@ -236,7 +243,6 @@ void rt_token_remove_ownership(int idx, RtTokTab *t)
         rt_token_destroy_table((int *)t);
 }
 
-void rt_msg_set_u2byte();
 int rt_token_build_token_msg(char *out, unsigned int outsz, unsigned int *outlen, unsigned char type, unsigned short id, int owner)
 {
     unsigned char buf[0x200];

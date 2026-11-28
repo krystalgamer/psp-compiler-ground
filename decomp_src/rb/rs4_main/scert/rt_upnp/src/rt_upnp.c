@@ -3,19 +3,25 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
-typedef struct { int ip; int port; } RtUpnpAddr;
+int rt_memory_free(void **);
 int rt_upnp_add_port_mapping(void);
 int rt_upnp_delete_port_mapping(void);
 int rt_upnp_describe(void);
 int rt_upnp_describe_service(void);
-int rt_upnp_disable_natservice_heartbeat(void *arg0);
+int rt_upnp_destroy(void *);
+int rt_upnp_disable_natservice_heartbeat(void *);
 int rt_upnp_discover(void);
 int rt_upnp_get_connect_status(void);
+int rt_upnp_get_external_address(int *, int *, int *);
 int rt_upnp_get_external_ip(void);
 int rt_upnp_get_version_string(void);
 int rt_upnp_search_for_port_mapping(void);
 int rt_upnp_set_memory_ceiling(void);
+int rt_upnp_uber_resolve();
+int rt_upnp_update(int *);
 int rt_upnp_verify_port_mapping(void);
+typedef struct { int ip; int port; } RtUpnpAddr;
+
 extern int gpszVersionString;
 
 int rt_upnp_get_version_string(void) {

@@ -3,10 +3,15 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+void * DMEmalloc(int);
+void DmeFree(void **);
+void NetFreeAllClients(void);
 void NetFreeClientPointers(void);
+void NetFreeClients(void *);
+void * NetGetConnInfo(unsigned int);
+void * NetIGetClient(void *, unsigned int);
 void NetInitializeClients(void);
-void *DMEmalloc(M2C_UNK);                           /* extern */
-M2C_UNK DmeFree(M2C_UNK *);                         /* extern */
+
 extern void **NetClientPointerList;
 extern void *gObjectInterfacePtr;
 
@@ -41,8 +46,6 @@ void NetFreeClients(void *c)
     if (gObjectInterfacePtr != NULL) *(int *)((char *)gObjectInterfacePtr + 0x128) = 0;
 }
 
-void *NetGetConnInfo();
-void NetFreeClients();
 void NetFreeAllClients(void)
 {
     unsigned int i;

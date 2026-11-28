@@ -3,7 +3,13 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+void * NetGetConnInfo(unsigned int);
+int NetIGetCurrentUDPSourceBinaryIP(void *);
+int NetIRegParseMessage();
+void RegisterDMEmessages(void);
+int RequestServersPacketHandler(int, int, int, int *);
 int ServerResponsePacketHandler(void);
+int ServerVersionPacketHandler(char *, int, int, const char *);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeMessage", ClientConnectsPacketHandler);
 
@@ -18,7 +24,7 @@ typedef struct { unsigned int ip; unsigned int port; } DmeLinkAddr2;
 typedef struct { struct { void *buf; int len; } e[8]; int total; int n; } DmeVec;
 typedef struct { int port; DmeLinkAddr2 addr; } DmeSrvReply;
 extern char *gUDPInterfacePtr; extern char *gDmeGlobals;
-int NetGetConnInfo(); int NetIsPeerToPeerHost(); int NetIGetCurrentUDPSourceBinaryIP(); int NetIGetMyIntIP(); int NetISendTo();
+int NetIsPeerToPeerHost(); int NetIGetMyIntIP(); int NetISendTo();
 int RequestServersPacketHandler(int a0, int a1, int a2, int *msg)
 {
     DmeLinkAddr2 src;
@@ -62,8 +68,7 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeMessage
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeMessage", UpdateClientStatusPacketHandler);
 
-int NetIRegParseMessage();
-int ClientConnectsPacketHandler(); int RequestServersPacketHandler(); int PingPacketHandler(); int UpdateClientStatusPacketHandler();
+int ClientConnectsPacketHandler(); int PingPacketHandler(); int UpdateClientStatusPacketHandler();
 int LANFindPacketHandler(); int LANFindResultsPacketHandler(); int LANTextMessageHandler(); int LANRawMessageHandler();
 extern char *gObjectInterfacePtr;
 extern char *gStreamMediaInterfacePtr;

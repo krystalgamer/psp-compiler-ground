@@ -3,7 +3,12 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
-void LANFindSetLocalServer(int arg0, int arg1);
+void LANFindSetLocalServer(int, int);
+int NetLANFind(void *);
+int NetLANFindCancel(void);
+int NetMutexLock(void);
+int SendLANFindResultsOnExchange(int *, int *, int);
+
 extern int gnLocalServerPort;
 extern int gpNetLocalServerConnection;
 
@@ -42,7 +47,7 @@ int NetLANFind(void *p)
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeGameFind", NetSetDefaultLANFindParams);
 
 extern int gLANFinder[];
-int NetMutexLock();
+
 int NetMutexUnlock();
 int NetMapRtError();
 int NetLANFindCancel(void)

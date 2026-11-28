@@ -3,13 +3,22 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
-int IsEven(int *arg0);
-int IsZero(int *arg0);
-int KM_SetUpdateCallback(int arg0);
-void lintAddIP(int arg0, int arg1);
-void lintClearBit(int arg0, unsigned int arg1);
-void lintSetBit(int arg0, unsigned int arg1);
-void lintSetSmallValue(int *arg0, int arg1);
+int IsEqual(unsigned int *, unsigned int *);
+int IsEven(int *);
+int IsOne(int *);
+int IsZero(int *);
+int KM_SetUpdateCallback(int);
+void MOD(unsigned int *, unsigned int *, unsigned int *);
+void lintAdd(unsigned int *, unsigned int *, unsigned int *);
+void lintAddIP(int, int);
+void lintClearBit(int, unsigned int);
+int lintGetBit(unsigned int *, unsigned int);
+int lintGetBits(unsigned int *);
+void lintIncrement(unsigned int *, unsigned int);
+void lintSetBit(int, unsigned int);
+void lintSetSmallValue(int *, int);
+void lintSub(unsigned int *, unsigned int *, unsigned int *);
+
 extern int gAppUpdateCallback;
 
 int KM_SetUpdateCallback(int arg0) {

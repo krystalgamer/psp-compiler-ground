@@ -3,6 +3,7 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+
 typedef unsigned char BYTE;
 typedef unsigned int UINT4;
 #define SHS_DATASIZE 64

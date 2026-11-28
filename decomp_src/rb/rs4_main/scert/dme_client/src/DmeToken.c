@@ -3,7 +3,18 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
-int NetTokenSystemQuery(void *arg0, int *arg1);
+int NetTokenCountGet(char *, int);
+int NetTokenQuery(char *, unsigned int, int *);
+int NetTokenRelease(char *, unsigned int);
+int NetTokenRequest(char *, unsigned int);
+int NetTokenSystemQuery(void *, int *);
+int NetTokenTableSizeGet(char *, int);
+void rt_token_check_ownership(unsigned int, int *, void *);
+void rt_token_get_table_size(int *, int *);
+void rt_token_get_token_count(int *, int *);
+int rt_token_is_free(unsigned int, void *);
+int rt_token_is_valid(unsigned int);
+void rt_token_set_pending_state(unsigned int, void *);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeToken", SendTokenMessage);
 
@@ -21,8 +32,6 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeToken", To
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeToken", TokenNotifyEvent);
 
-int rt_token_is_valid();
-void rt_token_check_ownership();
 int NetTokenQuery(char *c, unsigned int tok, int *owner)
 {
     if (c == NULL) return 0x17;
@@ -48,8 +57,6 @@ int NetTokenSystemQuery(void *arg0, int *arg1) {
     return var_v1;
 }
 
-int rt_token_is_free();
-void rt_token_set_pending_state();
 int SendTokenMessage();
 int NetTokenRequest(char *c, unsigned int tok)
 {
@@ -80,7 +87,6 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeToken", Ne
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeToken", NetTokenListRelease);
 
-int rt_token_get_token_count();
 int NetTokenCountGet(char *c, int a)
 {
     if (*(int *)(c + 0x4A0) == 0) return 0x21;

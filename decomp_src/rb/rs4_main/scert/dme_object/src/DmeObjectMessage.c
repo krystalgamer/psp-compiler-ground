@@ -3,8 +3,10 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+int ClientLeavesPacketHandler(int, int, int);
+int DeleteNetObjectPacketHandler(int, int, int, unsigned short *);
+int NetFreeRemoteObject(int);
 int NetClientLeaves();
-int NetFreeRemoteObject();
 
 int DeleteNetObjectPacketHandler(int a, int b, int c, unsigned short *msg)
 {

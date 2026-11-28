@@ -3,36 +3,57 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
-int rt_socket_cleanup_stack_platform(void);
-int rt_socket_close_platform(void);
-int rt_socket_get_version_string(void);
-int rt_socket_listen_tcp(void);
-int rt_socket_recvmsg_platform(void);
+unsigned short in_cksum(unsigned short *, int);
+int rt_socket_accept_connection_tcp(int, int *);
+int rt_socket_accept_connection_udp(int, char *);
 void rt_socket_cleanup_stack(void);
+int rt_socket_cleanup_stack_platform(void);
 void rt_socket_close(void);
+int rt_socket_close_platform(void);
+int rt_socket_create_tcp(int *);
+int rt_socket_create_udp(int *);
 void rt_socket_find_closed_sockets(void);
+int rt_socket_find_closed_sockets_platform();
 void rt_socket_find_sockets_with_data(void);
+int rt_socket_find_sockets_with_data_platform();
 void rt_socket_get_available_bytes_to_read(void);
+int rt_socket_get_available_bytes_to_read_platform();
 void rt_socket_get_dns_servers(void);
+int rt_socket_get_dns_servers_platform();
+int rt_socket_get_err_platform(void);
 void rt_socket_get_local_ip(void);
+int rt_socket_get_local_ip_platform();
+int rt_socket_get_receive_buffer_size(int, int *);
+int rt_socket_get_send_buffer_size(int, int *);
+int rt_socket_get_type(int, int *);
+int rt_socket_get_version(unsigned char *, unsigned char *, unsigned char *);
+int rt_socket_get_version_string(void);
 void rt_socket_initialize_stack(void);
+int rt_socket_initialize_stack_platform(void);
 void rt_socket_is_connected(void);
+int rt_socket_is_connected_platform();
+int rt_socket_listen_tcp(void);
+int rt_socket_peek_data_tcp(int, void *, int, int *);
+int rt_socket_read_data_connected_udp(int, void *, int, int *);
+int rt_socket_read_data_tcp(int, void *, int, int *);
 void rt_socket_recvmsg(void);
+int rt_socket_recvmsg_platform(void);
+int rt_socket_send_data_connected_udp(int, void *, int, int *);
+int rt_socket_send_data_tcp(int, void *, int, int *);
 void rt_socket_sendmsg(void);
+int rt_socket_sendmsg_platform();
+int rt_socket_set_broadcast(int, int);
 void rt_socket_set_no_delay_tcp(void);
+int rt_socket_set_no_delay_tcp_platform();
 void rt_socket_set_non_blocking(void);
-M2C_UNK rt_socket_get_local_ip_platform();          /* extern */
-int rt_socket_get_err_platform();                   /* extern */
-M2C_UNK rt_socket_get_dns_servers_platform();       /* extern */
-M2C_UNK rt_socket_get_available_bytes_to_read_platform(); /* extern */
+int rt_socket_set_non_blocking_platform();
+int rt_socket_set_receive_buffer_size(int, int);
+int rt_socket_set_reuse_address(int, int);
+int rt_socket_set_send_buffer_size(int, int);
+int rt_socket_shutdown(int);
+
 int sceNetInetListen();                             /* extern */
-M2C_UNK rt_socket_sendmsg_platform();               /* extern */
-M2C_UNK rt_socket_is_connected_platform();          /* extern */
-M2C_UNK rt_socket_find_sockets_with_data_platform(); /* extern */
-M2C_UNK rt_socket_find_closed_sockets_platform();   /* extern */
-M2C_UNK rt_socket_set_non_blocking_platform();      /* extern */
-M2C_UNK rt_socket_initialize_stack_platform();      /* extern */
-M2C_UNK rt_socket_set_no_delay_tcp_platform();      /* extern */
+
 extern int gpszVersion_114A2C;
 
 int sceNetInetRecv();
@@ -81,7 +102,7 @@ void rt_socket_cleanup_stack(void) {
 }
 
 int sceNetInetShutdown();
-int rt_socket_get_err_platform();
+
 int rt_socket_shutdown(int s)
 {
     if (sceNetInetShutdown(s, 2) != 0) return rt_socket_get_err_platform();
@@ -119,7 +140,7 @@ void rt_socket_get_available_bytes_to_read(void) {
 }
 
 int sceNetInetSetsockopt(int, int, int, const void *, int);
-int rt_socket_get_err_platform();
+
 int rt_socket_set_reuse_address(int s, int v)
 {
     int val = v;
@@ -128,7 +149,7 @@ int rt_socket_set_reuse_address(int s, int v)
 }
 
 int sceNetInetSetsockopt(int, int, int, const void *, int);
-int rt_socket_get_err_platform();
+
 int rt_socket_set_send_buffer_size(int s, int v)
 {
     int val = v;
@@ -137,7 +158,7 @@ int rt_socket_set_send_buffer_size(int s, int v)
 }
 
 int sceNetInetSetsockopt(int, int, int, const void *, int);
-int rt_socket_get_err_platform();
+
 int rt_socket_set_receive_buffer_size(int s, int v)
 {
     int val = v;

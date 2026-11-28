@@ -3,19 +3,110 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
-int NetGetBuildTimeStamp(signed char *arg0);
-int NetGetLANBroadcastCommSetting(int *arg0);
-int NetGetLocalTime(int *arg0);
-int NetGetTime(void *arg0, int *arg1);
-int NetGetUPnPMemoryCeiling(int *arg0);
-int NetGetUdpBindPort(int *arg0);
-int NetIGetTime(void *arg0);
-int NetSetDefaultJoinParams(void *arg0);
-int NetSetDefaultLookupParams(void *arg0);
-int NetSetDefaultNetUsePeerToPeerInParams(void *arg0);
+int NetAddToDataStream(int, int, int);
+int NetAssignLocalServer(int, int);
+int NetConnect(char *, int);
+int NetDataStreamBytesFree(int, int);
+int NetDisconnect(int);
+int NetEndDataStream(int);
+int NetGetAverageDelayToClient(int, int);
+int NetGetBandwidthInfo(void *);
+int NetGetBufferStatus(int, int, int, int, int);
+int NetGetBuildTimeStamp(signed char *);
+int NetGetClient(int *, int, int);
+int NetGetClientBufferStatus(int, int, int, int, int, int);
+int NetGetClientIpAddress(int, int, int);
+int NetGetClientStatus(int, int, int);
+int NetGetClientVersion(signed char *);
+int NetGetConnectStatus(int, int);
+int NetGetConnectionStatus(int, int);
+int NetGetDataStream(int *, int);
+int NetGetHostByName(int);
+int NetGetLANBroadcastCommSetting(int *);
+int NetGetLocalTime(int *);
+int NetGetLocalizationSettings(int *);
+int NetGetMyClientIndex(int, int);
+int NetGetMyIpAddress(int);
+int NetGetMyNetAddress(int, int);
+int NetGetNetUpdateErrors(int);
+int NetGetPeerToPeerHostClientIndex(int, int);
+int NetGetServerVersion(int, int);
+int NetGetTime(void *, int *);
+int NetGetUPnPMemoryCeiling(int *);
+int NetGetUdpBindPort(int *);
+int NetGetValidClientCount(int, int);
+int NetHostPeerToPeer(char *, int);
+int NetIAssignLocalServer(int, int);
+int NetIConnect(int *, int *);
+int NetIGetAverageDelayToClient(int *, unsigned int);
+int NetIGetBandwidthInfo(float *);
+int NetIGetClientBufferStatus(char *, int, int *, int *, int *, int *);
+int NetIGetClientIpAddress(void *, int, int);
+int NetIGetConnectStatus(int *, char *);
+int NetIGetConnectionStatus(int *, char *);
+int NetIGetHostByName(char *);
+int NetIGetLocalTime(void);
+int NetIGetMyClientIndex(int *, void *);
+int NetIGetMyIpAddress(void *);
+int NetIGetMyNetAddress(void *, char *);
+int NetIGetNetUpdateErrors(void *);
+int NetIGetServerVersion(char *, char *);
+int NetIGetTime(void *);
+int NetIGetValidClientCount(int *, char **);
+int NetIRegisterApplicationMessage(int, int);
+int NetIRegisterMemoryCallbacks();
+int NetIRegisterMessage();
+int NetISetDefaultResolveAddrParams(void *);
+int NetISetMyClientReceiveBroadcast(char *, int);
+int NetISetNATServiceAddr(void *);
+int NetITick(void);
+int NetIUpdate(void);
+int NetIncomingClient(int, int);
+int NetJoin(int, int);
+int NetLANSetUserName(const char *, int);
+int NetLeave(int);
+int NetMutexLock(void);
+int NetOpenDataStream();
+int NetPing(int, int, int);
+int NetPingIP(void *, int);
+int NetRegisterApplicationMessage(int, int);
+int NetRegisterDataStream(int, int, int, int);
 void NetRegisterMemoryCallbacks(void);
-int NetIGetLocalTime();                             /* extern */
-M2C_UNK NetIRegisterMemoryCallbacks();              /* extern */
+int NetRegisterMessage(int, int, int);
+int NetResolveAddr(int, int);
+int NetSendAppMessage(int, int);
+int NetSendApplicationMessage(char, char *, int, int, int, void *);
+int NetSendFieldUpdates(int);
+int NetSendMessage(char, char *, int, int, int, int, void *);
+int NetSendMyClientUpdate(int, int);
+int NetSetDefaultAppMessageParams(int *);
+int NetSetDefaultDisconnectParams(int *);
+int NetSetDefaultInitializeParams(int *);
+int NetSetDefaultJoinParams(void *);
+int NetSetDefaultLookupParams(void *);
+int NetSetDefaultMemoryCallbackParams(int *);
+int NetSetDefaultNetUsePeerToPeerInParams(void *);
+int NetSetDefaultResolveAddrParams(int);
+int NetSetFieldChanged(int, int);
+int NetSetMyClientReceiveBroadcast(int, int);
+int NetSetNATServiceAddr(int);
+int NetSetSendAggregationInterval(int, int, int);
+int NetStreamMediaEndRecording(int, int);
+int NetStreamMediaGetChannelInfo(int, int, int);
+int NetStreamMediaGetClientInfo(int, int, int);
+int NetStreamMediaGetCurrentChannelState(int, int);
+int NetStreamMediaJoinChannel(int, int);
+int NetStreamMediaQuitChannel(int, int);
+int NetStreamMediaSetDefaultIgnoreParams(int *);
+int NetStreamMediaSetIgnoreState(int);
+int NetTick(void);
+int NetUpdate(void);
+void rt_comm_linkaddress_toint();
+int rt_mutex_lock(void *, int *);
+int rt_mutex_unlock(void *, int *);
+void rt_time_get_gmtime();
+void seedMT();
+
 extern signed char gBuildTimeStamp_10DEB4;
 extern void *gUDPInterfacePtr;
 
@@ -28,8 +119,7 @@ extern void *gStreamMediaInterfacePtr;
 int NetMapRtError();
 extern int gbInitialized_132A84;
 extern void *gDmeGlobals;
-int rt_mutex_lock();
-int rt_mutex_unlock();
+
 #define DME_LOCK(r) \
     if (gbInitialized_132A84 != 1) return 0x11; \
     if (*(int *)((char *)gDmeGlobals + 0x24) != gbInitialized_132A84) return 0x2B; \
@@ -38,11 +128,10 @@ int rt_mutex_unlock();
 #define DME_UNLOCK(r) \
     r = NetMapRtError(rt_mutex_unlock((char *)gDmeGlobals + 0x28, 0)); \
     if (r != 0) return r
-int NetMutexLock();
+
 int NetMutexUnlock();
 int NetMapRtError();
 
-int rt_comm_linkaddress_toint();
 int NetIPingIP();
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", rcsid_10DE3C);
@@ -80,8 +169,6 @@ int NetGetBuildTimeStamp(signed char *arg0) {
     return var_v1;
 }
 
-void rt_time_get_gmtime();
-void seedMT();
 int NetSetDefaultInitializeParams(int *p)
 {
     int tm[12];
@@ -105,10 +192,9 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetInit
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetClose);
 
-int NetMutexLock();
 int NetMutexUnlock();
 int NetMapRtError();
-int NetIGetAverageDelayToClient();
+
 int NetGetAverageDelayToClient(int a0, int a1)
 {
     int r, e;
@@ -120,7 +206,6 @@ int NetGetAverageDelayToClient(int a0, int a1)
     return e;
 }
 
-int NetMutexLock();
 int NetMutexUnlock();
 int NetMapRtError();
 int NetIGetBufferStatus();
@@ -135,7 +220,6 @@ int NetGetBufferStatus(int a0, int a1, int a2, int a3, int a4)
     return e;
 }
 
-int NetMutexLock();
 int NetMutexUnlock();
 int NetMapRtError();
 int NetISetSendAggregationInterval();
@@ -150,7 +234,6 @@ int NetSetSendAggregationInterval(int a0, int a1, int a2)
     return e;
 }
 
-int NetIGetBandwidthInfo();
 int NetGetBandwidthInfo(void *a0)
 {
     int r, e;
@@ -163,10 +246,9 @@ int NetGetBandwidthInfo(void *a0)
     return e;
 }
 
-int NetMutexLock();
 int NetMutexUnlock();
 int NetMapRtError();
-int NetIRegisterMessage();
+
 int NetRegisterMessage(int a0, int a1, int a2)
 {
     int r, e;
@@ -178,10 +260,9 @@ int NetRegisterMessage(int a0, int a1, int a2)
     return e;
 }
 
-int NetMutexLock();
 int NetMutexUnlock();
 int NetMapRtError();
-int NetIRegisterApplicationMessage();
+
 int NetRegisterApplicationMessage(int a0, int a1)
 {
     int r, e;
@@ -265,10 +346,9 @@ void NetRegisterMemoryCallbacks(void) {
     NetIRegisterMemoryCallbacks();
 }
 
-int NetMutexLock();
 int NetMutexUnlock();
 int NetMapRtError();
-int NetIAssignLocalServer();
+
 int NetAssignLocalServer(int a0, int a1)
 {
     int r, e;
@@ -280,7 +360,6 @@ int NetAssignLocalServer(int a0, int a1)
     return e;
 }
 
-int NetIConnect();
 extern int gbTimebaseEnabled;
 int NetConnect(char *a0, int a1)
 {
@@ -321,10 +400,9 @@ int NetHostPeerToPeer(char *a0, int a1)
     return e;
 }
 
-int NetMutexLock();
 int NetMutexUnlock();
 int NetMapRtError();
-int NetISetNATServiceAddr();
+
 int NetSetNATServiceAddr(int a0)
 {
     int r, e;
@@ -336,10 +414,9 @@ int NetSetNATServiceAddr(int a0)
     return e;
 }
 
-int NetMutexLock();
 int NetMutexUnlock();
 int NetMapRtError();
-int NetISetDefaultResolveAddrParams();
+
 int NetSetDefaultResolveAddrParams(int a0)
 {
     int r, e;
@@ -351,7 +428,6 @@ int NetSetDefaultResolveAddrParams(int a0)
     return e;
 }
 
-int NetMutexLock();
 int NetMutexUnlock();
 int NetMapRtError();
 int NetIResolveAddr();
@@ -366,7 +442,6 @@ int NetResolveAddr(int a0, int a1)
     return e;
 }
 
-int NetMutexLock();
 int NetMutexUnlock();
 int NetMapRtError();
 int NetIIncomingClient();
@@ -381,10 +456,9 @@ int NetIncomingClient(int a0, int a1)
     return e;
 }
 
-int NetMutexLock();
 int NetMutexUnlock();
 int NetMapRtError();
-int NetISetMyClientReceiveBroadcast();
+
 int NetSetMyClientReceiveBroadcast(int a0, int a1)
 {
     int r, e;
@@ -396,7 +470,6 @@ int NetSetMyClientReceiveBroadcast(int a0, int a1)
     return e;
 }
 
-int NetMutexLock();
 int NetMutexUnlock();
 int NetMapRtError();
 int NetIPing();
@@ -505,10 +578,9 @@ int NetGetClient(int *out, int a1, int a2)
     return NetMapRtError(NetMutexUnlock());
 }
 
-int NetMutexLock();
 int NetMutexUnlock();
 int NetMapRtError();
-int NetIGetMyIpAddress();
+
 int NetGetMyIpAddress(int a0)
 {
     int r, e;
@@ -520,10 +592,9 @@ int NetGetMyIpAddress(int a0)
     return e;
 }
 
-int NetMutexLock();
 int NetMutexUnlock();
 int NetMapRtError();
-int NetIGetMyNetAddress();
+
 int NetGetMyNetAddress(int a0, int a1)
 {
     int r, e;
@@ -535,10 +606,9 @@ int NetGetMyNetAddress(int a0, int a1)
     return e;
 }
 
-int NetMutexLock();
 int NetMutexUnlock();
 int NetMapRtError();
-int NetIGetClientIpAddress();
+
 int NetGetClientIpAddress(int a0, int a1, int a2)
 {
     int r, e;
@@ -550,10 +620,9 @@ int NetGetClientIpAddress(int a0, int a1, int a2)
     return e;
 }
 
-int NetMutexLock();
 int NetMutexUnlock();
 int NetMapRtError();
-int NetIGetMyClientIndex();
+
 int NetGetMyClientIndex(int a0, int a1)
 {
     int r, e;
@@ -565,7 +634,6 @@ int NetGetMyClientIndex(int a0, int a1)
     return e;
 }
 
-int NetMutexLock();
 int NetMutexUnlock();
 int NetMapRtError();
 int NetIGetPeerToPeerHostClientIndex();
@@ -604,10 +672,9 @@ int NetGetTime(void *arg0, int *arg1) {
     return var_v0;
 }
 
-int NetMutexLock();
 int NetMutexUnlock();
 int NetMapRtError();
-int NetIGetConnectStatus();
+
 int NetGetConnectStatus(int a0, int a1)
 {
     int r, e;
@@ -619,10 +686,9 @@ int NetGetConnectStatus(int a0, int a1)
     return e;
 }
 
-int NetMutexLock();
 int NetMutexUnlock();
 int NetMapRtError();
-int NetIGetValidClientCount();
+
 int NetGetValidClientCount(int a0, int a1)
 {
     int r, e;
@@ -636,10 +702,9 @@ int NetGetValidClientCount(int a0, int a1)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetSetDefaultStreamMediaParams);
 
-int NetMutexLock();
 int NetMutexUnlock();
 int NetMapRtError();
-int NetIGetConnectionStatus();
+
 int NetGetConnectionStatus(int a0, int a1)
 {
     int r, e;
@@ -662,10 +727,9 @@ int NetDataStreamBytesFree(int a0, int a1)
     return e;
 }
 
-int NetMutexLock();
 int NetMutexUnlock();
 int NetMapRtError();
-int NetIGetServerVersion();
+
 int NetGetServerVersion(int a0, int a1)
 {
     int r, e;
@@ -677,10 +741,9 @@ int NetGetServerVersion(int a0, int a1)
     return e;
 }
 
-int NetMutexLock();
 int NetMutexUnlock();
 int NetMapRtError();
-int NetIUpdate();
+
 int NetUpdate(void)
 {
     int r, e;
@@ -692,10 +755,9 @@ int NetUpdate(void)
     return e;
 }
 
-int NetMutexLock();
 int NetMutexUnlock();
 int NetMapRtError();
-int NetIGetNetUpdateErrors();
+
 int NetGetNetUpdateErrors(int a0)
 {
     int r, e;
@@ -707,10 +769,9 @@ int NetGetNetUpdateErrors(int a0)
     return e;
 }
 
-int NetMutexLock();
 int NetMutexUnlock();
 int NetMapRtError();
-int NetITick();
+
 int NetTick(void)
 {
     int r, e;
@@ -747,7 +808,6 @@ int NetSetDefaultDisconnectParams(int *p)
     return ret;
 }
 
-int NetMutexLock();
 int NetMutexUnlock();
 int NetMapRtError();
 int NetIDisconnect();
@@ -898,7 +958,6 @@ int NetSetDefaultLookupParams(void *arg0) {
     return var_v1;
 }
 
-int NetIGetHostByName();
 int NetGetHostByName(int a0)
 {
     int r, e;
@@ -908,7 +967,6 @@ int NetGetHostByName(int a0)
     return e;
 }
 
-int NetIGetClientBufferStatus();
 int NetGetClientBufferStatus(int a0, int a1, int a2, int a3, int a4, int a5)
 {
     int r, e;

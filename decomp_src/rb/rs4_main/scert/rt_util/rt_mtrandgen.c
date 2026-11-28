@@ -4,6 +4,12 @@
 #define NULL ((void *)0)
 #endif
 void randReSync(void);
+unsigned int randomMT(void);
+void randomMTSetCharArray(unsigned char *, unsigned int);
+void reloadMT(void);
+void seedMT();
+void seedMTUsingArray();
+
 extern unsigned int x1, x2, y;
 typedef unsigned int uint32;
 #define N              (624)

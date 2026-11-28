@@ -3,42 +3,52 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+int NetUseCommInet(void);
+int NetUseCommSockets(void);
+void rt_comm_platform_destroy(int);
+int rt_comm_platform_display_state(void);
+int rt_comm_platform_get_broadcast_ip(int *);
+void rt_comm_platform_get_dns_servers(void);
+int rt_comm_platform_get_host_by_name(const char *, int *);
+int rt_comm_platform_get_listen_socket(int *);
+int rt_comm_platform_get_local_ip(int *);
+int rt_comm_platform_get_remote_ip(int, int *);
+int rt_comm_platform_is_connected(int, int *);
+int rt_comm_platform_linkaddress_isequal();
+int rt_comm_platform_linkaddress_isnull();
+int rt_comm_platform_linkaddress_toext();
+int rt_comm_platform_linkaddress_toint(int *, int);
+char * rt_comm_platform_linkaddress_tostr();
+int rt_comm_platform_receive_echo(int, int, int, int);
+int rt_comm_platform_receive_from(int, int, int *, void *, int, int *);
+int rt_comm_platform_send_echo();
+int rt_comm_platform_send_to();
+int rt_comm_platform_shutdown(void);
+int rt_comm_platform_startup(void);
+int rt_comm_platform_update(void);
+int rt_comm_platform_vsend_to();
+void rt_ip_ip2string(char *, unsigned int);
+unsigned int rt_ip_string2ip(const char *);
+void rt_socket_cleanup_stack(void);
+void rt_socket_get_dns_servers(void);
+int rt_socket_get_host_by_name(int *, const char *);
 typedef struct { unsigned int ip; unsigned int port; } RtLinkAddr;
 typedef struct { char mac[6]; } RtAdhocAddr;
 M2C_UNK *rt_comm_platform_resolve_interface(void);
-int NetUseCommInet(void);
-int NetUseCommSockets(void);
-int rt_comm_platform_display_state(void);
-int rt_comm_platform_linkaddress_toint(int *arg0, int arg1);
-int rt_comm_platform_update(void);
-void rt_comm_platform_get_dns_servers(void);
-void rt_socket_get_dns_servers(void);
-int rt_ip_string2ip(int);                           /* extern */
+
 extern void *gCommPlatformInterfacePtr;
 extern unsigned char gCommPlatformInterface;
 int rt_comm_platform_create();
-void rt_comm_platform_destroy();
+
 int rt_comm_platform_get_avail_bytes_to_read();
-int rt_comm_platform_get_broadcast_ip(int *);
-int rt_comm_platform_get_host_by_name();
-int rt_comm_platform_get_local_ip();
-int rt_comm_platform_get_remote_ip();
-int rt_comm_platform_is_connected(int, int *);
-int rt_comm_platform_linkaddress_isequal(RtLinkAddr, RtLinkAddr);
-int rt_comm_platform_linkaddress_isnull(RtLinkAddr);
+
 void rt_comm_platform_linkaddress_setnull(RtLinkAddr *);
-int rt_comm_platform_linkaddress_toext(char *, RtLinkAddr);
-char *rt_comm_platform_linkaddress_tostr();
+
 int rt_comm_platform_receive();
-int rt_comm_platform_receive_echo();
-int rt_comm_platform_receive_from();
+
 int rt_comm_platform_send();
-int rt_comm_platform_send_echo();
-int rt_comm_platform_send_to();
-int rt_comm_platform_shutdown();
-int rt_comm_platform_startup();
+
 int rt_comm_platform_vsend();
-int rt_comm_platform_vsend_to();
 
 int NetUseCommInet(void) {
     rt_comm_platform_resolve_interface();
@@ -85,16 +95,15 @@ M2C_UNK *rt_comm_platform_resolve_interface(void) {
 extern int gbInitialized_1313FC;
 typedef struct { int sock; int pad; int ip; } RtListenSocket;
 extern RtListenSocket gaListenSocket[];
-int rt_ip_ip2string();
+
 int rt_socket_get_local_ip();
-int rt_socket_get_host_by_name();
+
 int rt_socket_recv_icmp_echo_response();
 int rt_socket_send_icmp_echo_request();
 int rt_socket_initialize_stack();
-void rt_socket_cleanup_stack();
+
 int rt_socket_sendmsg();
 int rt_socket_send_data_udp();
-int rt_comm_platform_get_listen_socket(int *);
 
 int rt_comm_platform_get_listen_socket(int *s)
 {

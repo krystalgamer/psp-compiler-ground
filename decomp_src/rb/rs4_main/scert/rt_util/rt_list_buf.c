@@ -3,6 +3,8 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+int rt_list_buf_normalize(void);
+int rt_memory_free(void **);
 typedef struct {
     unsigned int count;
     unsigned int size;
@@ -27,7 +29,7 @@ typedef struct {
     int count;
 } RtListData;
 int rt_memory_allocate(void **, unsigned int);
-int rt_memory_free(void **);
+
 void *memset(void *, int, unsigned int);
 void *memcpy(void *, const void *, unsigned long);
 void *pool_alloc(RtListPool *, unsigned int);

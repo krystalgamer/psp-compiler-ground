@@ -3,26 +3,39 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
-int rt_time_sleep_usecs_platform();
+int rt_time_delay(unsigned int);
 int rt_time_elapsed(void *, unsigned int *);
+int rt_time_elapsed_msecs(void *, unsigned int *);
+int rt_time_elapsed_secs(void *, unsigned int *);
+int rt_time_elapsed_timestamp(void *, void *);
+int rt_time_elapsed_usecs(void *, unsigned int *);
+int rt_time_get_base_diff(unsigned int *);
 void rt_time_get_date_time(void);
 void rt_time_get_gmtime(void);
 void rt_time_get_local(void);
-int rt_time_get_time_stamp();
+int rt_time_get_msecs();
+int rt_time_get_secs(unsigned int *);
+int rt_time_get_time_stamp(void *);
 int rt_time_get_time_string(char *);
+char * rt_time_get_time_string_ptr(void);
+int rt_time_initialize(void);
+int rt_time_platform_get_date_time();
 void rt_time_platform_get_gmtime(void);
+int rt_time_platform_get_time_stamp(unsigned int *);
+int rt_time_platform_get_time_string(char *);
+int rt_time_platform_init(void);
+int rt_time_reinitialize(void);
 void rt_time_sleep_usecs(void);
-int rt_time_start();
-M2C_UNK rt_time_platform_get_time_string();         /* extern */
-M2C_UNK rt_time_platform_get_time_stamp();          /* extern */
-M2C_UNK rt_time_platform_get_date_time();           /* extern */
+int rt_time_start(void *);
+int rt_time_timestamp_to_msecs(unsigned int *, unsigned int *);
+int rt_time_timestamp_to_secs(unsigned int *, unsigned int *);
+int rt_time_timestamp_to_usecs(unsigned int *, unsigned int *);
+int rt_time_sleep_usecs_platform();
 
 void rt_time_get_local(void) {
     rt_time_get_msecs();
 }
 
-int rt_time_get_base_diff();
-int rt_time_timestamp_to_msecs();
 int rt_time_get_msecs(unsigned int *ms)
 {
     unsigned int ts[2];
@@ -55,8 +68,6 @@ int rt_time_elapsed(void *t, unsigned int *out) {
     return rt_time_elapsed_msecs(t, out);
 }
 
-int rt_time_elapsed_timestamp();
-int rt_time_timestamp_to_secs();
 int rt_time_elapsed_secs(void *start, unsigned int *out)
 {
     unsigned int ts[2];
@@ -68,8 +79,6 @@ int rt_time_elapsed_secs(void *start, unsigned int *out)
     return rt_time_timestamp_to_secs(ts, out);
 }
 
-int rt_time_elapsed_timestamp();
-int rt_time_timestamp_to_msecs();
 int rt_time_elapsed_msecs(void *start, unsigned int *out)
 {
     unsigned int ts[2];
@@ -81,8 +90,6 @@ int rt_time_elapsed_msecs(void *start, unsigned int *out)
     return rt_time_timestamp_to_msecs(ts, out);
 }
 
-int rt_time_elapsed_timestamp();
-int rt_time_timestamp_to_usecs();
 int rt_time_elapsed_usecs(void *start, unsigned int *out)
 {
     unsigned int ts[2];
@@ -96,9 +103,6 @@ int rt_time_elapsed_usecs(void *start, unsigned int *out)
 
 extern unsigned char gbBaseTimeInitialized;
 extern int gBaseTimeStamp[];
-int rt_time_initialize();
-int rt_time_elapsed_timestamp();
-void rt_time_platform_init();
 
 int rt_time_delay(unsigned int ms)
 {

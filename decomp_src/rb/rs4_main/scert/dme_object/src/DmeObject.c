@@ -3,18 +3,64 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+int AddToObjectUpdateList(int);
+void * DMEmalloc(int);
+void DmeFree(void **);
+int FindFreeLocalObject(void);
 int InitObjectUpdateList(void);
-int NetGetMaxDataStreamTypes(int *arg0);
-int NetGetMaxDataStreams(int *arg0);
-int NetGetMaxFieldsPerStructure(int *arg0);
-int NetGetMaxObjects(int *arg0);
-int NetGetMaxStructures(int *arg0);
-int NetIGetSessionMasterClientIndex(int *arg0, void *arg1);
-int NetSetSessionMasterClientIndex(void *arg0, int arg1);
-int RemoveFromObjectUpdateList();
-char *NetIGetDataStream(unsigned int);
-char *NetGetStreamChannel();
+int LocalObjectName2Index(char *, int, int);
+void MyClientJoins(void *, int);
+int NetCreateObject();
+int NetFreeAllDataStreams(void);
+int NetFreeAllObjects(void);
+int NetFreeLocalObject(unsigned int);
+int NetFreeObject(int);
+int NetFreeRemoteObject(int);
+int NetGetDataStreamPacket(unsigned char *, int, int);
+int NetGetMaxDataStreamTypes(int *);
+int NetGetMaxDataStreams(int *);
+int NetGetMaxFieldsPerStructure(int *);
+int NetGetMaxObjects(int *);
+int NetGetMaxStructures(int *);
+int NetGetMyPersistantObjectCount(unsigned short *);
+int NetGetObject(void **, int);
+int NetGetSessionMasterClientIndex(int, int);
+char * NetGetStreamChannel(unsigned int);
+int NetIDataStreamBytesFree(int *, int);
+int NetIEndDataStream(unsigned int);
+int NetIFreeAllObjects(void);
+void * NetIGetClient(void *, unsigned int);
+char * NetIGetDataStream(unsigned int);
+int NetIGetSessionMasterClientIndex(int *, void *);
+int NetIJoin(int *, int *);
+int NetIRegisterObjectStart(void);
+int NetIRegisterRemoteObjectCallback(unsigned int, void *, void *, void *);
 void NetISendFieldUpdates(void);
+int NetISetMyClientObject(int);
+int NetMutexLock(void);
+int NetObjectField();
+int NetRegisterObjectFilter(int, int);
+int NetRegisterObjectStart(void);
+int NetRegisterRemoteObjectCallback(int, int, int, int);
+int NetRegisterStructure(int, int, int);
+int NetReleaseObjectPrivateOwnership(int);
+int NetRequestCreateRemoteNamedObject();
+int NetRequestObjectPrivateOwnership(int);
+int NetSendObjectFullUpdate(int, int);
+int NetSetDefaultNetUseObjectsInParams(int *);
+int NetSetDefaultRegisterObjectFilterParams(int *);
+int NetSetMyClientObject(int);
+int NetSetSessionMasterClientIndex(void *, int);
+void RemoteObjectCreation(unsigned int, int);
+void RemoteObjectDelete(unsigned int, int);
+void RemoteObjectUpdate(unsigned int, int, unsigned int);
+int RemoveFromObjectUpdateList();
+void ReserveNetObjectsAndDataStreamsForClient();
+int rt_circ_buf_destroy(void *);
+int rt_circ_buf_get_avail(void *, unsigned int *);
+int rt_circ_buf_get_start_used_ptr(void *, unsigned char **);
+int rt_circ_buf_normalize(void *, unsigned char *);
+
 M2C_UNK SendGroupedFieldUpdate(int, M2C_UNK, M2C_UNK); /* extern */
 extern void *gObjectInterfacePtr;
 typedef struct { char p0[0x130]; char *streams; int p134; int p138; char p13C[0x17C - 0x13C]; int *objs; } DmeObjIf;
@@ -28,10 +74,9 @@ int NetISendObjectFullUpdate();
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetISendMyClientUpdate);
 
-int NetMutexLock();
 int NetMutexUnlock();
 int NetMapRtError();
-int NetIRegisterObjectStart();
+
 int NetRegisterObjectStart(void)
 {
     int r, e;
@@ -84,7 +129,6 @@ int NetSetDefaultRegisterObjectFilterParams(int *p)
     return ret;
 }
 
-int NetMutexLock();
 int NetMutexUnlock();
 int NetMapRtError();
 int NetIRegisterObjectFilter();
@@ -136,10 +180,9 @@ int NetGetObject(void **out, int id)
     return NetMapRtError(NetMutexUnlock());
 }
 
-int NetMutexLock();
 int NetMutexUnlock();
 int NetMapRtError();
-int NetISetMyClientObject();
+
 int NetSetMyClientObject(int a0)
 {
     int r, e;
@@ -151,7 +194,6 @@ int NetSetMyClientObject(int a0)
     return e;
 }
 
-int NetMutexLock();
 int NetMutexUnlock();
 int NetMapRtError();
 int NetIFreeObject();
@@ -166,10 +208,9 @@ int NetFreeObject(int a0)
     return e;
 }
 
-int NetMutexLock();
 int NetMutexUnlock();
 int NetMapRtError();
-int NetIFreeAllObjects();
+
 int NetFreeAllObjects(void)
 {
     int r, e;
@@ -181,7 +222,6 @@ int NetFreeAllObjects(void)
     return e;
 }
 
-int NetMutexLock();
 int NetMutexUnlock();
 int NetMapRtError();
 int NetIRequestObjectPrivateOwnership();
@@ -196,7 +236,6 @@ int NetRequestObjectPrivateOwnership(int a0)
     return e;
 }
 
-int NetMutexLock();
 int NetMutexUnlock();
 int NetMapRtError();
 int NetIReleaseObjectPrivateOwnership();
@@ -211,7 +250,6 @@ int NetReleaseObjectPrivateOwnership(int a0)
     return e;
 }
 
-int NetMutexLock();
 int NetMutexUnlock();
 int NetMapRtError();
 int NetIRegisterStructure();
@@ -226,10 +264,9 @@ int NetRegisterStructure(int a0, int a1, int a2)
     return e;
 }
 
-int NetMutexLock();
 int NetMutexUnlock();
 int NetMapRtError();
-int NetIRegisterRemoteObjectCallback();
+
 int NetRegisterRemoteObjectCallback(int a0, int a1, int a2, int a3)
 {
     int r, e;
@@ -252,10 +289,9 @@ int NetSendObjectFullUpdate(int a, int idx)
     return e;
 }
 
-int NetMutexLock();
 int NetMutexUnlock();
 int NetMapRtError();
-int NetIGetSessionMasterClientIndex();
+
 int NetGetSessionMasterClientIndex(int a0, int a1)
 {
     int r, e;
@@ -436,7 +472,6 @@ char *NetIGetDataStream(unsigned int id) {
     return NetGetStreamChannel(id);
 }
 
-void *DMEmalloc();
 char *NetGetStreamChannel(unsigned int id)
 {
     unsigned int i;
@@ -503,8 +538,6 @@ void RemoteObjectDelete(unsigned int ci, int id)
     if (cb != NULL) cb(ci, id);
 }
 
-void DmeFree();
-void RemoteObjectDelete(unsigned int ci, int id);
 int NetFreeRemoteObject(int id)
 {
     char *g = (char *)gObjectInterface.p138;
@@ -669,7 +702,7 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", E
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", GlobalFieldErrorExceedsThreshold);
 
 typedef struct { unsigned char id, b1, b2, b3, b4; char pad; unsigned short used, size, len; } DmeDsPktHdr;
-int rt_circ_buf_is_wrapped(); int rt_circ_buf_normalize(); int rt_circ_buf_get_start_used_ptr();
+int rt_circ_buf_is_wrapped();
 void *memcpy(void *, const void *, unsigned long);
 int NetGetDataStreamPacket(unsigned char *buf, int id, int len)
 {
@@ -705,7 +738,6 @@ int NetGetDataStreamPacket(unsigned char *buf, int id, int len)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", SendCloseDataStream);
 
-int rt_circ_buf_get_avail();
 int NetIDataStreamBytesFree(int *out, int id)
 {
     unsigned char *ch;
@@ -744,8 +776,6 @@ int NetSetSessionMasterClientIndex(void *arg0, int arg1) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetCompleteJoin);
 
-void DmeFree();
-int rt_circ_buf_destroy();
 int NetFreeAllDataStreams(void)
 {
     unsigned int i;
@@ -764,9 +794,8 @@ int NetFreeAllDataStreams(void)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetILeave);
 
-void *NetIGetClient();
 void *NetCreateClient();
-void ReserveNetObjectsAndDataStreamsForClient();
+
 void MyClientJoins(void *o, int idx)
 {
     int *c = NetIGetClient(o, idx);

@@ -3,6 +3,8 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+int rt_memory_allocate_init_zero(void **, unsigned int);
+int rt_memory_free(void **);
 typedef struct {
     unsigned int head;
     unsigned int tail;
@@ -11,8 +13,7 @@ typedef struct {
     unsigned char *buf;
     int flags;
 } RtCircBuf;
-int rt_memory_allocate_init_zero(void **, unsigned int);
-int rt_memory_free(void **);
+
 int rt_circ_buf_get_used(RtCircBuf *, unsigned int *);
 int rt_circ_buf_normalize(RtCircBuf *, unsigned char *);
 int rt_circ_buf_get_avail(RtCircBuf *, unsigned int *);

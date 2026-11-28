@@ -3,10 +3,15 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
-int rt_timebase_restart(void);
-int rt_time_get_local();
+int rt_time_start(void *);
+int rt_timebase_get_globaltime(int *);
 void rt_timebase_get_localtime(void);
-void rt_timebase_reset_globaltime(int arg0);
+void rt_timebase_reset_globaltime(int);
+int rt_timebase_restart(void);
+void rt_timebase_start(void);
+
+int rt_time_get_local();
+
 extern int gGlobalTimeBase;
 extern int gLastNetTime;
 extern unsigned char gLastQueryTimeStamp;
@@ -47,7 +52,7 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_timebase", rt_tim
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_timebase", rt_timebase_is_query_ready);
 
 extern int gbQueryRecordInitialized;
-void rt_time_start();
+
 void *memset(void *, int, unsigned int);
 void rt_timebase_start(void)
 {

@@ -3,9 +3,42 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
-int NetUseCrypt(void);
+void AppendKeyChain(char *, char *);
+void DeleteKeyChain(int *);
+void * GetKeyChain(char *, unsigned int);
+void * GetKeyMaster();
 void InitializePRNG(void);
-void KM_GenerateRSAKeyPair(int arg0, int arg1);
+int IsNullRCKey(unsigned char *);
+int IsNullRSAKey(int *);
+int KM_AddSymmetricKey(int, unsigned int, unsigned char *);
+void KM_Cleanup(int);
+int KM_CopyKeys(int, unsigned int, int, unsigned int);
+void KM_CreateRandomRCKey(unsigned int *);
+void KM_DeleteKeys(int, int);
+void KM_DeleteSymmetricKey(int, unsigned int);
+void KM_Destroy(int);
+int KM_DigiSign(int, int, void *, void *, unsigned char *);
+int KM_DigiVerify(int, int, void *, void *);
+void KM_GenerateRSAKeyPair(int, int);
+int KM_GetGameSessionKey(int, int, unsigned char *);
+int KM_GetPublicKey(int, unsigned int, void *);
+int KM_GetSymmetricKey(int, unsigned int, void *);
+void KM_RSAAdjust(void *, void *);
+void KM_SHA1(void *, int, void *, int);
+void KM_Salted_SHA1(void *, int, void *, int, void *, int);
+int KM_SetGameSessionKey(int, int, unsigned char *);
+void KM_SetLocalClientID(int, int);
+int KM_SetLocalKeyPair(int, char *);
+int NetUseCrypt(void);
+void RSAGenerateKeyPair(void *, void *);
+void SHAFinal(void *, void *, unsigned int);
+void SHAInit(void *);
+void SHAUpdate(void *, void *, unsigned int);
+void lintAddIP(int, int);
+unsigned int randomMT(void);
+void rt_crypt_resolve_interface(void);
+int rt_memory_free(void **);
+
 M2C_UNK setNewSeed(M2C_UNK);                        /* extern */
 extern unsigned char D_00132074;
 
@@ -16,36 +49,24 @@ int NetUseCrypt(void) {
 
 extern void *gCryptInterface[31];
 extern void **gCryptInterfacePtr;
-void *GetKeyChain(char *km, unsigned int id);
-void *GetKeyMaster();
+
 void GetSoftwareKeyPair();
-int KM_AddSymmetricKey(int a, unsigned int id, unsigned char *key);
-void KM_Cleanup();
+
 int KM_CompareSymmetricKey();
-int KM_CopyKeys();
+
 int KM_Create();
-void KM_CreateRandomRCKey(unsigned int *k);
+
 int KM_Decrypt();
 int KM_Decrypt2();
-void KM_DeleteKeys(int a, int id);
-void KM_DeleteSymmetricKey(int a, unsigned int id);
-void KM_Destroy();
-int KM_DigiSign();
-int KM_DigiVerify();
+
 int KM_Encrypt();
 int KM_Encrypt2();
-int KM_GetGameSessionKey(int a, int b, unsigned char *out);
-int KM_GetPublicKey(int a, unsigned int id, void *out);
-int KM_GetSymmetricKey(int a, unsigned int id, void *out);
+
 M2C_UNK *KM_GetVersionStringPtr(void);
 int KM_MD5();
-void KM_RSAAdjust(void *a, void *b);
-void KM_SHA1(void *data, int len, void *out, int outlen);
+
 int KM_Salted_MD5();
-void KM_Salted_SHA1(void *salt, int slen, void *data, int len, void *out, int outlen);
-int KM_SetGameSessionKey(int a, int id, unsigned char *key);
-void KM_SetLocalClientID(int a, int id);
-int KM_SetLocalKeyPair(int a, char *keys);
+
 int KM_SetPublicKey();
 void rt_crypt_resolve_interface(void)
 {
@@ -94,7 +115,6 @@ int IsNullRCKey(unsigned char *k) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", NewKeyChain);
 
-int rt_memory_free();
 void DeleteKeyChain(int *kc)
 {
     int *k = kc;
@@ -179,9 +199,6 @@ M2C_UNK *KM_GetVersionStringPtr(void) {
     return "rt_crypt version: 2.10.2";
 }
 
-void SHAInit();
-void SHAUpdate();
-void SHAFinal();
 void KM_SHA1(void *data, int len, void *out, int outlen)
 {
     char ctx[0x60];
@@ -202,7 +219,6 @@ void KM_Salted_SHA1(void *salt, int slen, void *data, int len, void *out, int ou
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_Create);
 
-void *GetKeyMaster();
 void KM_SetLocalClientID(int a, int id) {
     char *km = GetKeyMaster(a);
     if (km != NULL) *(int *)(km + 0x14) = id;
@@ -210,7 +226,6 @@ void KM_SetLocalClientID(int a, int id) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_SetPublicKey);
 
-int IsNullRSAKey();
 int KM_GetPublicKey(int a, unsigned int id, void *out)
 {
     char *km, *kc;
@@ -356,7 +371,7 @@ int KM_CopyKeys(int sid, unsigned int schain, int did, unsigned int dchain)
     return 0;
 }
 
-int IsNullRSAKey(); void RSADecrypt();
+void RSADecrypt();
 int KM_DigiSign(int id, int chain, void *key, void *mod, unsigned char *out)
 {
     char *km;
@@ -395,9 +410,8 @@ int KM_DigiVerify(int id, int chain, void *key, void *sig)
     return 0;
 }
 
-void DeleteKeyChain();
 void RemoveKeyChain();
-void *GetKeyChain();
+
 void KM_DeleteKeys(int a, int id)
 {
     void *km = GetKeyMaster(a);
@@ -468,7 +482,6 @@ void InitializePRNG(void) {
     }
 }
 
-unsigned int randomMT();
 void KM_CreateRandomRCKey(unsigned int *k)
 {
     unsigned char i;
@@ -484,7 +497,6 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_D
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_Decrypt2);
 
-void lintAddIP();
 void KM_RSAAdjust(void *a, void *b)
 {
     unsigned int x[128];

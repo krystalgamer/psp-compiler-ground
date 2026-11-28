@@ -3,10 +3,13 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+int NetIRegisterObjectStart(void);
+int NetIRegisterRemoteObjectCallback(unsigned int, void *, void *, void *);
+int rt_memory_allocate_init_zero(void **, unsigned int);
 
 extern char *gObjectInterfacePtr;
 extern int GlobalObjectFieldCount; extern void *GlobalObjectFieldList;
-int NetMapRtError(); int rt_memory_allocate_init_zero();
+int NetMapRtError();
 int NetIRegisterObjectStart(void)
 {
     if (*(unsigned int *)(gObjectInterfacePtr + 0x110) < *(unsigned int *)(gObjectInterfacePtr + 0xF8)) {

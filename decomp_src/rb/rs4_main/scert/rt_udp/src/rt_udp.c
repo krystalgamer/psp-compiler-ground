@@ -3,32 +3,79 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
-void memcpy(void *, const void *, unsigned long);
-int KM_GetLocalPublicKey();
-void rt_list_buf_clear();
-int rt_list_buf_get_pool_used();
-unsigned int randomMT();
-M2C_UNK *rt_udp_get_version_string(void);
+int GetUDPSecurityMode(void);
+int KM_GetLocalPublicKey(int, void *);
 int NetUseUDP(void);
-int rt_udp_destroy_shared_channel_data(void *arg0);
-int rt_udp_disable_nat_service_heartbeat(void *arg0);
-int rt_udp_get_aggregation_interval(void *arg0, int *arg1);
-int rt_udp_get_inactivity_timeout(int *arg0);
-int rt_udp_get_local_address(void *arg0, void *arg1, int *arg2);
-int rt_udp_get_virtual_port(void *arg0, unsigned short *arg1);
-int rt_udp_listen(void *arg0, int arg1);
+unsigned int randomMT(void);
+unsigned int randomNonZero(unsigned int);
+void rt_comm_destroy(void *);
+int rt_comm_get_local_port(char *, int *);
+int rt_comm_linkaddress_isequal();
+void rt_comm_linkaddress_setnull(void *);
+int rt_comm_receive_from(char *, int, int, void *, int, int *);
+int rt_comm_send_to();
+void rt_comm_shutdown(void);
+int rt_comm_startup(void);
+void rt_list_buf_clear(void *);
+void rt_list_buf_destroy(void *);
+int rt_list_buf_destroy_pool(void *);
+int rt_list_buf_get_pool_used();
+void * rt_list_buf_get_tail(void *);
+int rt_list_buf_resize_buffer(void *, unsigned int);
+int rt_memory_allocate_init_zero(void **, unsigned int);
+int rt_memory_free(void **);
+int rt_time_elapsed(void *, unsigned int *);
+int rt_time_get_time_stamp(void *);
+int rt_time_start(void *);
+int rt_udp_accept(void *, int *);
+int rt_udp_ack_list_flush(int *, char *);
+void rt_udp_add_conn_to_list(void *, void *);
+int rt_udp_append_data_to_packet(void *, void *, unsigned short, int *, char *);
+int rt_udp_create_shared_channel_data(char *);
+void rt_udp_del_conn_from_list(void *, void *);
+int rt_udp_deny(void *, int *);
+int rt_udp_destroy(char *);
+int rt_udp_destroy_shared_channel_data(void *);
+int rt_udp_disable_nat_service_heartbeat(void *);
+void rt_udp_disconnect(char *, int *);
+void rt_udp_enable_unexpected_port(int);
+int rt_udp_event_process(char *);
+char * rt_udp_find_free_connection(char *);
+int rt_udp_get_aggregation_interval(void *, int *);
+int rt_udp_get_buffer_size(void *, int *, int, int *);
+int rt_udp_get_buffer_stats(void *, unsigned int *, int, unsigned int *, unsigned int *, unsigned int *);
+int rt_udp_get_inactivity_timeout(int *);
+int rt_udp_get_latency_info(int *, int *);
+int rt_udp_get_local_address(void *, void *, int *);
+int rt_udp_get_packet_seed(int *, unsigned int *);
+int rt_udp_get_pool_used(void *);
+unsigned short rt_udp_get_sequence_id(unsigned char *);
+int rt_udp_get_virtual_port(void *, unsigned short *);
+int rt_udp_listen(void *, int);
+int rt_udp_mgr_create(char *, int *);
+int rt_udp_mgr_destroy(void);
+int rt_udp_mgr_find_channel_ref(unsigned short, void *);
+int rt_udp_mgr_release_channel_ref(unsigned short);
+int rt_udp_process_heartbeat(void *, void *, int *);
+int rt_udp_process_reset(int *);
+int rt_udp_receive_messages(char *);
+void rt_udp_resolve_interface(void);
+int rt_udp_send_ack(int, int, unsigned char *);
+int rt_udp_send_broadcasts(char *);
+int rt_udp_send_reset(int *, char *);
+int rt_udp_set_buffer_size(void *, int *, int, int);
+int rt_udp_set_connection_inactivity_timeout(void *, int);
+int rt_udp_set_inactivity_timeout(int);
+void rt_udp_set_peer_id(void *, int);
+void rt_udp_setup_packet_sub_header(char *, char *, unsigned short, int, unsigned short *);
+int rt_upnp_destroy(void *);
+int rt_upnp_disable_natservice_heartbeat(void *);
+void memcpy(void *, const void *, unsigned long);
+
+M2C_UNK *rt_udp_get_version_string(void);
+
 int rt_udp_set_aggregation_interval();
-int rt_udp_set_connection_inactivity_timeout(void *arg0, int arg1);
-int rt_udp_set_inactivity_timeout(int arg0);
-int rt_upnp_disable_natservice_heartbeat(void *arg0);
-void rt_comm_destroy(void *arg0);
-void rt_udp_add_conn_to_list(void *arg0, void *arg1);
-void rt_udp_del_conn_from_list(void *arg0, void *arg1);
-void rt_udp_enable_unexpected_port(int arg0);
-void rt_udp_set_peer_id(void *arg0, int arg1);
-M2C_UNK rt_comm_shutdown();                         /* extern */
-M2C_UNK rt_memory_free(void *);                     /* extern */
-M2C_UNK rt_upnp_destroy(int);                       /* extern */
+
 extern int gbEnableUnexpectedPort;
 extern unsigned char gszRtUdpVersionString;
 extern int RT_UDP_INACTIVITY_TIMEOUT;
@@ -46,7 +93,6 @@ unsigned short rt_udp_get_sequence_id(unsigned char *hdr)
     return id;
 }
 
-int rt_comm_send_to();
 int rt_udp_ack_list_flush(int *u, char *c)
 {
     struct { unsigned short type; unsigned short list[0x207]; } m;
@@ -95,35 +141,23 @@ extern void **gUDPInterfacePtr;
 int rt_udp_broadcast();
 int rt_udp_connect();
 int rt_udp_create();
-int rt_udp_deny(void *u, int *c);
-int rt_udp_destroy();
-int rt_udp_disable_nat_service_heartbeat(void *arg0);
-void rt_udp_disconnect();
+
 int rt_udp_event_check();
-int rt_udp_event_process();
+
 int rt_udp_get_address();
-int rt_udp_get_aggregation_interval(void *arg0, int *arg1);
-int rt_udp_get_buffer_size(void *u, int *conn, int which, int *out);
-int rt_udp_get_buffer_stats();
-int rt_udp_get_local_address(void *arg0, void *arg1, int *arg2);
-int rt_udp_get_pool_used(void *udp);
+
 int rt_udp_get_resolved_address();
 M2C_UNK *rt_udp_get_version_string(void);
-int rt_udp_get_virtual_port(void *arg0, unsigned short *arg1);
-int rt_udp_listen(void *arg0, int arg1);
-int rt_udp_mgr_create();
-int rt_udp_mgr_destroy();
-int rt_udp_mgr_find_channel_ref();
+
 int rt_udp_mgr_get_channel_ref();
-int rt_udp_mgr_release_channel_ref();
+
 int rt_udp_pre_accept();
 int rt_udp_resolve_address();
 int rt_udp_send();
 int rt_udp_send_list();
 int rt_udp_send_unconnected();
 int rt_udp_set_aggregation_interval();
-int rt_udp_set_buffer_size(void *u, int *c, int which, int size);
-void rt_udp_set_peer_id(void *arg0, int arg1);
+
 void rt_udp_resolve_interface(void)
 {
     gUDPInterface[0] = (void *)rt_udp_get_version_string;
@@ -172,7 +206,7 @@ M2C_UNK *rt_udp_get_version_string(void) {
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_create);
 
 extern void **gCryptInterfacePtr;
-int rt_list_buf_destroy(); int rt_list_buf_destroy_pool(); void *memset();
+void *memset();
 int rt_udp_destroy(char *u)
 {
     unsigned int i = 0;
@@ -203,7 +237,6 @@ int rt_udp_destroy(char *u)
     rt_memory_free(&u);
 }
 
-int rt_list_buf_resize_buffer();
 int rt_udp_set_buffer_size(void *u, int *c, int which, int size)
 {
     if (u == NULL) return 0xD2F2;
@@ -214,7 +247,6 @@ int rt_udp_set_buffer_size(void *u, int *c, int which, int size)
     if (which == 1) return rt_list_buf_resize_buffer(c + 9, size);
     return 2;
 }
-
 
 int rt_udp_set_aggregation_interval(arg0, arg1)
     void *arg0;
@@ -330,7 +362,7 @@ typedef struct { void *buf; int len; } RtUdpVecEnt;
 typedef struct { RtUdpVecEnt e[8]; int total; int n; } RtUdpVec;
 typedef struct { unsigned short hlen; unsigned short flags; } RtUdpSubInfo2;
 int rt_udp_buffer_data_for_send(void *u, void *list, RtUdpVec *v, unsigned short flags, int conn);
-void rt_udp_setup_packet_sub_header(char *u, char *c, unsigned short flags, int len, unsigned short *h);
+
 void rt_udp_disconnect(char *u, int *c)
 {
     unsigned short sub[2];
@@ -403,7 +435,6 @@ int rt_udp_accept(void *u, int *c)
     return 0;
 }
 
-int rt_udp_send_reset();
 int rt_udp_deny(void *u, int *c)
 {
     if (u == NULL) return 2;
@@ -416,7 +447,7 @@ int rt_udp_deny(void *u, int *c)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_pre_accept);
 
-int rt_time_elapsed(); int rt_time_start(); int rt_time_get_time_stamp(); int rt_comm_update(); int rt_udp_send_messages(); int rt_comm_send_to(); int rt_udp_receive_messages(char *u);
+int rt_comm_update(); int rt_udp_send_messages();
 typedef struct { unsigned short h, a, b; } RtUdpHb;
 int rt_udp_event_process(char *u)
 {
@@ -600,7 +631,7 @@ int rt_udp_send_broadcasts(char *u)
 }
 
 typedef struct { unsigned int ip; unsigned int port; } RtUdpLinkAddr;
-int rt_comm_receive_from(); int rt_comm_linkaddress_isequal(RtUdpLinkAddr, RtUdpLinkAddr); int rt_udp_process_message();
+int rt_udp_process_message();
 int rt_udp_receive_messages(char *u)
 {
     RtUdpLinkAddr from;
@@ -663,7 +694,7 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_p
 typedef struct { unsigned int ip; unsigned int port; } RtUdpUAddr;
 typedef struct { RtUdpUAddr addr; int port; } RtUdpUFrom;
 typedef struct { unsigned char *data; int len; RtUdpUFrom *from; int x; char pad[0x30]; int total; int type; } RtUdpUMsg;
-int rt_list_buf_insert(); int rt_list_buf_get_tail();
+int rt_list_buf_insert();
 int rt_udp_process_unconnected_data(char *u, unsigned char *data, RtUdpUAddr *addr, int port)
 {
     RtUdpUAddr a;
@@ -692,7 +723,6 @@ int rt_udp_process_unconnected_data(char *u, unsigned char *data, RtUdpUAddr *ad
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_find_connection);
 
-int rt_comm_send_to();
 typedef struct { unsigned short h, a, b; } RtUdpRst;
 int rt_udp_send_reset(int *ch, char *conn)
 {
@@ -713,7 +743,7 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_i
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_calculate_rto);
 
-int rt_comm_startup(); int rt_memory_allocate_init_zero(); int rt_comm_create(); int rt_comm_get_local_port(); int rt_comm_get_local_ip(); int rt_comm_get_broadcast_ip();
+int rt_comm_create(); int rt_comm_get_local_ip(); int rt_comm_get_broadcast_ip();
 typedef struct { int type; int mtu; int a; int b; } RtUdpCommCfg;
 int rt_udp_create_shared_channel_data(char *u)
 {

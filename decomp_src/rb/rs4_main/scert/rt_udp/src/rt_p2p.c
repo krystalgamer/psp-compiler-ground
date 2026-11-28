@@ -3,45 +3,92 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+int NetUsePeerToPeer(void *);
+int NetUseUDP(void);
+int rt_comm_linkaddress_isequal();
+void rt_comm_linkaddress_setnull(void *);
+int rt_msg_get_u2byte(unsigned char *, unsigned short *);
+int rt_p2p_determine_new_host(char *, unsigned short *);
+unsigned short rt_p2p_find_free_peer_index(char *);
+int rt_p2p_generate_grid(char *, unsigned int);
+int rt_p2p_get_current_address_type(char *, unsigned short, int *);
+int rt_p2p_get_host_index(void *, unsigned short *);
+int rt_p2p_get_latency_info(char *, unsigned short, void *);
+int rt_p2p_get_max_peers(void *, int *);
+int rt_p2p_get_my_address(int *, int, void *, void *);
+int rt_p2p_get_my_peer_index(void *, unsigned short *);
+int rt_p2p_get_overlay_peer_count(void *, int, int *);
+int rt_p2p_get_peer_by_connection(char *, int);
+int rt_p2p_get_virtual_port(void *, unsigned short *);
+void rt_p2p_handle_connected_event(char *, int);
+int rt_p2p_ignore_peer_in_overlay(char *, unsigned char, unsigned short, unsigned int);
+int rt_p2p_is_peer_in_overlay(char *, unsigned char, unsigned short, int *);
+int rt_p2p_isend(int *, int *, unsigned short, int);
+int rt_p2p_join_overlay(char *, unsigned char);
+int rt_p2p_notify_peers_disconnect_forwarding(int, char *, int, unsigned short, unsigned short);
+int rt_p2p_pack_type(int, int);
+int rt_p2p_process_broadcast_disconnect(char *, int, void *);
+int rt_p2p_process_broadcast_update(char *, unsigned short, void *);
+int rt_p2p_process_connect_complete(char *, unsigned short);
+int rt_p2p_process_connection_detached(char *, int, void *);
+int rt_p2p_process_coordinate_data(char *, unsigned short);
+int rt_p2p_process_ignore_update(char *, int, void *);
+int rt_p2p_process_local_broadcast_test(void *, int);
+int rt_p2p_process_overlay_type(char *, int, void *);
+int rt_p2p_quit_overlay(char *, unsigned char);
+int rt_p2p_receive_broadcasts(char *, int);
+void rt_p2p_reset_peer_info(void *, void *);
+void rt_p2p_resolve_interface(void);
+int rt_p2p_send_broadcast_disconnect(char *, unsigned short);
+int rt_p2p_send_connection_detached_to_host(char *, unsigned short, unsigned short);
+int rt_p2p_send_local_broadcast_tests(char *);
+int rt_p2p_send_my_broadcast_flag(char *, unsigned short);
+int rt_p2p_send_to();
+int rt_p2p_send_token_msg(char *, int, int, int, unsigned short);
+int rt_p2p_set_host_inactivity_timeout_connection(char *, int);
+int rt_p2p_set_host_invactivity_timeout_session(char *);
+int rt_p2p_set_max_peers(void *, int);
+int rt_p2p_set_overlay_type(char *, unsigned char, unsigned int);
+int rt_p2p_set_send_aggregation(int *);
+int rt_p2p_tick(int);
+int rt_p2p_timeout_backlog_connection(int *);
+void rt_p2p_unpack_type(void *, int *, unsigned short *);
+int rt_p2p_update(char *);
+int rt_time_elapsed(void *, unsigned int *);
+int rt_time_start(void *);
+int rt_token_build_token_msg(char *, unsigned int, unsigned int *, unsigned char, unsigned short, int);
+void rt_udp_disconnect(char *, int *);
+int rt_udp_get_inactivity_timeout(int *);
+int rt_udp_get_latency_info(int *, int *);
+int rt_udp_get_local_address(void *, void *, int *);
+int rt_udp_set_connection_inactivity_timeout(void *, int);
 int rt_p2p_generic_disconnect();
 int rt_udp_send_unconnected();
-int NetUsePeerToPeer(void *arg0);
-int NetUseUDP(void);
-int rt_p2p_get_max_peers(void *arg0, int *arg1);
-int rt_p2p_get_overlay_peer_count(void *arg0, int arg1, int *arg2);
-int rt_p2p_get_virtual_port(void *arg0, unsigned short *arg1);
-int rt_p2p_pack_type(int arg0, int arg1);
-int rt_p2p_process_local_broadcast_test(void *arg0, int arg1);
-int rt_p2p_set_send_aggregation(int *arg0);
-int rt_p2p_tick(int arg0);
+
 int rt_udp_set_aggregation_interval();
-void rt_p2p_reset_peer_info(void *arg0, void *arg1);
-void rt_p2p_resolve_interface(void);
-M2C_UNK rt_comm_linkaddress_setnull(int);           /* extern */
+
 extern void *gUDPInterfacePtr;
 typedef struct { int a; int conn1; int conn2; int pad[17]; } RtP2PPeer;
 typedef struct { int a; int conn; int time; } RtP2PBacklog;
 typedef struct { struct { void *buf; int len; } e[8]; int total; int n; } RtP2PVec;
 void rt_p2p_get_my_peer_status(char *p, int *status, short *idx);
-void rt_udp_disconnect();
+
 typedef struct { unsigned char a, b; unsigned short from; unsigned short idx; } RtP2PDetach;
 typedef struct { void **peers; int x[3]; int count; int type; } RtP2POvlTab;
 extern void *gCryptInterfacePtr;
 extern void *gP2PInterface[35];
 extern void **gP2PInterfacePtr;
 int rt_udp_get_address();
-int rt_p2p_create(); int rt_p2p_destroy(); int rt_p2p_get_current_address_type(char *, unsigned short, int *); int rt_p2p_get_peer_address(int *, unsigned short, int, int *, int *);
-int rt_p2p_get_my_address(); int rt_p2p_get_my_peer_index(void *p2p, unsigned short *out);
-int rt_p2p_get_host_index(void *p2p, unsigned short *out); int rt_p2p_get_buffer_stats(); int rt_p2p_get_peer_buffer_stats();
-int rt_p2p_host(); int rt_p2p_incoming_peer(); int rt_p2p_connect(); int rt_p2p_disconnect(); int rt_p2p_update();
-int rt_p2p_send(); int rt_p2p_send_list(); int rt_p2p_receive_broadcasts(char *, int);
+int rt_p2p_create(); int rt_p2p_destroy(); int rt_p2p_get_peer_address(int *, unsigned short, int, int *, int *);
+
+int rt_p2p_get_buffer_stats(); int rt_p2p_get_peer_buffer_stats();
+int rt_p2p_host(); int rt_p2p_incoming_peer(); int rt_p2p_connect(); int rt_p2p_disconnect();
+int rt_p2p_send(); int rt_p2p_send_list();
 typedef struct { unsigned int ip; unsigned int port; } RtP2PAddr;
-int rt_p2p_send_to(void *p2p, RtP2PAddr addr, void *data, int len);
-int rt_p2p_set_max_peers(void *p2p, int n); int rt_p2p_set_overlay_type(char *, unsigned char, unsigned int); int rt_p2p_join_overlay(char *, unsigned char); int rt_p2p_quit_overlay(char *, unsigned char);
-int rt_p2p_quit_all_overlays(); int rt_p2p_ignore_peer_in_overlay(char *, unsigned char, unsigned short, unsigned int);
-int rt_p2p_is_peer_in_overlay(char *p, unsigned char ov, unsigned short peer, int *out);
-int rt_p2p_send_overlay(); int rt_p2p_send_token_msg(char *, int, int, int, unsigned short); int rt_p2p_send_token_list_msg(char *, int, unsigned char, int, int, int, int, unsigned short); int rt_p2p_token_event_notify();
-int rt_p2p_get_latency_info(char *, unsigned short, void *);
+
+int rt_p2p_quit_all_overlays();
+
+int rt_p2p_send_overlay(); int rt_p2p_send_token_list_msg(char *, int, unsigned char, int, int, int, int, unsigned short); int rt_p2p_token_event_notify();
 
 int NetUsePeerToPeer(void *arg0) {
     rt_p2p_resolve_interface();
@@ -122,7 +169,7 @@ int rt_p2p_get_current_address_type(char *p, unsigned short idx, int *type)
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_get_peer_address);
 
 int rt_udp_get_resolved_address();
-int rt_udp_get_local_address();
+
 int rt_p2p_get_my_address(int *p, int type, void *a, void *b)
 {
     int r;
@@ -206,7 +253,7 @@ int rt_p2p_tick(int arg0) {
 }
 
 int rt_p2p_complete_connection();
-int rt_p2p_send_local_broadcast_tests();
+
 int rt_p2p_send_peer_updates();
 void rt_timebase_is_query_ready();
 int rt_p2p_timebase_query();
@@ -471,7 +518,6 @@ int rt_p2p_pack_type(int arg0, int arg1) {
     return (arg1 & 0x7FF) | ((arg0 & 0x1F) << 0xB);
 }
 
-void rt_msg_get_u2byte();
 void rt_p2p_unpack_type(void *msg, int *type, unsigned short *len)
 {
     unsigned short v;
@@ -559,7 +605,7 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_s
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_handle_connect_event);
 
 int rt_p2p_send_peer_info();
-int rt_p2p_get_peer_by_connection(char *p, int conn);
+
 void rt_p2p_handle_connected_event(char *p, int conn)
 {
     unsigned int idx;
@@ -655,7 +701,7 @@ int rt_p2p_process_coordinate_data(char *p, unsigned short idx)
 }
 
 void rt_p2p_get_my_peer_status(char *p, int *status, short *idx);
-void rt_udp_disconnect();
+
 int rt_p2p_process_connect_complete(char *p, unsigned short idx)
 {
     short me;
@@ -873,7 +919,6 @@ int rt_p2p_send_broadcast_disconnect(char *p, unsigned short idx)
     return 0;
 }
 
-int rt_p2p_send_connection_detached_to_host(char *p, unsigned short a, unsigned short b);
 int rt_p2p_notify_peers_disconnect_forwarding(int mode, char *p, int st, unsigned short a, unsigned short idx)
 {
     RtP2PPeer *ps;
@@ -893,7 +938,6 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_n
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_save_backlog_connection);
 
-int rt_comm_linkaddress_isequal();
 int rt_udp_get_address();
 typedef struct { int ip; int port; } RtP2PLinkAddr;
 typedef struct { RtP2PLinkAddr addr; int port; } RtP2PFullAddr;
@@ -919,7 +963,6 @@ int rt_p2p_find_backlog_connection(int *p, RtP2PFullAddr *addr, int *conn)
     return 0;
 }
 
-int rt_time_elapsed();
 int rt_p2p_timeout_backlog_connection(int *p)
 {
     unsigned int i;
@@ -999,7 +1042,6 @@ int rt_p2p_update_grid(char *p, RtP2POvlTab *o, unsigned short me)
     return 0;
 }
 
-int rt_token_build_token_msg();
 int rt_msg_set_u2byte();
 int rt_p2p_send_token_msg(char *p, int tok, int a, int b, unsigned short idx)
 {
@@ -1072,8 +1114,6 @@ int rt_p2p_set_host_invactivity_timeout_session(char *p)
     return 0;
 }
 
-int rt_udp_get_inactivity_timeout();
-int rt_udp_set_connection_inactivity_timeout();
 int rt_p2p_set_host_inactivity_timeout_connection(char *p, int conn)
 {
     unsigned int t;

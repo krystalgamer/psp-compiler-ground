@@ -3,25 +3,60 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
-typedef struct { unsigned int ip; unsigned int port; } RtLinkAddr;
-int rt_comm_echo_is_enabled(void);
-int rt_comm_get_version_string_ptr(void);
-int rt_comm_is_valid_channel();
-int rt_isdigit(int arg0);
-void rt_comm_destroy(void *arg0);
+void rt_comm_destroy(void *);
 void rt_comm_display_state(void);
-void rt_comm_echo_set_default_options(int *arg0);
+int rt_comm_echo_enable(int *);
+int rt_comm_echo_is_enabled(void);
+void rt_comm_echo_set_default_options(int *);
+int rt_comm_echo_shutdown(void);
+int rt_comm_echo_update(void);
+int rt_comm_get_avail_bytes_to_read(char *, int *);
 void rt_comm_get_broadcast_ip(void);
 void rt_comm_get_dns_servers(void);
 void rt_comm_get_host_by_name(void);
+int rt_comm_get_interface_data(char *, void **);
 void rt_comm_get_local_ip(void);
+int rt_comm_get_local_port(char *, int *);
+void rt_comm_get_metrics(void *);
+int * rt_comm_get_new_channel_id(void);
+int rt_comm_get_remote_ip(char *, int *);
+int rt_comm_get_version_string_ptr(void);
+int rt_comm_is_connected(char *, int *);
+int rt_comm_linkaddress_isequal();
+int rt_comm_linkaddress_isnull();
+int rt_comm_linkaddress_toext();
 void rt_comm_linkaddress_toint(void);
+int rt_comm_linkaddress_tostr();
+void rt_comm_metric_init(void);
+void rt_comm_metric_update(void);
+int rt_comm_receive(char *, void *, int, int *);
+int rt_comm_receive_echo(char *, int *, int, int);
+int rt_comm_receive_from(char *, int, int, void *, int, int *);
 int rt_comm_release_channel_id(void *);
+int rt_comm_send(char *, void *, int, int *);
+int rt_comm_send_echo();
+int rt_comm_send_to();
+void rt_comm_set_default_options(int *);
+void rt_comm_shutdown(void);
+int rt_comm_skip_query_section(int, char *, unsigned int, unsigned int *);
+int rt_comm_startup(void);
+int rt_comm_vsend(char *, void *, int *);
+int rt_comm_vsend_to();
+int rt_isdigit(int);
+int rt_memory_allocate_init_zero(void **, unsigned int);
 int rt_memory_free(void **);
+int rt_msg_get_ubyte(unsigned char *, unsigned char *);
+int rt_time_elapsed(void *, unsigned int *);
+int rt_time_elapsed_msecs(void *, unsigned int *);
+int rt_time_start(void *);
+typedef struct { unsigned int ip; unsigned int port; } RtLinkAddr;
+
+int rt_comm_is_valid_channel();
+
 void *memcpy(void *, const void *, unsigned long);
 void *memset(void *, int, unsigned int);
 extern char gMetricData[];
-void rt_comm_metric_update();
+
 extern void *gCommPlatformInterfacePtr;
 extern int gpszVersion_11536C;
 extern int gEchoInfo;
@@ -34,15 +69,11 @@ typedef int (*CommFn)();
 #define COMMIF(off) (*(CommFn *)((char *)gCommPlatformInterfacePtr + (off)))
 extern int gnInitCount_1353F4;
 extern char gLookupData[];
-void rt_comm_metric_init();
+
 void *memset(void *, int, unsigned int);
-int rt_comm_echo_shutdown();
-int rt_comm_is_connected(char *, int *);
 
 void rt_comm_metric_add_data();
-int rt_memory_allocate_init_zero();
 
-int rt_time_elapsed_msecs(void *, unsigned int *);
 void rt_comm_metric_update_single(void *, unsigned int);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rcsid_10E72C);
@@ -336,7 +367,7 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_com
 
 typedef struct { int comm; int timer[2]; RtLinkAddr addr; char buf[0x200]; int len; int pad; unsigned int tries; void (*cb)(void *); } RtLookup;
 extern char D_001353FC[];
-int rt_time_elapsed(); int rt_time_start();
+
 int rt_comm_resend_lookup_query(RtLookup *ld)
 {
     unsigned int elapsed;
@@ -363,7 +394,6 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_com
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_process_response_header);
 
-int rt_msg_get_ubyte();
 int rt_comm_skip_query_section(int a, char *buf, unsigned int len, unsigned int *off)
 {
     unsigned char n = 0;
@@ -401,7 +431,6 @@ int rt_comm_release_channel_id(void *p)
     return rt_memory_free(&q);
 }
 
-
 int rt_comm_is_valid_channel(arg0)
     void *arg0;
 {
@@ -414,7 +443,7 @@ int rt_comm_is_valid_channel(arg0)
 }
 typedef struct { int a, b; } RtTimeS;
 extern RtTimeS gLastMetricPrintTime;
-int rt_time_start();
+
 void rt_comm_metric_init(void)
 {
     int *m = (int *)gMetricData;

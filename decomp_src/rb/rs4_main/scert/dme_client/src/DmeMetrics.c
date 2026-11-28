@@ -3,9 +3,10 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
-int NetSetDefaultBitMask(void *arg0);
-int NetSetDefaultLatencyMetricsParams(void *arg0);
-void NetSetLatencyMetricsCallback(int arg0, int arg1);
+int NetSetDefaultBitMask(void *);
+int NetSetDefaultLatencyMetricsParams(void *);
+void NetSetLatencyMetricsCallback(int, int);
+
 extern unsigned char gLatencyMetrics;
 
 int NetSetDefaultLatencyMetricsParams(void *arg0) {

@@ -4,7 +4,10 @@
 #define NULL ((void *)0)
 #endif
 int NetDisableLanMessaging(void);
-int NetLANSetDefaultEnableMessagingInParams(void *arg0);
+int NetLANSetDefaultEnableMessagingInParams(void *);
+int NetLANSetDefaultSendRawMessageInParams(int *);
+int NetLANSetDefaultSendTextMessageInParams(int *);
+
 extern unsigned char gLANMessage;
 
 int NetLANSetDefaultSendTextMessageInParams(int *p)

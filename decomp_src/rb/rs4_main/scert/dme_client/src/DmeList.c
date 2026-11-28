@@ -3,7 +3,7 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
-int NetSetDefaultBitMask(void *arg0);
+int NetSetDefaultBitMask(void *);
 
 int NetSetDefaultBitMask(void *arg0) {
     int var_v0;

@@ -3,6 +3,20 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+int rt_memory_allocate_init_zero(void **, unsigned int);
+int rt_memory_free(void **);
+int rt_parse_get_callback(unsigned int, unsigned int, void **);
+int rt_parse_get_execution_counts(unsigned int, unsigned int *, unsigned int);
+int rt_parse_initialize(int, unsigned int, unsigned int, void *);
+int rt_parse_reg_app_parser(void *);
+int rt_parse_reg_parser(unsigned int, unsigned int, void *);
+int rt_parse_register(unsigned int *, unsigned int, void *);
+int rt_parse_shutdown(void);
+int rt_parse_timeout_frag_msg(void);
+void rt_parse_update(void);
+int rt_parse_zero_execution_counts(unsigned int);
+int rt_time_elapsed(void *, unsigned int *);
+int rt_time_start(void *);
 extern unsigned char gbInitialized_135B94;
 extern void **gapfParsers;
 extern unsigned int *gaTypeCount;
@@ -11,10 +25,9 @@ extern unsigned int gMaxTypes;
 extern unsigned int *gaExecutionCount;
 typedef struct { int used; char pad[0x20]; int time; int x; int y; void *buf; } RtFragMsg;
 extern RtFragMsg *gpaFragMsg;
-void rt_parse_update(void);
 
 extern void *gpfPreExecuteCallback; extern int gMaxMessageSize; extern unsigned char gFragmentID; extern void *gpTempBuf;
-int rt_memory_allocate_init_zero(); int rt_parse_fragment_handler();
+int rt_parse_fragment_handler();
 int rt_parse_initialize(int maxmsg, unsigned int types, unsigned int classes, void *precb)
 {
     int r;
@@ -42,7 +55,7 @@ int rt_parse_initialize(int maxmsg, unsigned int types, unsigned int classes, vo
 }
 
 extern void *gpTempBuf;
-int rt_memory_free();
+
 int rt_parse_shutdown(void)
 {
     unsigned int i;
@@ -157,8 +170,6 @@ int rt_parse_get_execution_counts(unsigned int cls, unsigned int *out, unsigned 
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_parse", rt_parse_fragment_message);
 
-int rt_time_elapsed();
-int rt_memory_free();
 int rt_parse_timeout_frag_msg(void)
 {
     unsigned int i;
@@ -186,7 +197,7 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_parse", rt_parse_
 
 typedef struct { unsigned char b[20]; } RtFragHdrRaw;
 typedef struct { unsigned char a, c; unsigned short len; int p4, p8, pC; int off; } RtFragHdr;
-char *rt_parse_find_frag_msg(); int rt_time_start(); void *memcpy();
+char *rt_parse_find_frag_msg(); void *memcpy();
 int rt_parse_fragment_handler(int a, int b, int c, RtFragHdrRaw *h)
 {
     RtFragHdr hdr;
