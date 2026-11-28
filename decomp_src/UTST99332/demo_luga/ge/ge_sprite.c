@@ -46,7 +46,29 @@ void sceGumDrawArray(int prim, int vtype, int count, const void *indices, const 
 /* module functions defined in other units */
 int geTexSend(int n);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_sprite", geSpriteSet);
+int geSpriteSet(int n, geSPRITE *sp)
+{
+	geSPRITE *p;
+
+	if (n >= 1024)
+		return 0;
+	if (n < 0)
+		return 0;
+
+	p = &geSprite[n];
+	p->x = sp->x;
+	p->y = sp->y;
+	p->w = sp->w;
+	p->h = sp->h;
+	p->pri = sp->pri;
+	p->col = sp->col;
+	p->tex = sp->tex;
+	p->tex_uv[0].u = sp->tex_uv[0].u;
+	p->tex_uv[0].v = sp->tex_uv[0].v;
+	p->tex_uv[1].u = sp->tex_uv[1].u;
+	p->tex_uv[1].v = sp->tex_uv[1].v;
+	return 1;
+}
 
 int geSpriteParam(int n, int param, geSPRITE *sp)
 {
@@ -85,6 +107,54 @@ int geSpriteParam(int n, int param, geSPRITE *sp)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_sprite", geSpriteGet);
+int geSpriteGet(int n, geSPRITE *sp)
+{
+	geSPRITE *p;
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_sprite", geSpriteDraw);
+	if (n >= 1024)
+		return 0;
+	if (n < 0)
+		return 0;
+
+	p = &geSprite[n];
+	sp->x = p->x;
+	sp->y = p->y;
+	sp->w = p->w;
+	sp->h = p->h;
+	sp->pri = p->pri;
+	sp->col = p->col;
+	sp->tex = p->tex;
+	sp->tex_uv[0].u = p->tex_uv[0].u;
+	sp->tex_uv[0].v = p->tex_uv[0].v;
+	sp->tex_uv[1].u = p->tex_uv[1].u;
+	sp->tex_uv[1].v = p->tex_uv[1].v;
+	return 1;
+}
+
+int geSpriteDraw(int n)
+{
+	geSPRITE *p;
+
+	if (n >= 1024)
+		return 0;
+	if (n < 0)
+		return 0;
+
+	p = &geSprite[n];
+	if (p->tex != -1)
+		geTexSend(p->tex);
+	p->model[0].u = p->tex_uv[0].u;
+	p->model[0].v = p->tex_uv[0].v;
+	p->model[0].c = p->col;
+	p->model[0].p[0] = p->x;
+	p->model[0].p[1] = p->y;
+	p->model[0].p[2] = p->pri;
+	p->model[1].u = p->tex_uv[1].u;
+	p->model[1].v = p->tex_uv[1].v;
+	p->model[1].c = p->col;
+	p->model[1].p[0] = p->x + p->w;
+	p->model[1].p[1] = p->y + p->h;
+	p->model[1].p[2] = p->pri;
+	sceGumDrawArray(6, 0x80011E, 2, 0, p->model);
+	return 1;
+}
