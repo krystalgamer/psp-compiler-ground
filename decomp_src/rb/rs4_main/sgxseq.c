@@ -604,7 +604,17 @@ int SesqMakeSubID(a0, s, id)
     return id | ((M2C_FIELD(s, unsigned char *, 0xB) + 1) << 24);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", SesqSubPlay);
+void SesqSubPlay(char *s, char *a, int b, int c, int d) {
+    int cmd[8];
+    int id;
+    id = SesqMakeSubID(s, a, b);
+    cmd[0] = 0;
+    cmd[1] = id;
+    cmd[2] = *(short *)(a + 0x18);
+    cmd[3] = c;
+    cmd[4] = d;
+    CmdPlaySeq(s, cmd);
+}
 
 void SesqSubStop(char *s, char *a, int b, int flag) {
     int cmd[8];
