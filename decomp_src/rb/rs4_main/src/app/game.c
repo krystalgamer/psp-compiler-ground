@@ -519,7 +519,18 @@ int gameGetFinish(void) {
     return D_001116E8;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/game", gameChgModule);
+int gameChgModule(int inst, int mod)
+{
+	if (thrState(mainGetThrBack()) == 0) {
+		int i = inst;
+		if (i < 0)
+			i = resGetCurrentInst();
+		mod = amax(mod, 0);
+		G->inst[i].module = mod;
+		return 1;
+	}
+	return 0;
+}
 
 void gameDisSoftReset(void) {
     consPrintf(&D_000FCBC8, &D_000FCBD0);

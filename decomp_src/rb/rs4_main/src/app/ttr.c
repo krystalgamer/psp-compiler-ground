@@ -1,5 +1,6 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
+#include "../minmax.h"
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
@@ -34,7 +35,24 @@ int ttrGetIndexNum(char **p)
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/ttr", D_000FE718);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/ttr", ttrGetMaxNumber);
+int ttrGetMaxNumber(TtrHead **p)
+{
+	TtrHead *ttr_buf = *p;
+	TtrHead *h;
+	TtrEnt *tbl;
+	int max = 0;
+	int i;
+
+	if (ttr_buf == NULL)
+		consPrintf(&D_000FE6D4, &D_000FE6F8, 0x4E, "ttrGetMaxNumber", &D_000FE6F0);
+	h = ttr_buf;
+	if (h == NULL)
+		consPrintf(&D_000FE6D4, &D_000FE6F8, 0x51, "ttrGetMaxNumber", &D_000FE718);
+	tbl = (TtrEnt *)(h + 1);
+	for (i = 0; i < h->num; i++)
+		max = amax(tbl[i].number, max);
+	return max;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/ttr", D_000FE730);
 

@@ -1,5 +1,6 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
+#include "../minmax.h"
 #include "m2c_macros.h"
 #ifndef NULL
 #define NULL ((void *)0)
@@ -124,7 +125,31 @@ int menuGetFlowID(int arg0) {
     return cusGetKeyIndex(6, 0, arg0);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/menu", menuGetNextFlowID);
+int cusGetIndexNum(int sec, char *key, char *name);
+void cusGetStringIndex(int sec, char *key, char *name, int idx, char *buf, int size, const char *def);
+int menuGetNextFlowID(int req)
+{
+	char name[32];
+	char buf[32];
+	int id = *(int *)&l_tMenuCntx;
+	int sel = amin(req, 16);
+	int r, num;
+
+	cusSetInst(1);
+	cusSetSection(6, (int)&l_szEdition);
+	r = menuGetFlowName(id, (int)name);
+	if (r < 0)
+		return r;
+	num = cusGetIndexNum(6, NULL, name);
+	if (sel < 0)
+		sel = num > 0 ? num - 1 : 0;
+	cusGetStringIndex(6, NULL, name, sel, buf, 0x20, "-");
+	if (buf[0] == '-') {
+		consPrintf("%s : SelectOverFlow : NowFlow=%s Num=%d Req=%d\n", "menuGetNextFlowID", name, num, sel);
+		return -3;
+	}
+	return cusGetKeyIndex(6, NULL, (int)buf);
+}
 
 int menuGetFlowName(int arg0, int arg1) {
     int var_v1;
