@@ -61,6 +61,18 @@ void I3rAnimVector4__Solve(void *arg0, float *arg1, float t) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_vertex_anim", I3rArrayAnimVector4__Solve);
+typedef struct { I3rArrayKeyFrameVector4Entity *e; int pad[3]; } AavEnt;
+void I3rArrayAnimVector4__Solve(void *a, float *out, float t)
+{
+	char *h = *(char **)((char *)a + 8);
+	AavEnt *p = *(AavEnt **)(h + 8);
+	AavEnt *end = p + __builtin_allegrex_ext(*(unsigned int *)(h + 4), 0, 24);
+	do {
+		I3rArrayKeyFrameVector4Entity *e = p->e;
+		p++;
+		I3rArrayKeyFrameVector4Entity__Solve(e, out, t);
+		out += 4;
+	} while (p != end);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_vertex_anim", I3rArrayAnimVector4__SolveAndMadd);

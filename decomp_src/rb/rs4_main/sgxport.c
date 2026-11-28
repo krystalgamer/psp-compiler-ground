@@ -223,7 +223,38 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", CmdPlayNote);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", CmdPlayWave);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", CmdPlayNoise);
+void *UnitPlayWave(void *, int, int, int, int, int, int, int); /* extern */
+
+void CmdPlayNoise(void *arg0, void *arg1) {
+    int temp_fp;
+    int temp_s0;
+    int temp_s1;
+    int temp_s3;
+    int temp_s4;
+    int temp_s5;
+    int temp_s6;
+    int temp_s7;
+    void *temp_v0;
+
+    temp_s1 = M2C_FIELD(arg1, int *, 4);
+    temp_s7 = M2C_FIELD(arg1, int *, 8);
+    temp_s0 = M2C_FIELD(arg1, int *, 0xC);
+    temp_s6 = M2C_FIELD(arg1, int *, 0x20);
+    temp_s3 = M2C_FIELD(arg1, int *, 0x14);
+    temp_s4 = M2C_FIELD(arg1, int *, 0x18);
+    temp_s5 = M2C_FIELD(arg1, int *, 0x1C);
+    temp_fp = M2C_FIELD(arg1, int *, 0x10);
+    UnitFreeByID_8589C(arg0, temp_s1, 0);
+    if (sgxResLock(temp_s7) == 0) {
+
+    } else {
+        temp_v0 = UnitPlayWave(arg0, temp_s1, temp_s7, temp_s0 - 0x3E8, temp_s3, temp_s4, temp_s5, temp_s6);
+        if (temp_v0 != NULL) {
+            M2C_FIELD(temp_v0, short *, 0x40) = (short) temp_fp;
+        }
+        sgxResUnlock(temp_s7);
+    }
+}
 
 void CmdPlayNote();
 typedef struct { unsigned char prog, vol, x[4]; } MidiChX;

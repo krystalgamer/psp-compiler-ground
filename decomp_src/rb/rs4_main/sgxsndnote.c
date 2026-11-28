@@ -84,7 +84,22 @@ void NoteRel(char *s, int x)
     sgxPortCommand(*(int *)(s + 0x94), cmd);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsndnote", WaveCalcBufAlign);
+int sgxGetFormUnitByte();
+void WaveCalcBufAlign(char *n, int *align, int *size)
+{
+    *align = 0x10;
+    if (*(short *)(n + 0x12) >= 0) {
+        char *w = sgxResFindWave(*(short *)(n + 0x12), *(int *)(n + 0x14), 0);
+        if (w == NULL) {
+            *size = 0;
+        } else {
+            signed char ch = *(signed char *)(w + 9);
+            *size = sgxGetFormUnitByte(*(signed char *)(w + 8)) * ch;
+        }
+    } else {
+        *size = 0;
+    }
+}
 
 int WaveCheckReq(int a, int b)
 {
