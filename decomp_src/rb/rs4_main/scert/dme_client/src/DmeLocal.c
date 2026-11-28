@@ -534,7 +534,34 @@ int NetIGetServerVersion(char *out, char *dme)
     return ret;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetISendTo);
+typedef struct { void *buf; int len; } DmeIov;
+typedef struct { DmeIov e[8]; unsigned int total; int n; } DmeIovec;
+int NetISendTo(DmeLinkAddr addr, int port, unsigned int type, unsigned int code, DmeIovec *v)
+{
+    unsigned char hdr[2];
+    int r;
+
+    if (type >= 6) return 0x17;
+    if (code >= 256) return 0x17;
+    if (v == NULL) return 0x17;
+    if (v->total == 0) return 0x17;
+    if (v->total >= 0x1FF) return 0x1F;
+    if (rt_comm_linkaddress_isnull(addr)) return 0x17;
+    hdr[0] = type;
+    hdr[1] = code;
+    if (v->n < 8) {
+        DmeIov *e = (DmeIov *)(v->n * 8 + (int)v);
+        e->len = 2;
+        e->buf = hdr;
+        v->total += 2;
+        v->n++;
+    }
+    r = (*(int (**)(int, DmeLinkAddr *, int, DmeIovec *))((char *)gUDPInterfacePtr + 0x4C))(*(int *)((char *)gDmeGlobals + 0x14), &addr, port, v);
+    v->n--;
+    v->total -= v->e[v->n].len;
+    if (r != 0) return 0x25;
+    return 0;
+}
 
 int NetBitMaskToSendMask(unsigned char *out, unsigned int *in, unsigned int nbits)
 {
