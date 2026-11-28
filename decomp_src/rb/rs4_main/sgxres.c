@@ -395,9 +395,40 @@ void ResResetTuningInfo(int *p)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", ResAttachTuningInfo);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", ResUpdateTuningSlot);
+int ResAttachTuningInfo(void *, void *, const char *);
+void ResUpdateTuningSlot(void *sv)
+{
+    char *s = sv;
+    int n, i;
+    char **list;
+    ResResetTuningInfo((int *)(s + 0x54));
+    if (*(char **)(s + 0x18) == NULL || **(char **)(s + 0x18) == 0) return;
+    list = __builtin_alloca(((ResWorkS *)&gWork_11FC38)->num * sizeof(void *));
+    n = MakeResList((void **)list);
+    for (i = 0; i < n; i++) {
+        char *r = list[i];
+        if (*(int *)(r + 0x4C))
+            ((ResWorkT *)&gWork_11FC38)->nOpen += ResAttachTuningInfo(s + 0x54, r, *(char **)(s + 0x18));
+    }
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", ResUpdateTuningSlotAll);
+int ResAttachTuningInfo(void *, void *, const char *);
+void ResUpdateTuningSlotAll(void)
+{
+    int n, i;
+    char **list;
+    ResResetTuningInfo((int *)(&gWork_11FC38 + 0x2C));
+    ((ResWorkT *)&gWork_11FC38)->nOpen = 0;
+    ((ResWorkT *)&gWork_11FC38)->nOpen2 = 0;
+    list = __builtin_alloca(((ResWorkS *)&gWork_11FC38)->num * sizeof(void *));
+    n = MakeResList((void **)list);
+    for (i = 0; i < n; i++) {
+        char *r = list[i];
+        ResUpdateTuningSlot(r);
+        if (*(int *)(r + 0x4C))
+            ((ResWorkT *)&gWork_11FC38)->nOpen2 += ResAttachTuningInfo(&gWork_11FC38 + 0x2C, r, D_0010A21C);
+    }
+}
 
 #define TW ((ResWorkT *)&gWork_11FC38)
 void ResTuningOpen(char *r)
@@ -415,7 +446,25 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", ResTuningClose);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", ResFindTuningData);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResGetTuningVolume);
+unsigned char *ResFindTuningData(void *, const char *, int *, int *);
+int sgxResGetTuningVolume(int id, const char *name)
+{
+    int ofs;
+    int def = -1;
+    unsigned char *t;
+    if (((ResWorkT *)&gWork_11FC38)->nOpen > 0 && id >= 0) {
+        char *r = ResGetSlot(id, 0);
+        if (r != NULL) {
+            t = ResFindTuningData(r + 0x54, name, &ofs, &def);
+            if (t != NULL) return t[ofs];
+        }
+    }
+    if (((ResWorkT *)&gWork_11FC38)->nOpen2 > 0) {
+        t = ResFindTuningData(&gWork_11FC38 + 0x2C, name, &ofs, &def);
+        if (t != NULL) return t[ofs];
+    }
+    return def < 0 ? 0x80 : def;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
