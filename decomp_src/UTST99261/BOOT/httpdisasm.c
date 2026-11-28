@@ -39,7 +39,16 @@ typedef struct SDomiDocumentType {
 } SDomiDocumentType;
 
 typedef struct { char *start; char *end; } STRWORD;
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/httpdisasm", strlinecmp);
+#define ISEOL(c) ((c) == '\r' || (c) == '\n')
+char *strlinecmp(const char *s, char *line) {
+    while (*s && !ISEOL(*line)) {
+        if (HD_UPPER(*s) != HD_UPPER(*line))
+            return NULL;
+        s++;
+        line++;
+    }
+    return *s ? NULL : line;
+}
 
 int strlinevalue(const char *s)
 {
