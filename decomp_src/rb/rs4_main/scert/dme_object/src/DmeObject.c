@@ -17,6 +17,9 @@ char *NetGetStreamChannel();
 void NetISendFieldUpdates(void);
 M2C_UNK SendGroupedFieldUpdate(int, M2C_UNK, M2C_UNK); /* extern */
 extern void *gObjectInterfacePtr;
+typedef struct { char p0[0x130]; char *streams; int p134; int p138; char p13C[0x17C - 0x13C]; int *objs; } DmeObjIf;
+extern DmeObjIf gObjectInterface;
+typedef struct { int dest; unsigned char type; char pad[3]; int a; int b; char pad2[0x34 - 0x10]; int c; int d; void *data; } DmeSendMsg;
 
 extern char *D_00132A34;
 
@@ -57,7 +60,17 @@ int NetSetDefaultNetUseObjectsInParams(int *p)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetUseObjects);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetObjectField);
+int NetIObjectField();
+int NetObjectField(a, b, c, d, e, f)
+{
+    int r, v;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    v = NetIObjectField(a, b, c, d, e, f);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return v;
+}
 
 int NetSetDefaultRegisterObjectFilterParams(int *p)
 {
@@ -377,13 +390,46 @@ void *NetIGetObject(idx)
     return p;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetGetMyPersistantObjectCount);
+int NetGetMyPersistantObjectCount(unsigned short *count)
+{
+    unsigned int i = 0;
+    unsigned int n;
+    int me;
+    unsigned char *o;
+
+    if (count == NULL) return 0x17;
+    *count = 0;
+    if (D_00132A34 == NULL) return 0;
+    me = *(int *)(D_00132A34 + 0x404);
+    if (me == 0x100) return 8;
+    for (i = 0; i < *(unsigned int *)((char *)gObjectInterfacePtr + 0x100); i++) {
+        o = NetIGetObject(i);
+        if (o != NULL && (o[0xA] == 3 || o[0xA] == 4)) {
+            if (me == *(int *)(o + 0x10))
+                (*count)++;
+        }
+    }
+    return 0;
+}
 
 char *NetIGetDataStream(unsigned int id) {
     return NetGetStreamChannel(id);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetGetStreamChannel);
+void *DMEmalloc();
+char *NetGetStreamChannel(unsigned int id)
+{
+    unsigned int i;
+
+    if (id >= *(unsigned int *)((char *)gObjectInterfacePtr + 0x10C)) return NULL;
+    if (gObjectInterface.streams == NULL) {
+        gObjectInterface.streams = DMEmalloc(*(unsigned int *)((char *)gObjectInterfacePtr + 0x10C) * 0x44);
+        if (gObjectInterface.streams == NULL) return NULL;
+        for (i = 0; i < *(unsigned int *)((char *)gObjectInterfacePtr + 0x10C); i++)
+            gObjectInterface.streams[i * 0x44] = 0;
+    }
+    return gObjectInterface.streams + id * 0x44;
+}
 
 int NetIGetSessionMasterClientIndex(int *arg0, void *arg1) {
     int var_v1;
@@ -439,11 +485,51 @@ void RemoteObjectDelete(unsigned int ci, int id)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetFreeRemoteObject);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetFreeLocalObject);
+int NetISendMessage();
+int NetFreeLocalObject(unsigned int id)
+{
+    DmeSendMsg m;
+    char buf[0x30];
+    struct { unsigned short id; } d;
+
+    if (id >= *(unsigned int *)((char *)gObjectInterfacePtr + 0x100)) return 0x17;
+    if (gObjectInterface.p138 == 0) return 8;
+    NetFreeRemoteObject(id);
+    d.id = id;
+    memset(&m, 0, sizeof(m));
+    m.type = 0x50;
+    m.dest = gObjectInterface.p138;
+    m.b = -1;
+    m.c = 0x100;
+    m.a = 10;
+    m.d = 2;
+    m.data = &d;
+    NetISendMessage(&m, buf, 0);
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetIFreeObject);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", LocalObjectName2Index);
+int strcmp(const char *, const char *);
+int LocalObjectName2Index(char *name, int a, int b)
+{
+    int *c;
+    int i, idx;
+    char *o;
+
+    if (name == NULL) goto fail;
+    c = NetIGetClient(a, b);
+    if (c == NULL) goto fail;
+    for (i = 0; i < c[3]; i++) {
+        idx = i + c[2];
+        o = NetIGetObject(idx);
+        if (o == NULL) continue;
+        if (*(int *)(o + 4) != 2) continue;
+        if (strcmp(o + 0x14, name) == 0) return idx;
+    }
+fail:
+    return -1;
+}
 
 int FindFreeLocalObject(void)
 {
@@ -462,8 +548,6 @@ int FindFreeLocalObject(void)
     return -1;
 }
 
-typedef struct { char pad[0x17C]; int *objs; } DmeObjIf;
-extern DmeObjIf gObjectInterface;
 int NetIFreeAllObjects(void)
 {
     unsigned int i;
@@ -580,7 +664,23 @@ int NetSetSessionMasterClientIndex(void *arg0, int arg1) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetCompleteJoin);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetFreeAllDataStreams);
+void DmeFree();
+int rt_circ_buf_destroy();
+int NetFreeAllDataStreams(void)
+{
+    unsigned int i;
+    char *s;
+
+    if (gObjectInterface.streams == NULL) return 0;
+    for (i = 0; i < *(unsigned int *)((char *)gObjectInterfacePtr + 0x10C); i++) {
+        s = (char *)(i * 0x44 + (int)gObjectInterface.streams);
+        if (*(int *)(s + 0x10) != 0)
+            DmeFree(s + 0x10);
+        if (gObjectInterface.streams + i * 0x44 + 0x2C != NULL)
+            rt_circ_buf_destroy(gObjectInterface.streams + i * 0x44 + 0x2C);
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetILeave);
 
