@@ -83,7 +83,7 @@ void Icosahedron::draw(unsigned char d)
         draw_bin(**it, d);
 }
 
-bool Icosahedron::getDepth() const
+unsigned char Icosahedron::getDepth() const
 {
     return _f0;
 }

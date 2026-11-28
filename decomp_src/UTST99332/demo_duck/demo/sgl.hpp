@@ -925,19 +925,21 @@ public:
         math::vector_xyzw _v[3];    /* 0x00 corners */
         math::vector_xyzw _edge[3]; /* 0x30 edge planes */
         math::vector_xyzw _face;    /* 0x60 face plane */
-        char _p70[0x1C];
+        math::vector_xyzw _color;   /* 0x70 (SphereSampling::partition gives it to the bin's samples) */
+        int _begin, _end;           /* 0x80: the bin's range of (partitioned) samples */
+        unsigned int _len;          /* 0x88 */
         bool _leaf;                 /* 0x8C */
         int _f90;
         int _f94;
         Bin *_children[4];          /* 0x98 */
         Bin *_parent;               /* 0xA8 */
-        std::vector<unsigned int> _vAC;
+        std::vector<unsigned int> _indexes;     /* 0xAC: sample indexes (partition) */
         unsigned char _depth;       /* 0xB8 */
     };
     Icosahedron(unsigned char);
     ~Icosahedron();
     math::vector_xyzw on_sphere(math::vector_xyzw);
-    bool getDepth() const;
+    unsigned char getDepth() const;
     void draw();
     void draw(unsigned char);
     void draw_bin(Bin &, unsigned char);
@@ -962,6 +964,7 @@ class SphereSampling : public Icosahedron {
 public:
     struct Sample : public math::SphericalCoord {
         Sample();
+        math::vector_xyzw point() const { const math::vector_xyzw &d = _dir; return math::vector_xyzw(d.x, d.y, d.z, 1); }
         Vector sh;                      /* 0x18 */
         float _value;                   /* 0x28 */
         float _r, _g, _b;               /* 0x2C */
