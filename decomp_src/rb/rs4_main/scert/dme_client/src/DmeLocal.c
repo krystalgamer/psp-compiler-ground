@@ -108,6 +108,8 @@ typedef struct { int set; DmeLinkAddr ext; int port; } DmeMyAddr;
 extern void *gObjectInterfacePtr;
 extern void *gDmeGlobals;
 extern void *gUDPInterfacePtr;
+extern void *gStreamMediaInterfacePtr;
+typedef int (*DmeFn0)();
 extern unsigned char gppConnInfo;
 extern unsigned char gMyAddressInfo;
 extern unsigned char gNatService;
@@ -700,7 +702,23 @@ void ParseMessageList(void *list, char *ctx, int a, int b, int c)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", RemoteClientDisconnectEvent);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", RemoteClientEvent);
+void RemoteClientConnects(char *, int, DmeLinkAddr, int); void RemoteClientDisconnectEvent(char *, int);
+void RemoteClientEvent(char *ci, int idx, DmeLinkAddr addr, int connected)
+{
+    if (rt_comm_linkaddress_isnull(addr)) return;
+    if (connected) {
+        int port = 0;
+        if (gUDPInterfacePtr != NULL) port = *(int *)((char *)gUDPInterfacePtr + 0x84);
+        (*(int *)(ci + 0x45C))++;
+        if (gStreamMediaInterfacePtr != NULL && (*(DmeFn0 *)((char *)gStreamMediaInterfacePtr + 0x18))(ci) != 0)
+            if ((*(DmeFn0 *)((char *)gStreamMediaInterfacePtr + 0x10))(ci, idx) != 0) return;
+        RemoteClientConnects(ci, idx, addr, *(int *)((char *)gDmeGlobals + 0x20) ? *(int *)((char *)gDmeGlobals + 0x20) : port);
+    } else {
+        if (gStreamMediaInterfacePtr != NULL && (*(DmeFn0 *)((char *)gStreamMediaInterfacePtr + 0x18))(ci) != 0)
+            if ((*(DmeFn0 *)((char *)gStreamMediaInterfacePtr + 0x14))(ci, idx) != 0) return;
+        RemoteClientDisconnectEvent(ci, idx);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIInitialize);
 
@@ -1147,8 +1165,7 @@ int NetIGetNetUpdateErrors(void *a)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIDisconnect);
 
-extern int gbUDPEnabled; extern void *gStreamMediaInterfacePtr; void rt_parse_shutdown();
-typedef int (*DmeFn0)();
+extern int gbUDPEnabled; void rt_parse_shutdown();
 int NetIClose(void)
 {
     int i;
