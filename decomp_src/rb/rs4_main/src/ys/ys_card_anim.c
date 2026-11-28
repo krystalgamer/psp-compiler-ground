@@ -1,7 +1,5 @@
 /* lang: c++ */
-/* cflags: -Os -fno-strength-reduce -fno-merge-constants -fno-exceptions */
-/* #pragma interface: the vtables, typeinfo and implicit destructors stay in the module's asm */
-#pragma interface "rodata"
+/* cflags: -Os -fno-strength-reduce -fno-exceptions */
 #include "common.h"
 
 struct Task;
@@ -32,14 +30,15 @@ public:
 
 class Task {
 public:
+	void *_0;
 	::Task *task_p;
 };
 
 struct CardAnimArg {
-	tagTtrFontCntx *font;
+	int a;
 	void *ref;
 	int _8;
-	int b;
+	void *b;
 	int _10;
 };
 
@@ -57,8 +56,20 @@ public:
 
 }
 
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_card_anim", _ZN2Ys8CardAnimC2ER9TCardAttriP14tagTtrFontCntxiPNS_4TaskE); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_card_anim", _ZN2Ys8CardAnimC1ER9TCardAttriP14tagTtrFontCntxiPNS_4TaskE); }
+namespace Ys {
+CardAnim::CardAnim(TCardAttr &attr, int a, tagTtrFontCntx *f, int b, Task *parent)
+{
+	font_p = f;
+	dead = 0;
+	CardAnimArg arg;
+	memset(&arg, 0, sizeof(arg));
+	arg.a = a;
+	arg.ref = ref = cardanmGetCard2Ref(&attr);
+	arg.b = (void *)b;
+	arg._10 = 0;
+	task_p = taskMake(parent ? parent->task_p : 0, (void *)cardanmTask, &arg, 0);
+}
+}
 
 namespace Ys {
 
@@ -92,7 +103,3 @@ tagTtrFontCntx *CardAnim::Create_TextContext(InstDat &d, char *s, int n, unsigne
 }
 
 
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_card_anim", _ZTVN2Ys8CardAnimE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_card_anim", D_00104BF0); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_card_anim", _ZTIN2Ys8CardAnimE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_card_anim", _ZTSN2Ys8CardAnimE); }
