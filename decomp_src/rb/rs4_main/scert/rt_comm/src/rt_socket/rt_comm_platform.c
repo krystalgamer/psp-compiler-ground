@@ -236,7 +236,21 @@ int rt_comm_platform_send_to(int s, RtLinkAddr addr, int len, void *buf, int fla
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_socket/rt_comm_platform", rt_comm_platform_vsend);
+int rt_comm_platform_vsend(int s, void *vec, int n)
+{
+    int r;
+    int ret;
+
+    if (gbInitialized_1313FC != 1) return 5;
+    if ((unsigned int)(s + 1) < 2) return 2;
+    if (s < 0) {
+        ret = rt_comm_platform_get_listen_socket(&s);
+        if (ret != 0) return ret;
+    }
+    r = rt_socket_sendmsg(s, vec, 0, 0, n);
+    ret = (r != 0 && r != 0xCF0E) ? r : 0;
+    return ret;
+}
 
 int rt_comm_platform_vsend_to(int s, RtLinkAddr addr, int n, void *iov, int *sent)
 {
