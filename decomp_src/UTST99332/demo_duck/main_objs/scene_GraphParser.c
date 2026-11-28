@@ -164,7 +164,24 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParse
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser17parse_new_textureERN11FieldParser5FieldERKSsb);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser16parse_new_switchERN11FieldParser5FieldERKSsb);
+extern template common::handle<scene::Switch> scene::Graph::newNode<scene::Switch>(std::string, bool);
+extern const char gl_select[] __asm__("D_0016A024");
+extern const char pf_parse_new_switch[] __asm__("_ZZN5scene11GraphParser16parse_new_switchERN11FieldParser5FieldERKSsbE19__PRETTY_FUNCTION__");
+namespace scene {
+void GraphParser::parse_new_switch(FieldParser::Field &f, const std::string &name, bool mapped)
+{
+    common::handle<Switch> s = _graph.newNode<Switch>(name.c_str(), mapped);
+    step_assert(gl_lbrace);
+    while (step_field(f)) {
+        if (is_equal(gl_select)) {
+            step();
+            s->select(get<int>());
+        } else
+            skip(f);
+    }
+    SCENE_ASSERT(is_equal(gl_rbrace), scene_graph_h_err, gl_braces_expr, gl_file, pf_parse_new_switch, 223, scene_graph_h_sp);
+}
+}
 
 namespace scene {
 void GraphParser::parse_new_group(FieldParser::Field &f, const std::string &name, bool mapped)
@@ -201,9 +218,61 @@ void GraphParser::parse_new_default_shader(FieldParser::Field &f, const std::str
 }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser19parse_new_transformERN11FieldParser5FieldERKSsb);
+extern const char gl_translation[] __asm__("D_0016A244");
+extern const char gl_rotation[] __asm__("D_0016A250");
+extern const char gl_scale[] __asm__("D_0016A25C");
+extern const float D_00169ED8;
+extern const char pf_parse_new_transform[] __asm__("_ZZN5scene11GraphParser19parse_new_transformERN11FieldParser5FieldERKSsbE19__PRETTY_FUNCTION__");
+namespace scene {
+void GraphParser::parse_new_transform(FieldParser::Field &f, const std::string &name, bool mapped)
+{
+    common::handle<Transform> t = _graph.newNode<Transform>(name.c_str(), mapped);
+    step_assert(gl_lbrace);
+    while (step_field(f)) {
+        math::vector_xyz tr(0, 0, 0), rot(0, 0, 0), sc(D_00169ED8, D_00169ED8, D_00169ED8);
+        if (is_equal(gl_translation)) {
+            float *p = &tr.x;
+            for (int i = 0; i != 3; i++) {
+                step();
+                p[i] = get<float>();
+            }
+        } else if (is_equal(gl_rotation)) {
+            float *p = &rot.x;
+            for (int i = 0; i != 3; i++) {
+                step();
+                p[i] = get<float>();
+            }
+        } else if (is_equal(gl_scale)) {
+            float *p = &sc.x;
+            for (int i = 0; i != 3; i++) {
+                step();
+                p[i] = get<float>();
+            }
+        } else
+            skip(f);
+    }
+    SCENE_ASSERT(is_equal(gl_rbrace), scene_graph_h_err, gl_braces_expr, gl_file, pf_parse_new_transform, 341, scene_graph_h_sp);
+}
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser26parse_new_static_transformERN11FieldParser5FieldERKSsb);
+extern const char gl_matrix[] __asm__("D_0016A2C8");
+extern const char pf_parse_new_static_transform[] __asm__("_ZZN5scene11GraphParser26parse_new_static_transformERN11FieldParser5FieldERKSsbE19__PRETTY_FUNCTION__");
+namespace scene {
+void GraphParser::parse_new_static_transform(FieldParser::Field &f, const std::string &name, bool mapped)
+{
+    common::handle<StaticTransform> t = _graph.newNode<StaticTransform>(name.c_str(), mapped);
+    step_assert(gl_lbrace);
+    while (step_field(f)) {
+        if (is_equal(gl_matrix)) {
+            math::matrix m;
+            step_matrix(m);
+            t->setMatrix(m);
+        } else
+            skip(f);
+    }
+    SCENE_ASSERT(is_equal(gl_rbrace), scene_graph_h_err, gl_braces_expr, gl_file, pf_parse_new_static_transform, 371, scene_graph_h_sp);
+}
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser14parse_new_meshERN11FieldParser5FieldERKSsb);
 
@@ -334,8 +403,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParse
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Graph7newNodeINS_8MaterialEEEN6common6handleIT_EESsb);
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Group4findINS_5ShapeEEEvRN6common14handles_vectorINS_4NodeEEEb);
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Group4findINS_4MeshEEEvRN6common14handles_vectorINS_4NodeEEEb);
-SGL_LINKONCE_BEGIN
-inline void scene::GraphParser::step_matrix(math::matrix &m)
+/* an inline member in the original (its .gnu.linkonce.t copy); written as a plain function in that section so
+   that the callers above don't inline it (they call it in the original) */
+__attribute__((section(".gnu.linkonce.t._ZN5scene11GraphParser11step_matrixERN4math6matrixE")))
+void scene::GraphParser::step_matrix(math::matrix &m)
 {
     math::matrix t;
     for (int i = 0; i < 4; i++)
@@ -345,4 +416,3 @@ inline void scene::GraphParser::step_matrix(math::matrix &m)
         }
     m = math::matrix(t.r[0], t.r[1], t.r[2], t.r[3]);
 }
-SGL_LINKONCE_END
