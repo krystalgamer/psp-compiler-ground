@@ -104,7 +104,25 @@ drop:
 	}
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc/nonmatchings/adhoc", func_00000320);
+void func_00000320(struct ifnet *ifp, struct mbuf *m)
+{
+	if (memcmp(mtod(m, char *), LLADDR(ifp->if_sadl), 6) == 0) {
+		if (D_00007404.ifq_len >= D_00007404.ifq_maxlen)
+			goto drop;
+		m->m_pkthdr.rcvif = ifp;
+		IF_ENQUEUE(&D_00007404, m);
+		_sce_pspnet_schednetintr_with_evf(0x1D);
+		return;
+	}
+	m->m_flags |= 0x8000;
+	IF_ENQUEUE(&ifp->if_snd, m);
+	if (!(ifp->if_flags & IFF_OACTIVE))
+		(*ifp->if_start)(ifp);
+	return;
+drop:
+	IF_DROP(&D_00007404);
+	sceNetMFreem(m);
+}
 
 int func_00000430(struct ifnet *ifp, struct mbuf *m, struct ifqueue **inq)
 {
