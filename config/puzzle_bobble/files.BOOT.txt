@@ -38,5 +38,7 @@ rodata 0x30000 gim_picture
 # bss ADDR UNIT: PuzzleMain.c's .bss (0x14E7FC-0x15295C) is its C object's: the
 # zero-initialized file variables, the function statics (name.N) in source
 # order, then the tentative definitions.
+bss 0xD6488 wrap_sprite
+bss 0x14E768 -
 bss 0x14E7FC PuzzleMain
 bss 0x15295C -

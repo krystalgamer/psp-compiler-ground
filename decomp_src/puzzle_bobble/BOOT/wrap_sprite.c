@@ -43,16 +43,17 @@ int sceKernelDcacheWritebackAll(void);
 void sceGuColor(unsigned int);
 void sceGuDrawArray(int, int, int, const void *, const void *);
 
-extern void *Gims[128];
-extern unsigned char isSkip;
-extern int global_color;
+/* The unit's .bss (config `bss 0xD6488 wrap_sprite`): these zero-initialized
+ * variables, the function statics (SPN.0 .. h.15), the tentative definitions. */
+static int sprite_number = 0;
+static int global_color = 0;
+static unsigned char isSkip = 0;
+static int SkipFrameCount = 0;
+static void *Gims[128];
+static SPRITE sprite_buf[4096];
+static SPRITE *spr_buf_now[16];
+static SPRITE *spr_buf_begin[16];
 extern float global_fader;
-extern int sprite_number;
-extern int SkipFrameCount;
-extern int D_000D6498;
-extern SPRITE sprite_buf[4096];
-extern SPRITE *spr_buf_now[16];
-extern SPRITE *spr_buf_begin[16];
 
 void init_gims(void)
 {
@@ -187,11 +188,12 @@ void SpriteInitExt(void)
 
 void SpriteKickExt(void)
 {
+	static int SPN;
 	int i;
 	SPRITE *sp;
 
-	if (D_000D6498 < sprite_number) {
-		D_000D6498 = sprite_number;
+	if (SPN < sprite_number) {
+		SPN = sprite_number;
 		printf("SPRITE MAX: %d\n", sprite_number);
 	}
 	if (isSkip) {
@@ -509,19 +511,14 @@ int draw_DrawSprite(SPRITE *sp)
 	return 1;
 }
 
+typedef struct { float x, y, z; } FVEC3;
+typedef struct { float u, v, su, sv; } GIMCROP;
+
 #ifdef NON_MATCHING
 /* Rough (2 instructions short, same structure): the original re-reads the crop scale
  * through D_000D64C4 after every store to D_00037CF8 and orders the vector copies and the
  * image size loads differently. */
-typedef struct { float x, y, z; } FVEC3;
-typedef struct { float u, v, su, sv; } GIMCROP;
 typedef struct { int pad0, pad4; unsigned short w, h; } GIMIMAGE;
-extern void *D_000D64C0;
-extern GIMCROP *D_000D64C4;
-extern float D_000D64C8, D_000D64CC, D_000D64D0, D_000D64D4;
-extern float D_000D64D8, D_000D64DC, D_000D64E0, D_000D64E4;
-extern FVEC3 D_000D649C, D_000D64A8, D_000D64B4;
-extern GIMCROP D_00037CE8, D_00037CF8;
 extern const FVEC3 D_0002DC10;
 extern int vformat;
 extern char vbuffer[];
@@ -540,83 +537,98 @@ void sceGuTexScale(float, float);
 void sceGumDrawBezier(int, int, int, const void *, const void *);
 int draw_DrawSpriteEx(SPRITE *sp)
 {
+	static GIMCROP NoCrop = { 0.0f, 0.0f, 1.0f, 1.0f };
+	static GIMCROP MyCrop = { 0.0f, 0.0f, 1.0f, 1.0f };
+	static FVEC3 vec;
+	static FVEC3 vec_tr;
+	static FVEC3 scale;
+	static void *pict;
+	static GIMCROP *crop;
+	static float u0;
+	static float v0;
+	static float u1;
+	static float v1;
+	static float x;
+	static float y;
+	static float w;
+	static float h;
 	int ret = 0;
 	FVEC3 v;
 	GIMIMAGE *img;
-	float w, h;
+	float iw, ih;
 	int flag;
 
-	D_000D64C8 = sp->f[4];
-	D_000D64CC = sp->f[5];
-	D_000D64D0 = sp->f[6];
-	D_000D64D4 = sp->f[7];
-	if (sp->no < 128 && (D_000D64C0 = Gims[sp->no]) != 0) {
+	u0 = sp->f[4];
+	v0 = sp->f[5];
+	u1 = sp->f[6];
+	v1 = sp->f[7];
+	if (sp->no < 128 && (pict = Gims[sp->no]) != 0) {
 		sceGumPushMatrix();
 		v.x = -(sp->f[8] * 0.125f);
 		v.y = -(sp->f[9] * 0.125f);
 		v.z = 0;
-		D_000D64A8 = v;
-		sceGumTranslate(&D_000D64A8);
+		vec_tr = v;
+		sceGumTranslate(&vec_tr);
 		if (sp->f[2] != 0.0f || sp->f[3] != 0.0f) {
-			D_000D64E0 = sp->f[2];
-			D_000D64E4 = sp->f[3];
+			w = sp->f[2];
+			h = sp->f[3];
 		} else {
-			img = sceGimPictureGetImage(D_000D64C0);
+			img = sceGimPictureGetImage(pict);
 			if (img) {
-				D_000D64E4 = img->h;
-				D_000D64E0 = img->w;
+				h = img->h;
+				w = img->w;
 			}
 		}
-		v.x = D_000D64D8 = sp->f[0];
-		v.y = D_000D64DC = sp->f[1];
+		v.x = x = sp->f[0];
+		v.y = y = sp->f[1];
 		v.z = sp->f[13];
-		D_000D649C = v;
-		sceGumTranslate(&D_000D649C);
+		vec = v;
+		sceGumTranslate(&vec);
 		sceGumRotateY(sp->f[11]);
 		sceGumRotateX(sp->f[10]);
 		sceGumRotateZ(sp->f[12]);
 		v.x = sp->f[8] * 0.125f;
 		v.y = sp->f[9] * 0.125f;
 		v.z = 0;
-		D_000D64A8 = v;
-		sceGumTranslate(&D_000D64A8);
+		vec_tr = v;
+		sceGumTranslate(&vec_tr);
 		v = D_0002DC10;
-		v.x = D_000D64E0 * 0.212261036f;
-		v.y = D_000D64E4 * 0.212261036f;
-		D_000D64B4 = v;
-		sceGumScale(&D_000D64B4);
-		sceGimPictureAnimate(D_000D64C0, 1.0f / 60.0f);
-		sceGimPictureActivate(D_000D64C0);
-		img = sceGimPictureGetImage(D_000D64C0);
-		D_000D64C4 = sceGimPictureGetImageCrop(D_000D64C0);
-		if (D_000D64C4 == 0)
-			D_000D64C4 = &D_00037CE8;
+		v.x = w * 0.212261036f;
+		v.y = h * 0.212261036f;
+		scale = v;
+		sceGumScale(&scale);
+		sceGimPictureAnimate(pict, 1.0f / 60.0f);
+		sceGimPictureActivate(pict);
+		img = sceGimPictureGetImage(pict);
+		crop = sceGimPictureGetImageCrop(pict);
+		if (crop == 0)
+			crop = &NoCrop;
 		if (img) {
-			if (D_000D64C8 == 0.0f && D_000D64CC == 0.0f && D_000D64D0 == 0.0f && D_000D64D4 == 0.0f) {
-				D_000D64CC = 0.5f;
-				D_000D64D0 = img->w - 0.5f;
-				D_000D64D4 = img->h - 0.5f;
-				D_000D64C8 = 0.5f;
+			if (u0 == 0.0f && v0 == 0.0f && u1 == 0.0f && v1 == 0.0f) {
+				v0 = 0.5f;
+				u1 = img->w - 0.5f;
+				v1 = img->h - 0.5f;
+				u0 = 0.5f;
 			}
-			w = img->w;
+			iw = img->w;
 			flag = sp->flag;
-			h = img->h;
-			D_00037CF8.u = D_000D64C8 / w * D_000D64C4->su;
-			D_00037CF8.su = (D_000D64D0 - D_000D64C8) / w * D_000D64C4->su;
-			D_00037CF8.v = D_000D64CC / h * D_000D64C4->sv;
-			D_00037CF8.sv = (D_000D64D4 - D_000D64CC) / h * D_000D64C4->sv;
+			ih = img->h;
+			MyCrop.u = u0 / iw * crop->su;
+			MyCrop.su = (u1 - u0) / iw * crop->su;
+			MyCrop.v = v0 / ih * crop->sv;
+			MyCrop.sv = (v1 - v0) / ih * crop->sv;
 			if (flag & 1) {
-				D_00037CF8.su = -D_00037CF8.su;
-				D_00037CF8.u = D_000D64D0 / w * D_000D64C4->su;
+				MyCrop.su = -MyCrop.su;
+				MyCrop.u = u1 / iw * crop->su;
 			}
 			if (flag & 2) {
-				D_00037CF8.sv = -D_00037CF8.sv;
-				D_00037CF8.v = D_000D64D4 / h * D_000D64C4->sv;
+				MyCrop.sv = -MyCrop.sv;
+				MyCrop.v = v1 / ih * crop->sv;
 			}
-			D_000D64C4 = &D_00037CF8;
+			crop = &MyCrop;
 		}
-		sceGuTexOffset(D_000D64C4->u, D_000D64C4->v);
-		sceGuTexScale(D_000D64C4->su, D_000D64C4->sv);
+		sceGuTexOffset(crop->u, crop->v);
+		sceGuTexScale(crop->su, crop->sv);
 		sceGuColor(getFader(sp->color));
 		sceGumDrawBezier(vformat, 4, 4, 0, vbuffer);
 		sceGumPopMatrix();
@@ -625,9 +637,39 @@ int draw_DrawSpriteEx(SPRITE *sp)
 	return ret;
 }
 #else
+/* STAND-IN: draw_DrawSpriteEx is still asm.  Its statics, in its place and numbered
+ * as in the original (NoCrop.1, MyCrop.2: numbering only, their .data stays asm). */
+static void __attribute__((section(".pbskip"), unused)) draw_DrawSpriteEx_statics(void)
+{
+	static GIMCROP NoCrop __attribute__((section(".pbskipd")));
+	static GIMCROP MyCrop __attribute__((section(".pbskipd")));
+	static FVEC3 vec;
+	static FVEC3 vec_tr;
+	static FVEC3 scale;
+	static void *pict;
+	static GIMCROP *crop;
+	static float u0;
+	static float v0;
+	static float u1;
+	static float v1;
+	static float x;
+	static float y;
+	static float w;
+	static float h;
+}
+__asm__("D_000D649C = vec.3\nD_000D64A8 = vec_tr.4\nD_000D64B4 = scale.5\nD_000D64C0 = pict.6\n"
+	"D_000D64C4 = crop.7\nD_000D64C8 = u0.8\nD_000D64CC = v0.9\nD_000D64D0 = u1.10\n"
+	"D_000D64D4 = v1.11\nD_000D64D8 = x.12\nD_000D64DC = y.13\nD_000D64E0 = w.14\nD_000D64E4 = h.15");
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/wrap_sprite", draw_DrawSpriteEx);
 #endif
 
 int NullFunc(void) {
     return 1;
 }
+
+/* %lo parts splat paired with the wrong %hi (their real symbols, SaveDataBuf,
+ * SelectPlayer, ..., share the low 16 bits) land inside sprite_buf. */
+__asm__(".globl D_0014C398\nD_0014C398 = sprite_buf + 0x75CB0\n"
+	".globl D_0014C3C4\nD_0014C3C4 = sprite_buf + 0x75CDC\n"
+	".globl D_0014C3C8\nD_0014C3C8 = sprite_buf + 0x75CE0\n"
+	".globl D_0014C3CC\nD_0014C3CC = sprite_buf + 0x75CE4\n");
