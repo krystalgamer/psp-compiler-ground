@@ -48,9 +48,10 @@ typedef struct {
     int rowIdx;                 /* 0x38 */
     int offset;                 /* 0x3C */
     int x;                      /* 0x40 */
-    int line;                   /* 0x44 */
+    unsigned int line;          /* 0x44 */
     int step;                   /* 0x48 */
-    u8 unk4C[8];
+    int pass;                   /* 0x4C */
+    u8 unk50[4];
     GIFDESC *cur;               /* 0x54 */
     GIFDESC *list;              /* 0x58 */
     u8 unk5C[0x10];
@@ -84,13 +85,18 @@ typedef struct {
     s16 top;
     u16 width;                  /* 0x8 */
     u16 height;
-    u8 unkC[0x1C];
+    u8 unkC[4];
+    int hasTrans;               /* 0x10 */
+    u8 tc[3];                   /* 0x14 */
+    u8 unk17[0x11];
     u8 *buf;                    /* 0x28 */
 } GIFIMG;
 
 #define CURIMG(c) ((GIFIMG *)(c)->cur)
 
 
+extern int D_001F3FC4[];
+extern unsigned int D_001F3FD8[];
 int setTransparentColor(GIFP *ctx) {
     int found;
     u8 r;
@@ -177,7 +183,41 @@ int setTransparentColor(GIFP *ctx) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gif_parser", storePixel);
+int storePixel(GIFP *ctx, int c) {
+    GIFIMG *img;
+
+    if (c < ctx->gctSize && c >= 0 && ctx->pal != NULL && ctx->lct != 0) {
+        CURIMG(ctx)->buf[ctx->x * 3 + ctx->offset] = ctx->pal[c * 3];
+        CURIMG(ctx)->buf[ctx->x * 3 + ctx->offset + 1] = ctx->pal[c * 3 + 1];
+        CURIMG(ctx)->buf[ctx->x * 3 + ctx->offset + 2] = ctx->pal[c * 3 + 2];
+    } else if (ctx->gct != 0 && ctx->gpal != NULL && c < ctx->gctCount && c >= 0) {
+        CURIMG(ctx)->buf[ctx->x * 3 + ctx->offset] = ctx->gpal[c * 3];
+        CURIMG(ctx)->buf[ctx->x * 3 + ctx->offset + 1] = ctx->gpal[c * 3 + 1];
+        CURIMG(ctx)->buf[ctx->x * 3 + ctx->offset + 2] = ctx->gpal[c * 3 + 2];
+    } else if (CURIMG(ctx)->hasTrans != 0) {
+        CURIMG(ctx)->buf[ctx->x * 3 + ctx->offset] = CURIMG(ctx)->tc[0];
+        CURIMG(ctx)->buf[ctx->x * 3 + ctx->offset + 1] = CURIMG(ctx)->tc[1];
+        CURIMG(ctx)->buf[ctx->x * 3 + ctx->offset + 2] = CURIMG(ctx)->tc[2];
+    } else {
+        CURIMG(ctx)->buf[ctx->x * 3 + ctx->offset] = 0;
+        CURIMG(ctx)->buf[ctx->x * 3 + ctx->offset + 1] = 0;
+        CURIMG(ctx)->buf[ctx->x * 3 + ctx->offset + 2] = 0;
+    }
+    ctx->x++;
+    img = CURIMG(ctx);
+    if (ctx->x == img->width) {
+        ctx->x = 0;
+        ctx->line += ctx->step;
+        ctx->offset += img->width * ctx->step * 3;
+        while (ctx->line >= img->height) {
+            ctx->pass++;
+            ctx->step = D_001F3FC4[ctx->pass];
+            ctx->line = D_001F3FD8[ctx->pass];
+            ctx->offset = img->width * ctx->line * 3;
+        }
+    }
+    return 1;
+}
 
 int readColorTable(GIFP *ctx, int flag) {
     u8 rgb[4];
