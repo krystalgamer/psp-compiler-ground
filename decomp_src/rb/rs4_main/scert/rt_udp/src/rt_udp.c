@@ -112,7 +112,22 @@ int rt_udp_set_aggregation_interval(arg0, arg1)
     }
     return var_v0;
 }
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_get_buffer_size);
+int rt_udp_get_buffer_size(void *u, int *conn, int which, int *out)
+{
+    *out = 0;
+    if (u == NULL) return 0xD2F2;
+    if (conn == NULL) return 0xD2F3;
+    if (conn[0] != 13) return 0xD2F3;
+    if (which == 0) {
+        *out = conn[5];
+        return 0;
+    }
+    if (which == 1) {
+        *out = conn[9];
+        return 0;
+    }
+    return 2;
+}
 
 int rt_udp_get_aggregation_interval(void *arg0, int *arg1) {
     int var_v1;
@@ -351,7 +366,11 @@ int rt_udp_send_reset(int *ch, char *conn)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_send_ack);
+int rt_udp_buffer_ack(int, int, int);
+int rt_udp_send_ack(int a, int b, unsigned char *c)
+{
+    return rt_udp_buffer_ack(a, b, rt_udp_get_sequence_id(c));
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_is_duplicate_packet);
 
