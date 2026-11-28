@@ -78,13 +78,64 @@ int rsvKill(void *arg0) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/rsv", rsvFree);
+typedef struct RsvNode { struct RsvNode *Next; int Key; } RsvNode;
+typedef struct { RsvNode *Head; RsvNode *Tail; RsvNode *Free; int pad[3]; int Num; int Rest; } RsvCntx;
+RsvNode *rsvFree(RsvCntx *pCntx, RsvNode *pPrev, RsvNode *p)
+{
+	RsvNode *pNext;
+
+	pCntx->Rest++;
+	if (pCntx->Rest <= 0)
+		consPrintf(&D_000FB180, &D_000FB19C, 0xB6, "rsvFree", "pCntx->Rest > 0");
+	if (pCntx->Rest > pCntx->Num)
+		consPrintf(&D_000FB180, &D_000FB19C, 0xB7, "rsvFree", "pCntx->Rest <= pCntx->Num");
+	pNext = p->Next;
+	if (pPrev != NULL)
+		pPrev->Next = pNext;
+	else
+		pCntx->Head = pNext;
+	if (pNext == NULL)
+		pCntx->Tail = pPrev;
+	p->Key = 0;
+	{
+		RsvNode *f = pCntx->Free;
+		pCntx->Free = p;
+		p->Next = f;
+	}
+	return pNext;
+}
 
 int rsvDummy(void) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/rsv", rsvMove);
+void rsvMove(RsvCntx *pCntx, void (*fnAlive)(void *, int, int), void (*fnDead)(void *, int, int), int a, int b)
+{
+	RsvNode *pPrev = NULL;
+	RsvNode *p;
+	int s;
+	void (*fa)(void *, int, int);
+	void (*fd)(void *, int, int);
+	void (*f0)(void *, int, int);
+
+	f0 = (void (*)(void *, int, int))rsvDummy;
+	fa = fnAlive ? fnAlive : f0;
+	fd = fnDead ? fnDead : f0;
+	p = pCntx->Head;
+	while (p != NULL) {
+		s = p->Key;
+		if (s == 0)
+			consPrintf(&D_000FB180, &D_000FB19C, 0xED, "rsvMove", &D_000FB210);
+		if (s > 0) {
+			pPrev = p;
+			fa(p, a, b);
+			p = p->Next;
+		} else {
+			fd(p, a, b);
+			p = rsvFree(pCntx, pPrev, p);
+		}
+	}
+}
 
 void rsvLoop(void **head, void (*fn)(void *, int, int), int a, int b)
 {
