@@ -229,7 +229,31 @@ int NetIGetAverageDelayToClient(int *out, unsigned int idx)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIGetBufferStatus);
+int NetIGetBufferStatus(char *ci, int *a, int *b, int *c, int *d)
+{
+    int s0, s1, s2, s3;
+    int r, ret;
+
+    ret = 0x17;
+    if (ci != NULL) {
+        if (*(int *)(ci + 0x468) != 2) {
+            r = (*(int (**)(int, int *, int *, int *, int *))((char *)gMsgClientInterfacePtr + 0x2C))(*(int *)(ci + 0x470), &s0, &s1, &s2, &s3);
+            r = NetMapRtError(r);
+            ret = r;
+        } else {
+            r = (*(int (**)(int, int *, int *, int *, int *))((char *)gP2PInterfacePtr + 0x20))(*(int *)(ci + 0x474), &s0, &s1, &s2, &s3);
+            ret = 0x25;
+        }
+        if (r == 0) {
+            if (a != NULL) *a = s0;
+            if (b != NULL) *b = s1;
+            if (c != NULL) *c = s2;
+            if (d != NULL) *d = s3;
+            ret = 0;
+        }
+    }
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetISetSendAggregationInterval);
 
