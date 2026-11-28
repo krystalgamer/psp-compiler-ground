@@ -16,7 +16,37 @@ int rt_token_is_free(unsigned int, void *);
 int rt_token_is_valid(unsigned int);
 void rt_token_set_pending_state(unsigned int, void *);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeToken", SendTokenMessage);
+extern void *gMsgClientInterfacePtr;
+extern void *gP2PInterfacePtr;
+
+int SendTokenMessage(char *ci, int tok, int arg)
+{
+    int r;
+    int host;
+    unsigned short idx;
+    int a;
+    int hidx;
+
+    if (*(int *)(ci + 0x468) != 2) {
+        r = (*(int (**)(int))((char *)gMsgClientInterfacePtr + 0x70))(*(int *)(ci + 0x470));
+    } else {
+        r = NetIsPeerToPeerHost(ci, &host);
+        if (r != 0) return 0x25;
+        if (host != 0) {
+            idx = 0xFFFF;
+            a = arg;
+            if (*(int *)(ci + 0x4A0) != 0) {
+                if (HostProcessTokenMessage(ci, tok, &idx, 0, 0, 0, 0, 0, &a, *(int *)(ci + 0x404)) != 0) return 0xD;
+                TokenEvent(ci, idx, tok, 0, 0, 0, 0, 0, a);
+            }
+        } else {
+            if (NetIGetPeerToPeerHostClientIndex(ci, &hidx) != 0) return 0x25;
+            r = (*(int (**)(int, int, int, int, unsigned short))((char *)gP2PInterfacePtr + 0x7C))(*(int *)(ci + 0x474), tok, 0, arg, hidx);
+        }
+    }
+    if (r != 0) return 0xD;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeToken", SendTokenListMessage);
 
