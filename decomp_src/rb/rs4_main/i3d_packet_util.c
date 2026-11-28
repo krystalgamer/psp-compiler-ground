@@ -243,7 +243,11 @@ void I3dPk2dPrim_SetScale()
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", CreateArray);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPk3dPrim__SetTransform);
+int I3dPk3dPrim__SetTransform(int p, float *m) {
+    int r = p;
+    if (m) r = I3dGuSetMatrix_PSP(p, 2, m);
+    return r;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPk3dPrim__DrawTriStrip);
 
