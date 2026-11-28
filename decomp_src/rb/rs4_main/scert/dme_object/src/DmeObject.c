@@ -719,7 +719,29 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", S
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetISendObjectFullUpdate);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetIAddToDataStream);
+int rt_circ_buf_store();
+int NetIAddToDataStream(unsigned int id, void *data, int len)
+{
+    unsigned int n = *(unsigned int *)((char *)gObjectInterfacePtr + 0x10C);
+    int avail = 0;
+    char *ch;
+    int ret;
+
+    if (id >= n) return 0x17;
+    if (data == NULL) return 0x17;
+    if (len <= 0) return 0x17;
+    ret = NetIDataStreamBytesFree(&avail, id);
+    if (ret != 0) return ret;
+    if (avail < len) return 0x1F;
+    ch = NetGetStreamChannel(id);
+    if (ch == NULL) return 0x17;
+    if (D_00132A34 == NULL) return 8;
+    if (*(int *)(D_00132A34 + 0x404) != *(int *)(ch + 0xC)) return 9;
+    if (rt_circ_buf_store(ch + 0x2C, data, len) != 0) return 0x1F;
+    rt_circ_buf_normalize(ch + 0x2C, 1);
+    memcpy(*(void **)(ch + 0x10), *(void **)(ch + 0x3C), *(int *)(ch + 0x34));
+    return 0;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", rcsid_10DC2C);
 
