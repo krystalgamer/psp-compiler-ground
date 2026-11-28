@@ -39,6 +39,25 @@ void *MEM_realloc(void *pool, void *p, unsigned int size);
 int atoi(const char *s);
 char *strchr(const char *s, int c);
 extern const double D_001392D8;
+typedef struct LmStyle {
+    int bg;                           /* 0x0 */
+    u8 pad4[0x2C];
+    s16 m30, m32, m34, m36;           /* 0x30 */
+    int b38, b3C, b40, b44;           /* 0x38 */
+    u8 pad48[0xC];
+    int color;                        /* 0x54 */
+    int link, vlink, alink;           /* 0x58 */
+    int fontColor;                    /* 0x64 */
+    s16 fontSize;                     /* 0x68 */
+    s16 fontStyle;                    /* 0x6A */
+    u8 u6C, u6D, u6E, u6F, u70, u71, u72, u73, u74;
+} LmStyle;
+typedef struct LmBox { struct LmBox *parent; u8 pad4[0x20]; LmStyle *style; u8 pad28[0x12]; s16 html; } LmBox;
+typedef struct { int color[4][7]; } LmUiGlobal;
+extern LmUiGlobal *ui_global;
+extern char *gPREF_UI;
+LmBox *getBodyBox(LmBox *box);
+int colorValue(char *s);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", parseCoords);
 
 #ifndef NULL
@@ -411,7 +430,64 @@ void *createAreaInfo(s8 type, MAPAREA *ar, void *node) {
     return inf;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", initBoxProperty);
+void initBoxProperty(LmBox *box)
+{
+    LmBox *parent;
+    LmBox *body;
+    int size;
+    char *bg;
+
+    memset(box->style, 0, 0x78);
+    box->style->m30 = 2;
+    box->style->m32 = 2;
+    box->style->m34 = 2;
+    box->style->m36 = 2;
+    parent = box->parent;
+    if (parent != NULL && box->html != 0x25 && box->html != 0x24) {
+        box->style->bg = parent->style->bg;
+        box->style->link = parent->style->link;
+        box->style->vlink = parent->style->vlink;
+        box->style->alink = parent->style->alink;
+        box->style->u6F = parent->style->u6F;
+        box->style->u73 = parent->style->u73;
+        box->style->u6E = parent->style->u6E;
+        size = parent->style->fontSize;
+        if (box->html != 0x68) {
+            box->style->color = parent->style->color;
+            box->style->u6C = parent->style->u6C;
+            box->style->fontStyle = parent->style->fontStyle;
+            box->style->fontColor = ui_global->color[box->style->fontStyle][size];
+            box->style->u74 = parent->style->u74;
+        } else {
+            body = getBodyBox(box);
+            box->style->color = body->style->color;
+            box->style->u6C = 0;
+            box->style->fontStyle = 0;
+            box->style->fontColor = ui_global->color[0][2];
+            box->style->u74 = 0;
+        }
+        if ((u8)(parent->style->u70 - 1) < 2)
+            box->style->u70 = parent->style->u70;
+    } else {
+        box->style->bg = colorValue(M2C_FIELD(gPREF_UI, char **, 0x38) != NULL ? M2C_FIELD(gPREF_UI, char **, 0x38) : "white");
+        box->style->color = colorValue("black");
+        box->style->link = colorValue("blue");
+        box->style->vlink = colorValue("purple");
+        box->style->alink = colorValue("blue");
+        box->style->u6F = 0;
+        box->style->u6C = 0;
+        size = 2;
+        box->style->fontColor = ui_global->color[0][2];
+    }
+    box->style->b38 = box->style->color;
+    box->style->b3C = box->style->color;
+    box->style->b40 = box->style->color;
+    box->style->b44 = box->style->color;
+    if (size >= 7)
+        size = 6;
+    size = size < 0 ? 0 : size;
+    box->style->fontSize = size;
+}
 
 int htmlTagBranch(void *node, void *box, void *a2) {
     DOMString s;
