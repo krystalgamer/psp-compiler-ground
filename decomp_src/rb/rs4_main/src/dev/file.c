@@ -92,7 +92,26 @@ signed char *filePath(int path)
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/file", D_000F9F64);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/file", fileReady);
+int sceKernelCheckCallback(void);
+int umdReady(void);
+int msReady(void);
+extern unsigned char D_000F9F64;
+int fileReady(void)
+{
+	if (sceKernelCheckCallback() == 0x80020064)
+		consPrintf(&D_000F9E68, &D_000F9E84, 0x100, "fileReady", "Ret != SCE_KERNEL_ERROR_ILLEGAL_CONTEXT");
+	switch (FileHost) {
+	case 0:
+		return 1;
+	case 1:
+		return umdReady();
+	case 2:
+		return msReady();
+	default:
+		consPrintf(&D_000F9E68, &D_000F9E84, 0x104, "fileReady", &D_000F9F64);
+		return 0;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/file", fileRead);
 
