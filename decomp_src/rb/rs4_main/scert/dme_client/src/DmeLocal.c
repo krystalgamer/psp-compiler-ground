@@ -564,7 +564,15 @@ void NetDestroyClientInfo(void **arr, int idx)
         DmeFree(&arr[idx]);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetGetServerIpAddress);
+typedef struct { int a, b; } LinkAddrS;
+void rt_comm_linkaddress_setnull(LinkAddrS *);
+LinkAddrS NetGetServerIpAddress(char *c)
+{
+    LinkAddrS a;
+    rt_comm_linkaddress_setnull(&a);
+    if (c != NULL) a = *(LinkAddrS *)(c + 0x410);
+    return a;
+}
 
 int NetSetServerIpAddress(char *dme, void *addr)
 {
