@@ -28,7 +28,31 @@ int I3rRoot__CheckIdString(signed char *arg0) {
     return var_a0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_parser_i3r", I3rRoot__PackSub);
+int I3dHierarchy__RecursivePack();
+int I3dHierarchy__RecursiveUnpack();
+int I3rRoot__MakePresetPacket();
+int I3rRoot__ClearPresetPacket();
+int I3rRoot__PackSub(char *r, int mode)
+{
+	int ret;
+	if (I3rRoot__CheckIdString(r) != 0) return 3;
+	if (*(int *)(r + 8) != 0x100001) return 4;
+	if (*(int *)(r + 0xC) == mode) return 0;
+	switch (mode) {
+	case 0:
+		I3rRoot__ClearPresetPacket(r);
+		I3dHierarchy__RecursivePack(r + 0x10, r + 0x10);
+		*(int *)(r + 0xC) = 0;
+		break;
+	case 1:
+		ret = I3dHierarchy__RecursiveUnpack(r + 0x10, r + 0x10);
+		if (ret != 0) return ret;
+		*(int *)(r + 0xC) = 1;
+		I3rRoot__MakePresetPacket(r);
+		break;
+	}
+	return 0;
+}
 
 int I3rRoot__PackSub();
 int I3rRoot__Unpack(void *r)
