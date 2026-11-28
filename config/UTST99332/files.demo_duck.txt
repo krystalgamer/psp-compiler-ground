@@ -611,3 +611,6 @@ rodata 0x16383C -
 # CubeMap statics
 bss 0x18DF60 main_objs/CubeMap_Face_Texture
 bss 0x18DFE4 -
+# HouseKeeping float pools
+rodata 0x163700 main_objs/HouseKeeping_AttribStack
+rodata 0x163718 -

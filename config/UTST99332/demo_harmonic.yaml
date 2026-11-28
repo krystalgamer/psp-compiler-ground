@@ -394,6 +394,8 @@ segments:
       - [0x15E754, rodata, asm/rodata_15E6D4]
       - [0x1600F4, .rodata, main_objs/psp_VertexArrayEdit]
       - [0x1601AC, rodata, asm/rodata_16012C]
+      - [0x160CE0, .rodata, main_objs/HouseKeeping_AttribStack]
+      - [0x160CF8, rodata, asm/rodata_160C78]
       - [0x160D10, .rodata, main_objs/glutils_CheckerTexture]
       - [0x160D2C, .rodata, main_objs/vector_font_Console]
       - [0x160DC0, .rodata, main_objs/CubeMap_Face_Texture]

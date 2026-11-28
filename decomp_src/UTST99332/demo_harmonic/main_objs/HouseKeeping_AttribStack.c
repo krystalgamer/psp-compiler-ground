@@ -64,7 +64,15 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping
 extern "C" void glClearIndex(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping_AttribStack", glClearColor);
+extern "C" void glClearColor(float r, float g, float b, float a)
+{
+    union { struct { unsigned int r : 8, g : 8, b : 8, a : 8; } s; unsigned int u; } c;
+    c.s.a = (unsigned int)(a * 255.0f);
+    c.s.r = (unsigned int)(r * 255.0f);
+    c.s.g = (unsigned int)(g * 255.0f);
+    c.s.b = (unsigned int)(b * 255.0f);
+    sceGuClearColor(c.u);
+}
 
 extern "C" void glClear(unsigned int mask)
 {
@@ -265,7 +273,16 @@ extern "C" void glOrtho(double l, double r, double b, double t, double n, double
     sceGumOrtho(l, r, t, b, n, f);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping_AttribStack", glFrustum);
+extern "C" void sceGumPerspective(float, float, float, float);
+extern "C" void sceGumSetCurMatrix(void);
+extern "C" void glFrustum(double l, double r, double b, double t, double n, double f)
+{
+    float h = fabsf((float)(t - b)) * 0.5f;
+    float w = fabsf((float)(r - l)) * 0.5f;
+    float fovy = fabsf(2 * atanf(h / n));
+    sceGumPerspective(fovy, w / h, n, f);
+    sceGumSetCurMatrix();
+}
 
 extern "C" void glViewport(int x, int y, int w, int h)
 {
