@@ -513,7 +513,31 @@ int rt_socket_send_icmp_echo_request(int s, int ip, int *sent, int seq)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rt_socket_recv_icmp_echo_response);
+int rt_socket_recv_icmp_echo_response(int s, int *ip, int *got, int *seq)
+{
+    RtSin2 from;
+    RtIcmpEcho pkt;
+    char buf[0x800];
+    int flen;
+    int r;
+
+    *ip = 0;
+    if (got == NULL) return 2;
+    *got = 0;
+    if (seq == NULL) return 2;
+    *seq = 0;
+    flen = sizeof from;
+    r = sceNetInetRecvfrom(s, buf, sizeof buf, 0, &from, &flen);
+    if (r == -1) return rt_socket_get_err_platform();
+    if (r != 0x34) return 0;
+    pkt = *(RtIcmpEcho *)(buf + 20);
+    if (pkt.type != 0) return 0;
+    if (pkt.id != 0xABCD) return 0;
+    *seq = pkt.seq;
+    *ip = from.addr;
+    *got = 1;
+    return 0;
+}
 
 void rt_socket_is_connected(void) {
     rt_socket_is_connected_platform();
