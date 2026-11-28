@@ -263,7 +263,62 @@ int voice_allocVoice(unsigned int prio)
 	return 0x80540010;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/voice", voice_noteOn);
+typedef struct { int w[22]; } SsNoteParam;
+int voice_noteOn(unsigned int v, SsNoteParam *param)
+{
+	SsVoice *q;
+
+	if (g_vstate == -1)
+		return 0x80450001;
+	if (v >= g_vmax)
+		return 0x80540011;
+	switch (g_voice[v].status) {
+	case 0:
+		return 0x80540012;
+	case 1:
+		q = func_0000C240(&g_cnt1, g_lst1, &g_cnt2, g_lst2, v);
+		q->status = 2;
+		*(SsNoteParam *)&q->id = *param;
+		break;
+	case 2:
+		*(SsNoteParam *)&g_voice[v].id = *param;
+		break;
+	case 3:
+		q = func_0000C240(&g_cnt3, g_lst3, &g_cnt6, g_lst6, v);
+		q->status = 6;
+		*(SsNoteParam *)&q->id = *param;
+		break;
+	case 4:
+		q = func_0000C240(&g_cnt4, g_lst4, &g_cnt6, g_lst6, v);
+		q->status = 6;
+		*(SsNoteParam *)&q->id = *param;
+		break;
+	case 5:
+		q = func_0000C240(&g_cnt5, g_lst5, &g_cnt2, g_lst2, v);
+		q->status = 2;
+		*(SsNoteParam *)&q->id = *param;
+		break;
+	case 6:
+		*(SsNoteParam *)&g_voice[v].id = *param;
+		break;
+	case 7:
+		q = func_0000C240(&g_cnt7, g_lst7, &g_cnt6, g_lst6, v);
+		q->status = 6;
+		*(SsNoteParam *)&q->id = *param;
+		break;
+	case 8:
+		q = func_0000C240(&g_cnt8, g_lst8, &g_cnt6, g_lst6, v);
+		q->status = 6;
+		*(SsNoteParam *)&q->id = *param;
+		break;
+	case 9:
+		q = func_0000C240(&g_cnt9, g_lst9, &g_cnt2, g_lst2, v);
+		q->status = 2;
+		*(SsNoteParam *)&q->id = *param;
+		break;
+	}
+	return 0;
+}
 
 int voice_noteOff(unsigned int v)
 {
