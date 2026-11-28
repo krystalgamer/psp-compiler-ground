@@ -20,6 +20,12 @@ typedef struct MesString {
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+MesValue mes_class_property_get2(MesContext *ctx, int obj, MesValue name);
+void mes_class_property_set2(MesContext *ctx, int obj, MesValue name, MesValue v);
+void mes_array_set(MesContext *ctx, MesValue arr, MesValue v);
+void mes_eval_object_delete(MesContext *ctx, int obj, unsigned int id);
+unsigned int mes_context_id3(MesContext *ctx, const DOMChar *s, int len);
+MesValue mes_eval_object_get(MesContext *ctx, MesValue obj, MesValue id);
 int mes_obj_common_constructor_not_allowed(void) {
     return 0;
 }
@@ -57,9 +63,80 @@ int isAllowedAsPropertyName(MesString *s, PropName *t, int x)
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_common", setNewPropertyReference);
+int setNewPropertyReference(MesContext *ctx, int a, int c, MesValue s, int b, int y)
+{
+    MesString *str = (MesString *)(s & ~3);
+    MesValue old;
+    MesValue arr;
+    int r = 0;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_common", deleteOldPropertyReference);
+    if (str->len != 0) {
+        old = mes_class_property_get2(ctx, a, s);
+        if (old == 0x20) {
+            if (y == 1)
+                mes_class_property_set2(ctx, a, s, b);
+            mes_class_property_set2(ctx, c, s, b);
+            r = 1;
+        } else {
+            if (y == 1) {
+                if (mes_class_instance_of((MesObject *)old, mes_classes[0]) == 0) {
+                    arr = mes_array_new(ctx, 0);
+                    mes_array_set(ctx, arr, old);
+                    mes_array_set(ctx, arr, b);
+                    mes_class_property_set2(ctx, a, s, arr);
+                } else
+                    mes_array_set(ctx, old, b);
+                mes_eval_object_delete(ctx, c, mes_context_id3(ctx, str->str, str->len));
+            }
+            r = 1;
+        }
+    }
+    return r;
+}
+
+int deleteOldPropertyReference(MesContext *ctx, int a, int c, MesValue s, MesValue old, int b)
+{
+    MesString *str = (MesString *)(s & ~3);
+    MesString *ostr = (MesString *)(old & ~3);
+    MesValue v;
+    MesValue e0, e1, e;
+    MesValue arr;
+    int n, i;
+    int r = 0;
+
+    if (str->len != 0) {
+        v = mes_class_property_get2(ctx, a, s);
+        if (v != 0x20) {
+            if (mes_class_instance_of((MesObject *)v, mes_classes[0]) == 0) {
+                if (v == b)
+                    mes_eval_object_delete(ctx, a, mes_context_id3(ctx, str->str, str->len));
+            } else {
+                n = M2C_FIELD(v, int *, 0x14);
+                if (n == 2) {
+                    e0 = mes_eval_object_get(ctx, v, MES_INT(0));
+                    e1 = mes_eval_object_get(ctx, v, MES_INT(1));
+                    if ((e0 == b) | (e1 == b)) {
+                        mes_eval_object_delete(ctx, a, mes_context_id3(ctx, str->str, str->len));
+                        mes_class_property_set2(ctx, a, (int)str | 3, e0 == b ? e1 : e0);
+                    }
+                } else if (n >= 3) {
+                    arr = mes_array_new(ctx, 0);
+                    for (i = 0; i < n; i++) {
+                        e = mes_eval_object_get(ctx, v, MES_INT(i));
+                        if (e != b)
+                            mes_array_set(ctx, arr, e);
+                    }
+                    mes_eval_object_delete(ctx, a, mes_context_id3(ctx, str->str, str->len));
+                    mes_class_property_set2(ctx, a, (int)str | 3, arr);
+                } else
+                    return 0;
+            }
+        }
+        mes_eval_object_delete(ctx, c, mes_context_id3(ctx, ostr->str, ostr->len));
+        r = 1;
+    }
+    return r;
+}
 
 int mes_obj_common_addNewReferenceByNameOrId(MesContext *ctx, int a, int b, int c, DOMString *pds, PropName *tbl, int x, int y)
 {
