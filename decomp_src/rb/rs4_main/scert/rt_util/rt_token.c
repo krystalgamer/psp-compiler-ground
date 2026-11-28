@@ -230,7 +230,42 @@ int rt_token_build_token_msg(char *out, unsigned int outsz, unsigned int *outlen
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_build_token_list_msg);
+int rt_token_build_token_list_msg(char *out, unsigned int outsz, unsigned int *outlen, unsigned char type, int id, unsigned char n, void *ids, void *owners, unsigned int nowners)
+{
+    unsigned char buf[0x200];
+    unsigned char *p = buf;
+    unsigned int len;
+
+    if ((type < 11 || type > 12) && type != 14 && type != 13 && type != 4 && type != 5 && type != 6) return 2;
+    *p = type;
+    p++;
+    *p = ((id != 0) << 7) | n;
+    p++;
+    len = 2;
+    if (id != 0) {
+        rt_msg_set_u2byte(p, (unsigned short)id);
+        p += 2;
+        len = 4;
+    }
+    memcpy(p, ids, n);
+    p += n;
+    len += n;
+    if (type == 11) {
+        if (owners == NULL || nowners == 0) return 2;
+        if (nowners >= 2) {
+            rt_msg_set_u2byte(p, (unsigned short)nowners);
+            p += 2;
+            len += 2;
+        }
+        if (len + nowners * 2 >= outsz) return 2;
+        memcpy(p, owners, nowners * 2);
+        len += nowners * 2;
+    }
+    if (outsz < len || out == NULL) return 2;
+    memcpy(out, buf, len);
+    *outlen = len;
+    return 0;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rcsid_10F21C);
 
