@@ -1,7 +1,14 @@
 /* cflags: -O2 -fno-strict-aliasing */
 #include "common.h"
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_gim_control", pow2);
+int pow2(int n)
+{
+	float f = n;
+	int b = *(int *)&f;
+	if (b & 0x7FFFFF)
+		b += 0x800000;
+	return 1 << ((b >> 23) - 127);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_gim_control", I3dGimPictureActivate);
 

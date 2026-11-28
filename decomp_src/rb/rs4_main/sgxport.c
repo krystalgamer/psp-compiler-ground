@@ -225,7 +225,23 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", CmdPlayWave);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", CmdPlayNoise);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", CmdPlayMidi);
+void CmdPlayNote();
+typedef struct { unsigned char prog, vol, x[4]; } MidiChX;
+void CmdPlayMidi(char *port, int *cmd)
+{
+    int c[12];
+    int id = cmd[1], a = cmd[2], b = cmd[3];
+    MidiChX *ch = (MidiChX *)((id >> 24) * 6 + (int)port + 0x38);
+    int n = ((short *)(*(char **)(port + 0x10) + 0xA4))[ch->prog];
+    int v = ch->vol;
+    c[0] = 0;
+    c[1] = id;
+    c[2] = n;
+    c[3] = v;
+    c[4] = a;
+    c[5] = b;
+    CmdPlayNote(port, c);
+}
 
 void CmdRelAny(char *port, int *cmd)
 {
