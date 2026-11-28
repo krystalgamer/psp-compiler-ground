@@ -7,7 +7,6 @@ extern struct {
     MesClass *cls;
     int arg;
 } mes_image_class_global;
-extern int D_0025BC9C;
 typedef struct MesImagePriv {
     int v;
     int f4;
@@ -174,7 +173,7 @@ MesObject *mes_image_new(MesContext *ctx, MesImagePriv *priv)
     MesObject *obj;
 
     if (priv->v == MES_NULL)
-        priv->v = D_0025BC9C;
+        priv->v = mes_image_class_global.arg;
     obj = mes_class_new(ctx, mes_image_class_global.cls);
     mes_class_private_set(obj, priv);
     return obj;

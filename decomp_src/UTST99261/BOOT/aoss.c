@@ -93,14 +93,12 @@ int GetSecurityData(int a, unsigned char *p, int len, unsigned char *info, unsig
 int aoss_get_bin(unsigned char *p, int n);
 int DecodeRC4(unsigned char *in, unsigned char *out, int len, unsigned char c, unsigned char *iv, unsigned char *key, int keylen);
 typedef struct AossTlv { unsigned char type; unsigned char f1; unsigned short len; unsigned int val; } AossTlv;
-extern unsigned int D_002DC6D4;
 extern int SecurityType;
 int PacketDataSet(int type, unsigned char *out, AossTlv *tlv, short *len, short *x, char *c);
 int SetStaData(unsigned char *p);
 typedef struct { int f0; int len; char ssid[0x28]; char key[4][0x40]; } AossWep;
 typedef struct { int f0; int len; char ssid[0x28]; char key[0x40]; } AossWpa;
 typedef struct { AossWep w0; AossWep w1; AossWpa p0; AossWpa p1; } AossSec;
-extern AossSec D_002DC6F0;
 int aoss_check_str(unsigned char *s, int n);
 int CheckRecvSeqID(unsigned char *a, unsigned char *b);
 int AOSS_Ntohl(int arg0);
@@ -167,10 +165,10 @@ int aoss_get_error(void)
 int AOSS_seq_data_copy(unsigned char *p)
 {
     unsigned char *d = p + 0x117;
-    AossWep *w0 = &D_002DC6F0.w0;
-    AossWep *w1 = &D_002DC6F0.w1;
-    AossWpa *p0 = &D_002DC6F0.p0;
-    AossWpa *p1 = &D_002DC6F0.p1;
+    AossWep *w0 = &(*(AossSec *)((char *)&SecurityInfo + 0x8)).w0;
+    AossWep *w1 = &(*(AossSec *)((char *)&SecurityInfo + 0x8)).w1;
+    AossWpa *p0 = &(*(AossSec *)((char *)&SecurityInfo + 0x8)).p0;
+    AossWpa *p1 = &(*(AossSec *)((char *)&SecurityInfo + 0x8)).p1;
 
     if (d == NULL)
         return -1;
@@ -579,7 +577,7 @@ int AstsSetSecureReq(int a, int b, int c)
     tlv.type = 2;
     tlv.f1 = 0;
     tlv.len = AOSS_Htons(4);
-    tlv.val = D_002DC6D4;
+    tlv.val = (*(unsigned int *)((char *)&gData + 0x8));
     tlv.val = AOSS_Htonl(tlv.val);
     len = 8;
     PacketDataSet(SecurityType, data, &tlv, &len, &x, &flag);

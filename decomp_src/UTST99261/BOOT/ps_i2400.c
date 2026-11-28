@@ -2,6 +2,7 @@
 #include "common.h"
 #include "parse_ps.h"
 #include "m2c_macros.h"
+extern int EX_MSG_BOX_NO[2];
 extern int mq_ps_su;
 extern int mq_ps;
 extern int Security;
@@ -50,7 +51,6 @@ extern int before_ps_sts;
 extern int buf_Message_cnt;
 extern int buf_ps_sts;
 M2C_UNK ps_setExMsg(int, int);                      /* extern */
-extern int D_00584FB8;
 void MEM_free(M2C_UNK, void *);                  /* extern */
 
 M2C_UNK ps_i2314();                                 /* extern */
@@ -127,7 +127,7 @@ int ps_i2414(PsIpc *msg) {
     int a;
     int ty;
 
-    ps_setExMsg(D_00584FB8, msg);
+    ps_setExMsg(EX_MSG_BOX_NO[1], msg);
     if (GET_HEAD_STAT == 0) {
         GET_HEAD_STAT = 1;
         if (ContntHeader != NULL) {
@@ -153,7 +153,7 @@ int ps_i2414(PsIpc *msg) {
         if (ContntType == 5 || ContntType == 6) {
             a = 0;
             if (GET_HEAD_STOP == 1) {
-                ps_freeExMsgBox(D_00584FB8);
+                ps_freeExMsgBox(EX_MSG_BOX_NO[1]);
                 GET_HEAD_STOP = 0;
                 return 3;
             }

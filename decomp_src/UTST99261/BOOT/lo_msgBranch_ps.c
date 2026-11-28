@@ -317,7 +317,6 @@ typedef struct PFORM {
     PBOX *box;                  /* 0x18 */
 } PFORM;
 
-extern PFORM *D_00584D34;
 int make_msg_LP13();
 int make_msg_LP23();
 int make_msg_LJ9();
@@ -335,7 +334,7 @@ void proc_msg_PL4(PMSG *m) {
 
     lo_global.flags |= 8;
     if (m->unk10 == 0) {
-        for (p = D_00584D34; p != NULL; p = p->next) {
+        for (p = (*(PFORM * *)((char *)&REQUEST_LLIST + 0x4)); p != NULL; p = p->next) {
             if (p->done != 0) {
                 continue;
             }
