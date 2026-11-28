@@ -1073,7 +1073,32 @@ int sgxCategoryGetSoundRangeHi(unsigned int c) {
     return ((SndWorkCat *)&gWork_11FC84)->cat[c].hi;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxCategorySetVolume);
+extern const char D_0010A7DC[];
+typedef struct { int vol, vol2; } SndCatVolS_;
+typedef struct { char pad[0x34]; SndCatVolS_ cv[16]; } SndWorkCV_;
+void sgxCategorySetVolume(unsigned int c, int l, int r) {
+    int n, i;
+    char **list;
+    int a, b;
+    if (c >= 16) {
+        SGX_ERR(0x960, D_0010A7DC, c);
+        return;
+    }
+    l = (l < -128 ? -128 : (l > 128 ? 128 : l));
+    r = (r < -128 ? -128 : (r > 128 ? 128 : r));
+    a = ConvVol12(l);
+    b = ConvVol12(r);
+    if (((SndWorkCV_ *)&gWork_11FC84)->cv[c].vol != a || ((SndWorkCV_ *)&gWork_11FC84)->cv[c].vol2 != b) {
+        ((SndWorkCV_ *)&gWork_11FC84)->cv[c].vol2 = b;
+        ((SndWorkCV_ *)&gWork_11FC84)->cv[c].vol = a;
+        sgxDI();
+        list = __builtin_alloca(((SndWorkS *)&gWork_11FC84)->num * sizeof(void *));
+        n = MakeSlotList((void **)list);
+        sgxEI();
+        for (i = 0; i < n; i++)
+            if (*(short *)(list[i] + 0x1C) == c) SlotUpdateVolume(list[i], 1);
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
