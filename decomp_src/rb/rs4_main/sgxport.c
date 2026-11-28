@@ -543,7 +543,23 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", UnitVolumeProc);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", UnitPitchProc);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", UnitMergeVoiceStatus);
+signed char sgxVoGetStatus(int v);
+long long sgxVoGetPlayUnitSamples(int v);
+int sgxSndCheckMarkerLoop(int snd, int a, int b, int c, int d, int samples, int *status);
+int UnitMergeVoiceStatus(void *p)
+{
+	UnitT *u = (UnitT *)p;
+	int st = 0;
+	int i;
+	for (i = 0; i < u->s.nv; i++) {
+		if (u->s.v[i] >= 0) st |= sgxVoGetStatus(u->s.v[i]);
+	}
+	if (st & 2) st |= 0x40;
+	if (u->s.nv > 0 && u->s.v[0] >= 0) {
+		*(int *)((char *)u + 0x3C) = sgxSndCheckMarkerLoop(*(int *)(*(char **)(*(char **)((char *)u + 0x10) + 0x10) + 8), *(int *)((char *)u + 0x28), *(int *)((char *)u + 0x2C), *(int *)((char *)u + 0x30), *(int *)((char *)u + 0x3C), sgxVoGetPlayUnitSamples(u->s.v[0]), &st);
+	}
+	return st;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", SlotUnitProc_8716C);
 
