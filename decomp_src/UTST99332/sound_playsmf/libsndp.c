@@ -3,7 +3,7 @@
 
 extern int D_000185C8;
 #define g_state D_000185C8
-typedef struct { int hd; int bd; } SsSoundData;
+typedef struct { void *hd; void *bd; } SsSoundData;
 typedef struct { int flag; int type; int delay; int feedback; int left; int right; int dry; int wet; } SsEffectParam;
 extern SsSoundData *D_00128E94[];
 extern unsigned int D_00128F14;
@@ -602,5 +602,41 @@ int func_00008628(int a0, unsigned int voice, int a2, int a3, int a4, int a5, in
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libsndp", func_0000872C);
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libsndp", func_00008918);
+typedef struct { int vag; int prio; int group; unsigned char nclk; unsigned char padD[3]; int pad10[4]; int adsr1; unsigned char b24; unsigned char pad25[3]; int adsr2; unsigned char b2C; unsigned char pad2D[3]; unsigned char b30; unsigned char pad31[3]; unsigned char b34; unsigned char pad35[3]; unsigned char b38; unsigned char pad39[7]; unsigned char b40; unsigned char pad41[3]; unsigned char b44; unsigned char pad45[11]; int i50; int i54; } SsTone;
+typedef struct { int offset; int loop; int size; } SsVag;
+typedef struct { int noise; char * addr; int size; unsigned char nclk; unsigned char padD[3]; int loop; int pitch; int adsr1; unsigned char b1C; unsigned char pad1D[3]; int adsr2; unsigned char b24; unsigned char pad25[3]; int i28; int i2C; unsigned char b30; unsigned char b31; unsigned char b32; unsigned char b33; unsigned char b34; unsigned char pad35[3]; int group; int prio; } SsVoiceTone2;
+int sdphd_getVagParam(void *pHd, unsigned int idx, void **ppParam);
+int func_00008918(unsigned int hd, unsigned int idx, SsVoiceTone2 *out)
+{
+	SsTone *tp;
+	SsVag *vp;
+
+	if (sdphd_getToneParam((void *)g_hd[hd]->hd, idx, (void **)&tp) < 0)
+		return 0x80540005;
+	if (tp->vag == -1) {
+		out->noise = 1;
+		out->nclk = tp->nclk;
+	} else {
+		if (sdphd_getVagParam((void *)g_hd[hd]->hd, tp->vag, (void **)&vp) < 0)
+			return 0x80540005;
+		out->noise = 0;
+		out->addr = (char *)g_hd[hd]->bd + vp->offset;
+		out->size = vp->size;
+		out->loop = vp->loop;
+	}
+	out->adsr1 = tp->adsr1;
+	out->b1C = tp->b24;
+	out->adsr2 = tp->adsr2;
+	out->b24 = tp->b2C;
+	out->i28 = tp->i50;
+	out->i2C = tp->i54;
+	out->b30 = tp->b38;
+	out->b31 = tp->b30;
+	out->b32 = tp->b34;
+	out->group = tp->group;
+	out->prio = tp->prio;
+	out->b33 = tp->b40;
+	out->b34 = tp->b44;
+	return 0;
+}
 
