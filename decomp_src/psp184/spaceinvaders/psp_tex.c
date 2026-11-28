@@ -65,7 +65,14 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", bmp_addr_load);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", bmp_addr_load_normal);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", color_check);
+int color_check(unsigned char r, unsigned char g, unsigned char b)
+{
+	int m;
+	if (r > g) { if (r > b) m = r; else if (g > b) m = g; else m = b; }
+	else if (g > b) m = g;
+	else m = b;
+	return m;
+}
 
 int bmp_file_load_alpha(char *name)
 {
