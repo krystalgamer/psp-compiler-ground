@@ -11,9 +11,33 @@ extern void *gpExchangeCallbackUserData;
 extern void (*gpfnLANFindExchangeCallback)(int *, int *, int);
 int SendLANFindReply();
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeGameFind", NetLANFindEnableExchange);
+extern void *gDmeGlobals;
+extern int gbEnableLANFindExchange;
+int NetLANFindEnableExchange(int en, void (*cb)(int *, int *, int), void *ud)
+{
+    int r;
+    if (*(int *)((char *)gDmeGlobals + 0x3C) != 2) return 0x10;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    gbEnableLANFindExchange = en;
+    gpfnLANFindExchangeCallback = cb;
+    gpExchangeCallbackUserData = ud;
+    return NetMapRtError(NetMutexUnlock());
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeGameFind", NetLANFind);
+extern void *gDmeGlobals;
+int NetILANFind();
+int NetLANFind(void *p)
+{
+    int r, e;
+    if (*(int *)((char *)gDmeGlobals + 0x3C) != 2) return 0x10;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = NetILANFind(p);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeGameFind", NetSetDefaultLANFindParams);
 
