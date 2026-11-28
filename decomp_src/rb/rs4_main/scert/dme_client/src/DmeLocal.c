@@ -712,7 +712,34 @@ int NetIAssignLocalServer(int a, int b)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIEnableUDP);
+extern int gbUDPEnabled; extern int gbKeyPairAvailable; extern char gRSAKeyPair[];
+void udp_unconnected_data_cb();
+typedef struct { int port; int a; int b; int c; int d; int e; int f18; int f1C; int f20; int f24; void *key; void *unconn; void *ev; void *data; int f38; } DmeUdpParams;
+int NetIEnableUDP(void)
+{
+    DmeUdpParams p;
+
+    if (gbUDPEnabled == 0 && gUDPInterfacePtr != NULL) {
+    memset(&p, 0, sizeof(p));
+    p.port = *(int *)((char *)gUDPInterfacePtr + 0x84);
+    p.f18 = *(int *)((char *)gUDPInterfacePtr + 0x88);
+    p.f1C = *(int *)((char *)gUDPInterfacePtr + 0x8C);
+    p.f20 = *(int *)((char *)gUDPInterfacePtr + 0x90);
+    p.unconn = udp_unconnected_data_cb;
+    p.a = 0x100;
+    p.b = 0x202;
+    p.c = 0x2000;
+    p.d = 0x2000;
+    p.e = 0x1E;
+    p.ev = udp_event_cb;
+    p.data = udp_data_cb;
+    if (gbKeyPairAvailable) p.key = gRSAKeyPair;
+    else p.key = NULL;
+    if ((*(int (**)(DmeUdpParams *, int *))((char *)gUDPInterfacePtr + 0x6C))(&p, (int *)((char *)gDmeGlobals + 0x14)) != 0) return 0x25;
+    gbUDPEnabled = 1;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetCreateP2PInfo);
 
