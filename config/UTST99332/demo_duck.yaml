@@ -445,9 +445,8 @@ segments:
       - [0x168730, .rodata, main_objs/math_bspline_curve_curve]
       - [0x168780, rodata, asm/rodata_168700]
       - [0x168990, .rodata, main_objs/math_matrix_eigenVectors]
-      - [0x168A78, rodata, asm/rodata_1689F8]
-      - [0x168ABC, .rodata, main_objs/math_safe_acosf]
-      - [0x168AC4, rodata, asm/rodata_168A44]
+      - [0x168A78, .rodata, main_objs/math_safe_acosf]
+      - [0x168AD4, rodata, asm/rodata_168A54]
       - [0x168BFC, .rodata, main_objs/math_matrix_matrix]
       - [0x168E30, rodata, asm/rodata_168DB0]
       - [0x168E64, .rodata, main_objs/math_quaternion_quaternion]
@@ -709,6 +708,8 @@ segments:
       - { start: 0x18CFCC, type: bss, vram: 0x18ED6C, name: bss_18ED6C }
       - { start: 0x18CFCC, type: .bss, vram: 0x18ED6C, name: main_objs/math_matrix_eigenVectors }
       - { start: 0x18CFCC, type: bss, vram: 0x18EDEC, name: bss_18EDEC }
+      - { start: 0x18CFCC, type: .bss, vram: 0x18EDF0, name: main_objs/math_safe_acosf }
+      - { start: 0x18CFCC, type: bss, vram: 0x18EE74, name: bss_18EE74 }
       - { start: 0x18CFCC, type: .bss, vram: 0x18EE88, name: main_objs/math_matrix_matrix }
       - { start: 0x18CFCC, type: bss, vram: 0x18EF0C, name: bss_18EF0C }
       - { start: 0x18CFCC, type: .bss, vram: 0x18EF8C, name: main_objs/scene_HasBVdata }

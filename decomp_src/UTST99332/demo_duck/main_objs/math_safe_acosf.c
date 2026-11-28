@@ -2,13 +2,15 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
 #include "../main.hpp"
 
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN4math10safe_acosfEf");
+__asm__(".globl _GLOBAL__D__ZN4math10safe_acosfEf");
+
 /* constants and strings stay in the module's .rodata (asm) */
-extern const float D_00168A14, D_00168A18, D_00168A1C;     /* 1, 1e-5, -1 */
-extern const float D_00168A20, D_00168A24, D_00168A28;     /* 1, 1e-5, -1 */
-extern const float D_00168A3C, D_00168A40;                 /* pi, 2 pi */
-extern const float D_00168A44;                             /* 1e-5 */
 extern const char D_00168A74[];     /* " *** error " */
 extern const char D_00168A80[];     /* "fabsf( _Value ) - 1.f < EPSILON5" */
 extern const char D_00168AA4[];     /* "../lib/maths/math_misc.cpp" */
@@ -33,18 +35,16 @@ extern const char PF_wrap[] __asm__("_ZZN4math4wrapEfffE19__PRETTY_FUNCTION__");
         common::common_internal::on_warning(); \
     }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_safe_acosf", _Z41__static_initialization_and_destruction_0ii_53F1C);
-
 float math::safe_acosf(float x)
 {
-    MM_ASSERT(fabsf(x) - D_00168A14 < D_00168A18, D_00168A80, PF_safe_acosf, 31, D_00168AC0);
-    return acosf(x > D_00168A14 ? D_00168A14 : (x < D_00168A1C ? D_00168A1C : x));
+    MM_ASSERT(fabsf(x) - 1.0f < 1e-5f, D_00168A80, PF_safe_acosf, 31, D_00168AC0);
+    return acosf(x > 1.0f ? 1.0f : (x < -1.0f ? -1.0f : x));
 }
 
 float math::safe_asinf(float x)
 {
-    MM_ASSERT(fabsf(x) - D_00168A20 < D_00168A24, D_00168A80, PF_safe_asinf, 38, D_00168AC0);
-    return asinf(x > D_00168A20 ? D_00168A20 : (x < D_00168A28 ? D_00168A28 : x));
+    MM_ASSERT(fabsf(x) - 1.0f < 1e-5f, D_00168A80, PF_safe_asinf, 38, D_00168AC0);
+    return asinf(x > 1.0f ? 1.0f : (x < -1.0f ? -1.0f : x));
 }
 
 float math::safe_atan2f(float y, float x)
@@ -59,13 +59,11 @@ float math::safe_sqrtf(float x)
     return sqrtf(x);
 }
 
-extern const float D_00168A2C;  /* 1 / 2^30 */
-extern const float D_00168A30;  /* 1.0f */
 
 float math::FastNoise(unsigned int n)
 {
     n = (n << 13) ^ n;
-    return D_00168A30 - ((n * (n * n * 15731 + 789221) + 1376312589) & 0x7FFFFFFF) * D_00168A2C;
+    return 1.0f - ((n * (n * n * 15731 + 789221) + 1376312589) & 0x7FFFFFFF) * 9.31322574615478515625e-10f;
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_safe_acosf", _ZN4math5angle17BetweenTwoVectorsERKNS_9vector_xyES3_);
@@ -96,8 +94,8 @@ float math::wrap(float _Value, float _Start, float _Period)
     float q = (_Value - _Start) / _Period;
     int n = (int)q - (q < 0);
     float v = _Value - n * _Period;
-    MM_WARN(_Start <= v + D_00168A44, D_00168B44, PF_wrap, 179);
-    MM_WARN(v - D_00168A44 < _Start + _Period, D_00168B1C, PF_wrap, 180);
+    MM_WARN(_Start <= v + 1e-5f, D_00168B44, PF_wrap, 179);
+    MM_WARN(v - 1e-5f < _Start + _Period, D_00168B1C, PF_wrap, 180);
     if (v < _Start || v >= _Start + _Period)
         v = _Start;
     return v;
@@ -122,19 +120,6 @@ void math::vector_xy::print(std::string pre, std::string sep, std::string post) 
     std::cout << pre << x << sep << y << post;
 }
 
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_53F1C");
-void _GLOBAL__I__ZN4math10safe_acosfEf(void);
-void _GLOBAL__D__ZN4math10safe_acosfEf(void);
-}
-
-void _GLOBAL__I__ZN4math10safe_acosfEf(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN4math10safe_acosfEf(void)
-{
-    static_init(0, 0xFFFF);
-}
-
+/* the asm functions refer to the header statics by their module names */
+__asm__("_ZN4math12BEZIER_BASISE_18EE30 = _ZN4math12BEZIER_BASISE\n"
+        "_ZN4math13HERMITE_BASISE_18EDF0 = _ZN4math13HERMITE_BASISE\n");

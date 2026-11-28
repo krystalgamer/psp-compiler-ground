@@ -185,9 +185,11 @@ rodata 0x171D94 -
 # FloatImage: the float pools of the static initializer, operator=(Texture), copy (asm), gaussian1, gaussian2, blur2d, blur (blur2d/blur inlines gaussian2 with its literals)
 rodata 0x17624C main_objs/FloatImage
 rodata 0x17629C -
-# math_safe_acosf: the float pool (pi, 2 pi) of math::angle::Relative
-rodata 0x168A3C main_objs/math_safe_acosf
-rodata 0x168A44 -
+# math_safe_acosf: all float pools (static initializer .. compactness; the asm functions' are theirs); .bss: the header statics
+rodata 0x1689F8 main_objs/math_safe_acosf
+rodata 0x168A54 -
+bss 0x18EDF0 main_objs/math_safe_acosf
+bss 0x18EE74 -
 # math_quaternion_quaternion: the float pools (quaternion()'s 1.0f) of quaternion operator*, -=, *=
 rodata 0x168DE4 main_objs/math_quaternion_quaternion
 rodata 0x168DF0 -
@@ -604,7 +606,6 @@ bss 0x18D4A4 main_objs/psp_GetKernelErrName
 bss 0x18D4A8 -
 # math_matrix_eigenVectors: static-init float pool, eigenVectors float pool, strings, tred2/tqli doubles (nosplit labels)
 rodata 0x168910 main_objs/math_matrix_eigenVectors
-rodata 0x1689F8 -
 # math_matrix_eigenVectors: the header statics (.bss)
 bss 0x18ED6C main_objs/math_matrix_eigenVectors
 bss 0x18EDEC -
