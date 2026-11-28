@@ -64,6 +64,8 @@ typedef struct {
     int unk8C;
     u8 unk90[0x100];
     int unk190;
+    u8 unk194[0xC198 - 0x194];
+    int unkC198;
 } GIFP;
 
 typedef struct {
@@ -506,7 +508,90 @@ int createImageDescriptor(GIFP *ctx) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gif_parser", createInterlaceOrder);
+int createInterlaceOrder(GIFP *ctx, int lines) {
+    int *idx[4];
+    int *pos[4];
+    int cnt[4];
+    int n;
+    int i;
+    int j;
+    int height;
+    int line;
+    int *order;
+    int p1;
+    int start;
+    int p2;
+    int p3;
+    int m;
+
+    n = 0;
+    cnt[0] = 0;
+    cnt[1] = 0;
+    cnt[2] = 0;
+    cnt[3] = 0;
+    height = CURIMG(ctx)->height;
+    start = ctx->unkC198;
+    for (i = 0; i < 4; i++) {
+        idx[i] = ESP_malloc((lines / 2) * 4 + 4);
+        if (idx[i] == NULL) {
+            return -2;
+        }
+    }
+    for (i = 0; i < 4; i++) {
+        pos[i] = ESP_malloc((lines / 2) * 4 + 4);
+        if (pos[i] == NULL) {
+            return -2;
+        }
+    }
+    order = ESP_malloc(lines * 8);
+    if (order == NULL) {
+        return -2;
+    }
+    line = start;
+    p1 = (height - 1) / 8 + 1;
+    p2 = (height + 3) / 8;
+    p3 = (height + 1) / 2;
+    for (i = 0; i < lines; i++, line++) {
+        m = line % 8;
+        switch (m) {
+        case 0:
+            idx[0][cnt[0]] = i;
+            pos[0][cnt[0]] = line / 8;
+            cnt[0]++;
+            break;
+        case 4:
+            idx[1][cnt[1]] = i;
+            pos[1][cnt[1]] = p1 + line / 8;
+            cnt[1]++;
+            break;
+        case 2:
+        case 6:
+            idx[2][cnt[2]] = i;
+            pos[2][cnt[2]] = p1 + p2 + line / 4;
+            cnt[2]++;
+            break;
+        default:
+            idx[3][cnt[3]] = i;
+            pos[3][cnt[3]] = p3 + (line - 1) / 2;
+            cnt[3]++;
+            break;
+        }
+    }
+    for (j = 0; j < 4; j++) {
+        for (i = 0; i < cnt[j]; i++) {
+            order[n++] = idx[j][i];
+            order[n++] = pos[j][i];
+        }
+    }
+    for (i = 0; i < 4; i++) {
+        ESP_free(idx[i]);
+    }
+    for (i = 0; i < 4; i++) {
+        ESP_free(pos[i]);
+    }
+    ctx->rows = order;
+    return 1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
