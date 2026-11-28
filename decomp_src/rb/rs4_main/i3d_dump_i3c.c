@@ -22,9 +22,31 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_dump_i3c", PrintTree);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_dump_i3c", I3cRoot__TextDump);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_dump_i3c", I3dParser__PackSub);
+int I3dParser__PackSub(int *p, int base, int a, int b, int mode)
+{
+	int v = *p;
+	if (v != 0) {
+		switch (mode) {
+		case 1: v += base; break;
+		case 0: v -= base; break;
+		default: return 0;
+		}
+		*p = v;
+	}
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_dump_i3c", I3dParser__PackSub_ap);
+int I3dParser__PackSub_ap(int *pp, int n, int base, int c, int d, int e, int mode)
+{
+	int *arr = 0;
+	int i;
+	if (mode == 0) arr = (int *)*pp;
+	I3dParser__PackSub(pp, base, c, d, mode);
+	if (mode == 1) arr = (int *)*pp;
+	for (i = 0; i < n; i++)
+		I3dParser__PackSub(&arr[i], base, c, e, mode);
+	return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
