@@ -1134,9 +1134,10 @@ void SetBallMapReverse(PZL_STAT *dst, PZL_STAT *src)
 }
 
 #ifdef NON_MATCHING
-/* diff 17 (1.5.1 only; other cc1s differ in size): the original tests w > 0 before
- * computing the row's src/dst pointers (ours hoists them above the test), and the
- * y * w induction variable / the constant 16 swap s7 and s8. */
+/* diff 16: the map row indexed (map[(y + 16) * w + i], a giv set up after the w > 0
+ * test, as in the original) with src still a pointer computed above the test.  Indexing
+ * src too (data[y * w - y / 2 + i]) gives the original's whole row set-up after the
+ * test and its s7/s8, but then data and n swap a1/a2 (one more copy, +4 bytes). */
 int SetBallMap(u8 *map, u8 *data)
 {
 	int i, y, n, w, type;
@@ -1161,14 +1162,13 @@ int SetBallMap(u8 *map, u8 *data)
 	w = GetMapWidth(type);
 	for (y = 1; y < 13; y++) {
 		src = data + (y * w - y / 2);
-		dst = map + (y + 16) * w;
 		for (i = 0; i < w; i++) {
 			c = *src++;
 			if (c == 16)
 				c = ColorTable[rand() % n];
 			if (i == w - 1 && y % 2 == 1)
 				c = 0;
-			*dst++ = c;
+			map[(y + 16) * w + i] = c;
 		}
 	}
 	return type;
