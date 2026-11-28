@@ -748,7 +748,55 @@ int net_gamecomm_pack(void)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", net_gamecomm_packinit);
+int net_mynumget(void);
+int net_entryget(void);
+void net_errorset(int err);
+int net_errorget(void);
+int sceUtilityNetconfGetStatus(void);
+int pad_ret_button(void);
+int pad_cansel_button(void);
+int net_gamecomm_packinit(void)
+{
+	char buf[64];
+	int cnt, st, e;
+
+	cnt = 0;
+	net_mynumget();
+	netdata[net_mynumget() * 0x3F0 + 7] = net_entryget();
+	net_errorset(3);
+	for (;;) {
+		psp_loopstart();
+		sceGuSync(0, 0);
+		net_gamecomm_pack();
+		st = sceUtilityNetconfGetStatus();
+		sprintf(buf, "sceUtilityNetconfGetStatus=%d\n", st);
+		debug_text(0, 0, buf);
+		if (cnt > 0x400) {
+			if (st == 0) {
+				if (pad_sw() & (pad_ret_button() | pad_cansel_button()))
+					return 1;
+			}
+		}
+		psp_loopend();
+		e = net_errorget();
+		if (e == 3 || e == 1)
+			cnt++;
+		if (e == 0)
+			return 0;
+		else if (e == 3) {
+			if (st < 2) {
+				if (cnt > 0x4B0)
+					return 1;
+			}
+		} else if (e == 1) {
+			if (st < 2) {
+				if (cnt > 0x4B0)
+					return 1;
+			}
+		} else if (e == 2)
+			return 2;
+	}
+}
 
 int net_gamecomm_packend(void)
 {
