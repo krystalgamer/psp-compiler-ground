@@ -173,7 +173,104 @@ void inv_font_set(FONT_T *f, int c, int x, int y, int sx, int sy, unsigned short
 	f->v1 = v + 24.0f;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_font", inv_font_disp);
+typedef struct __attribute__((packed)) { unsigned short u, v; unsigned short color; short x, y, z; } FVTX;
+extern int inv_font_disp_max, inv_font_disp_time;
+extern int g_packet;
+extern FVTX font_vtx[2][2048] __asm__("p_2903F4");
+unsigned int sceKernelGetSystemTimeLow(void);
+void sceGuEnable(int);
+void sceGuDisable(int);
+void sceGuTexFunc(int, int);
+void sceGuTexMapMode(int, int, int);
+void sceGuTexWrap(int, int);
+void sceGuTexFilter(int, int);
+void set_texture(int);
+void sceGuAlphaFunc(int, int, int);
+void sceGuBlendFunc(int, int, int, int, int);
+int sceKernelDcacheWritebackInvalidateRange(const void *, unsigned int);
+void sceGumDrawArrayN(int, int, int, int, const void *, const void *);
+int inv_font_disp(void)
+{
+	FVTX *v;
+	FONT_T *f;
+	unsigned int t;
+	int i, n, j;
+
+	inv_font_disp_max = 0;
+	inv_font_disp_time = 0;
+	if (font_max == 0)
+		return 0;
+	t = sceKernelGetSystemTimeLow();
+	if (!g_packet)
+		v = font_vtx[0];
+	else
+		v = font_vtx[1];
+	n = 0;
+	for (i = 0; i < font_max; i++) {
+		f = &((FONT_T *)&inv_font)[i];
+		if (f->used) {
+			f->used = 0;
+			j = n;
+			n += 4;
+			v[j].u = (unsigned int)f->u0;
+			v[j].v = (unsigned int)f->v0;
+			v[j + 1].u = (unsigned int)f->u0;
+			v[j + 1].v = (unsigned int)f->v1;
+			v[j + 2].u = (unsigned int)f->u1;
+			v[j + 2].v = (unsigned int)f->v0;
+			v[j + 3].u = (unsigned int)f->u1;
+			v[j + 3].v = (unsigned int)f->v1;
+			v[j].color = f->pri;
+			v[j + 1].color = f->pri;
+			v[j + 2].color = f->pri;
+			v[j + 3].color = f->pri;
+			v[j].x = f->x;
+			v[j].y = f->y;
+			v[j].z = pri;
+			v[j + 1].x = f->x;
+			v[j + 1].y = f->y2;
+			v[j + 1].z = pri;
+			v[j + 2].x = f->x2;
+			v[j + 2].y = f->y;
+			v[j + 2].z = pri;
+			v[j + 3].x = f->x2;
+			v[j + 3].y = f->y2;
+			v[j + 3].z = pri;
+		}
+	}
+	inv_font_disp_max = font_max;
+	font_max = 0;
+	if (texture_no_29C3F8 != -1) {
+		sceGuEnable(9);
+		sceGuTexFunc(0, 1);
+		sceGuTexMapMode(0, 0, 0);
+		sceGuTexWrap(1, 1);
+		sceGuTexFilter(1, 1);
+		set_texture(texture_no_29C3F8);
+	} else
+		sceGuDisable(9);
+	sceGuAlphaFunc(1, 0, 0xFF);
+	sceGuEnable(0);
+	if (alpha_mode_29C3FC == 0) {
+		sceGuDisable(4);
+	} else if (alpha_mode_29C3FC == 1) {
+		sceGuBlendFunc(0, 2, 3, 0, 0);
+		sceGuEnable(4);
+	} else if (alpha_mode_29C3FC == 2) {
+		sceGuBlendFunc(0, 10, 10, -1, -1);
+		sceGuEnable(4);
+	} else if (alpha_mode_29C3FC == 3) {
+		sceGuBlendFunc(4, 0, 0, 0, 0);
+		sceGuEnable(4);
+	} else if (alpha_mode_29C3FC == 4) {
+		sceGuBlendFunc(2, 10, 10, -1, -1);
+		sceGuEnable(4);
+	}
+	sceKernelDcacheWritebackInvalidateRange(v, inv_font_disp_max * 48);
+	sceGumDrawArrayN(4, 0x80011A, 4, inv_font_disp_max, 0, v);
+	inv_font_disp_time = sceKernelGetSystemTimeLow() - t;
+	return 1;
+}
 
 void inv_font_ascii(u8 *str, int x, int y, int sx, int sy, int r, int g, int b, int a);
 void inv_font_ascii_posf(u8 *c, int x, int y, int sx, int sy, int r, int g, int b, int a, int pos)
