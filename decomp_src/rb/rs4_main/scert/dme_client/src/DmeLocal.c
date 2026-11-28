@@ -25,14 +25,14 @@ int NetSetDefaultIncomingClientParams(int *arg0);
 int NetSetPeerToPeerHostChangeCallback(int arg0, int arg1);
 int NetUseDme(void);
 int RtMsgToDmeConnectionIndex(unsigned int arg0);
-void NetCreateConnInfoBare(void);
+void *NetCreateConnInfoBare(void);
 void NetGetMyAddressInfoInternal(void *arg0);
 void NetMutexUnlock(void);
 void NetResetTime(int arg0);
 void NetSetHeartbeatInterval(int arg0);
 void p2p_system_change_cb(int arg0, int arg1, void *arg2);
 void udp_data_cb(void);
-M2C_UNK rt_comm_linkaddress_toext(void *, void *);  /* extern */
+int rt_comm_linkaddress_toext();
 M2C_UNK rt_mutex_unlock(int, M2C_UNK);              /* extern */
 M2C_UNK rt_timebase_get_globaltime(void *);         /* extern */
 typedef struct { int ip; int port; } DmeLinkAddr;
@@ -104,7 +104,32 @@ int RtMsgToDmeConnectionIndex(unsigned int arg0) {
     return arg0 + (arg0 < 5U);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIGetAverageDelayToClient);
+void *NetGetClientPingInfo(unsigned int i);
+int NetIGetAverageDelayToClient(int *out, unsigned int idx)
+{
+    unsigned int t[100];
+    unsigned int *pi;
+    int i, j;
+    unsigned int a, b;
+
+    if (out == NULL) return 0x17;
+    pi = NetGetClientPingInfo(idx);
+    if (pi == NULL) return 0x16;
+    for (i = 0; i < 100; i++)
+        t[i] = pi[i];
+    for (i = 99; i > 0; i--) {
+        for (j = 0; j < i; j++) {
+            a = t[j];
+            b = t[j + 1];
+            if (b < a) {
+                t[j] = b;
+                t[j + 1] = a;
+            }
+        }
+    }
+    *out = t[50];
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIGetBufferStatus);
 
@@ -609,8 +634,8 @@ void *NetGetConnInfo(unsigned int idx)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetCleanupConnInfo);
 
-void NetCreateConnInfoBare(void) {
-    DMEmalloc(0x4AC);
+void *NetCreateConnInfoBare(void) {
+    return DMEmalloc(0x4AC);
 }
 
 int NetSetConnInfo(int arg0, int arg1) {
@@ -652,7 +677,22 @@ void *NetGetClientInfo(int arr, int idx)
     return p;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetCreateClientInfo);
+int NetCreateClientInfo(void **arr, unsigned int idx, void **out)
+{
+    void **slot;
+
+    if (out == NULL) return 0x17;
+    *out = NULL;
+    if (idx >= 256) return 0x17;
+    if (arr == NULL) return 0xA;
+    slot = (void **)(idx * 4 + (int)arr);
+    if (*slot == NULL) {
+        *slot = DMEmalloc(0x2C);
+        if (*slot == NULL) return 0x16;
+    }
+    *out = arr[idx];
+    return 0;
+}
 
 void NetDestroyClientInfo(void **arr, int idx)
 {
@@ -842,7 +882,26 @@ void NetMutexUnlock(void) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetISetFieldChanged);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIGetHostByName);
+int rt_comm_get_host_by_name_nb();
+extern void *gpfLookupResponseCallback;
+void NetDNSLookupCallback();
+typedef struct { char name[0x100]; char addr[8]; void (*cb)(); } DmeDnsReq;
+int NetIGetHostByName(char *req)
+{
+    DmeDnsReq r;
+    int ret;
+
+    if (req == NULL) return 0x17;
+    if (*(void **)(req + 0x110) == NULL) return 0x17;
+    memset(&r, 0, sizeof(r));
+    strncpy(r.name, req, 0x100);
+    rt_comm_linkaddress_toint(r.addr, req + 0x100);
+    r.cb = NetDNSLookupCallback;
+    ret = rt_comm_get_host_by_name_nb(&r);
+    if (ret == 0)
+        gpfLookupResponseCallback = *(void **)(req + 0x110);
+    return NetMapRtError(ret);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIGetClientBufferStatus);
 
