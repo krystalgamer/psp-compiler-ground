@@ -147,7 +147,22 @@ int cmDomiDocument_createCDATASection(SDomiDocument *doc, const SDomiString *dat
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiDocument", cmDomiDocument_createProcessingInstruction);
+int cmDomiDocument_createProcessingInstruction(SDomiDocument *doc, const SDomiStringH *target, const SDomiStringH *data, SDomiNode **out) {
+    SDomiProcessingInstruction *n;
+    int r;
+
+    *out = NULL;
+    n = UDomiMemory_Allocate(sizeof(SDomiProcessingInstruction));
+    if (n != NULL) {
+        SDomiProcessingInstruction_Initialize(&n->e.n, doc, target);
+        SDomiStringH_Assign(&n->data, data);
+        r = 0;
+        SDomiSLink_Insert(&doc->trash, &n->e.n.trash);
+        *out = &n->e.n;
+    } else
+        r = -1;
+    return r;
+}
 
 int cmDomiDocument_createAttribute(SDomiDocument *doc, const SDomiStringH *name, SDomiNode **out) {
     SDomiAttr *a;
