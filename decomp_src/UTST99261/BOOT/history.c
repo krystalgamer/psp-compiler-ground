@@ -35,6 +35,11 @@ void URL_splitURL(void **parts, char *url);
 unsigned int strlen(const char *);
 char *strcpy(char *, const char *);
 int strcmp(const char *, const char *);
+void *memset(void *, int, unsigned int);
+typedef struct HDCOOK { char *x0; char *x4; char *x8; char *xC; char *x10; int secure : 1; struct HDCOOK *next; } HDCOOK;
+typedef struct HDPAIR { char *x0; char *x4; } HDPAIR;
+typedef struct HDHDR { char *x00; int x04; int x08; char *x0C; char *x10; char *x14; char *x18; char *x1C; char *x20; HDPAIR *x24; HDPAIR *x28; HDCOOK *x2C; int x30; } HDHDR;
+char *strlinedup();
 int HST_initHistory(void) {
     int *p;
     int *h;
@@ -1665,7 +1670,131 @@ int HST_getRequestResult(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_httpHeaderDisassemble);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_httpHeaderDuplicate);
+int HST_httpHeaderDuplicate(int arg)
+{
+    HDHDR *src = (HDHDR *)arg;
+    HDHDR *h;
+    HDCOOK *c;
+    HDCOOK *n;
+    HDCOOK *prev;
+
+    h = MEM_malloc(0, sizeof(HDHDR));
+    if (h == NULL)
+        return 0;
+    memset(h, 0, sizeof(HDHDR));
+    if (src->x00 != NULL) {
+        h->x00 = strlinedup(src->x00, strlen(src->x00));
+        if (h->x00 == NULL)
+            return 0;
+    }
+    h->x04 = src->x04;
+    h->x08 = src->x08;
+    if (src->x0C != NULL) {
+        h->x0C = strlinedup(src->x0C, strlen(src->x0C));
+        if (h->x0C == NULL)
+            goto fail;
+    }
+    if (src->x10 != NULL) {
+        h->x10 = strlinedup(src->x10, strlen(src->x10));
+        if (h->x10 == NULL)
+            goto fail;
+    }
+    if (src->x14 != NULL) {
+        h->x14 = strlinedup(src->x14, strlen(src->x14));
+        if (h->x14 == NULL)
+            goto fail;
+    }
+    if (src->x18 != NULL) {
+        h->x18 = strlinedup(src->x18, strlen(src->x18));
+        if (h->x18 == NULL)
+            goto fail;
+    }
+    if (src->x1C != NULL) {
+        h->x1C = strlinedup(src->x1C, strlen(src->x1C));
+        if (h->x1C == NULL)
+            goto fail;
+    }
+    if (src->x20 != NULL) {
+        h->x20 = strlinedup(src->x20, strlen(src->x20));
+        if (h->x20 == NULL)
+            goto fail;
+    }
+    if (src->x24 != NULL) {
+        h->x24 = MEM_malloc(0, sizeof(HDPAIR));
+        if (h->x24 == NULL) {
+            HST_httpHeaderFree((int)h);
+            return 0;
+        }
+        memset(h->x24, 0, sizeof(HDPAIR));
+        if (src->x24->x0 != NULL) {
+            if ((h->x24->x0 = strlinedup(src->x24->x0, strlen(src->x24->x0))) == NULL)
+                goto fail;
+        }
+        if (src->x24->x4 != NULL) {
+            if ((h->x24->x4 = strlinedup(src->x24->x4, strlen(src->x24->x4))) == NULL)
+                goto fail;
+        }
+    }
+    if (src->x28 != NULL) {
+        h->x28 = MEM_malloc(0, sizeof(HDPAIR));
+        if (h->x28 == NULL) {
+            HST_httpHeaderFree((int)h);
+            return 0;
+        }
+        memset(h->x28, 0, sizeof(HDPAIR));
+        if (src->x28->x0 != NULL) {
+            if ((h->x28->x0 = strlinedup(src->x28->x0, strlen(src->x28->x0))) == NULL)
+                goto fail;
+        }
+        if (src->x28->x4 != NULL) {
+            if ((h->x28->x4 = strlinedup(src->x28->x4, strlen(src->x28->x4))) == NULL) {
+fail:
+                HST_httpHeaderFree((int)h);
+                return 0;
+            }
+        }
+    }
+    prev = NULL;
+    for (c = src->x2C; c != NULL; c = c->next) {
+        n = MEM_malloc(0, sizeof(HDCOOK));
+        if (n == NULL)
+            goto fail;
+        memset(n, 0, sizeof(HDCOOK));
+        if (prev == NULL)
+            h->x2C = n;
+        else
+            prev->next = n;
+        prev = n;
+        if (c->x0 != NULL) {
+            n->x0 = strlinedup(c->x0, strlen(c->x0));
+            if (n->x0 == NULL)
+                goto fail;
+        }
+        if (c->x4 != NULL) {
+            n->x4 = strlinedup(c->x4, strlen(c->x4));
+            if (n->x4 == NULL)
+                goto fail;
+        }
+        if (c->x8 != NULL) {
+            n->x8 = strlinedup(c->x8, strlen(c->x8));
+            if (n->x8 == NULL)
+                goto fail;
+        }
+        if (c->xC != NULL) {
+            n->xC = strlinedup(c->xC, strlen(c->xC));
+            if (n->xC == NULL)
+                goto fail;
+        }
+        if (c->x10 != NULL) {
+            n->x10 = strlinedup(c->x10, strlen(c->x10));
+            if (n->x10 == NULL)
+                goto fail;
+        }
+        n->secure = c->secure;
+    }
+    h->x30 = src->x30;
+    return (int)h;
+}
 
 int HST_httpHeaderFree(int arg) {
     HHDRF *h = (HHDRF *)arg;
