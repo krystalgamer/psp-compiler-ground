@@ -22,6 +22,9 @@ extern void *gUDPInterfacePtr;
 typedef struct { int a; int conn1; int conn2; int pad[17]; } RtP2PPeer;
 typedef struct { int a; int conn; int time; } RtP2PBacklog;
 typedef struct { struct { void *buf; int len; } e[8]; int total; int n; } RtP2PVec;
+void rt_p2p_get_my_peer_status(char *p, int *status, short *idx);
+void rt_udp_disconnect();
+typedef struct { unsigned char a, b; unsigned short from; unsigned short idx; } RtP2PDetach;
 extern void *gP2PInterface[35];
 extern void **gP2PInterfacePtr;
 int rt_p2p_create(); int rt_p2p_destroy(); int rt_p2p_get_current_address_type(char *, unsigned short, int *); int rt_p2p_get_peer_address();
@@ -484,9 +487,29 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_p
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_process_new_peer);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_process_coordinate_data);
+int rt_p2p_process_coordinate_data(char *p, unsigned short idx)
+{
+    short me;
+    int st;
+    unsigned int i;
+
+    me = -2;
+    st = 0;
+    rt_p2p_get_my_peer_status(p, &st, &me);
+    if (st == 8 || st == 9) {
+        (*(RtP2PPeer **)(p + 0x184))[idx].pad[5] = 1;
+        if (--*(unsigned short *)(p + 0x1A0) == 0) {
+            (*(void (**)(int, int, int))(p + 0x214))(1, 1, *(int *)(p + 0x218));
+            *(int *)(p + 0x1C4) = 1;
+            for (i = 0; i < *(unsigned short *)(p + 0x19C); i++)
+                (*(RtP2PPeer **)(p + 0x184))[i].pad[5] = 0;
+        }
+    }
+    return 0;
+}
 
 void rt_p2p_get_my_peer_status(char *p, int *status, short *idx);
+void rt_udp_disconnect();
 int rt_p2p_process_connect_complete(char *p, unsigned short idx)
 {
     short me;
@@ -512,7 +535,23 @@ int rt_p2p_process_broadcast_update(char *p, unsigned short idx, void *msg)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_process_connection_detached);
+int rt_p2p_process_connection_detached(char *p, int conn, void *msg)
+{
+    RtP2PDetach m;
+    RtP2PPeer *peer;
+
+    if (*(unsigned short *)(p + 0x1A4) != *(unsigned short *)(p + 0x1A2)) return 0;
+    memcpy(&m, msg, 6);
+    peer = (RtP2PPeer *)(m.from * sizeof(RtP2PPeer) + *(int *)(p + 0x184));
+    if (peer->conn1 != 0 || peer->conn2 != 0) {
+        peer = (RtP2PPeer *)(m.idx * sizeof(RtP2PPeer) + *(int *)(p + 0x184));
+        if (peer->conn1 != 0)
+            rt_p2p_generic_disconnect(p, peer->conn1, 1, 0xD2F3);
+        else if (peer->conn2 != 0)
+            rt_p2p_generic_disconnect(p, peer->conn2, 1, 0xD2F3);
+    }
+    return 0;
+}
 
 typedef struct { unsigned char a, b; unsigned short idx; unsigned short id; } RtP2PBcDisc;
 int rt_p2p_process_broadcast_disconnect(char *p, int conn, void *msg)
@@ -708,10 +747,33 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_n
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_save_backlog_connection);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_find_backlog_connection);
+int rt_comm_linkaddress_isequal();
+int rt_udp_get_address();
+typedef struct { int ip; int port; } RtP2PLinkAddr;
+typedef struct { RtP2PLinkAddr addr; int port; } RtP2PFullAddr;
+int rt_p2p_find_backlog_connection(int *p, RtP2PFullAddr *addr, int *conn)
+{
+    unsigned int i;
+    int ret;
+    RtP2PLinkAddr la;
+    int port;
+    RtP2PBacklog *b = (RtP2PBacklog *)p;
+
+    for (i = 0; i < 32; i++, b++) {
+        if (b->conn != 0) {
+            ret = rt_udp_get_address(*p, b->conn, &la, &port);
+            if (ret != 0) return ret;
+            if (rt_comm_linkaddress_isequal(la, addr->addr) && port == addr->port) {
+                *conn = b->conn;
+                b->conn = 0;
+                return 0;
+            }
+        }
+    }
+    return 0;
+}
 
 int rt_time_elapsed();
-int rt_udp_disconnect();
 int rt_p2p_timeout_backlog_connection(int *p)
 {
     unsigned int i;
