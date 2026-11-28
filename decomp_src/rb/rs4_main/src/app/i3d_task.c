@@ -34,10 +34,16 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD5C4);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD5E0);
 
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD5F4);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD608);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD60C);
+
 int taskMake(void *, void *, void *, int);
 void *i3dTask_EzDraw(void *arg0, unsigned int arg1, int arg2, int arg3);
 void *i3dTask_EzModel(void *arg0, unsigned int arg1, void *arg2, int arg3);
-extern unsigned char D_000FD5C4, D_000FD608, D_000FD60C;
+extern unsigned char D_000FD5C4, D_000FD608, D_000FD60C, D_000FD5E0, D_000FD5F4;
 
 typedef struct { int a, b, prio; } LsEnt;
 
@@ -47,13 +53,42 @@ void copUnitMat();
 void *resGetDatTable(int a, int b);
 int i3dMotSetMotion(void *arg0, int arg1);
 void copLetMat();
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", i3dTask_Landscape);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD608);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD60C);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD610);
+int taskHeadAlive(void);
+void *rsvNextAlive(void **p);
+#define cassertL(e, l, s) if (!(e)) consPrintf(&D_000FD5C4, &D_000FD5E0, l, &D_000FD5F4, s)
+void *i3dTask_Landscape(void *Tp, unsigned int msg, void *Vp, int n)
+{
+	switch (msg) {
+	case 0:
+		{
+		int t;
+		LsEnt *e;
+		int i;
+		cassertL(Tp, 0x71, &D_000FD608);
+		cassertL(Vp, 0x72, &D_000FD60C);
+		*(int *)((char *)Tp + 0x28) = 0;
+		*(unsigned char *)((char *)Tp + 0x24) = 0;
+		*(int *)((char *)Tp + 0x2C) = 0;
+		for (t = taskHeadAlive(); t != 0; t = (int)rsvNextAlive((void **)t))
+			if (((void **)t)[2] == (void *)i3dTask_EzDraw)
+				break;
+		if (t == 0)
+			taskMake(Tp, i3dTask_EzDraw, NULL, 0);
+		for (e = Vp, i = n; i != 0; i--, e++)
+			taskMake(Tp, i3dTask_EzModel, e, e->prio);
+		}
+		return Tp;
+	case 4:
+		return Tp;
+	case 1:
+		return NULL;
+	case 2:
+		return NULL;
+	case 3:
+		return NULL;
+	}
+	return (void *)taskDefaultMsg((int)Tp, msg, (int)Vp, n);
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD624);
 

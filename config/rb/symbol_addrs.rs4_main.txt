@@ -8091,3 +8091,4 @@ _ZTVN2Ys8MenuViewE = 0x00104EC8; // size:0x38 nosplit
 __psp_libinfo___10C120 = 0x0010C120; // size:0x18 nosplit
 D_0010470C = 0x0010470C; // size:0x1C nosplit
 D_00104450 = 0x00104450; // size:0x1C nosplit force_not_migration:True
+D_000FD5F4 = 0x000FD5F4; // size:0x14 nosplit force_not_migration:True
