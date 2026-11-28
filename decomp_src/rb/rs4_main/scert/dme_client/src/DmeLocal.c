@@ -1050,7 +1050,23 @@ int NetConvertTransportFlags(signed char f, unsigned short *out)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", p2p_connect_cb);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", p2p_disconnect_cb);
+void p2p_disconnect_cb(int reason, char *c)
+{
+    DmeDiscMsg m;
+
+    if (c == NULL) return;
+    if (*(int *)(c + 0x468) != 2) return;
+    if (*(DmeDiscCb *)(c + 0x430) == NULL) return;
+    m.c = c;
+    *(int *)(c + 0x454) = 4;
+    m.a = 4;
+    m.b = 1;
+    m.cc = 0;
+    m.d = 0;
+    if (reason == 0xD4E9) m.cc = 14; else m.cc = 37;
+    m.d = *(int *)(c + 0x434);
+    (*(DmeDiscCb *)(c + 0x430))(&m);
+}
 
 void p2p_system_change_cb(int arg0, int arg1, void *arg2) {
     if ((arg2 == NULL) || (M2C_FIELD(arg2, int *, 0x468) != 2)) {

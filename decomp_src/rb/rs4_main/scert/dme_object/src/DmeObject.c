@@ -103,7 +103,17 @@ int NetSetDefaultNetUseObjectsInParams(int *p)
     return ret;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetUseObjects);
+void DmeObjectResolveInterface(void);
+int NetUseObjects(int *p)
+{
+    DmeObjectResolveInterface();
+    *(int *)((char *)gObjectInterfacePtr + 0xF8) = p[0];
+    *(int *)((char *)gObjectInterfacePtr + 0xFC) = p[1];
+    *(int *)((char *)gObjectInterfacePtr + 0x100) = p[2];
+    *(int *)((char *)gObjectInterfacePtr + 0x108) = p[3];
+    *(int *)((char *)gObjectInterfacePtr + 0x10C) = p[4];
+    return 0;
+}
 
 int NetIObjectField();
 int NetObjectField(a, b, c, d, e, f)

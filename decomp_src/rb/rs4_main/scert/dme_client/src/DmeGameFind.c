@@ -44,7 +44,17 @@ int NetLANFind(void *p)
     return e;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeGameFind", NetSetDefaultLANFindParams);
+extern void *gUDPInterfacePtr;
+int NetSetDefaultLANFindParams(int *p)
+{
+    memset(p, 0, 0x20);
+    p[0] = 1;
+    p[2] = 3;
+    p[1] = 0;
+    if (gUDPInterfacePtr != NULL)
+        p[5] = *(int *)((char *)gUDPInterfacePtr + 0x84);
+    return 0;
+}
 
 extern int gLANFinder[];
 
