@@ -1,4 +1,4 @@
-/* SDK libgim_picture gim_picture.o (1.9.2 -O2 -std=gnu9x): the SDK 6.6.0 src/gim_picture/gim_picture.c, preprocessed with the SDK headers and its Makefile's SCEGIM_SUPPORT_* defines; the functions whose SceGimPicture fields moved since stay asm */
+/* SDK libgim_picture gim_picture.o (1.9.2 -O2 -std=gnu9x): the SDK 6.6.0 src/gim_picture/gim_picture.c, preprocessed with the SDK headers and its Makefile's SCEGIM_SUPPORT_* defines; psp-gcc predefines __psp_gcc__, so allegrex.h and gim_picture.h use the clz builtin (Pow2 too) */
 /* cflags: -O2 -std=gnu9x */
 #include "common.h"
 static __inline__ int sceAllegrexClz(int x);
@@ -25,16 +25,7 @@ static __inline__ int sceAllegrexTrunc(float fs);
 static __inline__ float sceAllegrexSqrt(float fs);
 static __inline__ int sceAllegrexClz(int x)
 {
- int n = 1;
- unsigned int ui;
- ui = (unsigned int)x;
- if (ui==0) return (32);
- if ((ui>>16)==0) { n = n + 16; ui = ui<<16; }
- if ((ui>>24)==0) { n = n + 8; ui = ui<< 8; }
- if ((ui>>28)==0) { n = n + 4; ui = ui<< 4; }
- if ((ui>>30)==0) { n = n + 2; ui = ui<< 2; }
- n = n - (ui>>31);
- return (n);
+ return __builtin_allegrex_clz(x);
 }
 static __inline__ int sceAllegrexClo(int x)
 {
@@ -1535,21 +1526,15 @@ void sceGimPictureInitDevice( void *device, int flags ) ;
 void sceGimPictureTermDevice( void ) ;
 static __inline__ int sceGimPicturePow2( int num )
 {
- union { float f ; int i ; } u ;
- u.f = (float)num - 0.5f ;
- return 1 << ( ( u.i >> 23 ) - 126 ) ;
+ return 1 << ( 32 - __builtin_allegrex_clz( num - 1 ) ) ;
 }
 static __inline__ int sceGimPictureCLZ( int num )
 {
- int i ;
- for ( i = 31 ; i >= 0 ; -- i ) if ( ( 1 << i ) & num ) return 31 - i ;
- return 32 ;
+ return __builtin_allegrex_clz( num ) ;
 }
 static __inline__ int sceGimPictureCTZ( int num )
 {
- int i ;
- for ( i = 0 ; i <= 31 ; i ++ ) if ( ( 1 << i ) & num ) return i ;
- return 32 ;
+ return __builtin_allegrex_ctz( num ) ;
 }
 static __inline__ int sceGimImageGetFormat( const SceGimImageHeader *image )
 {
@@ -1904,7 +1889,49 @@ void sceGimPictureUnload( SceGimPicture *picture )
  picture->m_sequences = 0 ;
  picture->m_n_sequences = 0 ;
 }
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/gim_picture", sceGimPictureReconfigure);
+void sceGimPictureReconfigure( SceGimPicture *picture )
+{
+ picture->m_flags = 0 ;
+ SceGimImageHeader *image = picture->m_image ;
+ if ( image != 0 ) {
+  if ( image->level_count > 1 ) picture->m_flags |= HAS_IMAGE_LEVELS ;
+  if ( image->frame_count > 1 ) picture->m_flags |= HAS_IMAGE_FRAMES ;
+  int w = image->width ;
+  int h = image->height ;
+  int w2 = sceGimPicturePow2( w ) ;
+  int h2 = sceGimPicturePow2( h ) ;
+  if ( w != w2 || h != h2 ) {
+   picture->m_flags |= ( IS_NONPOW2 | IS_CROPPED ) ;
+   picture->m_image_crop[ 0 ] = 0.0f ;
+   picture->m_image_crop[ 1 ] = 0.0f ;
+   picture->m_image_crop[ 2 ] = (float)image->width / w2 ;
+   picture->m_image_crop[ 3 ] = (float)image->height / h2 ;
+  }
+  int align = image->pitch_align * 8 / image->bpp - 1 ;
+  picture->m_buf_width = ( w + align ) & ~align ;
+ }
+ SceGimPaletteHeader *palette = picture->m_palette ;
+ if ( palette != 0 ) {
+  if ( palette->level_count > 1 ) picture->m_flags |= HAS_PALETTE_LEVELS ;
+  if ( palette->frame_count > 1 ) picture->m_flags |= HAS_PALETTE_FRAMES ;
+  int count = ( palette->width / 16 ) * palette->level_count ;
+  if ( palette->format == SCEGIM_FORMAT_RGBA8888 ) count *= 2 ;
+  if ( count > 32 ) count = 32 ;
+  picture->m_clut_load = count ;
+ }
+ if ( picture->m_flags & ( HAS_IMAGE_FRAMES | HAS_PALETTE_FRAMES ) ) {
+  picture->m_flags |= IS_ANIMATED ;
+ } else {
+  for ( int i = 0 ; i < picture->m_n_sequences ; i ++ ) {
+   SceGimSequenceHeader *sequence = picture->m_sequences[ i ] ;
+   if ( sequence->n_functions > 0 ) {
+    picture->m_flags |= IS_ANIMATED ;
+    break ;
+   }
+  }
+ }
+ sceGimPictureSetImagePlane( picture, picture->m_image_plane ) ;
+}
 
 void sceGimPictureSetEnableBits( SceGimPicture *picture, int bits, int value )
 {
@@ -2146,7 +2173,24 @@ int sceGimPictureGetImagePlaneCount( SceGimPicture *picture )
  mask += mask >> 16 ;
  return mask & 0xff ;
 }
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/gim_picture", sceGimPictureSetImagePlane);
+void sceGimPictureSetImagePlane( SceGimPicture *picture, int plane )
+{
+ if ( picture == 0 ) return ;
+ picture->m_image_plane = plane ;
+ SceGimImageHeader *image = picture->m_image ;
+ if ( image == 0 ) return ;
+ unsigned int mask = image->plane_mask ;
+ if ( mask == 0 ) {
+  sceGimPictureSetPaletteOffset( picture, 0, 255, 0 ) ;
+  return ;
+ }
+ mask ^= mask >> 1 ;
+ unsigned int bits = 1 ;
+ while ( -- plane >= 0 ) bits += ( mask - bits ) ^ mask ;
+ bits = ( mask - bits ) ^ mask ;
+ int shift = sceGimPictureCTZ( bits ) ;
+ sceGimPictureSetPaletteOffset( picture, shift, bits >> shift, 0 ) ;
+}
 
 int sceGimPictureGetImagePlane( SceGimPicture *picture )
 {
