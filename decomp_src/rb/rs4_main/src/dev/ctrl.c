@@ -288,7 +288,33 @@ void *ctrlStateV(int arg0) {
     return (arg0 * 0xA0) + &CtrlInfoV;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/ctrl", _ctrlSetTrg);
+extern unsigned char D_000F9E14, D_000F9D78;
+void _ctrlSetTrg(unsigned int key, unsigned int *trg)
+{
+	switch (key) {
+	case 0x400:
+		*trg = 0x100;
+		break;
+	default:
+		consPrintf(&D_000F9C50, &D_000F9C6C, 0x2D8, &D_000F9E14, &D_000F9D78);
+		break;
+	case 0x800:
+		*trg = 0x200;
+		break;
+	case 0x1:
+	case 0x8:
+	case 0x10:
+	case 0x20:
+	case 0x40:
+	case 0x80:
+	case 0x1000:
+	case 0x2000:
+	case 0x4000:
+	case 0x8000:
+		*trg = key;
+		break;
+	}
+}
 
 int ctrlSetEnter(int key)
 {
