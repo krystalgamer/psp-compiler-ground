@@ -6,6 +6,8 @@
 #endif
                             /* extern */
 void consPrintf(const char *, ...);
+typedef struct RsvNode { struct RsvNode *Next; int Key; } RsvNode;
+typedef struct { RsvNode *Head; RsvNode *Tail; RsvNode *Free; int Key; RsvNode *Top; int Size; int Num; int Rest; } RsvCntx;
 
 extern unsigned char D_000FB180, D_000FB19C, D_000FB210;
 void *rsvNextAlive();
@@ -15,7 +17,41 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/lib/rsv", D_000FB180);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/lib/rsv", D_000FB19C);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/rsv", rsvInit);
+void *_memAlloc(int size, const char *file, int line);
+extern unsigned char D_000FB1D0, D_000FB1C8;
+RsvCntx *rsvInit(int Size, int Num)
+{
+	RsvCntx *pCntx;
+	RsvNode *p, *pNext;
+	int size;
+	int n;
+
+	if (Size <= 0)
+		consPrintf(&D_000FB180, &D_000FB19C, 0x19, "rsvInit", "Size > 0");
+	if (Num <= 0)
+		consPrintf(&D_000FB180, &D_000FB19C, 0x1A, "rsvInit", "Num > 0");
+	size = Size * Num + 0x20;
+	pCntx = _memAlloc(size, &D_000FB19C, 0x1E);
+	if (pCntx == NULL)
+		consPrintf(&D_000FB180, &D_000FB19C, 0x1F, "rsvInit", &D_000FB1C8);
+	consPrintf(&D_000FB1D0, "rsvInit", pCntx, size);
+	p = (RsvNode *)(pCntx + 1);
+	pCntx->Key = 0x7FFFFFFF;
+	pCntx->Head = NULL;
+	pCntx->Tail = NULL;
+	pCntx->Free = p;
+	pCntx->Top = p;
+	pCntx->Size = Size;
+	pCntx->Num = Num;
+	pCntx->Rest = Num;
+	for (n = Num; n != 0; n--) {
+		pNext = n < 2 ? NULL : (RsvNode *)((char *)p + Size);
+		p->Next = pNext;
+		p->Key = 0;
+		p = pNext;
+	}
+	return pCntx;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/lib/rsv", D_000FB1C8);
 
@@ -78,8 +114,6 @@ int rsvKill(void *arg0) {
     return var_v0;
 }
 
-typedef struct RsvNode { struct RsvNode *Next; int Key; } RsvNode;
-typedef struct { RsvNode *Head; RsvNode *Tail; RsvNode *Free; int pad[3]; int Num; int Rest; } RsvCntx;
 RsvNode *rsvFree(RsvCntx *pCntx, RsvNode *pPrev, RsvNode *p)
 {
 	RsvNode *pNext;
