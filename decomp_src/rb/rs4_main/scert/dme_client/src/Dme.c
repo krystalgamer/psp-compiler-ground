@@ -1097,7 +1097,14 @@ int NetGetLANBroadcastCommSetting(int *arg0) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetGetGlobalBufferPoolStatus);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetGetConnectivityType);
+int NetGetConnectivityType(long *t)
+{
+    if (t == NULL) return 0x17;
+    *t = 0;
+    if (*(int *)((char *)gDmeGlobals + 0x24) == 0) return 0x11;
+    *t = *(int *)((char *)gDmeGlobals + 0x3C);
+    return 0;
+}
 
 int NetGetLocalizationSettings(int *p)
 {
