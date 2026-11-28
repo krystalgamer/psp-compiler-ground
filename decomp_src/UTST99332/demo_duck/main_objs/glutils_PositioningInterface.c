@@ -17,9 +17,10 @@ __asm__(".globl _GLOBAL__D__ZN7glutils20PositioningInterfaceC2Ev\n_GLOBAL__D__ZN
 extern "C" const char D_00165540[]; /* "\n" */
 extern "C" const char D_00165554[]; /* " " */
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_PositioningInterface", _ZN7glutils20PositioningInterfaceC2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_PositioningInterface", _ZN7glutils20PositioningInterfaceC1Ev);
+glutils::PositioningInterface::PositioningInterface()
+    : _frame(math::vector_xyz(0, 0, 0), math::quaternion(0, 0, 0, 1))
+{
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_PositioningInterface", _ZN7glutils20PositioningInterfaceD2Ev);
 

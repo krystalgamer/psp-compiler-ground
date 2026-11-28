@@ -415,7 +415,7 @@ segments:
       - [0x1654D8, .rodata, main_objs/glutils_PickingBase]
       - [0x1654E8, rodata, asm/rodata_165468]
       - [0x165558, .rodata, main_objs/glutils_PositioningInterface]
-      - [0x165574, rodata, asm/rodata_1654F4]
+      - [0x16557C, rodata, asm/rodata_1654FC]
       - [0x166C2C, .rodata, main_objs/glutils_RectanglePicking]
       - [0x166CB4, rodata, asm/rodata_166C34]
       - [0x166CF4, .rodata, main_objs/math_Trackball]

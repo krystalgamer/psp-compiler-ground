@@ -520,7 +520,7 @@ rodata 0x15C58C -
 bss 0x189E50 main_objs/app3d_Callbacks
 bss 0x189F14 -
 rodata 0x162768 main_objs/glutils_PositioningInterface
-rodata 0x162784 -
+rodata 0x16278C -
 bss 0x18AEE4 main_objs/glutils_PositioningInterface
 bss 0x18AFA8 main_objs/glutils_Query
 rodata 0x160F54 main_objs/interp_Path
