@@ -386,7 +386,16 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuOffset_PSP)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuViewport_PSP);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuScissor_PSP);
+unsigned int *I3dGuScissor_PSP(unsigned int *p, int x, int y, int w, int h)
+{
+    w = x + w - 1;
+    h = y + h - 1;
+    g_I3dGuEmuWork[1] = x;
+    g_I3dGuEmuWork[2] = y;
+    g_I3dGuEmuWork[3] = w;
+    g_I3dGuEmuWork[4] = h;
+    return p;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuBlendFunc_PSP);
 
