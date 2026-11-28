@@ -44,7 +44,23 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_view_status", Extrapolation);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_view_status", I3dViewWindow__Modify);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_view_status", I3dViewFrustum__Modify);
+extern const float D_001094B8;
+extern const float D_001094BC;
+void I3dViewFrustum__Modify(float *f) {
+    float eps = f[0] * D_001094B8;
+    if (f[3] < f[2] + eps) {
+        float c = (f[2] + f[3]) * D_001094BC;
+        float h = eps * D_001094BC;
+        f[2] = c - h; f[3] = c + h;
+    }
+    if (f[5] < f[4] + eps) {
+        float c = (f[4] + f[5]) * D_001094BC;
+        float h = eps * D_001094BC;
+        f[4] = c - h; f[5] = c + h;
+    }
+}
+const float D_001094B8 = 0.0001f;
+const float D_001094BC = 0.5f;
 
 void I3dViewRectangular__Modify(void) {
 }
