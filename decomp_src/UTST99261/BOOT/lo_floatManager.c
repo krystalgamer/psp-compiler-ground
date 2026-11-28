@@ -14,6 +14,10 @@ M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
 typedef struct FBX { struct FBX *parent; struct FBX *child; struct FBX *prev; struct FBX *next; char pad[0x2A]; short html; } FBX;
 FBX *getBodyBox(FBX *b);
 void setFocus(FBX *body, FBX *b, int f, int a);
+typedef struct LFMRGN { int x; int y; int w; int h; struct LFMRGN *next; struct LFMRGN *prev; } LFMRGN;
+typedef struct { u8 pad20[0x20]; s16 mt; s16 mr; s16 unk24; s16 ml; s16 bt; s16 br; s16 unk2C; s16 bl; s16 pt; s16 pr; s16 unk34; s16 pl; } LFMSTYLE;
+typedef struct { u8 pad0[0x10]; int x; int y; int w; u8 pad1C[8]; LFMSTYLE *st; } LFMBOX;
+typedef struct { LFMBOX *box; int w; int h; LFMRGN *head; LFMRGN *cur; } LFMPAGE;
 void *newRegion(int arg0, int arg1, int arg2, int arg3) {
     void *temp_v0;
     void *var_v1;
@@ -152,7 +156,46 @@ void lfm_resetPageRegion(void *arg0, int arg1) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_floatManager", lfm_addFloat);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_floatManager", lfm_getHorizontalArea);
+int lfm_getHorizontalArea(LFMPAGE *pg, LFMBOX *b, int y, int *off, int *wout) {
+    int ret = 0;
+    int o;
+    int w;
+    int x, width;
+    LFMRGN *r;
+
+    x = b->x + b->st->ml + b->st->pl + b->st->bl - pg->box->x - pg->box->st->ml - pg->box->st->pl - pg->box->st->bl;
+    y += (b->y + b->st->mt + b->st->pt + b->st->bt - pg->box->y - pg->box->st->mt - pg->box->st->pt - pg->box->st->bt);
+    width = b->w - b->st->ml - b->st->pl - b->st->bl - b->st->br - b->st->pr - b->st->mr;
+    o = 0;
+    w = width;
+    if (y < pg->h) {
+        r = pg->head->next;
+        w = 0;
+        while (r->next != r) {
+            if (y >= r->y && y < r->y + r->h)
+                break;
+            r = r->next;
+        }
+        w = 0;
+        if (r->next != r) {
+            if (r->x >= x) {
+                o = r->x - x;
+                w = (x + width >= r->x + r->w) ? r->w : x + width - r->x;
+            } else {
+                o = 0;
+                w = (x + width < r->x + r->w) ? width : r->w - (x - r->x);
+            }
+            ret = 1;
+        }
+    } else {
+        ret = 1;
+    }
+    if (off != NULL)
+        *off = o;
+    if (wout != NULL)
+        *wout = w;
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_floatManager", lfm_getVerticalPosition);
 
