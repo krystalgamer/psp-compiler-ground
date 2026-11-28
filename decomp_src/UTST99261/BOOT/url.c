@@ -560,9 +560,115 @@ int URL_equals(URL *a, URL *b) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", URL_splitURL);
+void URL_splitURL(URLPARTS *p, char *s)
+{
+    int n;
+    int i;
+    int br;
+    int at;
+    char c;
+    char c2;
 
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/url", D_00132328);
+    p->scheme = NULL;
+    p->schemeLen = 0;
+    p->host = NULL;
+    p->hostLen = 0;
+    p->port = NULL;
+    p->portLen = 0;
+    p->path = NULL;
+    p->pathLen = 0;
+    p->query = NULL;
+    p->queryLen = 0;
+    p->frag = NULL;
+    p->fragLen = 0;
+    if (s == NULL || *s == '\0')
+        return;
+    for (n = 0; (c = s[n]) != '\0'; n++) {
+        if (c == '.' || c == '/' || c == '#' || c == '?')
+            break;
+        if (c == ':') {
+            p->scheme = s;
+            p->schemeLen = n;
+            s += n + 1;
+            break;
+        }
+    }
+    if (s[0] == '/' && s[1] == '/') {
+        s += 2;
+        if (p->scheme != NULL && p->schemeLen == 4 && strncasecmp(p->scheme, "file", 4) == 0) {
+            for (n = 0; (c = s[n]) != '\0'; n++)
+                if (c == '/')
+                    break;
+            if (n != 0) {
+                p->host = s;
+                p->hostLen = n;
+            } else {
+                p->host = "";
+                p->hostLen = 0;
+            }
+            s += n;
+        } else {
+            br = 0;
+            if (*s == '[')
+                br = '[';
+            for (n = 0; (c = s[n]) != '\0'; n++) {
+                if (br) {
+                    if (c == ']')
+                        br = 0;
+                } else if (c == '/' || c == ':' || c == '#' || c == '?') {
+                    if (c != ':')
+                        break;
+                    at = 0;
+                    for (i = n + 1; (c2 = s[i]) != '\0'; i++) {
+                        if (c2 == '/' || c2 == ':' || c2 == '#' || c2 == '?')
+                            break;
+                        if (c2 == '@')
+                            at = 1;
+                    }
+                    if (!at)
+                        break;
+                }
+            }
+            p->host = s;
+            p->hostLen = n;
+            s += n;
+            if (n != 0 && *s == ':') {
+                s++;
+                for (n = 0; (c = s[n]) != '\0'; n++)
+                    if (c < '0' || c > '9')
+                        break;
+                if (n != 0) {
+                    p->port = s;
+                    p->portLen = n;
+                    s += n;
+                }
+            }
+        }
+    }
+    for (n = 0; (c = s[n]) != '\0'; n++)
+        if (c == '#' || c == '?')
+            break;
+    if (n != 0) {
+        p->path = s;
+        p->pathLen = n;
+        s += n;
+    }
+    if (c == '?') {
+        for (n = 0; (c = s[n]) != '\0'; n++)
+            if (c == '#')
+                break;
+        if (n != 0) {
+            p->query = s;
+            p->queryLen = n;
+            s += n;
+        }
+    }
+    n = strlen(s);
+    if (n > 0) {
+        p->frag = s;
+        p->fragLen = n;
+    }
+}
 
 char *strchr(const char *s, int c);
 int sprintf(char *buf, const char *fmt, ...);
