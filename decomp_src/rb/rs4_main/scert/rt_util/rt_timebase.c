@@ -49,7 +49,19 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_timebase", rt_tim
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_timebase", rt_timebase_get_percentiledelay);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_timebase", rt_timebase_is_query_ready);
+extern unsigned int g_timebase_check_interval;
+int rt_time_platform_fast_elapsed_msecs();
+void rt_timebase_is_query_ready(int *ready)
+{
+    unsigned int el;
+
+    *ready = 0;
+    rt_time_platform_fast_elapsed_msecs(&gLastQueryTimeStamp, &el);
+    if (el >= g_timebase_check_interval) {
+        *ready = 1;
+        rt_time_start(&gLastQueryTimeStamp);
+    }
+}
 
 extern int gbQueryRecordInitialized;
 
