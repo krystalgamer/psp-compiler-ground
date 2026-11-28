@@ -75,13 +75,134 @@ INCLUDE_ASM("tmp/asm/rb/pal_videocodec/nonmatchings/videocodec", sceVideocodecDe
 
 INCLUDE_ASM("tmp/asm/rb/pal_videocodec/nonmatchings/videocodec", sceVideocodecStop);
 
-INCLUDE_ASM("tmp/asm/rb/pal_videocodec/nonmatchings/videocodec", sceVideocodecDelete);
+int sceVideocodecDelete(VideocodecCtx *ctx, unsigned int type)
+{
+	int ret;
+	unsigned int size;
+	unsigned int oldk1;
 
-INCLUDE_ASM("tmp/asm/rb/pal_videocodec/nonmatchings/videocodec", sceVideocodecSetMemory);
+	K1_SAVE(oldk1);
+	ret = func_00000AE0(ctx, type) != 0;
+	if (ret != 0)
+		goto end;
+	ret = 0x806201FE;
+	if (type >= 3)
+		goto end;
+	size = 0;
+	if (type == 0)
+		size = 0x28;
+	else if (type < 3)
+		size = 0x100;
+	if (size)
+		sceKernelDcacheWritebackInvalidateRange((void *)ctx->unk10, size);
+	ret = sceMeVideo_driver_E67F4E0A(type, ctx);
+	switch (ret) {
+	case 0:
+		ret = 0;
+		break;
+	case -1:
+		ret = 0x806201FE;
+		break;
+	case -2:
+		ret = 0x80620002;
+		break;
+	case -3:
+		ret = 0x80628001;
+		break;
+	case -4:
+		ret = 0x80628002;
+		break;
+	default:
+		ret = 0x80628002;
+		break;
+	}
+end:
+	K1_RESTORE(oldk1);
+	return ret;
+}
+
+int sceVideocodecSetMemory(VideocodecCtx *ctx, unsigned int type)
+{
+	int ret;
+	int r;
+	unsigned int oldk1;
+
+	K1_SAVE(oldk1);
+	ret = func_00000AE0(ctx, type);
+	if (ret != 0) {
+		ret = 0x80000023;
+		goto end;
+	}
+	ret = 0x806201FE;
+	if (type == 0) {
+		sceKernelDcacheWritebackInvalidateRange((void *)ctx->unk10, 0x28);
+		ret = sceMeVideo_driver_1C6A60E1(0, 1, ctx);
+		switch (ret) {
+		case 0:
+			ret = 0;
+			break;
+		case -1:
+			ret = 0x806201FE;
+			break;
+		case -2:
+			ret = 0x80620002;
+			break;
+		case -3:
+			ret = 0x80628001;
+			break;
+		case -4:
+			ret = 0x80628002;
+			break;
+		default:
+			ret = 0x80628002;
+			break;
+		}
+	}
+end:
+	K1_RESTORE(oldk1);
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/rb/pal_videocodec/nonmatchings/videocodec", sceVideocodecScanHeader);
 
-INCLUDE_ASM("tmp/asm/rb/pal_videocodec/nonmatchings/videocodec", sceVideocodecGetVersion);
+int sceVideocodecGetVersion(VideocodecCtx *ctx, unsigned int type)
+{
+	int ret;
+	unsigned int oldk1;
+
+	K1_SAVE(oldk1);
+	if (!k1StaBufOk(ctx, 0x54)) {
+		ret = 0x80000023;
+		goto end;
+	}
+	ret = 0x806201FE;
+	if (type < 3) {
+		ret = sceMeVideo_driver_1C6A60E1(type, 3, ctx);
+		switch (ret) {
+		case 0:
+			ret = 0;
+			break;
+		case -1:
+			ret = 0x806201FE;
+			break;
+		case -2:
+			ret = 0x80620002;
+			break;
+		case -3:
+			ret = 0x80628001;
+			break;
+		case -4:
+			ret = 0x80628002;
+			break;
+		default:
+			ret = 0x80628002;
+			break;
+		}
+	}
+end:
+	K1_RESTORE(oldk1);
+	return ret;
+}
 
 int module_start(void)
 {
@@ -147,7 +268,39 @@ int func_00000B48(VideocodecCtx *ctx, unsigned int type)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/pal_videocodec/nonmatchings/videocodec", func_00000C18);
+int func_00000C18(VideocodecCtx *ctx, unsigned int type)
+{
+	unsigned int size;
+
+	if (!k1StaBufOk(ctx, 0x54) || !k1DynBufOk(ctx->unkC, 0) || !k1DynBufOk(ctx->unk14, ctx->unk18) || !k1DynBufOk(ctx->unk1C, ctx->unk20) || !k1DynBufOk(ctx->unk24, ctx->unk28))
+		return 0x80000023;
+	switch (type) {
+	case 0:
+		size = 0x28;
+		break;
+	case 1:
+	case 2:
+		size = 0x100;
+		break;
+	default:
+		return 0x806201FE;
+	}
+	if (!k1StaBufOk((void *)ctx->unk10, size))
+		return 0x80000023;
+	switch (type) {
+	case 0:
+		if (!k1DynBufOk(ctx->unk2C, ctx->unk3C * 0x2C) || !k1StaBufOk((void *)ctx->unk30, 0x64))
+			return 0x80000023;
+		if (ctx->unk38 != 0 && !k1DynBufOk(ctx->unk38, ctx->unk3C * 0x148))
+			return 0x80000023;
+		return 0;
+	case 1:
+	case 2:
+		return 0;
+	default:
+		return 0x806201FE;
+	}
+}
 
 void func_00000DE4(VideocodecCtx *ctx, unsigned int type)
 {
@@ -161,4 +314,36 @@ void func_00000DE4(VideocodecCtx *ctx, unsigned int type)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/rb/pal_videocodec/nonmatchings/videocodec", func_00000E7C);
+int func_00000E7C(VideocodecCtx *ctx, unsigned int type)
+{
+	unsigned int size;
+
+	if (!k1StaBufOk(ctx, 0x54) || !k1DynBufOk(ctx->unkC, 0))
+		return 0x80000023;
+	/* size is unused here (as in func_00000C18's copy), but its switch is what
+	   leaves the original's second, redundant set of type tests */
+	switch (type) {
+	case 0:
+		size = 0x28;
+		break;
+	case 1:
+	case 2:
+		size = 0x100;
+		break;
+	default:
+		return 0x806201FE;
+	}
+	switch (type) {
+	case 0:
+		if (!k1DynBufOk(ctx->unk2C, ctx->unk3C * 0x2C) || !k1StaBufOk((void *)ctx->unk30, 0x64))
+			return 0x80000023;
+		if (ctx->unk38 != 0 && !k1DynBufOk(ctx->unk38, ctx->unk3C * 0x148))
+			return 0x80000023;
+		return 0;
+	case 1:
+	case 2:
+		return 0;
+	default:
+		return 0x806201FE;
+	}
+}
