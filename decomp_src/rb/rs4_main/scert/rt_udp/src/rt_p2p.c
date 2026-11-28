@@ -1187,9 +1187,51 @@ int rt_p2p_timeout_backlog_connection(int *p)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_generate_grid_fill_empties);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_generate_grid_add_peer);
+int rt_p2p_generate_grid_fill_empties();
+int rt_p2p_generate_grid_add_peer(char *p, signed char idx)
+{
+    signed char cnt;
+    signed char nb[2];
+    signed char *rows[2];
+    int r, j, k, m, n;
 
-int rt_p2p_generate_grid_add_peer();
+    cnt = 0;
+    r = rt_p2p_generate_grid_fill_empties(p, idx, &cnt);
+    if (r != 0) return r;
+    if (cnt < 2 && idx > 0) {
+        if (idx % 2 == 0) {
+            nb[0] = idx / 2;
+            nb[1] = idx / 4;
+        } else {
+            nb[1] = idx / 5;
+            nb[0] = idx / 3;
+        }
+        rows[0] = *(signed char **)(p + 0x198) + nb[0] * 3;
+        rows[1] = *(signed char **)(p + 0x198) + nb[1] * 3;
+        n = cnt;
+        for (j = 0; n < 2 && j < 2; j++) {
+            for (k = 0; k < 3; k++) {
+                if (rows[j][k] != -1) {
+                    signed char *o = *(signed char **)(p + 0x198) + rows[j][k];
+                    for (m = 0; m < 3; m++) {
+                        if (o[m] == nb[j]) {
+                            o[m] = -1;
+                            break;
+                        }
+                    }
+                    rows[j][k] = -1;
+                    n++;
+                    break;
+                }
+            }
+        }
+        r = rt_p2p_generate_grid_fill_empties(p, idx, &cnt);
+        if (r != 0) return r;
+    }
+    return 0;
+}
+
+int rt_p2p_generate_grid_add_peer(char *, signed char);
 int rt_p2p_generate_grid(char *p, unsigned int n)
 {
     unsigned int i;
