@@ -25,11 +25,43 @@ int NetSetDefaultBitMask(void *arg0) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeList", NetBitMaskIsSet);
+typedef struct { unsigned int bits[8]; int base; int end; } DmeBitMask;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeList", NetBitMaskSet);
+int NetBitMaskIsSet(DmeBitMask *m, int i, int *set)
+{
+    int ret = 0x17;
+    unsigned int b;
+    if (m != NULL && i >= m->base && i < m->end) {
+        b = i - m->base;
+        *set = (m->bits[b >> 5] & (1 << (b & 0x1F))) != 0;
+        ret = 0;
+    }
+    return ret;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeList", NetBitMaskUnSet);
+int NetBitMaskSet(DmeBitMask *m, int i)
+{
+    int ret = 0x17;
+    unsigned int b;
+    if (m != NULL && i >= m->base && i < m->end) {
+        b = i - m->base;
+        m->bits[b >> 5] |= 1 << (b & 0x1F);
+        ret = 0;
+    }
+    return ret;
+}
+
+int NetBitMaskUnSet(DmeBitMask *m, int i)
+{
+    int ret = 0x17;
+    unsigned int b;
+    if (m != NULL && i >= m->base && i < m->end) {
+        b = i - m->base;
+        m->bits[b >> 5] &= ~(1 << (b & 0x1F));
+        ret = 0;
+    }
+    return ret;
+}
 
 typedef struct { unsigned int bits[8]; int base; int end; } DmeBitMaskL;
 typedef struct { int max; DmeBitMaskL mask; } DmeClientList;
