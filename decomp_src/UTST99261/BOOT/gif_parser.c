@@ -459,7 +459,32 @@ out:
     return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gif_parser", storePixelInterlace);
+int storePixelInterlace(GIFP *ctx, int c, int lines) {
+    int hit;
+
+    hit = 0;
+    if (ctx->rows[ctx->rowIdx + 1] == ctx->line) {
+        hit = 1;
+        CURIMG(ctx)->buf[ctx->x * 3 + ctx->offset] = ctx->pal[c * 3];
+        CURIMG(ctx)->buf[ctx->x * 3 + ctx->offset + 1] = ctx->pal[c * 3 + 1];
+        CURIMG(ctx)->buf[ctx->x * 3 + ctx->offset + 2] = ctx->pal[c * 3 + 2];
+    }
+    ctx->x++;
+    if (ctx->x != CURIMG(ctx)->width) {
+        return 1;
+    }
+    ctx->x = 0;
+    ctx->line += ctx->step;
+    if (hit != 1) {
+        return 1;
+    }
+    ctx->rowIdx += 2;
+    if (ctx->rowIdx >= lines * 2) {
+        return 1;
+    }
+    ctx->offset = ctx->rows[ctx->rowIdx] * CURIMG(ctx)->width * 3;
+    return 1;
+}
 
 int getGifScanLinesInterlace(GIFP *ctx, int lines) {
     int n;
