@@ -1,24 +1,18 @@
 /* lang: c++ */
 /* cflags: -Os -fno-strength-reduce -fno-merge-constants -fno-exceptions */
-/* #pragma interface: the vtables and typeinfo stay in the module's asm .rodata */
-#pragma interface "rodata"
 #include "common.h"
 
 extern "C" void *_memAllocMBL(unsigned int size, const char *file, int line);
 extern "C" void _memFree(void *p, const char *file, int line);
 
-extern "C" {
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_fx_fade_task_cif", D_00104CA8);
-}
-extern "C" const char D_00104CA8[];
 
 struct Task;
 
 namespace Ys {
 class Object {
 public:
-	static void *operator new(unsigned int size) { return _memAllocMBL(size, D_00104CA8, 23); }
-	static void operator delete(void *p) { _memFree(p, D_00104CA8, 25); }
+	static void *operator new(unsigned int size) { return _memAllocMBL(size, "src/ys/ys_object.h", 23); }
+	static void operator delete(void *p) { _memFree(p, "src/ys/ys_object.h", 25); }
 };
 
 class Task : public Object {
@@ -26,6 +20,11 @@ class Task : public Object {
 public:
 	virtual ~Task();
 	virtual void Receive_InitMessage(::Task *t, void *p, unsigned int n);
+	virtual void Receive_KillMessage(::Task *t, void *p, unsigned int n);
+	virtual void Receive_FreeMessage(::Task *t, void *p, unsigned int n);
+	virtual void Receive_RunMessage(::Task *t, void *p, unsigned int n);
+	virtual void Receive_DrawMessage(::Task *t, void *p, unsigned int n);
+	virtual void Receive_KillChildMessage(::Task *t, ::Task *c, unsigned int n);
 };
 
 namespace Effect {
@@ -44,6 +43,8 @@ public:
 	Fade fade;
 	unsigned char kill;
 	FadeTask *Init(int prio, float time, unsigned char r, unsigned char g, unsigned char b);
+	virtual void Receive_RunMessage(::Task *t, void *p, unsigned int n);
+	virtual void Receive_DrawMessage(::Task *t, void *p, unsigned int n);
 };
 
 class BlackFadeTask : public FadeTask {
@@ -174,16 +175,4 @@ void YsFx__WhiteFadeTask__Start_FadeOut(WhiteFadeTask *t, bool in, bool kill)
 	t->kill = kill;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_fx_fade_task_cif", _ZN2Ys6Effect13BlackFadeTaskD0Ev);
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_fx_fade_task_cif", _ZN2Ys6Effect13BlackFadeTaskD1Ev);
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_fx_fade_task_cif", _ZN2Ys6Effect13WhiteFadeTaskD0Ev);
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_fx_fade_task_cif", _ZN2Ys6Effect13WhiteFadeTaskD1Ev);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_fx_fade_task_cif", _ZTVN2Ys6Effect13WhiteFadeTaskE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_fx_fade_task_cif", D_00104CD0);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_fx_fade_task_cif", _ZTVN2Ys6Effect13BlackFadeTaskE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_fx_fade_task_cif", D_00104CF8);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_fx_fade_task_cif", _ZTIN2Ys6Effect13BlackFadeTaskE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_fx_fade_task_cif", _ZTIN2Ys6Effect13WhiteFadeTaskE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_fx_fade_task_cif", _ZTSN2Ys6Effect13WhiteFadeTaskE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_fx_fade_task_cif", _ZTSN2Ys6Effect13BlackFadeTaskE);
 }

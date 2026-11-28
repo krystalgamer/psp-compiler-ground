@@ -1,22 +1,19 @@
 /* lang: c++ */
 /* cflags: -Os -fno-strength-reduce -fno-merge-constants -fno-exceptions */
-/* #pragma interface: the vtables, typeinfo and implicit destructors stay in the module's asm */
-#pragma interface "rodata"
 #include "common.h"
 
 extern "C" void *_memAllocMBL(unsigned int size, const char *file, int line);
 extern "C" void _memFree(void *p, const char *file, int line);
 extern "C" void *memset(void *, int, unsigned long);
 extern "C" void *memcpy(void *, const void *, unsigned long);
-extern "C" const char D_00106870[];
 
 namespace Ys {
 class Object {
 public:
-	static void *operator new(unsigned int size) { return _memAllocMBL(size, D_00106870, 23); }
-	static void operator delete(void *p) { _memFree(p, D_00106870, 25); }
-	static void *operator new[](unsigned int size) { return _memAllocMBL(size, D_00106870, 32); }
-	static void operator delete[](void *p) { if (p) _memFree(p, D_00106870, 34); }
+	static void *operator new(unsigned int size) { return _memAllocMBL(size, "src/ys/ys_object.h", 23); }
+	static void operator delete(void *p) { _memFree(p, "src/ys/ys_object.h", 25); }
+	static void *operator new[](unsigned int size) { return _memAllocMBL(size, "src/ys/ys_object.h", 32); }
+	static void operator delete[](void *p) { if (p) _memFree(p, "src/ys/ys_object.h", 34); }
 };
 }
 
@@ -280,69 +277,4 @@ void LobbyByeMessage::Run(Lobby &l)
 }
 
 extern "C" {
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net17LobbyHelloMessageD1Ev);
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net17LobbyHelloMessageD0Ev);
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net19LobbyRequestMessageD1Ev);
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net19LobbyRequestMessageD0Ev);
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net17LobbyLeaveMessageD1Ev);
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net17LobbyLeaveMessageD0Ev);
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net16LobbyDenyMessageD1Ev);
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net16LobbyDenyMessageD0Ev);
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net18LobbyCancelMessageD1Ev);
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net18LobbyCancelMessageD0Ev);
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net18LobbyAcceptMessageD1Ev);
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net18LobbyAcceptMessageD0Ev);
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net21LobbyEstablishMessageD1Ev);
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net21LobbyEstablishMessageD0Ev);
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net19LobbyTimeoutMessageD1Ev);
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net19LobbyTimeoutMessageD0Ev);
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net17LobbyErrorMessageD1Ev);
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net17LobbyErrorMessageD0Ev);
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net15LobbyByeMessageD1Ev);
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net15LobbyByeMessageD0Ev);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", D_00106870);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTVN3Net15LobbyByeMessageE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", D_00106890);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTVN3Net17LobbyErrorMessageE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", D_001068A8);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTVN3Net19LobbyTimeoutMessageE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", D_001068C0);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTVN3Net21LobbyEstablishMessageE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", D_001068D8);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTVN3Net18LobbyAcceptMessageE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", D_001068F0);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTVN3Net18LobbyCancelMessageE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", D_00106908);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTVN3Net16LobbyDenyMessageE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", D_00106920);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTVN3Net17LobbyLeaveMessageE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", D_00106938);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTVN3Net19LobbyRequestMessageE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", D_00106950);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTVN3Net17LobbyHelloMessageE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", D_00106968);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTVN3Net12LobbyMessageE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", D_00106980);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTIN3Net12LobbyMessageE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTIN3Net17LobbyHelloMessageE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTIN3Net19LobbyRequestMessageE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTIN3Net17LobbyLeaveMessageE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTIN3Net16LobbyDenyMessageE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTIN3Net18LobbyCancelMessageE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTIN3Net18LobbyAcceptMessageE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTIN3Net21LobbyEstablishMessageE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTIN3Net19LobbyTimeoutMessageE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTIN3Net17LobbyErrorMessageE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTIN3Net15LobbyByeMessageE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTSN3Net15LobbyByeMessageE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTSN3Net17LobbyErrorMessageE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTSN3Net19LobbyTimeoutMessageE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTSN3Net21LobbyEstablishMessageE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTSN3Net18LobbyAcceptMessageE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTSN3Net18LobbyCancelMessageE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTSN3Net16LobbyDenyMessageE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTSN3Net17LobbyLeaveMessageE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTSN3Net19LobbyRequestMessageE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTSN3Net17LobbyHelloMessageE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTSN3Net12LobbyMessageE);
 }
