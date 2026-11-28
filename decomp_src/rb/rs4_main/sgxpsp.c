@@ -159,7 +159,14 @@ void SuspendThread(int arg0, int arg1) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", sgxPspSuspendThreadAll);
+void sgxPspSuspendThreadAll(int suspend)
+{
+    int i;
+    for (i = 0; i < gWork_1207F0[0x60 / 4]; i++)
+        SuspendThread(*(int *)(GW + 0x1C + i * 0x28), suspend);
+    for (i = 0; i < gWork_1207F0[0x450 / 4]; i++)
+        SuspendThread(*(int *)(gWork_1207F0[0x44C / 4] + i * 0x60B0 + 0x10), suspend);
+}
 
 int sgxPspEnumThreadID(int *out)
 {
@@ -228,7 +235,21 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", SasFlush);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", At3AllocAtracID);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", At3FreeAtracID);
+int sceAtracReleaseAtracID(int);
+void At3FreeAtracID(signed char *s)
+{
+    if (s[0x30] >= 0) {
+        sceAtracReleaseAtracID(s[0x30]);
+        sceKernelDelayThread(10000);
+        s[0x30] = -1;
+        sceKernelWaitSema(gWork_1207F0[0x448 / 4], 1, NULL);
+        switch (*(short *)(s + 0x2C)) {
+        case 0x1000: (*(volatile int *)&gWork_1207F0[0x458 / 4])--; break;
+        case 0x1001: (*(volatile int *)&gWork_1207F0[0x454 / 4])--; break;
+        }
+        sceKernelSignalSema(gWork_1207F0[0x448 / 4], 1);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", At3Init);
 
@@ -337,7 +358,15 @@ void At3Stop(int id) {
     if (p != NULL) p[0x36] = 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", At3StopAll);
+void At3Stop(int);
+void At3StopAll(void)
+{
+    int i;
+    for (i = 0; i < gWork_1207F0[0x450 / 4]; i++) {
+        char *p = At3GetSlot(i, 0);
+        if (p) At3Stop(i);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", At3SetVolume);
 
@@ -351,7 +380,20 @@ void At3Pause(int id, int v) {
     if (p != NULL) p[0x37] = v;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", At3GetStatus);
+int At3GetStatus(int id)
+{
+    char *p = At3GetSlot(id, 0);
+    int st;
+    if (p == NULL) return 0;
+    st = 0;
+    if (((unsigned char *)p)[0x34] && !((unsigned char *)p)[0x36]) {
+        st = 1; if (p[0x35]) st = 3;
+        if (p[0x37]) st |= 4;
+        if (p[0x38] && !p[0x35]) st |= 0x10;
+        if (p[0x39]) st |= 0x20;
+    }
+    return st;
+}
 
 long long At3GetPlaySamples(int id) {
     char *p = At3GetSlot(id, 0);
@@ -560,8 +602,45 @@ int sgxPspAt3GetLocalID(int id) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", sgxEffSetType);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", sgxEffSetDepth);
+void sgxEffSetDepth(int ch, int l, int r)
+{
+    int a = CLAMP(l, 0, 128);
+    int b = CLAMP(r, 0, 128);
+    gWork_1207F0[0x46C / 4] = a << 5;
+    gWork_1207F0[0x470 / 4] = b << 5;
+    sceSasSetEffectVolume(a << 5, b << 5);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", sgxEffSetParam);
+void sgxEffSetParam(int ch, int which, int v)
+{
+    int a;
+    switch (which) {
+    case 0: a = CLAMP(v, 0, 127); gWork_1207F0[0x474 / 4] = a; break;
+    case 1: a = CLAMP(v, 0, 127); gWork_1207F0[0x478 / 4] = a; break;
+    default: return;
+    }
+    sceSasSetEffectParam(gWork_1207F0[0x474 / 4], gWork_1207F0[0x478 / 4]);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", sgxSin12);
+extern short gaSgxSin90Tbl[];
+int sgxSin12(int a)
+{
+    int i, f, y0, y1;
+    a &= 0xFFF;
+    i = a >> 3;
+    f = a & 7;
+    if (a < 0x400) {
+        y0 = gaSgxSin90Tbl[i];
+        y1 = gaSgxSin90Tbl[i + 1];
+    } else if (a < 0x800) {
+        y0 = gaSgxSin90Tbl[0x100 - i];
+        y1 = gaSgxSin90Tbl[0xFF - i];
+    } else if (a < 0xC00) {
+        y0 = -gaSgxSin90Tbl[i - 0x100];
+        y1 = -gaSgxSin90Tbl[i - 0xFF];
+    } else {
+        y0 = -gaSgxSin90Tbl[0x200 - i];
+        y1 = -gaSgxSin90Tbl[0x1FF - i];
+    }
+    return y0 + (((y1 - y0) * f) >> 3);
+}
