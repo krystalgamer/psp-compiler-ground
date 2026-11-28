@@ -227,26 +227,17 @@ void ASC_SetString(const char *s, int x, int y);
 void classic_inv_name_entry_cur(int x, int y);
 void classic_inv_name_entry_cur_erase(int x, int y);
 void spr_boxfill(unsigned char *buf, int x, int y, int w, int h, int col);
-const char D_0007CAF8[27] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ.";
-const char D_0007CB14[] = "HI-SCORER REGISTRATION";
-const char D_0007CB2C[] = "A B C D E F G H I J K";
-const char D_0007CB44[] = "L M N O P Q R S T U V";
-const char D_0007CB5C[] = "W X Y Z . ";
-extern char D_0007CB68[];
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_menu", D_0007CB68);
-
 int inv_classic_name_entry(int no, unsigned char *buf)
 {
-	char tbl[27];
+	char tbl[27] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ.";
 	int ret;
 
-	__builtin_memcpy(tbl, D_0007CAF8, 27);
 	ret = 0;
 	spr_boxfill(buf, 0x48, 0xD0, 0x80, 0x10, 0);
-	ASC_SetString(D_0007CB14, 0x18, 0x40);
-	ASC_SetString(D_0007CB2C, 0x18, 0x68);
-	ASC_SetString(D_0007CB44, 0x18, 0x78);
-	ASC_SetString(D_0007CB5C, 0x18, 0x88);
+	ASC_SetString("HI-SCORER REGISTRATION", 0x18, 0x40);
+	ASC_SetString("A B C D E F G H I J K", 0x18, 0x68);
+	ASC_SetString("L M N O P Q R S T U V", 0x18, 0x78);
+	ASC_SetString("W X Y Z . ", 0x18, 0x88);
 	if (pad_sw() & 0x100010) {
 		classic_inv_name_entry_cur_erase(nx, ny);
 		ny -= 16;
@@ -345,7 +336,7 @@ int inv_classic_name_entry(int no, unsigned char *buf)
 			nnanm = 1;
 	}
 	if (nnanm != 0)
-		ASC_SetString(D_0007CB68, 0x18, 0xC8);
+		ASC_SetString("NAME '~~~~~~~~'", 0x18, 0xC8);
 	else {
 		switch (nret) {
 		case 0: ASC_SetString("NAME ' ~~~~~~~'", 0x18, 0xC8); break;
@@ -363,4 +354,34 @@ int inv_classic_name_entry(int no, unsigned char *buf)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_menu", inv_classic_name_entry2);
+void ASC_SetString(const char *s, int x, int y);
+void classic_inv_name_entry_cur(int x, int y);
+void classic_inv_name_entry_cur_erase(int x, int y);
+void spr_boxfill(unsigned char *buf, int x, int y, int w, int h, int col);
+int inv_classic_name_entry2(int arg0, unsigned char *buf)
+{
+	ASC_SetString("REGISTRATION OK?", 0x48, 0xD0);
+	ASC_SetString("YES / NO", 0x48, 0xD8);
+	ASC_SetString("NAME '~~~~~~~~'", 0x18, 0xC8);
+	if (pad_sw() & 0x400080) {
+		nc = 0;
+		classic_inv_name_entry_cur_erase(0x78, 0xE0);
+		classic_inv_name_entry_cur(0x48, 0xE0);
+	} else if (pad_sw() & 0x800020) {
+		nc = 1;
+		classic_inv_name_entry_cur_erase(0x48, 0xE0);
+		classic_inv_name_entry_cur(0x78, 0xE0);
+	} else if (pad_sw() & pad_ret_button()) {
+		if (nc == 0)
+			return 1;
+		classic_inv_name_entry_cur_erase(0x48, 0xE0);
+		classic_inv_name_entry_cur_erase(0x78, 0xE0);
+		if (nret != 0) {
+			Name[nret] = 0;
+			spr_boxfill(buf, nret * 8 + 0x48, 0xC0, 8, 8, 0);
+			nret--;
+		}
+		return 2;
+	}
+	return 0;
+}
