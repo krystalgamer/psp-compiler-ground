@@ -335,7 +335,31 @@ void CmdCtrlID(char *port, int *cmd)
     }
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", CmdCtrlMidi);
+void CmdCtrlMidi(char *port, int *cmd)
+{
+	int ch = cmd[1];
+	unsigned int type = cmd[2];
+	int val = cmd[3];
+	switch (type) {
+	case 0:
+		val = val < 0 ? 0 : (val > 3 ? 3 : val);
+		break;
+	case 1:
+		val = val < 0 ? 0 : val;
+		break;
+	case 2:
+	case 3:
+	case 4:
+		*(int *)(port + 0x98) |= 1 << ch;
+		if (val == 127) val = 128;
+		break;
+	case 5:
+		*(int *)(port + 0x9C) |= 1 << ch;
+		if (val == 127) val = 128;
+		break;
+	}
+	((unsigned char *)((MidiChX *)(port + 0x38) + ch))[type] = val;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
