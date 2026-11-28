@@ -126,7 +126,49 @@ int func_000050F8(struct adhoc_socket *so, int events)
 	return revents;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc/nonmatchings/ptp", sceNetAdhocGetPtpStat);
+int sceNetAdhocGetPtpStat(int *buflen, void *buf)
+{
+	struct ptpcb *pcb;
+	struct SceNetAdhocPtpStat *st, *prev;
+	int s;
+	int ret;
+	int len;
+
+	ret = 0;
+	prev = NULL;
+	len = 0;
+	if (buflen == NULL)
+		return 0x80410711;
+	s = _sce_pspnet_spllock();
+	if (D_00007400 == 0) {
+		ret = 0x80410712;
+		goto out;
+	}
+	for (pcb = D_00007430.tqh_first; pcb != NULL; pcb = pcb->link.tqe_next) {
+		if (buf != NULL) {
+			if (*buflen < len + sizeof(*st))
+				break;
+			st = (struct SceNetAdhocPtpStat *)((char *)buf + len);
+			st->next = NULL;
+			st->id = pcb->so->id;
+			st->laddr = pcb->laddr;
+			st->paddr = pcb->faddr;
+			st->lport = pcb->lport;
+			st->pport = pcb->fport;
+			st->snd_sb_cc = pcb->snd.sb_cc;
+			st->rcv_sb_cc = pcb->rcv.sb_cc;
+			st->state = pcb->state;
+			if (prev != NULL)
+				prev->next = st;
+			prev = st;
+		}
+		len += sizeof(*st);
+	}
+out:
+	_sce_pspnet_splunlock(s);
+	*buflen = len;
+	return ret;
+}
 
 int func_00005374(void)
 {
