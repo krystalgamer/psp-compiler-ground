@@ -124,8 +124,9 @@ bss 0x18EB6C main_objs/math_SphericalCoord
 bss 0x18EBEC main_objs/math_ZYZ
 bss 0x18EC6C main_objs/math_basic_net_basic_net
 bss 0x190E44 main_objs/math_TransformStackFunc
-# draw_mesh_enabled: vector<short>::reserve()'s "vector::reserve" (after PrimitiveIndex's strings)
-rodata 0x16C908 main_objs/draw_mesh_enabled
+# draw_mesh_enabled: whole .rodata (the static init's float pool, the asm functions' strings, the instances' strings,
+# vector<short>::reserve()'s "vector::reserve")
+rodata 0x16C430 main_objs/draw_mesh_enabled
 rodata 0x16C918 -
 # sgl_MeshBuilder_extruded_var_extruded_var: the float pools up to grid()'s (t_array<Position>() stays asm, its pool
 # and allocate()'s stay data: SGL_POSITION_ONE)
@@ -530,7 +531,8 @@ bss 0x18F8BC main_objs/scene_Mesh
 rodata 0x16BD78 main_objs/scene_MeshData
 rodata 0x16BD94 -
 bss 0x18F9C0 main_objs/scene_MeshData
-bss 0x18FAC4 -
+# draw_mesh_enabled: the header statics
+bss 0x18FAC4 main_objs/draw_mesh_enabled
 rodata 0x16DFE8 main_objs/sgl_LineSet_Line_Vertex
 rodata 0x16E030 -
 bss 0x190524 main_objs/sgl_LineSet_Line_Vertex

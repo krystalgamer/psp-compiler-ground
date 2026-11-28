@@ -2,11 +2,26 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
+#define DEMO_STATICS_SGL
+/* the instances' own assert strings are literals (the unit's .rodata is carved); the shared " *** error " / " "
+   belong to operator= (asm) */
+#define SGL_PI_ASSERT(c, text, fn, line) \
+    SGL_ASSERT(c, PrimitiveIndexNames<T>::err, DME_##text, "../lib/sgl/PrimitiveIndex.h", __PRETTY_FUNCTION__, line, \
+               PrimitiveIndexNames<T>::sep)
+#define DME_val_ge_0 "val >= 0"
+#define DME_retval_size "_Retval.size() == num_vertices"
+#define DME_tri_size "3 * ( _triangles.size() / 3 ) == _triangles.size()"
+#define DME_count_n "count == _num_strips"
 #define SGL_TEMPLATE_DEFS 1
 #define DEMO_TEMPLATE_DEFS 1
 #include "../main.hpp"
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/draw_mesh_enabled", _Z41__static_initialization_and_destruction_0ii_8D9CC);
+/* the module's .ctors/.dtors refer to the static constructor/destructor, keyed to the .data variable draw_mesh_enabled
+   (asm); cc1plus keys ours to the deferred-asm wrapper of the first function */
+__asm__(".globl _GLOBAL__I_draw_mesh_enabled\n_GLOBAL__I_draw_mesh_enabled = _GLOBAL__I__ZN5scene19MeshDataInterleavedC2Ev__asm");
+__asm__(".globl _GLOBAL__D_draw_mesh_enabled\n_GLOBAL__D_draw_mesh_enabled = _GLOBAL__D__ZN5scene19MeshDataInterleavedC2Ev__asm");
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/draw_mesh_enabled", _ZN5scene19MeshDataInterleavedC2Ev);
 
@@ -61,46 +76,6 @@ void scene::DrawFuncNonIndex::draw(vertex_formats::T2F_C4UB_N3F_V3F *v, const sg
     }
 }
 
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_8D9CC");
-void _GLOBAL__I_draw_mesh_enabled(void);
-void _GLOBAL__D_draw_mesh_enabled(void);
-}
-
-void _GLOBAL__I_draw_mesh_enabled(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D_draw_mesh_enabled(void)
-{
-    static_init(0, 0xFFFF);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* inline members / instances kept as asm: .gnu.linkonce.t (splat only sees `INCLUDE_ASM(`) */
 #undef INCLUDE_ASM
 #define INCLUDE_ASM INCLUDE_ASM_LINKONCE
@@ -142,20 +117,11 @@ DEMO_LINKONCE_ORDER(DEMO_LINKONCE(_ZN3sgl14PrimitiveIndexIsEC1Ev)
                     DEMO_LINKONCE(_ZN5scene19MeshDataInterleaved10VertexDataD0Ev)
                     DEMO_LINKONCE(_ZN5scene19MeshDataInterleaved10SharedDataD1Ev)
                     DEMO_LINKONCE(_ZN5scene19MeshDataInterleaved10SharedDataD0Ev));
-/* strings of the PrimitiveIndex<short>/<int> instances' asserts */
+/* the shared strings of the PrimitiveIndex<short>/<int> instances' asserts (operator= owns them) */
 template<> const char sgl::PrimitiveIndexNames<short>::err[] __asm__("D_0016C4B8");
 template<> const char sgl::PrimitiveIndexNames<short>::sep[] __asm__("D_0016C4B4");
-template<> const char sgl::PrimitiveIndexNames<short>::file[] __asm__("D_0016C7DC");
-template<> const char sgl::PrimitiveIndexNames<short>::val_ge_0[] __asm__("D_0016C7D0");
-template<> const char sgl::PrimitiveIndexNames<short>::retval_size[] __asm__("D_0016C860");
-template<> const char sgl::PrimitiveIndexNames<short>::assign[] __asm__("_ZZN3sgl14PrimitiveIndexIsEaSIiEERS1_RKNS0_IT_EEE19__PRETTY_FUNCTION__");
-template<> const char sgl::PrimitiveIndexNames<short>::unfold[] __asm__("_ZZN3sgl14PrimitiveIndexIsE6unfoldERSt6vectorIsSaIsEEE19__PRETTY_FUNCTION__");
 template<> const char sgl::PrimitiveIndexNames<int>::err[] __asm__("D_0016C4B8");
 template<> const char sgl::PrimitiveIndexNames<int>::sep[] __asm__("D_0016C4B4");
-template<> const char sgl::PrimitiveIndexNames<int>::file[] __asm__("D_0016C7DC");
-template<> const char sgl::PrimitiveIndexNames<int>::tri_size[] __asm__("D_0016C8BC");
-template<> const char sgl::PrimitiveIndexNames<int>::count_n[] __asm__("D_0016C8F0");
-template<> const char sgl::PrimitiveIndexNames<int>::check[] __asm__("_ZZNK3sgl14PrimitiveIndexIiE5checkEvE19__PRETTY_FUNCTION___16C880");
 
 extern "C" void draw_mesh_enabled_instances(sgl::PrimitiveIndex<short> *s, sgl::PrimitiveIndex<int> *i, std::vector<short> *v, common::handle<scene::MeshDataInterleaved::SharedData> *hs, common::handle<scene::MeshDataInterleaved::VertexData> *hv, std::vector<vertex_formats::T2F_C4UB_N3F_V3F> *va, short n) __attribute__((section(".discard.asm")));
 extern "C" void draw_mesh_enabled_instances(sgl::PrimitiveIndex<short> *s, sgl::PrimitiveIndex<int> *i, std::vector<short> *v, common::handle<scene::MeshDataInterleaved::SharedData> *hs, common::handle<scene::MeshDataInterleaved::VertexData> *hv, std::vector<vertex_formats::T2F_C4UB_N3F_V3F> *va, short n)

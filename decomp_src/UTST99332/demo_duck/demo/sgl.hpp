@@ -184,9 +184,12 @@ template<class T> struct PrimitiveIndexNames {
     static const char err[], sep[], file[];
     static const char val_ge_0[], retval_size[], tri_size[], count_n[];
 };
+/* a unit whose .rodata is carved defines its own SGL_PI_ASSERT (literals for the strings it emits) */
+#ifndef SGL_PI_ASSERT
 #define SGL_PI_ASSERT(c, text, fn, line) \
     SGL_ASSERT(c, PrimitiveIndexNames<T>::err, PrimitiveIndexNames<T>::text, PrimitiveIndexNames<T>::file, \
                PrimitiveIndexNames<T>::fn, line, PrimitiveIndexNames<T>::sep)
+#endif
 #if SGL_TEMPLATE_DEFS
 template<class T> PrimitiveIndex<T>::PrimitiveIndex() : n(0)
 {

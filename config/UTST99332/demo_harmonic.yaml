@@ -465,7 +465,7 @@ segments:
       - [0x168B74, rodata, asm/rodata_168AF4]
       - [0x168ED0, .rodata, main_objs/scene_MeshData]
       - [0x168EEC, rodata, asm/rodata_168E6C]
-      - [0x169A60, .rodata, main_objs/draw_mesh_enabled]
+      - [0x169588, .rodata, main_objs/draw_mesh_enabled]
       - [0x169A70, rodata, asm/rodata_1699F0]
       - [0x169BB8, .rodata, main_objs/scene_Node_2]
       - [0x169C68, rodata, asm/rodata_169BE8]
@@ -708,7 +708,7 @@ segments:
       - { start: 0x189CE4, type: .bss, vram: 0x18C3B8, name: main_objs/scene_Material }
       - { start: 0x189CE4, type: .bss, vram: 0x18C43C, name: main_objs/scene_Mesh }
       - { start: 0x189CE4, type: .bss, vram: 0x18C540, name: main_objs/scene_MeshData }
-      - { start: 0x189CE4, type: bss, vram: 0x18C644, name: bss_18C644 }
+      - { start: 0x189CE4, type: .bss, vram: 0x18C644, name: main_objs/draw_mesh_enabled }
       - { start: 0x189CE4, type: .bss, vram: 0x18C748, name: main_objs/scene_Node_2 }
       - { start: 0x189CE4, type: .bss, vram: 0x18C7D8, name: main_objs/scene_Object }
       - { start: 0x189CE4, type: .bss, vram: 0x18C85C, name: main_objs/scene_Setup }

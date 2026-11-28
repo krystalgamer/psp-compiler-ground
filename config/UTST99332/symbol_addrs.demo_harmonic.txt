@@ -7671,3 +7671,7 @@ D_001738B4 = 0x001738B4; // size:0x8 nosplit function_owner:_ZN8textures7Texture
 D_001738BC = 0x001738BC; // size:0x8 nosplit function_owner:_ZN8textures7Texture4loadEPKc
 D_00173A14 = 0x00173A14; // size:0x4 nosplit function_owner:_ZN8textures7Texture9convert32Ev
 D_00173A18 = 0x00173A18; // size:0x8 nosplit function_owner:_ZN8textures7Texture9convert32Ev
+D_0016958C = 0x0016958C; // size:0x4 nosplit function_owner:_ZN5scene19MeshDataInterleavedaSERKS0_
+D_00169590 = 0x00169590; // size:0xC nosplit function_owner:_ZN5scene19MeshDataInterleavedaSERKS0_
+D_001695B8 = 0x001695B8; // size:0x20 nosplit function_owner:_ZN5scene19MeshDataInterleavedaSERKS0_
+D_00169640 = 0x00169640; // size:0x40 nosplit function_owner:_ZN5scene19MeshDataInterleaved16convert_preserveERKNS_8MeshDataE
