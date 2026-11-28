@@ -83,7 +83,7 @@ int rt_p2p_create(); int rt_p2p_destroy(); int rt_p2p_get_peer_address(int *, un
 
 int rt_p2p_get_buffer_stats(); int rt_p2p_get_peer_buffer_stats();
 int rt_p2p_host(); int rt_p2p_incoming_peer(); int rt_p2p_connect(); void rt_p2p_disconnect();
-int rt_p2p_send(char *, unsigned short, unsigned short, RtP2PVec *); int rt_p2p_send_list();
+int rt_p2p_send(char *, unsigned short, unsigned short, RtP2PVec *); int rt_p2p_send_list(char *, unsigned short, unsigned short, unsigned char *, unsigned short, RtP2PVec *);
 typedef struct { unsigned int ip; unsigned int port; } RtP2PAddr;
 
 int rt_p2p_quit_all_overlays();
@@ -379,7 +379,45 @@ int rt_p2p_send(char *p, unsigned short idx, unsigned short flags, RtP2PVec *v)
     return ret;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_send_list);
+int rt_p2p_send_list(char *p, unsigned short start, unsigned short end, unsigned char *bm, unsigned short flags, RtP2PVec *v)
+{
+    unsigned short hdr;
+    int ret;
+    unsigned short i;
+    RtP2PPeer *peer;
+    unsigned int n = 0;
+    int bc = 0;
+
+    if (p == NULL) return 2;
+    if (bm == NULL) return 2;
+    if (*(unsigned short *)(p + 0x19C) < end) return 2;
+    flags |= 0x8000;
+    hdr = rt_p2p_pack_type(10, (unsigned short)(v->total + 2));
+    if (v->n < 8) {
+        v->e[v->n].buf = &hdr;
+        v->e[v->n].len = 2;
+        v->total += 2;
+        v->n++;
+    }
+    for (i = start; i < end; i++) {
+        if (!((bm[i >> 3] >> (i & 7)) & 1)) continue;
+        peer = (RtP2PPeer *)*(int *)(p + 0x184) + i;
+        if (peer->pad[3] != 0 && !(flags & 0x4000) && *(int *)(p + 0x1BC) != 0)
+            bc = 1;
+        else if ((unsigned int)(peer->a - 3) < 2)
+            (*(RtP2PPeer ***)(p + 0x190))[n++] = peer;
+    }
+    ret = rt_p2p_isend_list(p, *(int ***)(p + 0x190), n, flags, v);
+    if (ret != 0 && ret != 0xD2F3) return ret;
+    ret = 0;
+    if (bc) {
+        ret = rt_udp_broadcast(*(int *)p, flags, v);
+        if (ret != 0) return ret;
+    }
+    v->n--;
+    v->total -= v->e[v->n].len;
+    return ret;
+}
 
 int rt_p2p_isend_list(void *, int **, unsigned int, unsigned short, void *);
 int rt_p2p_receive_broadcasts(char *p, int flag)
