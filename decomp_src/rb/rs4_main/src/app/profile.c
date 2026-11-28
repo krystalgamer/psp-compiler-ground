@@ -50,8 +50,50 @@ int profileGetRankingTtrStr2(char *buf, int n)
 	return 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/profile", profileGetPerOfWins);
+/* STAND-IN: int-to-float with the conversion in place (mtc1 rX,fN; cvt.s.w fN,fN) in all three ratio
+   functions; casts pick a second FPR here.  Maybe Sony's helper is inline asm like the cvt.w.s one
+   (cardlistCpyTtr2Int32); the original spelling is unknown. */
+static inline float profI2F(int i)
+{
+	float f;
+	__asm__ volatile ("cvt.s.w %0, %0" : "=f"(f) : "0"(i));
+	return f;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/profile", profileGetPerOfSuccess);
+float profileGetPerOfWins(void *arg0)
+{
+	int w = M2C_FIELD(arg0, int *, 0x20C);
+	float t = profI2F(w + M2C_FIELD(arg0, int *, 0x210) + M2C_FIELD(arg0, int *, 0x214));
+	if (t == 0.0f)
+		return 0.0f;
+	return profI2F(w) / t;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/profile", profileGetPerOfJanken);
+float profileGetPerOfSuccess(void *arg0)
+{
+	int s = M2C_FIELD(arg0, int *, 0x224);
+	float t = profI2F(s + M2C_FIELD(arg0, int *, 0x228));
+	if (t == 0.0f)
+		return 0.0f;
+	return profI2F(s) / t;
+}
+
+float profileGetPerOfJanken(void *arg0, int k)
+{
+	int v;
+	if (k == 0)
+		v = M2C_FIELD(arg0, int *, 0x218);
+	else
+		v = M2C_FIELD(arg0, int *, 0x21C);
+	if (k == 2)
+		v = M2C_FIELD(arg0, int *, 0x220);
+	{
+		int a = M2C_FIELD(arg0, int *, 0x218);
+		int b = M2C_FIELD(arg0, int *, 0x21C);
+		int c = M2C_FIELD(arg0, int *, 0x220);
+		float t = profI2F(a + b + c);
+		if (t == 0.0f)
+			return 0.0f;
+		return profI2F(v) / t;
+	}
+}
