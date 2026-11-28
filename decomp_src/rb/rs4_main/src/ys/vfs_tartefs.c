@@ -123,7 +123,16 @@ public:
 
 }
 }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_tartefs", _ZN3Vfs5Tarte17FileSystemMounter11Check_ImageEPv); }
+bool Vfs::Tarte::FileSystemMounter::Check_Image(void *image)
+{
+	static const char magic[] = "TarteFileImg";
+	const signed char *p = (const signed char *)image;
+	if (memcmp(p, magic, 13) != 0)
+		return false;
+	if (p[13] != 1 || p[14] != 0)
+		return false;
+	return true;
+}
 namespace Vfs {
 namespace Tarte {
 
