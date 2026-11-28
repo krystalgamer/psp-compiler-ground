@@ -28,6 +28,12 @@ M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
 
 int fio_getfd(FioFile *fp);
 void fio_freeList(void *p);
+void *MEM_calloc(int pool, unsigned int n);
+int sceIoOpen(const char *path, int flags, int mode);
+int strcmp(const char *a, const char *b);
+char *strcpy(char *d, const char *s);
+int OS_thread_mutex_lock(int m);
+int OS_thread_mutex_unlock(int m);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsfileio", UTF8toEUC);
 
 int FIO_init(void)
@@ -74,7 +80,76 @@ int FIO_attach(void) {
     return (gFIOMAN != 0) - 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsfileio", FIO_fopen);
+FioFile *FIO_fopen(char *name, char *mode)
+{
+    char *m;
+    char *path;
+    int flags;
+    int fd;
+    FioFile *fp;
+    FioFile *p;
+    char *nm;
+
+    if (OS_thread_mutex_lock(pFioman->f0) != 0)
+        return NULL;
+    for (p = pFioman->list; p != NULL; p = p->next) {
+        if (strcmp((char *)p->f4, name) == 0) {
+            OS_thread_mutex_unlock(pFioman->f0);
+            return NULL;
+        }
+    }
+    m = UTF8toEUC(mode);
+    if (m == NULL)
+        return NULL;
+    flags = 1;
+    if (m[0] == 'r') {
+        if ((m[1] == 'b' && m[2] == '+') || m[1] == '+')
+            flags = 3;
+    } else if (m[0] == 'w') {
+        flags = 0x602;
+        if ((m[1] == 'b' && m[2] == '+') || m[1] == '+')
+            flags = 0x603;
+    } else {
+        flags = 0x300;
+        if ((m[1] == 'b' && m[2] == '+') || m[1] == '+')
+            flags = 0x303;
+    }
+    MEM_free(0, m);
+    path = UTF8toEUC(name);
+    if (path == NULL)
+        return NULL;
+    fd = sceIoOpen(path, flags, 0);
+    if (fd < 0) {
+        OS_thread_mutex_unlock(pFioman->f0);
+        MEM_free(0, path);
+        return NULL;
+    }
+    MEM_free(0, path);
+    fp = MEM_calloc(0, 0xC);
+    nm = MEM_calloc(0, strlen(name) + 1);
+    if (fp == NULL || nm == NULL) {
+        if (fp != NULL)
+            MEM_free(0, fp);
+        if (nm != NULL)
+            MEM_free(0, nm);
+        sceIoClose(fd);
+        OS_thread_mutex_unlock(pFioman->f0);
+        return NULL;
+    }
+    strcpy(nm, name);
+    fp->f4 = (int)nm;
+    fp->fd = fd;
+    fp->next = NULL;
+    if (pFioman->list == NULL) {
+        pFioman->list = fp;
+    } else {
+        for (p = pFioman->list; p->next != NULL; p = p->next)
+            ;
+        p->next = fp;
+    }
+    OS_thread_mutex_unlock(pFioman->f0);
+    return fp;
+}
 
 int FIO_fclose(FioFile *fp)
 {
