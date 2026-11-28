@@ -111,10 +111,13 @@ rodata 0x104C48 src/ys/ys_fx_fade_task
 rodata 0x104D90 src/ys/ys_info_panel
 rodata 0x104EC8 src/ys/ys_menu_view
 rodata 0x106D08 src/net/network_lobby_state
+rodata 0x1072AC src/net/saru_card_battle_network_game
+rodata 0x107490 src/net/saru_card_battle_network_host
 rodata 0x1079B4 src/net/saru_netlib_host
 rodata 0x107F60 src/net/saru_network_lobby_menu
 rodata 0x108560 src/net/saru_network_task
 rodata 0x108B18 src/net/saru_petit_network_game
+rodata 0x108D50 src/net/saru_petit_network_host
 # ys/net/bx objects without local symbols: placed by class (the STT_FILE link order and the
 # file names in _memAlloc/new calls: ys_card_anim, ys_task, network_lobby_message_queue, ...)
 0x41F08 src_ys_vfs_tartefs 1.9.2           src/ys/vfs_tartefs.cc
@@ -155,7 +158,7 @@ rodata 0x108B18 src/net/saru_petit_network_game
 0x4F468 src_net_network_param 1.9.2           src/net/network_param.cc
 0x4F6C4 src_net_network_system 1.9.2           src/net/network_system.cc
 0x4F988 src_net_saru_card_battle_network_game 1.9.2           src/net/saru_card_battle_network_game.cc
-0x4FC1C src_net_saru_card_battle_network_host 1.9.2           src/net/saru_card_battle_network_host.cc
+0x4FC88 src_net_saru_card_battle_network_host 1.9.2           src/net/saru_card_battle_network_host.cc
 0x4FD04 src_net_saru_card_battle_network_player 1.9.2           src/net/saru_card_battle_network_player.cc
 0x500C8 src_net_saru_card_battle_network_task 1.9.2           src/net/saru_card_battle_network_task.cc
 0x50488 src_net_saru_card_battle_network_task_cif 1.9.2           src/net/saru_card_battle_network_task_cif.cc
@@ -181,7 +184,7 @@ rodata 0x108B18 src/net/saru_petit_network_game
 0x55F78 src_net_saru_petit_network_card_battle_player 1.9.2           src/net/saru_petit_network_card_battle_player.cc
 0x562D8 src_net_saru_petit_network_controller_set 1.9.2           src/net/saru_petit_network_controller_set.cc
 0x5640C src_net_saru_petit_network_game 1.9.2           src/net/saru_petit_network_game.cc
-0x56808 src_net_saru_petit_network_host 1.9.2           src/net/saru_petit_network_host.cc
+0x56874 src_net_saru_petit_network_host 1.9.2           src/net/saru_petit_network_host.cc
 0x568F0 src_net_saru_petit_network_task 1.9.2           src/net/saru_petit_network_task.cc
 0x56CE4 src_net_saru_petit_network_task_cif 1.9.2           src/net/saru_petit_network_task_cif.cc
 0x56E68 src_bx_anm      1.9.2           src/bx/anm.cc

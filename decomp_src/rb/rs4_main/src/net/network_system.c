@@ -67,7 +67,4 @@ System::~System()
 }
 }
 
-extern "C" {
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_system", D_001072AC);
-}
 

@@ -1,7 +1,5 @@
 /* lang: c++ */
-/* cflags: -Os -fno-strength-reduce -fno-merge-constants -fno-exceptions */
-/* #pragma interface: the vtables, typeinfo and implicit destructors stay in the module's asm */
-#pragma interface "rodata"
+/* cflags: -Os -fno-strength-reduce -fno-exceptions */
 #include "common.h"
 
 struct NetTypeBroadcastSchedule;
@@ -51,8 +49,15 @@ public:
 };
 }
 
+namespace SaruNet {
+class ObjectClass : public Net::ObjectClass {
+public:
+	virtual void Register_Field();
+};
+}
+
 namespace SaruNetLib {
-class _Class_Host : public Net::ObjectClass {
+class _Class_Host : public SaruNet::ObjectClass {
 public:
 	static int _class_id;
 	virtual int Get_ClassID() const;
@@ -102,8 +107,6 @@ public:
 }
 }
 
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_card_battle_network_host", _ZN7SaruNet10CardBattle11NetworkHostD1Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_card_battle_network_host", _ZN7SaruNet10CardBattle11NetworkHostD0Ev); }
 
 namespace SaruNet {
 namespace CardBattle {
@@ -116,11 +119,6 @@ void *Class_Host::Get_RemoteCreateCallback_p() const
 }
 }
 
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_card_battle_network_host", D_00107424); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_card_battle_network_host", _ZTIN7SaruNet10CardBattle11NetworkGameE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_card_battle_network_host", _ZTIN7SaruNet10CardBattle11NetworkHostE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_card_battle_network_host", _ZTSN7SaruNet10CardBattle11NetworkHostE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_card_battle_network_host", _ZTSN7SaruNet10CardBattle11NetworkGameE); }
 
 namespace SaruNet {
 namespace CardBattle {
@@ -136,9 +134,5 @@ void NetworkHost::gCallback_RemoteCreate(int cls, int idx)
 
 extern "C" const char D_001074A4[] = "";
 
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_card_battle_network_host", _ZTVN7SaruNet10CardBattle10Class_HostE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_card_battle_network_host", D_001074B0); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_card_battle_network_host", _ZTIN7SaruNet10CardBattle10Class_HostE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_card_battle_network_host", _ZTSN7SaruNet10CardBattle10Class_HostE); }
 
 
