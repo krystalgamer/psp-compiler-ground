@@ -50,7 +50,12 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/libmm_semaphore", D_0010
 /* ys_object.h's __FILE__ (Ys::Object::operator delete); the split keeps it in the D0 dtor's asm */
 __asm__(".section .rodata\n\t.align 2\nD_0010477C:\n\t.asciz \"src/ys/ys_object.h\"\n\t.align 2\n\t.previous");
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/libmm_semaphore", _ZNK9MetaMagic9Semaphore10Get_StatusER17SceKernelSemaInfo);
+void Semaphore::Get_Status(SceKernelSemaInfo &info) const
+{
+	info.size = sizeof(SceKernelSemaInfo);
+	int tid = id;
+	sceKernelReferSemaStatus(tid, &info);
+}
 }
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/libmm_semaphore", _ZTVN9MetaMagic9SemaphoreE);

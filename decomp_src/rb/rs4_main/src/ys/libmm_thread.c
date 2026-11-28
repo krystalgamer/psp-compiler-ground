@@ -15,6 +15,8 @@ extern "C" void consPrintf(const char *fmt, ...);
 extern "C" void _memFree(void *p, const char *file, int line);
 extern "C" int sceKernelExitThread(int status);
 extern "C" int sceKernelTerminateThread(int id);
+extern "C" int sceKernelStartThread(int id, int argSize, void *argp);
+extern "C" void *memcpy(void *, const void *, unsigned int);
 
 extern const char D_001047E4[], D_00104800[], D_00104818[], D_00104828[], D_00104840[];
 extern const char ThreadC1_FUNCTION[] __asm__("_ZZN9MetaMagic6ThreadC1EPKciijE12__FUNCTION__");
@@ -81,9 +83,27 @@ int Thread::Set_Priority(int prio)
 	return r;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/libmm_thread", _ZNK9MetaMagic6Thread10Get_StatusER19SceKernelThreadInfo);
+void Thread::Get_Status(SceKernelThreadInfo &info) const
+{
+	info.size = sizeof(SceKernelThreadInfo);
+	int tid = id;
+	sceKernelReferThreadStatus(tid, &info);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/libmm_thread", _ZN9MetaMagic6Thread5StartEiPKv);
+int Thread::Start(int argSize, const void *argp)
+{
+	struct Arg { int size; Thread *self; };
+	int size = (argSize + 3) & ~3;
+	size += sizeof(Arg);
+	char buf[size];
+	memcpy(buf, argp, argSize);
+	/* indexes Arg units, not bytes (as the original does) */
+	Arg *a = &((Arg *)buf)[size - sizeof(Arg)];
+	a->size = argSize;
+	a->self = this;
+	int tid = id;
+	return sceKernelStartThread(tid, size, buf);
+}
 
 void Thread::Term()
 {
