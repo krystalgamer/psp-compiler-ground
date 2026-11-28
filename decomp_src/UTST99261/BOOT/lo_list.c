@@ -27,6 +27,20 @@ char *strcpy(char *d, const char *s);
 extern char *roman_uc[4][9];
 void *memcpy(void *, const void *, unsigned int);
 int iom_loadCache(void);
+typedef struct IOMCINFO { int x0; char *url; int x8; int size1; int size2; int x14; int x18; void *file; } IOMCINFO;
+typedef struct IOMCENT { void *next; void *prev; IOMCINFO *info; } IOMCENT;
+typedef struct IOMCOUT { void *file; int size1; int size2; int x14; int x18; int x14b; } IOMCOUT;
+void URL_splitURL(void **parts, char *url);
+char *iom_malloc(int size);
+int iom_mfree(char *p);
+char *iom_strnmcat(char *dst, int n, ...);
+void *iom_domainCache(char *name);
+int strcasecmp(const char *a, const char *b);
+void *UTL_mfilecreate(int size);
+void UTL_mfiledelete(void *f);
+void UTL_mfileseek(void *f, int pos);
+int UTL_mfileread(void *f, void *buf, int len);
+int UTL_mfilewrite(void *f, void *buf, int len);
 signed char *getListNumCharAtIU(int n) {
     int d[4];
     int i;
@@ -172,7 +186,102 @@ int iom_setCache(int url, int *data) {
     return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_list", iom_getCache);
+int iom_getCache(char *url, IOMCOUT *out, int force) {
+    void *parts[12];
+    char buf[0x800];
+    char *host;
+    char *dom;
+    IOMCENT *e;
+    IOMCINFO *c;
+    void *f;
+    int n;
+    int r;
+    unsigned int total;
+
+    out->file = NULL;
+    out->size1 = 0;
+    out->size2 = 0;
+    out->x14b = 0;
+    out->x14 = -1;
+    out->x18 = -1;
+    if (url == NULL) {
+        return -0x12E;
+    }
+    if (iom_preferenceCache() == 0) {
+        return 0;
+    }
+    iom_updateCache();
+    if (iom.x28 != 0) {
+        iom_saveCache();
+    }
+    URL_splitURL(parts, url);
+    if (parts[1] == NULL || parts[3] == NULL) {
+        return -0x12E;
+    }
+    host = iom_malloc((int)parts[3] + 1);
+    if (host == NULL) {
+        return -0x12D;
+    }
+    iom_strnmcat(host, 1, parts[3], parts[2]);
+    dom = iom_domainCache(host);
+    if (dom == NULL) {
+        iom_mfree(host);
+        return 0;
+    }
+    for (e = UTL_peekqueue(dom + 0xC, NULL); e != NULL; e = UTL_peekqueue(dom + 0xC, e)) {
+        r = strcasecmp(e->info->url, url);
+        if (r == 0) {
+            break;
+        }
+        if (r > 0) {
+            e = NULL;
+            break;
+        }
+    }
+    iom_mfree(host);
+    if (e == NULL) {
+        return 0;
+    }
+    if (!force && e->info->x14 == 0) {
+        return 0;
+    }
+    c = e->info;
+    if (c->file == NULL) {
+        return -0x12D;
+    }
+    f = UTL_mfilecreate(0x800);
+    if (f == NULL) {
+        return -0x12D;
+    }
+    UTL_mfileseek(c->file, 0);
+    n = c->size1 + c->size2;
+    total = 0;
+    while (n > 0) {
+        if (n > sizeof(buf)) {
+            n = sizeof(buf);
+        }
+        n = UTL_mfileread(c->file, buf, n);
+        if (n <= 0) {
+            break;
+        }
+        if (n != UTL_mfilewrite(f, buf, n)) {
+            UTL_mfiledelete(f);
+            return -0x12D;
+        }
+        total += n;
+        n = c->size1 + c->size2 - total;
+    }
+    if (total < c->size1 + c->size2) {
+        UTL_mfiledelete(f);
+        return 0;
+    }
+    out->file = f;
+    out->size1 = c->size1;
+    out->size2 = c->size2;
+    out->x14 = c->x14;
+    out->x18 = c->x18;
+    return 0;
+}
 
 void iom_capacityCache(void) {
     iom_updateCache();
