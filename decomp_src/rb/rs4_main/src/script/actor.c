@@ -122,7 +122,13 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/actor", ActorMotionMove
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/actor", ActorAttachProc);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/actor", ActorGetAvatar);
+extern int D_001123C8[];
+void *ActorGetAvatar(int n)
+{
+	if (((int *)gameGetCntx())[0x38 / 4] == 9)
+		return resGetDatLocal(2, ((int *)resGetPtrTable(2, 5))[n]);
+	return resGetDatLocal(2, D_001123C8[n]);
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/actor", D_000FEE78);
 
