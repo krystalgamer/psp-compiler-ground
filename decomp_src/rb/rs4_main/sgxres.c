@@ -378,7 +378,23 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResReqToName);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResNameToReq);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResNameToReqGlobal);
+int sgxResNameToReq();
+int sgxResNameToReqGlobal(const char *name, int *pres, int a, int b, int c) {
+    int n, i;
+    char **list;
+    sgxDI();
+    list = __builtin_alloca(((ResWorkS *)&gWork_11FC38)->num * sizeof(void *));
+    n = MakeResList((void **)list);
+    sgxEI();
+    for (i = 0; i < n; i++) {
+        char *r = list[i];
+        if (sgxResNameToReq(*(int *)(r + 8), name, a, b, c)) {
+            if (pres != NULL) *pres = *(int *)(r + 8);
+            return 1;
+        }
+    }
+    return 0;
+}
 
 int sgxResCanPlayType(int id, int type) {
     char *p = ResGetSlot(id, SLOT_NAME("CanPlay"));
