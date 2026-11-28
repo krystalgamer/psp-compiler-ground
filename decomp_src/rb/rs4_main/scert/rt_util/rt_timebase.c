@@ -46,7 +46,17 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_timebase", rt_tim
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_timebase", rt_timebase_is_query_ready);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_timebase", rt_timebase_start);
+extern int gbQueryRecordInitialized;
+void rt_time_start();
+void *memset(void *, int, unsigned int);
+void rt_timebase_start(void)
+{
+    if (gbQueryRecordInitialized == 0) {
+        memset(&gQueryRecord, 0, 0x198);
+        gbQueryRecordInitialized = 1;
+    }
+    rt_time_start(&gLastQueryTimeStamp);
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_timebase", rcsid_10F164);
 
