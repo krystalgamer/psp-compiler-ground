@@ -36,11 +36,46 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_parse", rt_parse_
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_parse", rt_parse_execute_ext);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_parse", rt_parse_get_callback);
+int rt_parse_get_callback(unsigned int cls, unsigned int type, void **out)
+{
+    if (out == NULL) return 2;
+    *out = NULL;
+    if (gbInitialized_135B94 != 1) return 5;
+    if (gapfParsers == NULL) return 5;
+    if (gaTypeCount == NULL) return 5;
+    if (cls >= gMaxClasses) return 2;
+    if (type >= gMaxTypes) return 2;
+    *out = gapfParsers[cls * gMaxTypes + type];
+    if (*out == NULL) return 2;
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_parse", rt_parse_zero_execution_counts);
+int rt_parse_zero_execution_counts(unsigned int cls)
+{
+    if (gbInitialized_135B94 != 1) return 5;
+    if (gapfParsers == 0) return 5;
+    if (gaTypeCount == 0) return 5;
+    if (gaExecutionCount == 0) return 5;
+    if (cls >= gMaxClasses) return 2;
+    memset((void *)((int)gaExecutionCount + (cls * gMaxTypes << 2)), 0, gMaxTypes * 4);
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_parse", rt_parse_get_execution_counts);
+int rt_parse_get_execution_counts(unsigned int cls, unsigned int *out, unsigned int n)
+{
+    unsigned int i;
+
+    if (gbInitialized_135B94 != 1) return 5;
+    if (gapfParsers == NULL) return 5;
+    if (gaTypeCount == NULL) return 5;
+    if (gaExecutionCount == NULL) return 5;
+    if (cls >= gMaxClasses) return 2;
+    if (out == NULL) return 2;
+    if (n < gMaxTypes) return 2;
+    for (i = 0; i < gMaxTypes; i++)
+        *out++ = gaExecutionCount[cls * gMaxTypes + i];
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_parse", rt_parse_fragment_message);
 
