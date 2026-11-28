@@ -487,7 +487,6 @@ bss 0x191864 -
 rodata 0x174310 main_objs/sh_Vector
 bss 0x1919F0 main_objs/sh_Vector
 rodata 0x17381C main_objs/sh_sh_rot_Rmn
-rodata 0x173838 -
 bss 0x1916B4 main_objs/sh_sh_rot_Rmn
 bss 0x191738 -
 rodata 0x175E90 main_objs/textures_textures_internal_Bmp

@@ -473,7 +473,6 @@ bss 0x18E3E4 -
 rodata 0x1713E8 main_objs/sh_Vector
 bss 0x18E570 main_objs/sh_Vector
 rodata 0x1708F4 main_objs/sh_sh_rot_Rmn
-rodata 0x170910 -
 bss 0x18E234 main_objs/sh_sh_rot_Rmn
 bss 0x18E2B8 -
 rodata 0x172F68 main_objs/textures_textures_internal_Bmp

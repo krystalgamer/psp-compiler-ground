@@ -1,7 +1,6 @@
 /* lang: c++ */
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
-#include "cxx/defer_asm.h"
 #define DEMO_STATICS_MATH
 #define DEMO_STATICS_IOSTREAM
 #include "../main.hpp"
@@ -10,19 +9,10 @@
 __asm__(".globl _GLOBAL__I__ZN2sh6sh_rot3RmnE\n_GLOBAL__I__ZN2sh6sh_rot3RmnE = _GLOBAL__I__ZN2sh6sh_rot6setRmnEN4math6matrixE");
 __asm__(".globl _GLOBAL__D__ZN2sh6sh_rot3RmnE\n_GLOBAL__D__ZN2sh6sh_rot3RmnE = _GLOBAL__D__ZN2sh6sh_rot6setRmnEN4math6matrixE");
 
-extern const char D_00170960[];     /* " *** error " */
-extern const char D_0017096C[];     /* "../lib/sh/Rotation.cpp" */
-extern const char D_00170984[];     /* " " */
-extern const char D_00170988[];     /* "i == -1 || i == 0 || i == 1" */
-extern const char D_001709A4[];     /* "j == -1 || j == 0 || j == 1" */
-extern const char D_00170A64[];     /* "not defined" */
-extern const char D_00170A70[];     /* "" */
-extern const char W_name[] __asm__("_ZZN2sh6sh_rot1WEiiiRNS_9RotMatrixEE19__PRETTY_FUNCTION__");
-extern const char R_name[] __asm__("_ZZN2sh6sh_rot1REiiE19__PRETTY_FUNCTION__");
-extern int setRmn_P[3] __asm__("_ZZN2sh6sh_rot6setRmnEN4math6matrixEE1P");
 
 void sh::sh_rot::setRmn(math::matrix m)
 {
+    static const int P[3] = { 1, 2, 0 };
     float r[3][3];
     r[0][0] = m.r[0].x;
     r[0][1] = m.r[1].x;
@@ -35,28 +25,26 @@ void sh::sh_rot::setRmn(math::matrix m)
     r[2][2] = m.r[2].z;
     for (int i = 0; i != 3; i++)
         for (int j = 0; j != 3; j++)
-            Rmn[j][i] = r[setRmn_P[j]][setRmn_P[i]];
+            Rmn[j][i] = r[P[j]][P[i]];
 }
 
 float sh::sh_rot::R(int i, int j)
 {
-    SGL_ASSERT(i == -1 || i == 0 || i == 1, D_00170960, D_00170988, D_0017096C, R_name, 70, D_00170984);
-    SGL_ASSERT(j == -1 || j == 0 || j == 1, D_00170960, D_001709A4, D_0017096C, R_name, 71, D_00170984);
+    SGL_ASSERT(i == -1 || i == 0 || i == 1, " *** error ", "i == -1 || i == 0 || i == 1", "../lib/sh/Rotation.cpp", __PRETTY_FUNCTION__, 70, " ");
+    SGL_ASSERT(j == -1 || j == 0 || j == 1, " *** error ", "j == -1 || j == 0 || j == 1", "../lib/sh/Rotation.cpp", __PRETTY_FUNCTION__, 71, " ");
     return Rmn[i + 1][j + 1];
 }
 
-extern const char D_001709F8[], D_00170A10[], D_00170A28[];
-extern const char P_name[] __asm__("_ZZN2sh6sh_rot1PEiiiiRNS_9RotMatrixEE19__PRETTY_FUNCTION__");
 #define ROT_ABS(b) ((b) < 0 ? -(b) : (b))
 float sh::sh_rot::P(int i, int l, int a, int b, RotMatrix &r)
 {
-    SGL_ASSERT(l >= 1, D_00170960, D_00170A28, D_0017096C, P_name, 78, D_00170984);
-    SGL_ASSERT(ROT_ABS(b) <= l, D_00170960, D_00170A10, D_0017096C, P_name, 79, D_00170984);
+    SGL_ASSERT(l >= 1, " *** error ", "l >= 1", "../lib/sh/Rotation.cpp", __PRETTY_FUNCTION__, 78, " ");
+    SGL_ASSERT(ROT_ABS(b) <= l, " *** error ", "( b < 0 ? -b : b ) <= l", "../lib/sh/Rotation.cpp", __PRETTY_FUNCTION__, 79, " ");
     if (b == l)
         return r.at(l - 1, a, l - 1) * R(i, 1) - r.at(l - 1, a, -l + 1) * R(i, -1);
     if (b == -l)
         return r.at(l - 1, a, -l + 1) * R(i, 1) + r.at(l - 1, a, l - 1) * R(i, -1);
-    SGL_ASSERT(ROT_ABS(b) < l, D_00170960, D_001709F8, D_0017096C, P_name, 91, D_00170984);
+    SGL_ASSERT(ROT_ABS(b) < l, " *** error ", "( b < 0 ? -b : b ) < l", "../lib/sh/Rotation.cpp", __PRETTY_FUNCTION__, 91, " ");
     return R(i, 0) * r.at(l - 1, a, b);
 }
 
@@ -65,23 +53,31 @@ float sh::sh_rot::U(int l, int m, int n, RotMatrix &r)
     return P(0, l, m, n, r);
 }
 
-extern const float D_00170910;
 float sh::sh_rot::V(int l, int m, int n, RotMatrix &r)
 {
-    if (m == 0)
-        return P(1, l, 1, n, r) + P(-1, l, -1, n, r);
-    if (m > 0) {
-        float d = m == 1 ? D_00170910 : 0;
-        return P(1, l, m - 1, n, r) * math::safe_sqrtf(d + D_00170910) - P(-1, l, -m + 1, n, r) * (D_00170910 - d);
+    float ret;
+    if (m == 0) {
+        float p0 = P(1, l, 1, n, r);
+        float p1 = P(-1, l, -1, n, r);
+        ret = p0 + p1;
+    } else if (m > 0) {
+        float d = m == 1 ? 1.0f : 0;
+        float p0 = P(1, l, m - 1, n, r) * math::safe_sqrtf(d + 1.0f);
+        float p1 = P(-1, l, -m + 1, n, r) * (1.0f - d);
+        ret = p0 - p1;
+    } else {
+        float d = m == -1 ? 1.0f : 0;
+        float p0 = P(1, l, m + 1, n, r) * (d + 1.0f);
+        float p1 = P(-1, l, -m - 1, n, r) * math::safe_sqrtf(1.0f - d);
+        ret = p0 + p1;
     }
-    float d = m == -1 ? D_00170910 : 0;
-    return P(1, l, m + 1, n, r) * (d + D_00170910) + P(-1, l, -m - 1, n, r) * math::safe_sqrtf(D_00170910 - d);
+    return ret;
 }
 
 float sh::sh_rot::W(int l, int m, int n, RotMatrix &r)
 {
     if (m == 0) {
-        SGL_ASSERT(false, D_00170960, D_00170A70, D_0017096C, W_name, 128, D_00170A64);
+        SGL_ASSERT(false, " *** error ", "", "../lib/sh/Rotation.cpp", __PRETTY_FUNCTION__, 128, "not defined");
         return 0;
     }
     if (m > 0)
@@ -89,11 +85,83 @@ float sh::sh_rot::W(int l, int m, int n, RotMatrix &r)
     return P(1, l, m - 1, n, r) - P(-1, l, -m + 1, n, r);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_sh_rot_Rmn", _ZN2sh6sh_rot3uvwERfS1_S1_iii);
+void sh::sh_rot::uvw(float &u, float &v, float &w, int l, int m, int n)
+{
+    SGL_ASSERT(abs(n) <= l, " *** error ", "abs(n) <= l", "../lib/sh/Rotation.cpp", __PRETTY_FUNCTION__, 144, " ");
+    int am = abs(m);
+    float b = (l + am - 1.0f) * (l + am);
+    float d = m == 0 ? 1.0f : 0;
+    bool e = abs(n) == l;
+    float den = e ? 2.0f * l * (2.0f * l - 1.0f) : (l + n) * (l - n);
+    u = math::safe_sqrtf((l + m) * (l - m) / den);
+    v = (1.0f - 2 * d) * 0.5f * math::safe_sqrtf((1.0f + d) * b / den);
+    w = (1.0f - d) * -0.5f * math::safe_sqrtf((e ? b : (l - am - 1.0f) * (l - am)) / den);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_sh_rot_Rmn", _ZN2sh6sh_rot1MEiiiRNS_9RotMatrixE);
+float sh::sh_rot::M(int l, int m, int n, RotMatrix &r)
+{
+    SGL_ASSERT(l >= 0, " *** error ", "l >= 0", "../lib/sh/Rotation.cpp", __PRETTY_FUNCTION__, 163, " ");
+    SGL_ASSERT(abs(m) <= l, " *** error ", "abs(m) <= l", "../lib/sh/Rotation.cpp", __PRETTY_FUNCTION__, 164, " ");
+    SGL_ASSERT(abs(n) <= l, " *** error ", "abs(n) <= l", "../lib/sh/Rotation.cpp", __PRETTY_FUNCTION__, 165, " ");
+    float u, v, w;
+    uvw(u, v, w, l, m, n);
+    return u * U(l, m, n, r) + v * V(l, m, n, r) + w * V(l, m, n, r);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_sh_rot_Rmn", _ZN2sh9RotMatrix8TwoBandsEN4math6matrixE);
+extern "C" float atan2f(float, float);
+sh::RotMatrix sh::RotMatrix::TwoBands(math::matrix m)
+{
+    /* STAND-IN: an always-true check whose __PRETTY_FUNCTION__ survives in .rodata (its strings do not) */
+    SGL_ASSERT(true, " *** error ", "", "../lib/sh/Rotation.cpp", __PRETTY_FUNCTION__, 0, " ");
+    math::matrix t = m.transpose();
+    float r[3][3];
+    r[0][0] = t.r[0].x;
+    r[0][1] = t.r[1].x;
+    r[0][2] = t.r[2].x;
+    r[1][0] = t.r[0].y;
+    r[1][1] = t.r[1].y;
+    r[1][2] = t.r[2].y;
+    r[2][0] = t.r[0].z;
+    r[2][1] = t.r[1].z;
+    r[2][2] = t.r[2].z;
+    float cb = r[2][2];
+    float ca = 1.0f;
+    float sb = math::safe_sqrtf(ca - cb * cb);
+    float sa, sg, cg;
+    if (fabsf(sb) > 0.001f) {
+        float isb = ca / sb;
+        cg = r[2][0] * isb;
+        sg = r[2][1] * isb;
+        ca = -r[0][2] * isb;
+        sa = r[1][2] * isb;
+    } else {
+        cg = r[1][1];
+        sa = 0;
+        sg = -r[1][0];
+    }
+    RotMatrix R;
+    sb = -sb;
+    R.m[0][0] = 1.0f;
+    R.m[0][1] = 0;
+    R.m[0][2] = 0;
+    R.m[0][3] = 0;
+    R.m[1][0] = 0;
+    R.m[1][1] = cg * ca - sg * sa * cb;
+    R.m[1][2] = sg * sb;
+    R.m[1][3] = cg * sa + sg * ca * cb;
+    R.m[2][0] = 0;
+    R.m[2][1] = sa * sb;
+    R.m[2][2] = cb;
+    R.m[2][3] = -ca * sb;
+    R.m[3][0] = 0;
+    R.m[3][1] = -cg * sa * cb - sg * ca;
+    R.m[3][2] = cg * sb;
+    R.m[3][3] = cg * ca * cb - sg * sa;
+    R._f40 = atan2f(sg, cg);
+    R._f44 = atan2f(sb, cb);
+    R._f48 = atan2f(sa, ca);
+    return R;
+}
 
 sh::RotMatrix::RotMatrix()
 {
