@@ -184,7 +184,34 @@ void rt_parse_update(void) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_parse", rt_parse_find_frag_msg);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_parse", rt_parse_fragment_handler);
+typedef struct { unsigned char b[20]; } RtFragHdrRaw;
+typedef struct { unsigned char a, c; unsigned short len; int p4, p8, pC; int off; } RtFragHdr;
+char *rt_parse_find_frag_msg(); int rt_time_start(); void *memcpy();
+int rt_parse_fragment_handler(int a, int b, int c, RtFragHdrRaw *h)
+{
+    RtFragHdr hdr;
+    void (*cb)(int, int, int, void *);
+    char *m;
+
+    cb = NULL;
+    if (h == NULL) return 2;
+    *(RtFragHdrRaw *)&hdr = *h;
+    m = rt_parse_find_frag_msg(a, b, c, &hdr);
+    if (m != NULL) {
+        memcpy(*(char **)(m + 0x30) + hdr.off, h + 1, hdr.len);
+        *(int *)(m + 0x10) += hdr.len;
+        (*(int *)(m + 0x14))++;
+        rt_time_start(m + 0x24);
+        if (*(int *)(m + 0x14) == *(int *)(m + 4)) {
+            rt_parse_get_callback(*(unsigned char *)(m + 0x2C), *(unsigned char *)(m + 0x2D), (void **)&cb);
+            if (cb != NULL)
+                cb(*(int *)(m + 0x18), *(int *)(m + 0x1C), *(int *)(m + 0x20), *(void **)(m + 0x30));
+            rt_memory_free(m + 0x30);
+            *(int *)m = 0;
+        }
+    }
+    return hdr.len + 0x14;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_parse", rcsid_10EE44);
 
