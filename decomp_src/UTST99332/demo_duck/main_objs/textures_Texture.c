@@ -337,7 +337,40 @@ void textures::Texture::finish_load()
     psp_reorder();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures3psp13SwizzleBitmapEPhS1_NS_6FormatEii);
+void textures::psp::SwizzleBitmap(unsigned char *dst, unsigned char *src, Format f, int w, int h)
+{
+    int bpp = 0;
+    switch (f) {
+    case FORMAT_0:
+        return;
+    case FORMAT_5:
+        bpp = 1;
+        w >>= 1;
+        break;
+    case FORMAT_1:
+    case FORMAT_2:
+        bpp = 4;
+        break;
+    case FORMAT_3:
+        bpp = 2;
+        break;
+    case FORMAT_4:
+        bpp = 1;
+        break;
+    }
+    int width_blocks = (w * bpp) >> 4;
+    int height_blocks = h >> 3;
+    for (int j = 0; j < height_blocks; j++) {
+        for (int i = 0; i < width_blocks; i++) {
+            unsigned char *s = &src[j * width_blocks * 128 + i * 16];
+            for (int y = 0; y < 8; y++) {
+                for (int x = 0; x < 16; x++)
+                    *dst++ = *s++;
+                s += width_blocks * 16 - 16;
+            }
+        }
+    }
+}
 
 void textures::Texture::psp_reorder()
 {
