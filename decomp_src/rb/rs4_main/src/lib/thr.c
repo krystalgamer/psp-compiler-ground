@@ -6,7 +6,7 @@
 #endif
 
 void consPrintf(const char *, ...);
-M2C_UNK thrDelete(void *);                          /* extern */
+int thrDelete();
 extern unsigned char D_000FB638;
 typedef struct ThrCntx { int Thid; int pad[3]; struct ThrCntx *pPrev; struct ThrCntx *pNext; int pad2; int Prio; int pad3[4]; char Name[16]; } ThrCntx;
 extern ThrCntx *pThrEntry;
