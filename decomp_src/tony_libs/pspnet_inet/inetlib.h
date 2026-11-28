@@ -1440,7 +1440,7 @@ struct in_ifaddr {
 #define ia_broadaddr ia_dstaddr
 #define ifatoia(ifa) ((struct in_ifaddr *)(ifa))
 TAILQ_HEAD(in_ifaddrhead_t, in_ifaddr);
-extern struct in_ifaddrhead_t in_ifaddrhead;
+extern struct in_ifaddrhead_t in_ifaddr;
 
 #define IFP_TO_IA(ifp, ia) { \
 	struct ifaddr *ifa; \
@@ -2139,7 +2139,7 @@ struct in_multistep {
 #define PR_SLOWHZ 2
 #define PR_FASTHZ 5
 #define IN_FIRST_MULTI(step, inm) { \
-	(step).i_ia = in_ifaddrhead.tqh_first; \
+	(step).i_ia = in_ifaddr.tqh_first; \
 	(step).i_inm = NULL; \
 	IN_NEXT_MULTI((step), (inm)); \
 }

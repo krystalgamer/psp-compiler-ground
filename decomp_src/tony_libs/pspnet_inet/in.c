@@ -16,11 +16,11 @@ in_localaddr(struct in_addr in)
 	struct in_ifaddr *ia;
 
 	if (subnetsarelocal) {
-		for (ia = in_ifaddrhead.tqh_first; ia != 0; ia = ia->ia_list.tqe_next)
+		for (ia = in_ifaddr.tqh_first; ia != 0; ia = ia->ia_list.tqe_next)
 			if ((in.s_addr & ia->ia_netmask) == ia->ia_net)
 				return (1);
 	} else {
-		for (ia = in_ifaddrhead.tqh_first; ia != 0; ia = ia->ia_list.tqe_next)
+		for (ia = in_ifaddr.tqh_first; ia != 0; ia = ia->ia_list.tqe_next)
 			if ((in.s_addr & ia->ia_subnetmask) == ia->ia_subnet)
 				return (1);
 	}
@@ -77,7 +77,7 @@ in_setmaxmtu(void)
 	struct ifnet *ifp;
 	unsigned long maxmtu = 0;
 
-	for (ia = in_ifaddrhead.tqh_first; ia != 0; ia = ia->ia_list.tqe_next) {
+	for (ia = in_ifaddr.tqh_first; ia != 0; ia = ia->ia_list.tqe_next) {
 		if ((ifp = ia->ia_ifp) == 0)
 			continue;
 		if ((ifp->if_flags & (IFF_UP|IFF_LOOPBACK)) != IFF_UP)
@@ -183,7 +183,7 @@ in_control(struct socket *so, u_long cmd, caddr_t data, struct ifnet *ifp)
 			if (ia == 0)
 				return (ENOBUFS);
 			memset((caddr_t)ia, 0, sizeof *ia);
-			TAILQ_INSERT_TAIL(&in_ifaddrhead, ia, ia_list);
+			TAILQ_INSERT_TAIL(&in_ifaddr, ia, ia_list);
 			IFAREF(&ia->ia_ifa);
 			TAILQ_INSERT_TAIL(&ifp->if_addrlist, &ia->ia_ifa,
 			    ifa_list);
@@ -336,7 +336,7 @@ in_purgeaddr(struct ifaddr *ifa, struct ifnet *ifp)
 	LIST_REMOVE(ia, ia_hash);
 	TAILQ_REMOVE(&ifp->if_addrlist, &ia->ia_ifa, ifa_list);
 	IFAFREE(&ia->ia_ifa);
-	TAILQ_REMOVE(&in_ifaddrhead, ia, ia_list);
+	TAILQ_REMOVE(&in_ifaddr, ia, ia_list);
 	if (ia->ia_allhosts != NULL)
 		in_delmulti(ia->ia_allhosts);
 	if (LIST_FIRST(&ia->ia_multiaddrs) != NULL &&

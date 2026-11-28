@@ -508,7 +508,7 @@ icmp_reflect(struct mbuf *m)
 	 * interface.
 	 */
 	if (sin == (struct sockaddr_in *)0)
-		for (ia = in_ifaddrhead.tqh_first; ia != NULL;
+		for (ia = in_ifaddr.tqh_first; ia != NULL;
 		    ia = ia->ia_list.tqe_next) {
 			if (ia->ia_ifp->if_flags & IFF_LOOPBACK)
 				continue;

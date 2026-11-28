@@ -44,7 +44,7 @@ in_pcbbind(void *v, struct mbuf *nam)
 	u_int16_t lport = 0;
 	int wild = 0, reuseport = (so->so_options & SO_REUSEPORT);
 
-	if (in_ifaddrhead.tqh_first == 0)
+	if (in_ifaddr.tqh_first == 0)
 		return (EADDRNOTAVAIL);
 	if (inp->inp_lport || !in_nullhost(inp->inp_laddr))
 		return (EINVAL);
@@ -132,11 +132,11 @@ in_pcbconnect(void *v, struct mbuf *nam)
 		return (EAFNOSUPPORT);
 	if (sin->sin_port == 0)
 		return (EADDRNOTAVAIL);
-	if (in_ifaddrhead.tqh_first != 0) {
+	if (in_ifaddr.tqh_first != 0) {
 		if (in_nullhost(sin->sin_addr))
-			sin->sin_addr = in_ifaddrhead.tqh_first->ia_addr.sin_addr;
+			sin->sin_addr = in_ifaddr.tqh_first->ia_addr.sin_addr;
 		else if (sin->sin_addr.s_addr == INADDR_BROADCAST)
-			for (ia = in_ifaddrhead.tqh_first; ia != NULL;
+			for (ia = in_ifaddr.tqh_first; ia != NULL;
 			    ia = ia->ia_list.tqe_next)
 				if (ia->ia_ifp->if_flags & IFF_BROADCAST) {
 					sin->sin_addr =
@@ -496,7 +496,7 @@ in_selectsrc(struct sockaddr_in *sin, struct route *ro, int soopts, struct ip_mo
 		ia = ifatoia(ifa_ifwithladdr(sintosa(sin)));
 		sin->sin_port = fport;
 		if (ia == 0) {
-			for (ia = in_ifaddrhead.tqh_first;
+			for (ia = in_ifaddr.tqh_first;
 			     ia != NULL;
 			     ia = ia->ia_list.tqe_next) {
 				if (!(ia->ia_ifp->if_flags & IFF_LOOPBACK))

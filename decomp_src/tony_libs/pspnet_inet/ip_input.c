@@ -110,7 +110,7 @@ ip_input(struct mbuf *m)
 	 * If no IP addresses have been set yet but the interfaces
 	 * are receiving, can't do anything with incoming packets yet.
 	 */
-	if (in_ifaddrhead.tqh_first == 0)
+	if (in_ifaddr.tqh_first == 0)
 		goto bad;
 	ipstat.ips_total++;
 	if (m->m_len < sizeof (struct ip) &&
