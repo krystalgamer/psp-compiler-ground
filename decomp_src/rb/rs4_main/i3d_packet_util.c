@@ -110,6 +110,20 @@ void AddVertexCVTU()
 		: : : "memory");
 }
 
+unsigned int *I3dGuGetMemory_PSP(unsigned int *, int);
+unsigned int *I3dGuDrawArray_PSP(unsigned int *, int, int, int, void *, void *);
+unsigned int I3dColPackA8B8G8R8();
+static inline unsigned int *PkColorX(unsigned int *p, unsigned int c)
+{
+	p[0] = 0x55000000 | __builtin_allegrex_ext(c, 0, 24);
+	p[1] = 0x58000000 | (c >> 24);
+	return p + 2;
+}
+static inline unsigned int *PkCmdX(unsigned int *p, unsigned int v)
+{
+	*p = v;
+	return p + 1;
+}
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPk2dPrim_DrawSpriteF);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPk2dPrim_DrawSpriteFTU);
@@ -122,7 +136,17 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPk2dPrim_Draw
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPk2dPrim_DrawTriGTU);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPk2dPrim_DrawLineF);
+unsigned int *I3dPk2dPrim_DrawLineF(unsigned int *p, float *v0, float *v1, void *col)
+{
+	short *vtx = (short *)(p + 2);
+	short *q;
+	p = I3dGuGetMemory_PSP(p, 12);
+	q = AddVertexV(vtx, v0);
+	AddVertexV(q, v1);
+	p = PkColorX(p, I3dColPackA8B8G8R8(col));
+	*p++ = 0x1E000000;
+	return I3dGuDrawArray_PSP(p, 1, 0x800100, 2, 0, vtx);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPk2dPrim_DrawLineFTU);
 
@@ -130,9 +154,26 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPk2dPrim_Draw
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPk2dPrim_DrawLineGTU);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPk2dPrim_DrawPointF);
+unsigned int *I3dPk2dPrim_DrawPointF(unsigned int *p, float *v, void *col)
+{
+	short *vtx = (short *)(p + 2);
+	p = I3dGuGetMemory_PSP(p, 6);
+	AddVertexV(vtx, v);
+	p = PkColorX(p, I3dColPackA8B8G8R8(col));
+	*p++ = 0x1E000000;
+	return I3dGuDrawArray_PSP(p, 0, 0x800100, 1, 0, vtx);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPk2dPrim_DrawPointFTU);
+unsigned int *I3dGuEnableTexture_PSP(unsigned int *, int);
+unsigned int *I3dPk2dPrim_DrawPointFTU(unsigned int *p, float *v, float *uv, void *col)
+{
+	short *vtx = (short *)(p + 2);
+	p = I3dGuGetMemory_PSP(p, 10);
+	AddVertexVTU(vtx, v, uv);
+	p = PkColorX(p, I3dColPackA8B8G8R8(col));
+	p = I3dGuEnableTexture_PSP(p, 1);
+	return I3dGuDrawArray_PSP(p, 0, 0x800102, 1, 0, vtx);
+}
 
 void I3dPk2dPrim_SetOffset()
 {
