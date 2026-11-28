@@ -69,6 +69,16 @@ static __inline__ void wclr(void *dst, int n)
 		*p++ = 0;
 }
 
+static __inline__ void wcpy(void *dst, const void *src, int n)
+{
+	char *d = dst;
+	const char *s = src;
+	int i;
+
+	for (i = 0; i < n; i++)
+		*d++ = *s++;
+}
+
 int sceWaveInit(void)
 {
 	int i;
@@ -595,7 +605,71 @@ static int func_0000A73C(short *dst, unsigned char *vag, int *hist1, int *hist2)
 	return flags;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/libwave", func_0000A880);
+static void func_0000A880(int ch, void *dst)
+{
+	char *data = D_002E1B7C[ch].data;
+	int ret;
+
+	wclr(dst, 0x70);
+	switch ((unsigned char)D_002E1B7C[ch].flags) {
+	case 0:
+		if (D_002E1B7C[ch].pos + 16 <= (int)D_002E1B7C[ch].size) {
+			wcpy(D_002E2048, data + D_002E1B7C[ch].pos, 16);
+			D_002E1B7C[ch].pos += 16;
+			func_0000A73C(dst, D_002E2048, &D_002E1B7C[ch].unk30, &D_002E1B7C[ch].unk34);
+		} else {
+			D_002E1B7C[ch].pos = 0;
+			D_002E1B7C[ch].stat = 0;
+		}
+		break;
+	case 1:
+		if ((int)D_002E1B7C[ch].size < 16)
+			break;
+		for (;;) {
+			if (D_002E1B7C[ch].pos + 16 <= (int)D_002E1B7C[ch].size) {
+				int i = 0;
+				char *d = D_002E2048;
+				char *s = data + D_002E1B7C[ch].pos;
+			cl:
+				*d++ = *s++;
+				i++;
+				if (i < 16)
+					goto cl;
+				goto decode;
+			}
+			break;
+		}
+		D_002E1B7C[ch].pos = D_002E1B7C[ch].unk10;
+		wcpy(D_002E2048, data + D_002E1B7C[ch].pos, 16);
+		goto decode;
+	case 2:
+		if ((int)D_002E1B7C[ch].size < 16)
+			break;
+		if (D_002E1B7C[ch].pos + 16 <= (int)D_002E1B7C[ch].size) {
+			wcpy(D_002E2048, data + D_002E1B7C[ch].pos, 16);
+		} else {
+			D_002E1B7C[ch].pos = 0;
+			D_002E1B7C[ch].stat = 0;
+			break;
+		}
+	decode:
+		ret = func_0000A73C(dst, D_002E2048, &D_002E1B7C[ch].unk30, &D_002E1B7C[ch].unk34);
+		switch (ret) {
+		case 6:
+			D_002E1B7C[ch].unk10 = D_002E1B7C[ch].pos;
+			D_002E1B7C[ch].pos += 16;
+			break;
+		case 3:
+			D_002E1B7C[ch].unk14 = D_002E1B7C[ch].pos;
+			D_002E1B7C[ch].pos = D_002E1B7C[ch].unk10;
+			break;
+		default:
+			D_002E1B7C[ch].pos += 16;
+			break;
+		}
+		break;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/libwave", func_0000AB1C);
 
