@@ -99,7 +99,7 @@ def file_units(t, name, cus, text_end):
     ents = []
     for line in path.read_text().splitlines():
         line = line.split("#")[0].split()
-        if line and line[0] not in ("rodata", "bss", "dataunit"):
+        if line and line[0] not in ("rodata", "bss", "dataunit", "cst4", "cst8"):
             ents.append((int(line[0], 16), line[3], line[2]))
             NODWARF_UNITS.update({line[1], os.path.splitext(line[3])[0]})
     bounds = sorted([e[0] for e in ents] + [c[0] for c in cus] + [text_end])

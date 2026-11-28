@@ -61,7 +61,15 @@ object's strings, in cc1plus's order). With `-O3` cc1plus outputs every function
 file, so a C++ unit that still has asm includes `cxx/defer_asm.h`, whose
 `INCLUDE_ASM` defers the asm the same way. A unit's data can be given to it
 with `rodata ADDR UNIT` / `bss ADDR UNIT` lines (and `rodata|bss ADDR -` to
-end the range) in `config/TARGET/files.MODULE.txt`; the rest stays asm. A data label marked `size:0xN nosplit` in
+end the range) in `config/TARGET/files.MODULE.txt`; the rest stays asm. A unit built
+with `-fmerge-constants` (its floats all before its strings) has two pools:
+a `cst4 LO-HI UNIT` (or `cst8`) line puts the asm functions' and
+INCLUDE_RODATA data from LO to HI in `.rodata.cst4` (`.rodata.cst8`), where
+cc1 puts the C code's constants, and pairs each pool with the functions
+separately (each function gets its constants and its strings/jump tables).
+Data no code references (a static local of an asm function) goes with a
+function by `function_owner:FUNC` in its symbol_addrs line (with `nosplit`,
+so `gen_config --force` keeps it). A data label marked `size:0xN nosplit` in
 `config/TARGET/symbol_addrs.MODULE.txt` is one object: references inside it
 become `NAME + offset` (e.g. a double the code loads as two words), and
 `gen_config --force` keeps such lines. A `/* srcname: PATH */` comment makes cc1 see

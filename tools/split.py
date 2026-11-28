@@ -218,6 +218,96 @@ if __name__ == "__main__" and sys.argv[1:2] == ["--rodata-order"]:
     sys.exit(0)
 
 
+def cst_ranges(config_path: Path):
+    """The `cst4|cst8 LO-HI UNIT` lines of files.MODULE.txt."""
+    files = config_path.parent / f"files.{config_path.stem}.txt"
+    ranges = []
+    for line in files.read_text().splitlines() if files.is_file() else []:
+        f = line.split("#")[0].split()
+        if len(f) == 3 and f[0] in ("cst4", "cst8"):
+            lo, hi = (int(x, 16) for x in f[1].split("-"))
+            ranges.append((f[0], lo, hi, f[2]))
+    return ranges
+
+
+def _two_pool_migration(ranges):
+    """spimdisasm pairs each function with one run of its unit's rodata, in
+    order.  A -fmerge-constants unit has two pools (its .rodata.cst*
+    constants, then its strings and jump tables), so pair them separately."""
+    orig = spimdisasm.mips.FunctionRodataEntry.getAllEntriesFromSections
+    Entry = spimdisasm.mips.FunctionRodataEntry
+
+    def entries(textSection, rodataSection):
+        full = rodataSection.symbolList if rodataSection is not None else []
+        cst = lambda sym: any(lo <= sym.vram < hi for _, lo, hi, _ in ranges)
+        if not any(map(cst, full)):
+            return orig(textSection, rodataSection)
+        funcs, orphans = {}, []
+        try:
+            for part in ([x for x in full if cst(x)], [x for x in full if not cst(x)]):
+                rodataSection.symbolList = part
+                for e in orig(textSection, rodataSection):
+                    if e.function is None:
+                        orphans.append(e)
+                    elif e.function.vram in funcs:
+                        funcs[e.function.vram].rodataSyms += e.rodataSyms
+                        funcs[e.function.vram].lateRodataSyms += e.lateRodataSyms
+                    else:
+                        funcs[e.function.vram] = Entry(e.function, list(e.rodataSyms), list(e.lateRodataSyms))
+        finally:
+            rodataSection.symbolList = full
+        return list(funcs.values()) + orphans
+    spimdisasm.mips.FunctionRodataEntry.getAllEntriesFromSections = staticmethod(entries)
+
+
+def cst_pools(asm_dir: Path, config_path: Path):
+    """`cst4 LO-HI UNIT` (or `cst8`) lines of files.MODULE.txt: the unit was
+    built with -fmerge-constants, so cc1 put its float (double) constants in
+    .rodata.cst4 (.rodata.cst8), not with its strings in .rodata.  The asm
+    functions' (and INCLUDE_RODATA) data the unit includes from LO to HI goes
+    to that section too, so it links with the C code's constants."""
+    for kind, lo, hi, unit in cst_ranges(config_path):
+        sec = f'.section .rodata.{kind},"aM",@progbits,{kind[3:]}'
+        for path in (asm_dir / "nonmatchings" / unit).glob("*.s"):
+            lines = path.read_text().splitlines(keepends=True)
+            out, block, cur, in_ro, changed = [], [], None, False, False
+
+            def flush():
+                nonlocal cur, changed
+                if not block:
+                    return
+                vram = next((int(m[1], 16) for l in block
+                             for m in [re.match(r"\s*/\* [0-9A-F]+ ([0-9A-F]{8})\b", l)] if m), None)
+                want = cur if vram is None else sec if lo <= vram < hi else ".section .rodata"
+                if want != cur:
+                    out.append(want + "\n")
+                    cur = want
+                    changed = changed or want == sec
+                out.extend(block)
+                block.clear()
+
+            for line in lines:
+                s = line.strip()
+                if s.startswith(".section") or s in (".text", ".rdata", ".data"):
+                    if in_ro:
+                        flush()
+                    in_ro = s == ".section .rodata"
+                    if in_ro:
+                        cur = ".section .rodata"
+                        out.append(line)
+                        continue
+                if not in_ro:
+                    out.append(line)
+                    continue
+                block.append(line)
+                if s.startswith("enddlabel"):
+                    flush()
+            if in_ro:
+                flush()
+            if changed:
+                path.write_text("".join(out))
+
+
 def prune_undefined_syms(asm_dir: Path, undef_path: Path):
     """Drop auto 'undefined' symbols that the asm defines.
 
@@ -251,6 +341,7 @@ spimdisasm.mips.sections.MipsSectionBase.SectionBase.checkWordIsASymbolReference
 splat.platforms.psp.init = _psp_init
 
 if __name__ == "__main__":
+    _two_pool_migration(cst_ranges(Path(sys.argv[-1])))
     sys.argv[1:1] = ["split"]
     try:
         splat_main()
@@ -261,5 +352,6 @@ if __name__ == "__main__":
                 roms = Path(str(rp).replace("reloc_addrs.", "reloc_roms."))
                 relocs.update(int(x, 16) for x in roms.read_text().split())
             fix_unsupported(options.opts.asm_path, relocs)
+            cst_pools(Path(options.opts.asm_path), Path(sys.argv[-1]))
             fix_ld_script(options.opts.ld_script_path, Path(sys.argv[-1]))
             prune_undefined_syms(options.opts.asm_path, options.opts.undefined_syms_auto_path)
