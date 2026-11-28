@@ -191,7 +191,77 @@ INCLUDE_RODATA("tmp/asm/UTST99332/demo_mars/nonmatchings/main", D_0001365C);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_mars/nonmatchings/main", main);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_mars/nonmatchings/main", CLUT_Earth_Color);
+void CLUT_Earth_Color(int sealev)
+{
+	int i, p, s, l, pd, sp, ad, r, g, b, a;
+
+	s = sealev;
+	pd = 2;
+	sp = 1;
+	ad = 4;
+
+	for (i = 0; i < s; i++) {
+		a = 240 - (i * 64) / s;
+		b = (i * 28) / s + 100;
+		g = (i * 128) / s;
+		r = (i * 128) / s;
+
+		cltbf[i].r = r;
+		cltbf[i].g = g;
+		cltbf[i].b = b;
+		cltbf[i].a = a;
+	}
+
+	p = s;
+	for (i = 0; i < pd; i++) {
+		r = 118 - (i * 128) / pd;
+		g = 118;
+		b = 118 - (i * 128) / pd;
+
+		cltbf[p + i].r = r;
+		cltbf[p + i].g = g;
+		cltbf[p + i].b = b;
+		cltbf[p + i].a = 0;
+	}
+
+	p += pd;
+	for (i = 0; i < sp; i++) {
+		b = (i * 16) / sp + 10;
+		g = (i * 16) / sp + 90;
+		r = (i * 16) / sp + 10;
+
+		cltbf[p + i].r = r;
+		cltbf[p + i].g = g;
+		cltbf[p + i].b = b;
+		cltbf[p + i].a = 0;
+	}
+
+	p += sp;
+	for (i = 0; i < ad; i++) {
+		b = 42 - (i * 16) / ad;
+		g = 114 - (i * 96) / ad;
+		r = (i * 12) / ad + 106;
+
+		cltbf[p + i].r = r;
+		cltbf[p + i].g = g;
+		cltbf[p + i].b = b;
+		cltbf[p + i].a = 0;
+	}
+
+	p += ad;
+	l = 256 - p;
+	if (l < 1) l = 1;
+	for (i = 0; i < l; i++) {
+		b = (i * 56) / l + 24;
+		g = (i * 56) / l + 56;
+		r = (i * 8) / l + 116;
+
+		cltbf[p + i].r = r;
+		cltbf[p + i].g = g;
+		cltbf[p + i].b = b;
+		cltbf[p + i].a = 0;
+	}
+}
 
 void CLUT_Depth_SEA(int sea)
 {
