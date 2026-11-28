@@ -51,21 +51,29 @@ typedef struct {
     unsigned int line;          /* 0x44 */
     int step;                   /* 0x48 */
     int pass;                   /* 0x4C */
-    u8 unk50[4];
+    u8 lzwSize;                 /* 0x50 */
+    u8 unk51[3];
     GIFDESC *cur;               /* 0x54 */
     GIFDESC *list;              /* 0x58 */
-    u8 unk5C[0x10];
-    int unk6C;
-    int unk70;
-    int unk74;
-    u8 unk78[8];
-    int unk80;
-    int unk84;
-    int unk88;
-    int unk8C;
-    u8 unk90[0x100];
-    int unk190;
-    u8 unk194[0xC198 - 0x194];
+    int clear;                  /* 0x5C */
+    int eoi;                    /* 0x60 */
+    int initBits;               /* 0x64 */
+    int avail;                  /* 0x68 */
+    int code;                   /* 0x6C */
+    int first;                  /* 0x70 */
+    int bits;                   /* 0x74 */
+    int codeSize;               /* 0x78 */
+    int codeMask;               /* 0x7C */
+    int sp;                     /* 0x80 */
+    int pos;                    /* 0x84 */
+    int len;                    /* 0x88 */
+    int old;                    /* 0x8C */
+    u8 block[0x100];            /* 0x90 */
+    unsigned int buf;           /* 0x190 */
+    int stack[0x1000];          /* 0x194 */
+    int prefix[0x1000];         /* 0x4194 */
+    int suffix[0x1000];         /* 0x8194 */
+    int unkC194;
     int unkC198;
 } GIFP;
 
@@ -97,6 +105,7 @@ typedef struct {
 
 extern int D_001F3FC4[];
 extern unsigned int D_001F3FD8[];
+int storePixel(GIFP *ctx, int c);
 int setTransparentColor(GIFP *ctx) {
     int found;
     u8 r;
@@ -356,7 +365,99 @@ int readOtherExtension(GIFP *ctx) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gif_parser", readImageBlock);
+int readImageBlock(GIFP *ctx) {
+    int n;
+    int ret;
+
+    n = 0;
+    ctx->initBits = ctx->lzwSize;
+    ctx->clear = 1 << ctx->initBits;
+    ctx->eoi = ctx->clear + 1;
+    ctx->avail = ctx->clear + 2;
+    ctx->codeSize = ctx->initBits + 1;
+    ctx->codeMask = (1 << ctx->codeSize) - 1;
+    ctx->code = -1;
+    ctx->first = 0;
+    ctx->bits = 0;
+    ctx->pos = 0;
+    ctx->len = 0;
+    ctx->old = -2;
+    ctx->buf = 0;
+    while (ctx->code != ctx->eoi) {
+        while (ctx->bits < ctx->codeSize) {
+            if (ctx->pos == ctx->len) {
+                ctx->len = getByte(ctx->bs);
+                if (ctx->len == 0) {
+                    { ret = -1; goto out; }
+                }
+                if (copyByte(ctx->bs, ctx->block, ctx->len) == -1) {
+                    { ret = 1; goto out; }
+                }
+                ctx->pos = 0;
+            }
+            ctx->buf |= ctx->block[ctx->pos++] << ctx->bits;
+            ctx->bits += 8;
+        }
+        ctx->code = ctx->buf & ctx->codeMask;
+        ctx->buf >>= ctx->codeSize;
+        ctx->bits -= ctx->codeSize;
+        if (ctx->old == -2) {
+            ctx->code = ctx->clear;
+        }
+        if (ctx->code == ctx->clear) {
+            ctx->codeSize = ctx->initBits + 1;
+            ctx->codeMask = (1 << ctx->codeSize) - 1;
+            ctx->avail = ctx->clear + 2;
+            ctx->old = -1;
+        } else if (ctx->code == ctx->eoi) {
+        } else if (ctx->old == -1) {
+            storePixel(ctx, ctx->code);
+            n++;
+            ctx->old = ctx->code;
+            ctx->first = ctx->code;
+        } else {
+            if (ctx->code >= ctx->avail) {
+                if (ctx->sp >= 0x1000) {
+                    { ret = -1; goto out; }
+                }
+                ctx->stack[ctx->sp++] = ctx->first;
+                ctx->first = ctx->old;
+            } else {
+                ctx->first = ctx->code;
+            }
+            while (ctx->first >= ctx->clear) {
+                if (ctx->sp >= 0x1000) {
+                    { ret = -1; goto out; }
+                }
+                ctx->stack[ctx->sp++] = ctx->suffix[ctx->first];
+                ctx->first = ctx->prefix[ctx->first];
+            }
+            ctx->stack[ctx->sp++] = ctx->first;
+            while (ctx->sp != 0) {
+                ctx->sp--;
+                storePixel(ctx, ctx->stack[ctx->sp]);
+                n++;
+                if (n >= CURIMG(ctx)->width * CURIMG(ctx)->height) {
+                    break;
+                }
+            }
+            ctx->prefix[ctx->avail] = ctx->old;
+            ctx->suffix[ctx->avail] = ctx->first;
+            ctx->avail++;
+            ctx->old = ctx->code;
+            if (ctx->avail > ctx->codeMask && ctx->codeSize != 12) {
+                ctx->codeSize++;
+                ctx->codeMask = (1 << ctx->codeSize) - 1;
+            }
+        }
+        if (n >= CURIMG(ctx)->width * CURIMG(ctx)->height) {
+            break;
+        }
+    }
+    ret = 1;
+out:
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gif_parser", storePixelInterlace);
 
@@ -418,14 +519,14 @@ int initializeGifContext(GIFP *ctx) {
     ((GIFBS *)ctx->bs)->unk10 = 7;
     ((GIFBS *)ctx->bs)->unk14 = 1;
     ((GIFBS *)ctx->bs)->unk18 = 1;
-    ctx->unk6C = -1;
-    ctx->unk70 = 0;
-    ctx->unk74 = 0;
-    ctx->unk80 = 0;
-    ctx->unk84 = 0;
-    ctx->unk88 = 0;
-    ctx->unk8C = -2;
-    ctx->unk190 = 0;
+    ctx->code = -1;
+    ctx->first = 0;
+    ctx->bits = 0;
+    ctx->sp = 0;
+    ctx->pos = 0;
+    ctx->len = 0;
+    ctx->old = -2;
+    ctx->buf = 0;
     if (ctx->pal != NULL) {
         ESP_free(ctx->pal);
         ctx->pal = NULL;
