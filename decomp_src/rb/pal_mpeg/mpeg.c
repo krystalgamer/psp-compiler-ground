@@ -22,7 +22,53 @@ extern const char D_000079A4[];
 extern const StreamTypeInfo D_00007904[];
 /* --- end declarations --- */
 
-INCLUDE_ASM("tmp/asm/rb/pal_mpeg/nonmatchings/mpeg", sceMpegFlushStream);
+int sceMpegFlushStream(SceMpeg *mp, MpegStream *stream)
+{
+	MpegSys *sys = mp->sys;
+	StreamEntry *e;
+	StreamEntry *pair;
+	int ret;
+	int type;
+	int ch;
+	AuList2 *l;	/* stream->pair is an AU list: pointer-typed head/tail stores */
+	int a, b;
+
+	ret = func_00001104(mp);
+	if (ret != 0)
+		return ret;
+	func_00005AE4(sys->sema);
+	e = func_0000120C(stream->id, mp->sys, 1);
+	if (e == (StreamEntry *)-1) {
+		func_00005B80(sys->sema);
+		return SCE_MPEG_ERROR_INVALID_VALUE;
+	}
+	if (e->stream != (MpegStream *)-1) {
+		e->unk0 = -1;
+		e->unk4 = -1;
+		e->unkC = 0;
+		pair = stream->pair;
+		if (pair != (StreamEntry *)-1) {
+			l = (AuList2 *)pair;
+			l->tail = (AuNode2 *)-1;
+			l->head = (AuNode2 *)-1;
+			l->num = 0;
+		}
+	}
+	stream->unk10 = 0x7FFF;
+	stream->unk2C = 0;
+	func_000072F0(&type, &ch, stream->id);
+	a = D_00007904[type].unk0;
+	b = D_00007904[type].unk4;
+	stream->unk28 = a;
+	stream->unk14 = b;
+	stream->unk18 = 1;
+	stream->unk20 = 0;
+	stream->unk34 = 0;
+	stream->unk38 = 0;
+	stream->unk30 = 0;
+	func_00005B80(sys->sema);
+	return ret;
+}
 
 int sceMpegFlushAllStream(SceMpeg *mp)
 {
