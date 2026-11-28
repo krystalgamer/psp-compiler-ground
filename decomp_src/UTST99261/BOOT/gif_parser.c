@@ -461,9 +461,237 @@ out:
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gif_parser", storePixelInterlace);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gif_parser", getGifScanLinesInterlace);
+int getGifScanLinesInterlace(GIFP *ctx, int lines) {
+    int n;
+    int ret;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gif_parser", getGifScanLines);
+    n = 0;
+    ((GIFBS *)ctx->bs)->unk0 = ctx->unkC194;
+    ctx->rowIdx = 0;
+    ((GIFBS *)ctx->bs)->unk10 = 7;
+    ((GIFBS *)ctx->bs)->unk18 = 1;
+    ctx->code = -1;
+    ctx->first = 0;
+    ctx->bits = 0;
+    ctx->sp = 0;
+    ctx->pos = 0;
+    ctx->len = 0;
+    ctx->old = -2;
+    ctx->buf = 0;
+    ctx->initBits = ctx->lzwSize;
+    ctx->clear = 1 << ctx->initBits;
+    ctx->eoi = ctx->clear + 1;
+    ctx->avail = ctx->clear + 2;
+    ctx->codeSize = ctx->initBits + 1;
+    ctx->codeMask = (1 << ctx->codeSize) - 1;
+    while (ctx->code != ctx->eoi) {
+        while (ctx->bits < ctx->codeSize) {
+            if (ctx->pos == ctx->len) {
+                if (((GIFBS *)ctx->bs)->unk18 == 0) {
+                    ret = -1;
+                    goto out;
+                }
+                ctx->len = getByte(ctx->bs);
+                if (ctx->len == 0) {
+                    ret = -1;
+                    goto out;
+                }
+                if (copyByte(ctx->bs, ctx->block, ctx->len) == -1) {
+                    ret = -1;
+                    goto out;
+                }
+                ctx->pos = 0;
+            }
+            ctx->buf |= ctx->block[ctx->pos++] << ctx->bits;
+            ctx->bits += 8;
+        }
+        ctx->code = ctx->buf & ctx->codeMask;
+        ctx->buf >>= ctx->codeSize;
+        ctx->bits -= ctx->codeSize;
+        if (ctx->old == -2) {
+            ctx->code = ctx->clear;
+        }
+        if (ctx->code == ctx->clear) {
+            ctx->codeSize = ctx->initBits + 1;
+            ctx->codeMask = (1 << ctx->codeSize) - 1;
+            ctx->avail = ctx->clear + 2;
+            ctx->old = -1;
+        } else if (ctx->code == ctx->eoi) {
+        } else if (ctx->old == -1) {
+            if (ctx->code >= ctx->gctSize) {
+                ret = -1;
+                goto out;
+            }
+            storePixelInterlace(ctx, ctx->code, lines);
+            n++;
+            ctx->old = ctx->code;
+            ctx->first = ctx->code;
+        } else {
+            if (ctx->code >= ctx->avail) {
+                if (ctx->sp >= 0x1000) {
+                    ret = -1;
+                    goto out;
+                }
+                ctx->stack[ctx->sp++] = ctx->first;
+                ctx->first = ctx->old;
+            } else {
+                ctx->first = ctx->code;
+            }
+            while (ctx->first >= ctx->clear) {
+                if (ctx->sp >= 0x1000) {
+                    ret = -1;
+                    goto out;
+                }
+                ctx->stack[ctx->sp++] = ctx->suffix[ctx->first];
+                ctx->first = ctx->prefix[ctx->first];
+            }
+            ctx->stack[ctx->sp++] = ctx->first;
+            while (ctx->sp != 0) {
+                ctx->sp--;
+                if (ctx->stack[ctx->sp] >= ctx->gctSize) {
+                    ret = -1;
+                    goto out;
+                }
+                storePixelInterlace(ctx, ctx->stack[ctx->sp], lines);
+                n++;
+                if (n >= CURIMG(ctx)->width * CURIMG(ctx)->height) {
+                    break;
+                }
+                if (ctx->rowIdx >= lines * 2) {
+                    break;
+                }
+            }
+            ctx->prefix[ctx->avail] = ctx->old;
+            ctx->suffix[ctx->avail] = ctx->first;
+            ctx->avail++;
+            ctx->old = ctx->code;
+            if (ctx->avail > ctx->codeMask && ctx->codeSize != 12) {
+                ctx->codeSize++;
+                ctx->codeMask = (1 << ctx->codeSize) - 1;
+            }
+        }
+        if (n >= CURIMG(ctx)->width * CURIMG(ctx)->height) {
+            break;
+        }
+        if (ctx->rowIdx >= lines * 2) {
+            break;
+        }
+    }
+    ret = 1;
+out:
+    return ret;
+}
+
+int getGifScanLines(GIFP *ctx, int lines) {
+    int n;
+    int ret;
+
+    n = 0;
+    if (ctx->unkC198 == 0) {
+        ctx->initBits = ctx->lzwSize;
+        ctx->clear = 1 << ctx->initBits;
+        ctx->eoi = ctx->clear + 1;
+        ctx->avail = ctx->clear + 2;
+        ctx->codeSize = ctx->initBits + 1;
+        ctx->codeMask = (1 << ctx->codeSize) - 1;
+    } else {
+        while (ctx->sp != 0) {
+            ctx->sp--;
+            storePixel(ctx, ctx->stack[ctx->sp]);
+            n++;
+            if (n >= CURIMG(ctx)->width * lines) {
+                ret = 1;
+                goto out;
+            }
+        }
+    }
+    while (ctx->code != ctx->eoi) {
+        while (ctx->bits < ctx->codeSize) {
+            if (ctx->pos == ctx->len) {
+                ctx->len = getByte(ctx->bs);
+                if (ctx->len == 0) {
+                    ret = -1;
+                    goto out;
+                }
+                if (copyByte(ctx->bs, ctx->block, ctx->len) == -1) {
+                    ret = -1;
+                    goto out;
+                }
+                ctx->pos = 0;
+            }
+            ctx->buf |= ctx->block[ctx->pos++] << ctx->bits;
+            ctx->bits += 8;
+        }
+        ctx->code = ctx->buf & ctx->codeMask;
+        ctx->buf >>= ctx->codeSize;
+        ctx->bits -= ctx->codeSize;
+        if (ctx->old == -2) {
+            ctx->code = ctx->clear;
+        }
+        if (ctx->code == ctx->clear) {
+            ctx->codeSize = ctx->initBits + 1;
+            ctx->codeMask = (1 << ctx->codeSize) - 1;
+            ctx->avail = ctx->clear + 2;
+            ctx->old = -1;
+        } else if (ctx->code == ctx->eoi) {
+        } else if (ctx->old == -1) {
+            if (ctx->code >= ctx->gctSize) {
+                ret = -1;
+                goto out;
+            }
+            storePixel(ctx, ctx->code);
+            n++;
+            ctx->old = ctx->code;
+            ctx->first = ctx->code;
+        } else {
+            if (ctx->code >= ctx->avail) {
+                if (ctx->sp >= 0x1000) {
+                    ret = -1;
+                    goto out;
+                }
+                ctx->stack[ctx->sp++] = ctx->first;
+                ctx->first = ctx->old;
+            } else {
+                ctx->first = ctx->code;
+            }
+            while (ctx->first >= ctx->clear) {
+                if (ctx->sp >= 0x1000) {
+                    ret = -1;
+                    goto out;
+                }
+                ctx->stack[ctx->sp++] = ctx->suffix[ctx->first];
+                ctx->first = ctx->prefix[ctx->first];
+            }
+            ctx->stack[ctx->sp++] = ctx->first;
+            while (ctx->sp != 0) {
+                ctx->sp--;
+                if (ctx->stack[ctx->sp] >= ctx->gctSize) {
+                    ret = -1;
+                    goto out;
+                }
+                storePixel(ctx, ctx->stack[ctx->sp]);
+                n++;
+                if (n >= CURIMG(ctx)->width * lines) {
+                    break;
+                }
+            }
+            ctx->prefix[ctx->avail] = ctx->old;
+            ctx->suffix[ctx->avail] = ctx->first;
+            ctx->avail++;
+            ctx->old = ctx->code;
+            if (ctx->avail > ctx->codeMask && ctx->codeSize != 12) {
+                ctx->codeSize++;
+                ctx->codeMask = (1 << ctx->codeSize) - 1;
+            }
+        }
+        if (n >= CURIMG(ctx)->width * lines) {
+            break;
+        }
+    }
+    ret = 1;
+out:
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gif_parser", GIFParser);
 
