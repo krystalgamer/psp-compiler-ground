@@ -31,7 +31,19 @@ int sortTerm(void) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/sort", sortTag);
+void sortTag(unsigned int *p)
+{
+	unsigned int *q = p;
+	unsigned int v;
+	p += 255;
+	v = (unsigned int)(q + 1) | 0x80000000;
+	do {
+		*q = v;
+		q++;
+		v += 4;
+	} while (q != p);
+	*p = 0;
+}
 
 void sortTagR(unsigned int *p)
 {
