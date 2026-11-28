@@ -345,7 +345,25 @@ void CmdCtrlMidiReset(int arg0, void *arg1) {
     ResetMidiChData(arg0 + (M2C_FIELD(arg1, int *, 4) * 6) + 0x38);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", CmdAdsrID);
+void CmdAdsrID(char *port, int *cmd)
+{
+	UnitT *u;
+	int id = cmd[1];
+	int adsr = cmd[2];
+	int res = *(short *)(*(char **)(port + 0x10) + 0x12);
+	unsigned int a;
+	if (sgxResLock(res) == 0) return;
+	a = sgxResFindAdsr(*(short *)(*(char **)(port + 0x10) + 0x12), adsr);
+	for (u = (UnitT *)PortListFirst(port + 0x18); u != NULL; u = (UnitT *)PortListNext((char *)u)) {
+		int i;
+		if (*(int *)((char *)u + 8) != id) continue;
+		for (i = 0; i < u->s.nv; i++) {
+			if (u->s.v[i] >= 0)
+				sgxVoCtrl(u->s.v[i], 6, (a >> 16) & 0xFFFF, a & 0xFFFF);
+		}
+	}
+	sgxResUnlock(res);
+}
 
 void CmdBendWID(char *port, int *cmd) {
     char *e;
