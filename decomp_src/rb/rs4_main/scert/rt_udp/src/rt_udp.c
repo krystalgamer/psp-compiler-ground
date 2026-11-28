@@ -157,7 +157,37 @@ M2C_UNK *rt_udp_get_version_string(void) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_create);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_destroy);
+extern void **gCryptInterfacePtr;
+int rt_list_buf_destroy(); int rt_list_buf_destroy_pool(); void *memset();
+int rt_udp_destroy(char *u)
+{
+    unsigned int i = 0;
+    char *c;
+
+    if (u == NULL) return;
+    if (*(int *)u != 0) rt_udp_destroy_shared_channel_data(u);
+    if (gCryptInterfacePtr != NULL) {
+        ((void (*)(int))gCryptInterfacePtr[0x5C / 4])(-1);
+        ((void (*)(int))gCryptInterfacePtr[0x60 / 4])(-1);
+    }
+    if (*(char **)(u + 8) != NULL) {
+        for (c = *(char **)(u + 8); i < *(unsigned int *)(u + 0x60); i++, c += 0x90) {
+            if (*(int *)c != 0) {
+                rt_list_buf_destroy(c + 0x14);
+                rt_list_buf_destroy(c + 0x24);
+                rt_memory_free(c + 0x84);
+                if (gCryptInterfacePtr != NULL)
+                    ((void (*)(int, int))gCryptInterfacePtr[0x50 / 4])(-1, *(int *)(c + 0x74));
+                memset(c, 0, 0x90);
+            }
+        }
+        rt_memory_free(u + 8);
+    }
+    if (*(int *)(u + 0x44) != 0) rt_list_buf_destroy(u + 0x3C);
+    rt_list_buf_destroy(u + 0x2C);
+    rt_list_buf_destroy_pool(u + 0x14);
+    rt_memory_free(&u);
+}
 
 int rt_list_buf_resize_buffer();
 int rt_udp_set_buffer_size(void *u, int *c, int which, int size)
@@ -282,7 +312,8 @@ int rt_udp_disable_nat_service_heartbeat(void *arg0) {
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_connect);
 
 typedef struct { unsigned char b[2]; } RtUdpRaw2;
-typedef struct { struct { void *buf; int len; } e[8]; int total; int n; } RtUdpVec;
+typedef struct { void *buf; int len; } RtUdpVecEnt;
+typedef struct { RtUdpVecEnt e[8]; int total; int n; } RtUdpVec;
 typedef struct { unsigned short hlen; unsigned short flags; } RtUdpSubInfo2;
 int rt_udp_buffer_data_for_send(void *u, void *list, RtUdpVec *v, unsigned short flags, int conn);
 void rt_udp_setup_packet_sub_header(char *u, char *c, unsigned short flags, int len, unsigned short *h);
@@ -371,7 +402,45 @@ int rt_udp_deny(void *u, int *c)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_pre_accept);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_event_process);
+int rt_time_elapsed(); int rt_time_start(); int rt_time_get_time_stamp(); int rt_comm_update(); int rt_udp_send_messages(); int rt_comm_send_to(); int rt_udp_receive_messages(char *u);
+typedef struct { unsigned short h, a, b; } RtUdpHb;
+int rt_udp_event_process(char *u)
+{
+    unsigned int el;
+    int sent = 0;
+    char *c;
+    int r;
+
+    if (u == NULL) return 0xD2F2;
+    for (c = *(char **)(u + 0xC); c != NULL; c = *(char **)(c + 0x8C)) {
+        if (*(int *)c != 0) {
+            r = rt_udp_send_messages(u, c);
+            if (r != 0) return r;
+        }
+        if (*(int *)c == 13) {
+            rt_time_elapsed(c + 0x3C, &el);
+            if (el > 2000) {
+                RtUdpHb p = {0, 0, 0};
+                p.h |= *(unsigned short *)(c + 0x5E) & 0x3FF;
+                rt_comm_send_to(*(int *)u, c + 8, *(int *)(c + 0x10), &p, 6, &sent);
+                rt_time_get_time_stamp(c + 0x3C);
+            }
+        }
+    }
+    if (*(int *)(u + 0x44) != 0) {
+        rt_time_elapsed(u + 0x4C, &el);
+        if (el >= *(unsigned int *)(u + 0x70) || *(int *)(u + 0x54) != 0) {
+            r = rt_udp_send_broadcasts(u);
+            if (r != 0) return r;
+            rt_time_start(u + 0x4C);
+            *(int *)(u + 0x54) = 0;
+        }
+    }
+    rt_comm_update();
+    r = rt_udp_receive_messages(u);
+    if (r != 0) return r;
+    return 0;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rcsid_10CAE0);
 
