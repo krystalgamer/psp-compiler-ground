@@ -7,7 +7,7 @@
 /* the module's .ctors/.dtors refer to the static constructor/destructor */
 __asm__(".globl _GLOBAL__I__ZN11vector_font10OutputText8_currentE");
 
-#include "UTST99332/demo_harmonic/gl.hpp"
+#include "UTST99332/demo_duck/gl.hpp"
 
 namespace vector_font {
 class OutputText {
