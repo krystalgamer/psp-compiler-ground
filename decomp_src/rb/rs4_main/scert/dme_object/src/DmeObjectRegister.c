@@ -4,7 +4,18 @@
 #define NULL ((void *)0)
 #endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObjectRegister", NetIRegisterObjectStart);
+extern char *gObjectInterfacePtr;
+extern int GlobalObjectFieldCount; extern void *GlobalObjectFieldList;
+int NetMapRtError(); int rt_memory_allocate_init_zero();
+int NetIRegisterObjectStart(void)
+{
+    if (*(unsigned int *)(gObjectInterfacePtr + 0x110) < *(unsigned int *)(gObjectInterfacePtr + 0xF8)) {
+        int sz = *(int *)(gObjectInterfacePtr + 0xFC) * 4;
+        GlobalObjectFieldCount = 0;
+        return NetMapRtError(rt_memory_allocate_init_zero(&GlobalObjectFieldList, sz));
+    }
+    return 8;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObjectRegister", NetIObjectField);
 
