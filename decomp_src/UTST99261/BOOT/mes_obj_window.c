@@ -88,6 +88,19 @@ extern char D_0013C44C[];
 int mes_class_instance_of(MesObject *obj, void *cls);
 extern void *mes_event_class;
 int mes_class_call(MesContext *ctx, int f, int argc, MesValue *argv, MesObject *thisobj);
+typedef struct WsiCtx { MesContext *ctx; MesObject *obj; } WsiCtx;
+typedef struct WsiTimer { int id; int kind; WsiCtx *wc; int len; void *data; } WsiTimer;
+typedef struct WsiCall { MesValue fn; int argc; int *vals; } WsiCall;
+typedef struct WsiStr { void *chars; int len; } WsiStr;
+int js_checkAddTimer(void);
+int get_global_ptr(void);
+int *mes_util_vals(int n, int a);
+MesValue mes_eval_to_number(MesContext *ctx, MesValue v);
+int OS_timer_set(int a, int b, int c, int d, int e);
+int OS_timer_start(int id);
+void js_addTimer(int arg0, int arg1, int arg2, int arg3);
+void SetIpcmsg(void *m, void *b);
+extern int *g_JS_MSG_SID_;
 void mes_window_check_validate(MesContext *ctx, void **a, void **b, int *sid, void **node)
 {
     MesObject *o;
@@ -165,7 +178,78 @@ void mes_window_scroll_inner(void *dom, int kind, int x, int y, int sid)
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_set_interval_inner);
+MesValue mes_window_set_interval_inner(MesContext *ctx, MesValue *argv, int argc, int kind)
+{
+    IpcMsg msg;
+    MesValue code;
+    int ms;
+    WsiCtx *wc;
+    WsiTimer *t;
+    WsiCall *fc;
+    int n, i;
+    int *vals;
+    void *m;
+    int type;
+    MesValue iv;
+
+    if (argv == NULL || argc < 2)
+        return 0;
+    code = argv[0];
+    iv = argv[1];
+    if ((code & 3) != 3 && !MES_IS_OBJECT(code))
+        return 0;
+    ms = mes_eval_to_number(ctx, iv) >> 2;
+    if (ms <= 0) {
+        ms = 0;
+        kind = 2;
+    }
+    if (js_checkAddTimer() != 0)
+        return 0;
+    wc = MEM_malloc(0, 0x10);
+    if (wc != NULL) {
+        wc->ctx = ctx;
+        wc->obj = ctx->frame->thisobj;
+        t = MEM_malloc(0, 0x14);
+        if (t != NULL) {
+            t->kind = kind;
+            t->wc = wc;
+            if ((code & 3) == 3) {
+                WsiStr *s = (WsiStr *)(code & ~3);
+                t->data = s->chars;
+                t->len = s->len;
+                type = 0;
+            } else if (MES_IS_OBJECT(code) && ((unsigned char *)code)[0x10] == 5) {
+                fc = MEM_malloc(0, 0xC);
+                if (fc == NULL)
+                    goto fail_t;
+                fc->fn = argv[0];
+                n = argc - 2;
+                fc->argc = n;
+                vals = mes_util_vals(n, 0);
+                for (i = 0; i < argc - 2; i++)
+                    vals[i + 1] = argv[i + 2];
+                fc->vals = vals;
+                t->data = fc;
+                type = 1;
+            } else
+                goto fail_t;
+            SetIpcMember(&msg, 8, *g_JS_MSG_SID_, 0, 0x810, type, 0x14, t);
+            m = MEM_malloc(0, 0x24);
+            if (m != NULL) {
+                SetIpcmsg(m, &msg);
+                t->id = OS_timer_set(((int *)get_global_ptr())[5], 0, ms, (int)m, 0);
+                OS_timer_start(t->id);
+                js_addTimer(t->id, kind, (int)m, (int)ctx);
+                return MES_INT(t->id);
+            }
+            MEM_free(0, t->data);
+        fail_t:
+            MEM_free(0, t);
+        }
+        MEM_free(0, wc);
+    }
+    return 0;
+}
 
 MesValue mes_window_alert(MesContext *ctx, MesValue msg)
 {
