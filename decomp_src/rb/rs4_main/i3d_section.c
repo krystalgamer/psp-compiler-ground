@@ -198,7 +198,33 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/i3d_section", g_MatHermite);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_section", I3mSectionSub_InterPosture);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_section", I3mSection__GetPostureA);
+void I3mSectionSub_InterPosture(unsigned short *s, I3mSec *m, float *out, int flags, float t);
+extern const float D_001096C8;
+int I3mSection__GetPostureA(unsigned short *s, float *out, float t, int flags, I3mSec *m)
+{
+	float *times;
+	float w;
+	int f;
+
+	if (s == 0) return 0;
+	if (m == 0) return 0;
+	times = *(float **)((char *)m + 0x24);
+	if (t < times[s[0]]) {
+		w = D_001096C8;
+	} else {
+		w = D_001096C8 - (t - times[s[0]]) * times[s[1]];
+		if (w < 0.0f) w = 0.0f;
+	}
+	if (w == D_001096C8) {
+		UnpackKey(out, (I3mKey *)s, m);
+		return 1;
+	}
+	f = flags & 0x222;
+	if (f != 0 && (m->flags & 4)) flags = (flags & ~0x222) | (f >> 1);
+	I3mSectionSub_InterPosture(s, m, out, flags, w);
+	return 1;
+}
+const float D_001096C8 = 1.0f;
 
 #ifndef NULL
 #define NULL ((void *)0)
