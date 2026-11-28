@@ -54,47 +54,35 @@ int sceSsVoiceSetSendPanpot(int voice, int pan);
 int sceSsVoiceSetVelocity(int voice, unsigned char vel);
 int sceSsVoiceSetSendVelocity(int voice, unsigned char vel);
 
-#ifdef NON_MATCHING
-/* diff4: regrename t0/t1 swap between the loop load and the status = 3 constant */
 int func_00009EDC(SmfData *p, unsigned int id);
 int func_0000A314(unsigned char *data, SmfData *p);
 
 int smf_bindSmf(SmfData *smf, int size)
 {
 	unsigned int i;
-	int ret;
 	int r;
 
-	ret = 0x80450001;
-	if (g_smfmax != 0) {
-		ret = 0x80450003;
-		if (size != 0) {
-			ret = 0x80540004;
-			if (smf != NULL) {
-				for (i = 0; i < 128; i++) {
-					if (g_smf[i] == NULL) {
-						g_smf[i] = smf;
-						func_00009EDC(smf, i);
-						r = func_0000A314((unsigned char *)size, g_smf[i]);
-						ret = i;
-						if (r != 0) {
-							ret = r;
-							g_smf[i]->status = 3;
-							g_smf[i] = NULL;
-						}
-						goto end;
-					}
-				}
-				ret = 0x80540006;
+	if (g_smfmax == 0)
+		return 0x80450001;
+	if (size == 0)
+		return 0x80450003;
+	if (smf == NULL)
+		return 0x80540004;
+	for (i = 0; i < 128; i++) {
+		if (g_smf[i] == NULL) {
+			g_smf[i] = smf;
+			func_00009EDC(smf, i);
+			r = func_0000A314((unsigned char *)size, g_smf[i]);
+			if (r != 0) {
+				g_smf[i]->status = 3;
+				g_smf[i] = NULL;
+				return r;
 			}
+			return i;
 		}
 	}
-end:
-	return ret;
+	return 0x80540006;
 }
-#else
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/smf", smf_bindSmf);
-#endif
 
 int smf_unbindSmf(unsigned int id)
 {
