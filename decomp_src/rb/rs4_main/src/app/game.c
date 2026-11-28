@@ -1,6 +1,7 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
+#include "../minmax.h"
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
@@ -86,7 +87,21 @@ void gameUnlock(void) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/game", gameChkChange);
+int gameChkChange(void)
+{
+	int cur = resGetCurrentInst();
+	int i;
+	int n;
+
+	for (i = 0; i <= cur; i++) {
+		n = G->inst[i].f4;
+		if (G->inst[i].module != n) {
+			G->inst[i].f4 = amax(n, 0);
+			break;
+		}
+	}
+	return i > cur ? -1 : cur;
+}
 
 void gameSwitchPlayer(int a)
 {

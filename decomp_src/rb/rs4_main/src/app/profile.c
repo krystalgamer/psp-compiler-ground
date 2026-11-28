@@ -1,6 +1,7 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
+#include "../minmax.h"
 unsigned int cccTtrToUcs4(void *, int, M2C_UNK *, M2C_UNK, M2C_UNK); /* extern */
 void consPrintf(const char *, ...);
 int resGetDatLocal(M2C_UNK, M2C_UNK);               /* extern */
@@ -37,9 +38,17 @@ void profileDefaultParamSet(void *arg0) {
     M2C_FIELD(arg0, short *, 0x200) = 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/profile", profileGetRankingTtrStr);
+int profileGetRankingTtrStr(char *buf, int n)
+{
+	sprintf(buf, "MENU_TEXT_%d", amin(amax(n, 0), 24) + 59);
+	return 1;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/profile", profileGetRankingTtrStr2);
+int profileGetRankingTtrStr2(char *buf, int n)
+{
+	sprintf(buf, "ENUM_RANKING_%d", amin(amax(n, 0), 24) + 1);
+	return 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/profile", profileGetPerOfWins);
 

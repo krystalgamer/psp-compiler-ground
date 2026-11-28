@@ -1,6 +1,7 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
+#include "../minmax.h"
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
@@ -306,9 +307,17 @@ int cardlistGetCardIDFromSaveID(unsigned int arg0) {
     return -1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", cardlistGetResultEfcTtrStr);
+int cardlistGetResultEfcTtrStr(char *buf, int n)
+{
+	sprintf(buf, "ENUM_RESULT_%d", amin(amax(n, 0), 33) + 1);
+	return 1;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", cardlistGetRarityTtrStr);
+int cardlistGetRarityTtrStr(char *buf, int n)
+{
+	sprintf(buf, "ENUM_RARITY_%d", amin(amax(n, 0), 3) + 1);
+	return 1;
+}
 
 int cardlistGetCardNameBySaveID(unsigned int arg0) {
     if (arg0 < (unsigned int) l_nCardNum) {
