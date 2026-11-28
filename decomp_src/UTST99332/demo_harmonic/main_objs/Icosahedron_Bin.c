@@ -98,11 +98,44 @@ Icosahedron::~Icosahedron()
         delete *it;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/Icosahedron_Bin", _ZNK11Icosahedron3Bin9intersectEN4math11vector_xyzwE);
+extern const float D_0016F898;
+extern const float D_0016F89C;
+bool Icosahedron::Bin::intersect(math::vector_xyzw v) const
+{
+    math::vector_xyzw p(v.x * D_0016F898, v.y * D_0016F898, v.z * D_0016F898, D_0016F89C);
+    if (math::dot(_face, p - _v[0]) < 0)
+        return false;
+    if (math::dot(_edge[0], p - _v[0]) > 0)
+        return false;
+    if (math::dot(_edge[1], p - _v[1]) > 0)
+        return false;
+    if (math::dot(_edge[2], p - _v[2]) > 0)
+        return false;
+    return true;
+}
+
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/Icosahedron_Bin", _ZNK11Icosahedron3Bin22in_negative_half_spaceEN4math11vector_xyzwE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/Icosahedron_Bin", _ZN11Icosahedron3Bin10searchLeafEN4math11vector_xyzwE);
+Icosahedron::Bin *Icosahedron::Bin::searchLeaf(math::vector_xyzw v)
+{
+    bool out = !intersect(v);
+    if (out)
+        return 0;
+    if (_leaf)
+        return this;
+    Bin *b = _children[0]->searchLeaf(v);
+    if (b)
+        return b;
+    b = _children[1]->searchLeaf(v);
+    if (b)
+        return b;
+    b = _children[2]->searchLeaf(v);
+    if (b)
+        return b;
+    return _children[3]->searchLeaf(v);
+}
+
 
 Icosahedron::Bin *Icosahedron::searchLeaf(math::vector_xyzw v)
 {

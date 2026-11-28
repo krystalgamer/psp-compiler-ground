@@ -908,7 +908,10 @@ public:
         void setLeafIndex(unsigned int);
         int getLeafIndex() const;
         /* data */
-        char _p0[0x8C];
+        math::vector_xyzw _v[3];    /* 0x00 corners */
+        math::vector_xyzw _edge[3]; /* 0x30 edge planes */
+        math::vector_xyzw _face;    /* 0x60 face plane */
+        char _p70[0x1C];
         bool _leaf;                 /* 0x8C */
         int _f90;
         int _f94;
