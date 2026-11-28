@@ -675,9 +675,76 @@ static const u32 rcon[10] = {
 int _rijndaelKeySetupEnc(u32 rk[], const u8 cipherKey[], int keyBits);
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/keywrap", _keywrap_encrypt);
+void aeskw_xor64(void *a, void *b, void *c);
+#define BSWAP64(x) (((x) << 56) | (((x) & 0xff00ULL) << 40) | (((x) & 0xff0000ULL) << 24) | (((x) & 0xff000000ULL) << 8) | (((x) & 0xff00000000ULL) >> 8) | (((x) & 0xff0000000000ULL) >> 24) | (((x) & 0xff000000000000ULL) >> 40) | ((x) >> 56))
+int _rijndaelKeySetupDec(u32 rk[], const u8 cipherKey[], int keyBits);
+void _rijndaelDecrypt(const u32 rk[], int Nr, const u8 ct[16], u8 pt[16]);
+int _keywrap_encrypt(u8 *out, const u8 *in, unsigned int inlen, const u8 *key, int keylen)
+{
+    u8 B[16];
+    u32 rk[80];
+    u64 iv = 0xa6a6a6a6a6a6a6a6ULL;
+    u64 t;
+    int Nr, n, i, j;
+    u8 *R;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/keywrap", _keywrap_decrypt);
+    if ((inlen & 7) || (keylen & 7))
+        return 0;
+    n = inlen >> 3;
+    if (n < 2)
+        return 0;
+    keylen *= 8;
+    Nr = _rijndaelKeySetupEnc(rk, key, keylen);
+    memcpy(out + 8, in, inlen);
+    memcpy(B, &iv, 8);
+    for (j = 0; j < 6; j++) {
+        for (i = 1; i <= n; i++) {
+            R = out + 8 * i;
+            memcpy(B + 8, R, 8);
+            _rijndaelEncrypt(rk, Nr, B, B);
+            t = BSWAP64((u64)n * j + i);
+            aeskw_xor64(B, &t, B);
+            memcpy(R, B + 8, 8);
+        }
+    }
+    memcpy(out, B, 8);
+    return 1;
+}
+
+int _keywrap_decrypt(u8 *out, const u8 *in, unsigned int inlen, const u8 *key, int keylen)
+{
+    u8 B[16];
+    u32 rk[80];
+    u64 t;
+    u64 iv = 0xa6a6a6a6a6a6a6a6ULL;
+    int Nr, n, i, j;
+    int ret = 1;
+    u8 *R;
+
+    if ((inlen & 7) || (keylen & 7))
+        return 0;
+    inlen--;
+    n = inlen >> 3;
+    if (n < 2)
+        return 0;
+    keylen *= 8;
+    Nr = _rijndaelKeySetupDec(rk, key, keylen);
+    memcpy(B, in, 8);
+    memcpy(out, in + 8, inlen);
+    for (j = 5; j >= 0; j--) {
+        for (i = n; i >= 1; i--) {
+            R = out + 8 * (i - 1);
+            t = BSWAP64((u64)n * j + i);
+            aeskw_xor64(B, &t, B);
+            memcpy(B + 8, R, 8);
+            _rijndaelDecrypt(rk, Nr, B, B);
+            memcpy(R, B + 8, 8);
+        }
+    }
+    if (memcmp(&iv, B, 8) != 0)
+        ret = 0;
+    return ret;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
