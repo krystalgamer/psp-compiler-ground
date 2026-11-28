@@ -109,9 +109,36 @@ int sgxBmgGetRefCount(int id)
     return *(short *)(p + 0x10);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgIncBuf);
+int sgxBmgIncBuf(int id, int n)
+{
+    char *p = SlotGetAt_7A70C(id, "IncBuf");
+    int pos;
+    if (p == NULL) return 0;
+    n = ((n < sgxBmgGetFree(id) ? n : sgxBmgGetFree(id)) < 0 ? 0 : (n < sgxBmgGetFree(id) ? n : sgxBmgGetFree(id)));
+    sgxDI();
+    pos = *(int *)(p + 0x34) + n;
+    while (pos >= *(int *)(p + 0x28)) pos = pos - *(int *)(p + 0x28);
+    *(int *)(p + 0x34) = pos;
+    *(volatile int *)(p + 0x3C) += n;
+    sgxEI();
+    return n;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgDecBuf);
+int sgxBmgDecBuf(int id, int n)
+{
+    char *p = SlotGetAt_7A70C(id, "DecBuf");
+    int pos;
+    if (p == NULL) return 0;
+    n = ((n < sgxBmgGetLeft(id) ? n : sgxBmgGetLeft(id)) < 0 ? 0 : (n < sgxBmgGetLeft(id) ? n : sgxBmgGetLeft(id)));
+    sgxDI();
+    pos = *(int *)(p + 0x38) + n;
+    while (pos >= *(int *)(p + 0x28)) pos = pos - *(int *)(p + 0x28);
+    *(int *)(p + 0x38) = pos;
+    *(volatile int *)(p + 0x3C) -= n;
+    sgxEI();
+    CheckLowBuf(p);
+    return n;
+}
 
 char *sgxBmgGetHead(int id)
 {
@@ -165,15 +192,55 @@ int sgxBmgGetLeft(int id)
     return *(int *)(p + 0x3C);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgGetLinearLeft);
+extern const char D_0010A10C[];
+int sgxBmgGetLinearLeft(int id)
+{
+    char *b = SlotGetAt_7A70C(id, D_0010A10C);
+    int n, r;
+    if (b == NULL) return 0;
+    r = *(int *)(b + 0x3C);
+    n = *(int *)(b + 0x28) - *(int *)(b + 0x38);
+    return r < n ? r : n;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgGetLinearLeftOfs);
+extern const char D_0010A10C[];
+int sgxBmgGetLinearLeftOfs(int id, int ofs)
+{
+    char *b = SlotGetAt_7A70C(id, D_0010A10C);
+    int n, r;
+    if (b == NULL) return 0;
+    n = *(int *)(b + 0x28) - (*(int *)(b + 0x38) + ofs) % *(int *)(b + 0x28);
+    r = *(int *)(b + 0x3C) - ofs;
+    return r < n ? r : n;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", D_0010A10C);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgWrite);
+int sgxBmgWrite(int id, char *src, int size)
+{
+    int done, n;
+    if (SlotGetAt_7A70C(id, "Write") == NULL) return 0;
+    for (done = 0; done < size; done += n) {
+        n = size - done < sgxBmgGetLinearFree(id) ? size - done : sgxBmgGetLinearFree(id);
+        if (n <= 0) break;
+        memcpy(sgxBmgGetHead(id), src + done, n);
+        sgxBmgIncBuf(id, n);
+    }
+    return done;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgRead);
+int sgxBmgRead(int id, char *dst, int size)
+{
+    int done, n;
+    if (SlotGetAt_7A70C(id, "Read") == NULL) return 0;
+    for (done = 0; done < size; done += n) {
+        n = size - done < sgxBmgGetLinearLeft(id) ? size - done : sgxBmgGetLinearLeft(id);
+        if (n <= 0) break;
+        memcpy(dst + done, sgxBmgGetTail(id), n);
+        sgxBmgDecBuf(id, n);
+    }
+    return done;
+}
 
 void sgxBmgWriteTerm(int id)
 {
@@ -181,7 +248,13 @@ void sgxBmgWriteTerm(int id)
     if (p != NULL) p[0x12] = 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgIsFinished);
+int sgxBmgIsFinished(int id)
+{
+    char *p = SlotGetAt_7A70C(id, "IsFinished");
+    if (p == NULL) return 0;
+    if (*(signed char *)(p + 0x12) && sgxBmgGetLeft(id) <= 0) return 1;
+    return 0;
+}
 
 void CheckLowBuf(char *b);
 void sgxBmgSetLowBufCallback(int id, void *cb, int arg, int lvl, int arg2)
