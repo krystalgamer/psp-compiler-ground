@@ -28,7 +28,64 @@ typedef struct { int mode, attr; long long size; char t[48]; unsigned int priv[6
 int sceIoGetstat(const char *, UmdStat *);
 char *umdPref();
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", umdInit);
+int sceKernelDelayThreadCB(unsigned int delay);
+int sceKernelCreateCallback(const char *name, void *func, void *arg);
+int sprintf(char *buf, const char *fmt, ...);
+void *memset(void *s, int c, unsigned int n);
+int sceUmdRegisterUMDCallBack(int);                 /* extern */
+int sceUmdWaitDriveStatCB(M2C_UNK, M2C_UNK);        /* extern */
+extern signed char D_000FA7E8;
+extern signed char D_000FA7F0;
+extern unsigned char D_000FA828;
+extern unsigned char D_000FA848;
+extern signed char D_000FA85C;
+extern unsigned char D_000FA864;
+extern signed char D_000FA88C;
+extern signed char D_000FA898;
+extern unsigned char RdpStat;
+extern int UmdName_PrefDir;
+extern signed char UmdRdp;
+extern unsigned char umdProc;
+
+int umdInit(int arg0) {
+    M2C_UNK *temp_v0;
+    int temp_v0_2;
+
+    temp_v0 = "umdInit";
+    consPrintf("%s {\n", temp_v0);
+    memset(&UmdRdp, 0, 0x400U);
+    sprintf(&UmdRdp, &D_000FA7E8, UmdName_Alias, UmdName_PrefDir, arg0);
+    if (M2C_FIELD(&UmdRdp, signed char *, 0x3FF) != 0) {
+        consPrintf(&D_000FA7FC, &D_000FA818, 0x3F, temp_v0, &D_000FA828);
+    }
+    consPrintf(&D_000FA7F0, &UmdRdp);
+    if (UmdStandby != 0) {
+        consPrintf(&D_000FA7FC, &D_000FA818, 0x45, temp_v0, &D_000FA848);
+    }
+    UmdStandby = 1;
+    umdActive();
+    temp_v0_2 = sceKernelCreateCallback(&D_000FA85C, &umdProc, NULL);
+    UmdUID = temp_v0_2;
+    if (temp_v0_2 <= 0) {
+        consPrintf(&D_000FA7FC, &D_000FA818, 0x4C, temp_v0, &D_000FA864);
+    }
+    if (sceUmdRegisterUMDCallBack(UmdUID) != 0) {
+        consPrintf(&D_000FA7FC, &D_000FA818, 0x51, temp_v0, &D_000FA870);
+    }
+    if (sceUmdWaitDriveStatCB(0x20, 0) != 0) {
+        consPrintf(&D_000FA7FC, &D_000FA818, 0x56, temp_v0, &D_000FA870);
+    }
+    memset(&RdpStat, 0, 0x58U);
+loop_11:
+    if (sceIoGetstat(&UmdRdp, &RdpStat) != 0) {
+        sceKernelDelayThreadCB(0x3E8U);
+        goto loop_11;
+    }
+    consPrintf(&D_000FA88C, M2C_FIELD(&RdpStat, int *, 0x40));
+    umdReady();
+    consPrintf(&D_000FA898);
+    return 1;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FA7E8);
 

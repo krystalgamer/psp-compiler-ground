@@ -8,13 +8,14 @@ void consPrintf(const char *, ...);
 extern int pCurrent;
 
 extern unsigned char D_000FC050, D_000FC058, D_000FC0A8;
+extern unsigned char D_000FC070, D_000FC0C4, D_000FC1C0, D_000FC1E4, D_000FC1F0;
 int rsvTerm();
 int _memFree();
 
-M2C_UNK taskKill(void *, int, int);
+
 int taskKill();
 
-void taskProc();
+int taskProc(void *, int, void *, int);
 
 void consPrintf(const char *, ...);
 
@@ -81,19 +82,116 @@ int taskHeadAlive(void)
 	return 0;
 }
 
-void taskProc(arg0)
-    void *arg0;
+int taskProc(void *arg0, int msg, void *a, int b)
 {
-    M2C_FIELD(arg0, M2C_UNK (**)(), 8)();
+    return M2C_FIELD(arg0, int (**)(void *, int, void *, int), 8)(arg0, msg, a, b);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", taskMake);
+void *rsvCall(int);                                 /* extern */
+int coreFunc();
+extern signed char D_000FC0C8;
+
+int taskMake(void *arg0, int (*func)(void *, int, int, int), int arg2, int arg3) {
+    int st;
+    void *t;
+    void *c;
+
+    if (pCurrent == 0) return 0;
+    t = rsvCall(*(int *)pCurrent);
+    if (t != NULL) {
+        func = (void *)coreFunc(func);
+        M2C_FIELD(t, void **, 8) = func;
+        M2C_FIELD(t, int *, 0x1C) = 0;
+        M2C_FIELD(t, int *, 0x18) = 0;
+        if (arg0 != NULL) {
+            st = M2C_FIELD(arg0, int *, 4);
+            if (st == 0) {
+                consPrintf(&D_000FC070, &D_000FC058, 0xA3, "taskMake", &D_000FC0C4);
+            }
+            if (st < 0) {
+                consPrintf(&D_000FC0C8, "taskMake", M2C_FIELD(arg0, int *, 8));
+                M2C_FIELD(t, void **, 0x10) = NULL;
+                M2C_FIELD(t, void **, 0x14) = NULL;
+            } else {
+                c = M2C_FIELD(arg0, void **, 0x1C);
+                M2C_FIELD(arg0, void **, 0x1C) = t;
+                if (c != NULL) {
+                    M2C_FIELD(c, void **, 0x18) = t;
+                }
+                M2C_FIELD(t, void **, 0x10) = arg0;
+                M2C_FIELD(t, void **, 0x14) = c;
+            }
+        } else {
+            M2C_FIELD(t, void **, 0x10) = NULL;
+            M2C_FIELD(t, void **, 0x14) = NULL;
+        }
+    }
+    return func(t, 0, arg2, arg3);
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", D_000FC0C4);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", D_000FC0C8);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", taskKill);
+int rsvKill();
+
+int taskKill(void *task, int arg1, int arg2) {
+    int *t = task;
+    int st;
+    int r;
+    int *c;
+    int *p, *e, *y;
+
+    st = t[1];
+    if (st == 0) {
+        consPrintf("%s : Warning !! : already free. : 0x%08x\n", "taskKill", t[2]);
+        return -1;
+    }
+    if (st < 0) {
+        consPrintf("%s : Warning !! : already killed. : 0x%08x\n", "taskKill", t[2]);
+        return -1;
+    }
+    r = taskProc(t, 4, (void *)arg1, arg2);
+    if (r == -1) {
+        consPrintf(&D_000FC070, &D_000FC058, 0xD7, "taskKill", "Ret != -1");
+    }
+    if (r != 0) {
+    if (rsvKill(t) != 1) {
+        consPrintf("%s : Warning !! : Kill was recurrently done. : 0x%08x\n", "taskKill", t[2]);
+        return -1;
+    }
+    taskSendParent(t, 8, (int) t, arg2);
+    taskSendElder(t, 7, (int) t, arg2);
+    taskSendYoung(t, 6, (int) t, arg2);
+    taskSendChild(t, 5, (int) t, arg2);
+    p = (int *)t[4];
+    e = (int *)t[5];
+    y = (int *)t[6];
+    if (p != NULL && (int *)p[7] == t) {
+        p[7] = (int)e;
+    }
+    if (e != NULL) {
+        e[6] = (int)y;
+    }
+    if (y != NULL) {
+        y[5] = (int)e;
+    }
+    for (c = (int *)t[7]; c != NULL; c = (int *)c[5]) {
+        st = c[1];
+        if (st == 0) {
+            consPrintf(&D_000FC070, &D_000FC058, 0xF4, "taskKill", &D_000FC0C4);
+        }
+        if (st > 0) {
+            c[4] = 0;
+        }
+    }
+    t[4] = 0;
+    t[5] = 0;
+    t[6] = 0;
+    t[7] = 0;
+    }
+    return r;
+}
 
                  /* extern */
 
@@ -129,7 +227,39 @@ int taskDefaultMsg(int task, unsigned int msg, int p1, int p2)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", taskAllFree);
+int rsvFree(int, M2C_UNK, int);                     /* extern */
+
+void taskAllFree(void) {
+    int temp_v0;
+    int temp_v0_2;
+    int temp_v0_3;
+    int temp_v0_4;
+    int var_s0;
+    int var_s0_2;
+
+    consPrintf(&D_000FC050, "taskAllFree");
+    if (pCurrent != NULL) {
+        temp_v0 = taskHeadAlive();
+        var_s0 = temp_v0;
+        if (temp_v0 != 0) {
+            do {
+                taskKill((void **) var_s0, 0, 0);
+                temp_v0_2 = rsvNextAlive((void **) var_s0);
+                var_s0 = temp_v0_2;
+            } while (temp_v0_2 != 0);
+        }
+        temp_v0_3 = taskHead();
+        var_s0_2 = temp_v0_3;
+        if (temp_v0_3 != 0) {
+            do {
+                taskProc(var_s0_2, 1, 0, 0);
+                temp_v0_4 = rsvFree(*(int *)pCurrent, 0, var_s0_2);
+                var_s0_2 = temp_v0_4;
+            } while (temp_v0_4 != 0);
+        }
+    }
+    consPrintf(&D_000FC0A8);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", taskSendProc);
 
@@ -231,10 +361,38 @@ void taskDraw(void (*sort)(char **, void *, int, int), void (*draw)(char *, int,
 		d(t, a, b);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", taskSetRefer);
+
+int taskSetRefer(int arg0, int arg1) {
+    int r = 0;
+
+    if (pCurrent != 0) {
+        if (arg0 < 0) {
+            consPrintf(&D_000FC070, &D_000FC058, 0x27B, "taskSetRefer", &D_000FC1E4);
+        }
+        if (arg0 >= M2C_FIELD(M2C_FIELD(pCurrent, void **, 0), int *, 0x18)) {
+            consPrintf(&D_000FC070, &D_000FC058, 0x27C, "taskSetRefer", &D_000FC1F0);
+        }
+        r = 1;
+        M2C_FIELD(pCurrent, int **, 4)[arg0] = arg1;
+    }
+    return r;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", D_000FC1E4);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", D_000FC1F0);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", taskGetRefer);
+int taskGetRefer(int arg0) {
+    int r = 0;
+
+    if (pCurrent != 0) {
+        if (arg0 < 0) {
+            consPrintf(&D_000FC070, &D_000FC058, 0x28D, "taskGetRefer", &D_000FC1E4);
+        }
+        if (arg0 >= M2C_FIELD(M2C_FIELD(pCurrent, void **, 0), int *, 0x18)) {
+            consPrintf(&D_000FC070, &D_000FC058, 0x28E, "taskGetRefer", &D_000FC1F0);
+        }
+        r = M2C_FIELD(pCurrent, int **, 4)[arg0];
+    }
+    return r;
+}
