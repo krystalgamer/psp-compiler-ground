@@ -161,7 +161,34 @@ int inv_classic_option(void)
 void inv_classic_menu_free(void) {
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_menu", inv_classic_music_disp);
+typedef struct { u8 p[0x4c]; int music; } SD_MUSIC_T;
+#define SDM_MUSIC ((*(SD_MUSIC_T *)&save_data).music)
+extern int music_sw;
+extern int D_0039AEA8;
+extern char *musictbl2[];
+int hato(int v, int target, int step);
+int sound_start(int no);
+int sprite_set(int tex, int x, int y, int w, int h, int u, int v, int sw, int sh, int a9, int a10, int r, int g, int b, int a, int pri, int mode, int a17, int alpha);
+void ASC_SetStringRGBA(int font, char *str, int x, int y, int r, int g, int b, int a);
+void inv_classic_music_disp(void)
+{
+	if (SDM_MUSIC == 0)
+		return;
+	if (D_0039AEA8 == 0) {
+		sprite_set(classic_tex_28FB7C, 16, 264, 8, 8, 32, 176, 100, 100, 0, 0, 255, 255, 255, 255, 60, 2, 1, music_alpha);
+		ASC_SetStringRGBA(1, musictbl2[SDM_MUSIC], 32, 264, 255, 255, 255, music_alpha);
+	}
+	if (music_sw == 0) {
+		music_alpha = hato(music_alpha, 255, 4);
+		if (music_alpha < 255)
+			return;
+		sound_start(0);
+		music_sw++;
+	} else if (music_sw > 120)
+		music_alpha = hato(music_alpha, 0, 4);
+	else
+		music_sw++;
+}
 
 extern int nx, ny, nret, ntbl, nnanm, nc, nnanmcnt;
 extern unsigned char Name[];
