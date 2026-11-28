@@ -19,7 +19,7 @@ static inline char *ResListFirst(void) {
     char *p = *(char **)(&D_0011FC44 + 4);
     return (*(int *)(p + 8) < 0) ? NULL : p;
 }
-void *sgxResFindWave(int id, int idx, int z);
+void *sgxResFindWave();
 int RoundWavePos(void *w, long long pos);
 
 extern int gSgxDebugFlags;
@@ -208,9 +208,49 @@ void *sgxResGetBankPtr(int id) {
     return p + 0x178;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResFindWave);
+extern char D_00113A9C[];
+void *sgxResFindWave(int id, int idx, char **z) {
+    char *p = ResGetSlot(id, SLOT_NAME("FindWave"));
+    char *t;
+    void *ret;
+    if (p == NULL || *(int *)(p + 0x68) == 0) {
+        ret = NULL;
+    } else {
+        if (z != NULL) *z = p + 0x68;
+        if ((unsigned int)(idx + 1000) < 0x41) {
+            char *w = D_00113A9C;
+            *(int *)(w + 0x10) = idx + 1000;
+            ret = w;
+        } else if ((t = *(char **)(p + 0x24)) == NULL || idx < 0 || *(int *)(p + 0x30) - 1 < idx) {
+            ret = NULL;
+        } else {
+            ret = t + idx * 56 + 8;
+        }
+    }
+    return ret;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResFindRgn);
+void *sgxResFindRgn(int id, int idx, int *out) {
+    char *p = ResGetSlot(id, SLOT_NAME("FindRgn"));
+    char *t;
+    int *e;
+    int n, o;
+    char *ret;
+    if (p == NULL || (t = *(char **)(p + 0x1C)) == NULL || idx < 0 || *(int *)(p + 0x20) - 1 < idx) {
+        ret = NULL;
+    } else {
+        e = (int *)(idx * 8 + (int)t);
+        n = e[2];
+        ret = NULL;
+        *out = n;
+        if (n > 0) {
+            o = e[3];
+            if (o > 0)
+                ret = *(char **)(p + 0x14) + o;
+        }
+    }
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResFindSeq);
 
@@ -329,7 +369,35 @@ int sgxResGetWaveCount(int id) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResIsWaveLoop);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResGetWaveInfo);
+int sgxResGetWaveInfo(int id, int idx, int *out) {
+    char *p = ResGetSlot(id, SLOT_NAME("GetWaveInfo"));
+    char *t, *w;
+    int end;
+    int ret;
+    if (p == NULL || (t = *(char **)(p + 0x24)) == NULL || idx < 0 || *(int *)(p + 0x30) - 1 < idx) {
+        ret = 0;
+    } else {
+        w = t + idx * 56 + 8;
+        if (out != NULL) {
+            out[0] = *(signed char *)(w + 8);
+            out[1] = *(signed char *)(w + 9);
+            out[2] = *(int *)(w + 0xC);
+            if (*(int *)(w + 0x24) < 0) {
+                out[4] = -1;
+                end = *(int *)(w + 0x20);
+            } else {
+                out[4] = *(int *)(w + 0x24) - *(int *)(w + 0x1C);
+                end = *(int *)(w + 0x28);
+            }
+            end -= *(int *)(w + 0x1C);
+            out[3] = end;
+            out[5] = *(int *)(w + 0x10);
+            out[6] = *(int *)(w + 0x14);
+        }
+        ret = 1;
+    }
+    return ret;
+}
 
 int sgxResGetSeqCount(int id, int idx) {
     char *p = ResGetSlot(id, SLOT_NAME("GetSeqCount"));

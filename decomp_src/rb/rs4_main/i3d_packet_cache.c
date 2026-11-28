@@ -119,7 +119,25 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_cache", I3dPkSendViewSt
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_cache", I3dPkSetPixelBlend);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_cache", I3dPkResetDrawState);
+unsigned int *I3dPkSetPixelBlend();
+unsigned int *I3dPkResetDrawState(unsigned int *p)
+{
+	p = I3dPkSetPixelBlend(p, 0x10);
+	p[0] = 0x21000001;
+	p[1] = 0x22000001;
+	p[2] = 0xDBFF0006;
+	p[3] = 0x23000001;
+	p[4] = 0xDE000007;
+	p[5] = 0x24000000;
+	p[6] = 0x1D000000;
+	p[7] = 0x1F000000;
+	p[8] = 0x27000000;
+	p[9] = 0x28000000;
+	p[10] = 0x1E000000;
+	p[11] = 0xD4000000;
+	p[12] = 0xD5043DDF;
+	return p + 13;
+}
 
 unsigned int *I3dPk2dPrim_DrawSpriteF();
 extern unsigned char D_00109200, D_00109210, D_00109220;
