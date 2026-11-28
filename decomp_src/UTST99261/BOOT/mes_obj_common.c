@@ -26,6 +26,16 @@ void mes_array_set(MesContext *ctx, MesValue arr, MesValue v);
 void mes_eval_object_delete(MesContext *ctx, int obj, unsigned int id);
 unsigned int mes_context_id3(MesContext *ctx, const DOMChar *s, int len);
 MesValue mes_eval_object_get(MesContext *ctx, MesValue obj, MesValue id);
+typedef struct HrefUrl {
+    unsigned short port;
+    DOMString *scheme;                /* 0x4 */
+    DOMString *host;                  /* 0x8 */
+    DOMString *path;                  /* 0xC */
+    DOMString *hash;                  /* 0x10 */
+    DOMString *search;                /* 0x14 */
+} HrefUrl;
+double pow(double x, double y);
+void *memcpy(void *d, const void *s, unsigned int n);
 int mes_obj_common_constructor_not_allowed(void) {
     return 0;
 }
@@ -154,8 +164,69 @@ int mes_obj_common_addNewReferenceByNameOrId(MesContext *ctx, int a, int b, int 
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_common", makeHref);
+DOMString *makeHref(HrefUrl *u)
+{
+    int digits;
+    int n;
+    int pos;
+    int i;
+    int p;
+    int colon;
+    int q;
+    int size;
+    DOMChar *buf;
+    DOMString *r;
 
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_common", D_0013F4C8);
+    digits = 0;
+    if (u->port != 80) {
+        n = u->port;
+        digits = 1;
+        while (n >= 10) {
+            n /= 10;
+            digits++;
+        }
+        digits++;
+    }
+    colon = 0;
+    if (u->scheme->str[u->scheme->len - 1] != ':')
+        colon = 1;
+    size = (colon + u->scheme->len + u->host->len + digits + u->path->len + u->search->len + u->hash->len) * 2 + 4;
+    buf = MEM_malloc(0, size);
+    memcpy(buf, u->scheme->str, u->scheme->len * 2);
+    pos = u->scheme->len;
+    if (u->scheme->str[pos - 1] != ':')
+        buf[pos++] = ':';
+    buf[pos++] = '/';
+    buf[pos++] = '/';
+    memcpy(buf + pos, u->host->str, u->host->len * 2);
+    pos += u->host->len;
+    if (u->port != 80) {
+        buf[pos++] = ':';
+        n = u->port;
+        digits--;
+        for (i = 0; i < digits; i++) {
+            p = pow(10.0, digits - i - 1);
+            buf[pos++] = n / p + '0';
+            n = n - n / p * p;
+        }
+    }
+    if (u->path->len != 0) {
+        memcpy(buf + pos, u->path->str, u->path->len * 2);
+        pos += u->path->len;
+    }
+    if (u->search->len != 0) {
+        memcpy(buf + pos, u->search->str, u->search->len * 2);
+        pos += u->search->len;
+    }
+    if (u->hash->len != 0) {
+        memcpy(buf + pos, u->hash->str, u->hash->len * 2);
+        pos += u->hash->len;
+    }
+    r = MEM_malloc(0, 0xC);
+    r->size = pos;
+    r->len = pos;
+    r->str = buf;
+    return r;
+}
 
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_common", D_0013F4CC);
+
