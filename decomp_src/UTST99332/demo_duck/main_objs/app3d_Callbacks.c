@@ -124,4 +124,17 @@ extern "C" void app3d_Callbacks_instance_refs(common::handle<glutils::TurnTable>
 #undef INCLUDE_ASM
 #define INCLUDE_ASM INCLUDE_ASM_LINKONCE
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/app3d_Callbacks", _ZN5input9ButtonSetIN3psp4PadBEE3setEjb);
+extern "C" const char D_0015F0E0[], D_0015F110[], D_0015F1D4[], D_0015F1EC[];
+extern const char ButtonSet_set_name[] __asm__("_ZZN5input9ButtonSetIN3psp4PadBEE3setEjbE19__PRETTY_FUNCTION__");
+template<class T> void input::ButtonSet<T>::set(unsigned int _Index, bool v)
+{
+    SGL_ASSERT(_Index < N, D_0015F0E0, D_0015F1EC, D_0015F1D4, ButtonSet_set_name, 0x4A, D_0015F110);
+    Button &bt = b[_Index];
+    bt.down = v;
+}
+/* the (asm) callers' instance: emitted through a discarded user */
+extern "C" void app3d_Callbacks_ButtonSet_refs(input::ButtonSet<psp::PadB> &s) __attribute__((section(".discard.asm")));
+extern "C" void app3d_Callbacks_ButtonSet_refs(input::ButtonSet<psp::PadB> &s)
+{
+    s.set(0, false);
+}
