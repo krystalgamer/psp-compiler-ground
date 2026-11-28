@@ -1,5 +1,8 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
+extern unsigned char D_000FBCE8, D_000FBCA0, D_000FBC4C;
+int fileReadPath(int, int);
+typedef char *(*ResStrFn)(int, void *, char *);
 #include "m2c_macros.h"
 #ifndef NULL
 #define NULL ((void *)0)
@@ -192,13 +195,87 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FBCA0);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FBCB8);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resReadOrder);
+char *resReadOrder(int *d, char *p)
+{
+	char *hdr = (char *)((int *)d[0])[1];
+	ResStrFn *tbl = (ResStrFn *)d[2];
+	int *e = *(int **)(hdr + 0x18);
+	unsigned int i;
+	char *old;
+
+	for (i = 0; i < *(unsigned int *)(hdr + 0x1C); i++) {
+		if (sceKernelGetGPI() & 1)
+			consPrintf(&D_000FBC4C, i);
+		e[1] = fileReadPath(e[0], (int)p);
+		e[0] = (int)p;
+		if (tbl != NULL) {
+			old = p;
+			p = (char *)(((int)tbl[0](1, e, old) + 15) & ~15);
+			if (p == NULL)
+				p = old;
+			if (p < old)
+				consPrintf(&D_000FBA08, &D_000FB9F8, 0x27A, "resReadOrder", &D_000FBCA0);
+		}
+		e += 8;
+	}
+	if (sceKernelGetGPI() & 1)
+		consPrintf("Res  : Order\n");
+	return p;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FBCE8);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resReadTable);
+char *resReadTable(int *d, char *p)
+{
+	char *hdr = (char *)((int *)d[0])[1];
+	ResStrFn *tbl = (ResStrFn *)d[2];
+	int *e = *(int **)(hdr + 0x28);
+	unsigned int i;
+	char *old;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resReadString);
+	for (i = 0; i < *(unsigned int *)(hdr + 0x2C); i++) {
+		if (sceKernelGetGPI() & 1)
+			consPrintf(&D_000FBCE8, i, e[0], e[1]);
+		if (tbl != NULL) {
+			old = p;
+			p = (char *)(((int)tbl[0](3, e, old) + 15) & ~15);
+			if (p == NULL)
+				p = old;
+			if (p < old)
+				consPrintf(&D_000FBA08, &D_000FB9F8, 0x297, "resReadTable", &D_000FBCA0);
+		}
+		e += 8;
+	}
+	if (sceKernelGetGPI() & 1)
+		consPrintf("Res  : Table\n");
+	return p;
+}
+
+char *resReadString(int *d, char *p)
+{
+	char *hdr = (char *)((int *)d[0])[1];
+	ResStrFn *tbl = (ResStrFn *)d[2];
+	int *e = *(int **)(hdr + 0x30);
+	unsigned int i;
+	char *old;
+
+	for (i = 0; i < *(unsigned int *)(hdr + 0x34); i++) {
+		if (sceKernelGetGPI() & 1)
+			consPrintf(&D_000FBCE8, i, e[0], e[1]);
+		if (tbl != NULL) {
+			old = p;
+			p = (char *)(((int)tbl[0](4, e, old) + 15) & ~15);
+			if (p == NULL)
+				p = old;
+			if (p < old)
+				consPrintf(&D_000FBA08, &D_000FB9F8, 0x2B4, "resReadString", &D_000FBCA0);
+		}
+		e += 8;
+	}
+	if (sceKernelGetGPI() & 1)
+		consPrintf("Res  : String\n");
+	return p;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FBD40);
 
