@@ -87,6 +87,8 @@ public:
 SGL_LINKONCE_BEGIN
 inline HouseKeeping::AttribStack::AttribStack()
 {
+    /* STAND-IN: some always-true assertion (only its __PRETTY_FUNCTION__ survives in .rodata; the
+       condition and text of the original are unknown) */
     GL_ASSERT(sizeof(table) / sizeof(table[0]) == sizeof(names) / sizeof(names[0]), __PRETTY_FUNCTION__, 0, " ");
     push();
 }
