@@ -294,7 +294,49 @@ end:
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/videocodec/nonmatchings/videocodec", sceVideocodecScanHeader);
+int sceVideocodecScanHeader(VideocodecCtx *ctx, unsigned int type)
+{
+	int ret;
+	unsigned int oldk1;
+
+	K1_SAVE(oldk1);
+	if (!k1StaBufOk(ctx, 0x54) || !k1StaBufOk((void *)ctx->unk10, 0x100) || !k1DynBufOk(ctx->unk24, ctx->unk28)) {
+		ret = 0x80000023;
+		goto end;
+	}
+	if (type != 0) {
+		if (type < 3) {
+			sceKernelDcacheWritebackInvalidateRange((void *)ctx->unk10, 0x100);
+			wbInvNotMe(ctx->unk24, ctx->unk28);
+			ret = sceMeVideo_driver_1C6A60E1(type, 2, ctx);
+			switch (ret) {
+			case 0:
+				ret = 0;
+				break;
+			case -1:
+				ret = 0x806201FE;
+				break;
+			case -2:
+				ret = 0x80620002;
+				break;
+			case -3:
+				ret = 0x80628001;
+				break;
+			case -4:
+				ret = 0x80628002;
+				break;
+			default:
+				ret = 0x80628002;
+				break;
+			}
+			goto end;
+		}
+	}
+	ret = 0x806201FE;
+end:
+	K1_RESTORE(oldk1);
+	return ret;
+}
 
 int sceVideocodecGetVersion(VideocodecCtx *ctx, unsigned int type)
 {
