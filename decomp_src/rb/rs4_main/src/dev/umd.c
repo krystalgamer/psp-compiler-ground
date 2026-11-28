@@ -45,7 +45,7 @@ extern signed char D_000FA898;
 extern unsigned char RdpStat;
 extern int UmdName_PrefDir;
 extern signed char UmdRdp;
-extern unsigned char umdProc;
+int umdProc(int, int, void *);
 
 int umdInit(int arg0) {
     M2C_UNK *temp_v0;
@@ -136,9 +136,38 @@ void umdActive(void) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", umdProc);
+int umdProc(int arg0, int stat, void *arg2) {
+    consPrintf("%s : %x\n", &D_000FA85C, stat);
+    if (stat & 1) consPrintf("SCE_UMD_MEDIA_OUT\n");
+    if (stat & 2) consPrintf("SCE_UMD_MEDIA_IN\n");
+    if (stat & 4) consPrintf("SCE_UMD_MEDIA_CHG\n");
+    if (stat & 0x10) consPrintf("SCE_UMD_READY\n");
+    if (stat & 8) consPrintf("SCE_UMD_NOT_READY\n");
+    if (stat & 0x20) {
+        consPrintf("SCE_UMD_READABLE\n");
+        UmdState = 1;
+        UmdReady &= 1;
+    } else {
+        UmdReady = 0;
+        UmdState = 0;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", umdPref);
+extern char UmdName[0x400];
+
+char *umdPref(char *p) {
+    memset(UmdName, 0, sizeof(UmdName));
+    if (*p != '/') {
+        sprintf(UmdName, (char *)&D_000FA7E8, UmdName_Alias, UmdName_PrefDir, p);
+    } else {
+        sprintf(UmdName, "%s%s%s", UmdName_Alias, UmdName_PrefDir, p);
+    }
+    if (UmdName[sizeof(UmdName) - 1] != 0) {
+        consPrintf(&D_000FA7FC, &D_000FA818, 0xCE, "umdPref", "UmdName[sizeof(UmdName)-1] == 0");
+    }
+    return UmdName;
+}
 
 signed char *umdParamToVirtual(int arg0, int arg1) {
     if (arg1 == 0) {
@@ -168,4 +197,55 @@ int umdReady(void) {
     return temp_v0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", umdDump);
+int sceIoDopen(const char *);
+int sceIoDread(int, void *);
+int sceIoDclose(int);
+int strcmp(const char *, const char *);
+char *strcat(char *, const char *);
+
+typedef struct {
+    int st_mode;
+    char pad[0x54];
+    char d_name[256];
+    void *d_private;
+    int dummy;
+} UmdDirent;
+
+void umdDump(const char *dir) {
+    UmdDirent ent;
+    char path[0x400];
+    char *p;
+    int uid;
+    int r;
+
+    p = umdPref((char *)dir);
+    uid = sceIoDopen(p);
+    consPrintf("%x %s {\n\n", uid, p);
+    if (uid < 0) {
+        consPrintf(&D_000FA7FC, &D_000FA818, 0x113, "umdDump", "UID >= 0");
+    }
+    for (;;) {
+        r = sceIoDread(uid, &ent);
+        if (r < 0) {
+            consPrintf(&D_000FA7FC, &D_000FA818, 0x119, "umdDump", "Ret >= 0");
+        }
+        if (r == 0) break;
+        sprintf(path, "%s%s", dir, ent.d_name);
+        switch (ent.st_mode & 0xF000) {
+        case 0x1000:
+            if (strcmp(ent.d_name, ".") != 0 && strcmp(ent.d_name, "..") != 0) {
+                strcat(path, "/");
+                umdDump(path);
+            }
+            break;
+        case 0x2000:
+        case 0x4000:
+            consPrintf((char *)&D_000FA8A4, path);
+            break;
+        }
+    }
+    if (sceIoDclose(uid) != 0) {
+        consPrintf(&D_000FA7FC, &D_000FA818, 0x16E, "umdDump", "Ret == 0");
+    }
+    consPrintf("}\n\n");
+}
