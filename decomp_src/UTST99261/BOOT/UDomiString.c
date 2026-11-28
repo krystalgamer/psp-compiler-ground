@@ -201,6 +201,7 @@ char *HST_getRefURI(int node);
 void HST_setAuthUsername(int node, char *s, int len);
 void HST_setAuthPassword(int node, char *s, int len);
 PsLocation *ps_GetLocation(int sid);
+typedef struct PsPost { char *hdr; char *body; int hdrlen; int bodylen; } PsPost;
 unsigned short UDomiString_ToLower(unsigned short c) {
     if (c < 0x80) {
         return tolower(c);
@@ -1287,7 +1288,152 @@ int ps_submit(PsIpc *msg) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_postsend);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_postsend_history);
+void ps_postsend_history(int node, int cache)
+{
+    PsIpc m;
+    char crlf[2];
+    char *ref;
+    int bodylen;
+    char *ctype;
+    char *body;
+    int hlen;
+    char *auth;
+    int ctlen;
+    int len;
+    int r;
+    char *uri;
+    PsAuth *a;
+    int ulen;
+    int plen;
+    int rlen;
+    PsHdr *h;
+    char *p;
+    PsPost *pd;
+
+    hlen = 0;
+    auth = NULL;
+    ref = NULL;
+    memcpy(crlf, D_00135380, 2);
+    ctlen = 0;
+    bodylen = 0;
+    ctype = NULL;
+    body = NULL;
+    HST_setMethodType((void *)node, 1);
+    pd = M2C_FIELD(node, PsPost **, 0x64);
+    if (pd != NULL) {
+        ctype = pd->hdr;
+        body = pd->body;
+        ctlen = pd->hdrlen;
+        bodylen = pd->bodylen;
+    }
+    HST_setRequestFlag((void *)node, 1);
+    if (HST_getSessionID((void *)node) == 0) {
+        HST_setSessionID((void *)node, ps_sessionGen());
+    }
+    len = HST_getCurURIlen(node);
+    r = ps_SendIOMChk(len, HST_getCurURI(node));
+    if (r != 0) {
+        len = r;
+    }
+    uri = (char *)MEM_malloc(0, len + 1);
+    if (uri == NULL) {
+        ps_halt("(char*)E_malloc(ps_postsend_history : urlstring_p) failed");
+    }
+    memset(uri, 0, len + 1);
+    memcpy(uri, HST_getCurURI(node), len);
+    SubmitExtn = UTL_guessMIMETypeFromName(uri);
+    a = HST_searchAuthorizationDB(uri);
+    if (a != NULL) {
+        ulen = strlen(a->user);
+        plen = strlen(a->pass);
+        hlen = ulen + plen + 0x16;
+        auth = (char *)MEM_malloc(0, hlen);
+        if (auth == NULL) {
+            ps_halt("(char*)E_malloc(ps_postsend_history : header_p) failed");
+        }
+        /* STAND-IN: the "Authorization: Basic " literal (also used by asm functions) */
+        memcpy(auth, D_001353E4, 21);
+        memcpy(auth + 21, a->user, ulen);
+        auth[ulen + 21] = ':';
+        memcpy(auth + ulen + 22, a->pass, plen);
+    }
+    MEM_free(0, (int)uri);
+    rlen = HST_getRefURIlen(node);
+    if (rlen != 0) {
+        if (a != NULL) {
+            ref = (char *)MEM_malloc(0, rlen + 11);
+            memcpy(ref, crlf, 2);
+            memcpy(ref + 2, D_001353FC, 9);
+            memcpy(ref + 11, HST_getRefURI(node), rlen);
+            rlen += 11;
+        } else {
+            ref = (char *)MEM_malloc(0, rlen + 11);
+            memcpy(ref, D_001353FC, 9);
+            memcpy(ref + 9, HST_getRefURI(node), rlen);
+            rlen += 9;
+        }
+    }
+    if (ctlen == 0) {
+        h = (PsHdr *)MEM_malloc(0, len + hlen + rlen + bodylen + 0x28);
+    } else {
+        h = (PsHdr *)MEM_malloc(0, len + hlen + rlen + ctlen + bodylen + 0x2A);
+    }
+    if (h == NULL) {
+        ps_halt("(char*)E_malloc(ps_postsend_history) failed");
+    }
+    h->x8 = 0;
+    h->unitId = 0;
+    h->hlen = 0;
+    h->hdr = NULL;
+    h->x20 = 0;
+    h->x24 = 0;
+    h->x0 = 0;
+    h->x4 = 0;
+    h->len = len;
+    h->uri = (char *)(h + 1);
+    memcpy(h->uri, HST_getCurURI(node), len);
+    if ((hlen | rlen | ctlen) == 0) {
+        h->hlen = 0;
+        h->hdr = NULL;
+    } else {
+        if (ctlen != 0) {
+            h->hlen = hlen + rlen + ctlen + 2;
+        } else {
+            h->hlen = hlen + rlen;
+        }
+        p = h->hdr = len + h->uri;
+        if (a != NULL) {
+            memcpy(p, auth, hlen);
+            p += hlen;
+            MEM_free(0, (int)auth);
+        }
+        if (rlen != 0) {
+            memcpy(p, ref, rlen);
+            p += rlen;
+            MEM_free(0, (int)ref);
+        }
+        if (ctlen != 0) {
+            memcpy(p, crlf, 2);
+            p += 2;
+            memcpy(p, ctype, ctlen);
+        }
+    }
+    h->x20 = bodylen;
+    h->x24 = 0;
+    if (bodylen != 0) {
+        h->x24 = (int)(h->uri + h->len + h->hlen);
+        memcpy((void *)h->x24, body, bodylen);
+    }
+    m.type = 2;
+    m.x04 = HST_getSessionID((void *)node);
+    m.x08 = 1;
+    m.cmd = 3;
+    m.x10 = cache;
+    m.x14 = 0;
+    m.x18 = h->len + h->hlen + h->x20 + 0x28;
+    m.x1C = (int)h;
+    ps_sndmsg(&m, 5);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_splitPostData);
 
