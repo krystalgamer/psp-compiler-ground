@@ -8088,3 +8088,4 @@ gPingInfo = 0x00139F48; // size:0xFE0
 gLANMessage = 0x0013AF28; // size:0x10
 errno = 0x0013AF38; // size:0x4
 end = 0x0013AF3C;
+__psp_libinfo___10C120 = 0x0010C120; // size:0x18 nosplit

@@ -304,6 +304,7 @@ rodata 0x104D90 src/ys/ys_info_panel
 0xCE2A8 scert_rt_time_platform         1.6.1           scert/rt_util/psp/rt_time_platform.c
 0xCE784 scert_rt_timebase              1.6.1           scert/rt_util/rt_timebase.c
 0xCEA98 scert_rt_token                 1.6.1           scert/rt_util/rt_token.c
+rodata 0x10C120 libsas
 rodata 0x10C164 scert/rt_util/rt_list_buf
 rodata 0x10C21C scert/rt_udp/src/rt_p2p
 rodata 0x10CAE0 scert/rt_udp/src/rt_udp

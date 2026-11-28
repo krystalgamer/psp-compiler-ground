@@ -703,6 +703,7 @@ segments:
       - [0x10C124, .rodata, load_bmp]
       - [0x10C198, .rodata, load_tm2]
       - [0x10C1C8, .rodata, libwave]
+      - [0x10C1E0, .rodata, libsas]
       - [0x10C1F8, .rodata, libsha1]
       - [0x10C210, rodata, asm/rodata_10C150]
       - [0x10C224, .rodata, scert/rt_util/rt_list_buf]
