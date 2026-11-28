@@ -33,6 +33,10 @@ int HST_getRequestFlag(HISTNODE *n);
 int HST_deleteHistoryNode(HISTNODE *n);
 void linkBox(BOX *box, BOX *parent, BOX *prev);
 void insLinkBox(BOX *box, BOX *parent, BOX *prev);
+void removeSessionSaveData(int id);
+void rnd_removeAnimBoxnode(BOX *box);
+void lfm_destroyPageRegion(void *r);
+typedef struct FBItem { struct FBItem *next; int f4; void *f8; void *fC; } FBItem;
 int checkTableHierarchy(BOX *box, BOX **table) {
     while (box != NULL) {
         if (box->content == 6) {
@@ -258,7 +262,146 @@ void freeBoxPre(BOX *box) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_api_low", freeBox);
+void freeBox(BOX *box, int clear) {
+    char *g;
+    HISTNODE *n;
+    FBItem *p;
+    FBItem *next;
+
+    if (box == NULL)
+        return;
+    g = (char *)box->geom;
+    switch (box->content) {
+    case 1:
+        if (g != NULL) {
+            if (clear) {
+                actClearForm(M2C_FIELD(box->geom, void **, 0x38));
+                removeSessionSaveData(M2C_FIELD(box->geom, int *, 0x38));
+            }
+            n = HST_searchSessionIDHistoryNode(M2C_FIELD(g, int *, 0x38));
+            if (n != NULL)
+                M2C_FIELD(n, int *, 0x6C) = 0;
+            if (M2C_FIELD(g, void **, 0x28) != NULL)
+                MEM_free(0, M2C_FIELD(g, void **, 0x28));
+            if (M2C_FIELD(g, void **, 0x2C) != NULL)
+                MEM_free(0, M2C_FIELD(g, void **, 0x2C));
+            if (M2C_FIELD(g, void **, 0x34) != NULL)
+                MEM_free(0, M2C_FIELD(g, void **, 0x34));
+            initBoxList((LIST *)(g + 0x48));
+            initBoxList((LIST *)(g + 0x90));
+            initBoxList((LIST *)(g + 0x9C));
+            initBoxList((LIST *)(g + 0xA8));
+            initImageList(g + 0x54);
+            freeDrawObject(box);
+            MEM_free(0, g);
+        }
+        break;
+    case 2:
+        if (g != NULL) {
+            MEM_free(0, M2C_FIELD(g, void **, 0xB0));
+            MEM_free(0, M2C_FIELD(g, void **, 0xB4));
+            MEM_free(0, g);
+        }
+        break;
+    case 9:
+        rnd_removeAnimBoxnode(box);
+    case 15:
+        if (g != NULL) {
+            if (M2C_FIELD(g, void **, 0x0) != NULL)
+                MEM_free(0, M2C_FIELD(g, void **, 0x0));
+            MEM_free(0, g);
+        }
+        break;
+    case 10:
+        rnd_removeAnimBoxnode(box);
+        if (g != NULL) {
+            if (M2C_FIELD(g, void **, 0x18) != NULL)
+                MEM_free(0, M2C_FIELD(g, void **, 0x18));
+            MEM_free(0, g);
+        }
+        break;
+    case 4:
+        if (g != NULL) {
+            if (M2C_FIELD(g, void **, 0x20) != NULL)
+                MEM_free(0, M2C_FIELD(g, void **, 0x20));
+            if (M2C_FIELD(g, void **, 0x24) != NULL)
+                MEM_free(0, M2C_FIELD(g, void **, 0x24));
+            initBoxList((LIST *)(g + 0x30));
+            initBoxList((LIST *)(g + 0x3C));
+            MEM_free(0, g);
+        }
+        break;
+    case 7:
+        initBoxList((LIST *)(g + 0x10));
+        MEM_free(0, g);
+        break;
+    case 13:
+        if (g != NULL) {
+            if (M2C_FIELD(g, void **, 0x14) != NULL)
+                MEM_free(0, M2C_FIELD(g, void **, 0x14));
+            if (M2C_FIELD(g, void **, 0x18) != NULL)
+                MEM_free(0, M2C_FIELD(g, void **, 0x18));
+            MEM_free(0, g);
+        }
+        break;
+    case 16:
+        if (g != NULL) {
+            if (M2C_FIELD(g, void **, 0x8) != NULL)
+                MEM_free(0, M2C_FIELD(g, void **, 0x8));
+            MEM_free(0, g);
+        }
+        break;
+    case 18:
+        if (g != NULL) {
+            for (p = M2C_FIELD(g, FBItem **, 0x8); p != NULL; p = next) {
+                next = p->next;
+                if (p->f8 != NULL)
+                    MEM_free(0, p->f8);
+                if (p->fC != NULL)
+                    MEM_free(0, p->fC);
+                MEM_free(0, p);
+            }
+            MEM_free(0, g);
+        }
+        break;
+    case 19:
+        rnd_removeAnimBoxnode(box);
+    case 5:
+    case 6:
+    case 12:
+    case 14:
+        if (g != NULL)
+            MEM_free(0, g);
+        break;
+    case 3:
+        if (M2C_FIELD(gESPRIT_LO_GLOBAL_NDA, BOX **, 0x28) == box)
+            M2C_FIELD(gESPRIT_LO_GLOBAL_NDA, BOX **, 0x28) = NULL;
+        MEM_free(0, g);
+        break;
+    case 8:
+        if (g != NULL) {
+            initBoxList((LIST *)(g + 0x8));
+            MEM_free(0, g);
+        }
+        break;
+    case 17:
+    case 21:
+        if (g != NULL) {
+            initBoxList((LIST *)(g + 0x4));
+            MEM_free(0, g);
+        }
+        break;
+    case 0:
+    case 11:
+    case 20:
+        break;
+    }
+    if (box->region != NULL)
+        lfm_destroyPageRegion(box->region);
+    if (M2C_FIELD(box, void **, 0x28) != NULL)
+        Node_setBox(M2C_FIELD(box, void **, 0x28), NULL);
+    MEM_free(0, box);
+}
 
 void reinitBodyBox(BOX *box, int clear) {
     char *g = (char *)box->geom;
