@@ -136,7 +136,25 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render", I3dRender__JoinPacket
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render", I3dRenderStage__CallPacketEntry);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render", I3dRender__BeginScene);
+void *I3dRender__CreateSorter(void *r, int a, int b, int c);
+int I3dRender__BeginScene(char *r)
+{
+	unsigned int idx = *(unsigned int *)(r + 0xE8);
+	unsigned int n = *(unsigned int *)(r + 0xE4);
+	unsigned int size = *(unsigned int *)(r + 0xF0);
+	(*(int *)(r + 0x114))++;
+	{
+		unsigned int p = *(unsigned int *)(r + 0xEC) + size * idx / n;
+		*(volatile unsigned int *)(r + 0xF4) = p;
+		*(unsigned int *)(r + 0xF4) = ((p + 0x7F) & 0x3FFFFF80) | 0x40000000;
+	}
+	*(unsigned int *)(r + 0xF8) = *(unsigned int *)(r + 0xEC) + size * (idx + 1) / n;
+	*(unsigned int *)(r + 0xE8) = idx + 1;
+	if (!(idx + 1 < n)) *(unsigned int *)(r + 0xE8) = 0;
+	*(int *)(r + 0x118) = 0;
+	*(void **)(r + 0xE0) = I3dRender__CreateSorter(r, 1, 1, 0);
+	return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
