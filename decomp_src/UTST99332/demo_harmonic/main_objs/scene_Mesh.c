@@ -112,4 +112,9 @@ template common::handle<scene::MeshDataInterleaved::VertexData>::~handle();
 #undef INCLUDE_ASM
 #define INCLUDE_ASM INCLUDE_ASM_LINKONCE
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Mesh", _ZNK5scene4Mesh5cloneESs);
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Mesh", _ZN3sgl17StencilShadowDataC1Ev);
+/* an implicit constructor the (asm) Mesh constructors call: emitted through a discarded user */
+void scene_Mesh_StencilShadowData_ref(void *p) __attribute__((section(".discard.instances")));
+void scene_Mesh_StencilShadowData_ref(void *p)
+{
+    new (p) sgl::StencilShadowData;
+}

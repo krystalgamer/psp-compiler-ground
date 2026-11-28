@@ -407,7 +407,18 @@ public:
     KdTreeNode _root;                           /* 0x24 */
 };
 math::vector_xyzw ProjectOnPlane(const math::vector_xyzw &, const math::vector_xyzw &, const math::vector_xyzw &);
-struct StencilShadowData;
+/* layout from its users (ctor frame = 5 distinct allocator types, calcStencilShadowData's
+   vector<T> calls per member) */
+struct StencilShadowData {
+    std::vector<Edge> _edges;               /* 0x00 */
+    std::vector<Position> _f0c;             /* 0x0C */
+    std::vector<Position> _f18;             /* 0x18 */
+    std::vector<Normal> _f24;               /* 0x24 */
+    std::vector<Normal> _f30;               /* 0x30 */
+    std::vector<Position> _f3c;             /* 0x3C */
+    std::vector<bool> _f48;                 /* 0x48 */
+    std::vector<int> _f5c;                  /* 0x5C */
+};
 class Mesh : public CoreMesh {
 public:
     struct Offsets {
