@@ -15,7 +15,7 @@ extern const char D_0010A68C[];
 extern const char D_0010A6A8[];
 extern const char D_0010A78C[];
 extern const char D_0010A79C[];
-void SlotStop(int, int, const void *, float);
+void SlotStop(int, int, float, const void *);
 void SlotStopRes(int, int, float);
 void SlotStopName(int, int, float);
 void SlotStopCategory(int, int, float);
@@ -144,7 +144,23 @@ int MakeSlotList(void **arg0) {
     return var_a1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", CheckSync);
+int CheckSync(char *s, float dt)
+{
+    int st = sgxSndGetStatus(*(short *)(s + 0xE6));
+    if (*(signed char *)(s + 0xE4)) {
+        if (st & 2) {
+            *(signed char *)(s + 0xE4) = 0;
+            *(float *)(s + 0xF8) += dt;
+            return 1;
+        }
+    } else {
+        if (!(st & 2)) {
+            *(signed char *)(s + 0xE4) = 1;
+            return 1;
+        }
+    }
+    return 0;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", D_0010A44C);
 
@@ -347,15 +363,26 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", SlotStop);
 
 void sgxSndStop(int id, int a1)
 {
-    SlotStop(id, a1, D_0010A504, 0.0f);
+    SlotStop(id, a1, 0.0f, D_0010A504);
 }
 
 void sgxSndStopFade(int id, float fade)
 {
-    SlotStop(id, 0, D_0010A50C, fade);
+    SlotStop(id, 0, fade, D_0010A50C);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", SlotStopRes);
+void SlotStopRes(int res, int a, float f)
+{
+    int n, i;
+    char **list;
+    sgxDI();
+    list = __builtin_alloca(D_0011FCAC * sizeof(void *));
+    n = MakeSlotList((void **)list);
+    sgxEI();
+    for (i = 0; i < n; i++)
+        if (*(short *)(list[i] + 0x12) == res)
+            SlotStop(*(int *)(list[i] + 8), a, f, 0);
+}
 
 void sgxSndStopRes(int id, int a1)
 {
@@ -367,7 +394,27 @@ void sgxSndStopFadeRes(int id, float fade)
     SlotStopRes(id, 0, fade);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", SlotStopName);
+int sgxIsStrIncWC(const char *);
+int sgxIsStrMatch(const char *, const char *);
+int sgxIsStrMatchWC(const char *, const char *);
+void SlotStopName(int namev, int a, float f)
+{
+    const char *name = (const char *)namev;
+    int n, i;
+    char **list;
+    int (*cmp)(const char *, const char *);
+    sgxDI();
+    list = __builtin_alloca(D_0011FCAC * sizeof(void *));
+    n = MakeSlotList((void **)list);
+    sgxEI();
+    if (sgxIsStrIncWC(name)) cmp = sgxIsStrMatchWC;
+    else cmp = sgxIsStrMatch;
+    for (i = 0; i < n; i++) {
+        char *p = list[i];
+        if (*(char **)(p + 0x90) && cmp(name, *(char **)(p + 0x90)))
+            SlotStop(*(int *)(p + 8), a, f, 0);
+    }
+}
 
 void sgxSndStopName(int id, int a1)
 {
@@ -395,7 +442,18 @@ void sgxSndStopFadeNameF(float fade, const char *fmt, ...) {
     SlotStopName((int)buf, 0, fade);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", SlotStopCategory);
+void SlotStopCategory(int res, int a, float f)
+{
+    int n, i;
+    char **list;
+    sgxDI();
+    list = __builtin_alloca(D_0011FCAC * sizeof(void *));
+    n = MakeSlotList((void **)list);
+    sgxEI();
+    for (i = 0; i < n; i++)
+        if (*(short *)(list[i] + 0x1C) == res)
+            SlotStop(*(int *)(list[i] + 8), a, f, 0);
+}
 
 void sgxSndStopCategory(int id, int a1)
 {
@@ -407,7 +465,17 @@ void sgxSndStopFadeCategory(int id, float fade)
     SlotStopCategory(id, 0, fade);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", SlotStopAll);
+void SlotStopAll(int a, float f)
+{
+    int n, i;
+    void **list;
+    sgxDI();
+    list = __builtin_alloca(D_0011FCAC * sizeof(void *));
+    n = MakeSlotList(list);
+    sgxEI();
+    for (i = 0; i < n; i++)
+        SlotStop(*(int *)((char *)list[i] + 8), a, f, 0);
+}
 
 void sgxSndStopAll(int a0)
 {
