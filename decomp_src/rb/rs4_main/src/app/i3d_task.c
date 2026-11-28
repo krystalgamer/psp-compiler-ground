@@ -1,4 +1,4 @@
-/* cflags: -Os */
+/* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
 M2C_UNK _memFree(int, M2C_UNK *, M2C_UNK);
@@ -41,37 +41,51 @@ extern unsigned char D_000FD5C4, D_000FD608, D_000FD60C;
 
 typedef struct { int a, b, prio; } LsEnt;
 
-/* the function name string precedes the shared Tp/Vp strings and the jump table */
-const char D_000FD5F4[] = "i3dTask_Landscape";
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", i3dTask_Landscape);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD608);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD60C);
 
-void *i3dTask_Landscape(void *arg0, unsigned int arg1, LsEnt *ent, int n) {
-    int t;
-    int i;
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD610);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD624);
+
+int gameGetGameMode(void);
+void *i3dTask_Light(void *arg0, unsigned int arg1, void *arg2, int arg3);
+void *i3dTask_WallPaper(void *arg0, unsigned int arg1, void *arg2, int arg3);
+void *i3dTask_AiAi(void *arg0, unsigned int arg1, void *arg2, int arg3);
+int i3dTask_Stage();
+typedef struct { int a, b, c, d; } StageDef;
+typedef struct { StageDef s[6]; } StageTbl;
+extern const StageTbl D_000FD624;
+
+void *i3dTask_EzDraw(void *arg0, unsigned int arg1, int arg2, int arg3) {
+    StageTbl tbl;
+    unsigned int i;
 
     switch (arg1) {
     case 0:
         if (arg0 == NULL) {
-            consPrintf(&D_000FD5C4, &D_000FD5E0, 0x71, D_000FD5F4, &D_000FD608);
-        }
-        if (ent == NULL) {
-            consPrintf(&D_000FD5C4, &D_000FD5E0, 0x72, D_000FD5F4, &D_000FD60C);
+            consPrintf(&D_000FD5C4, &D_000FD5E0, 0xA7, "i3dTask_EzDraw", &D_000FD608);
         }
         M2C_FIELD(arg0, int *, 0x28) = 0;
         M2C_FIELD(arg0, signed char *, 0x24) = 0;
         M2C_FIELD(arg0, int *, 0x2C) = 0;
-        for (t = taskHeadAlive(); t != 0; t = rsvNextAlive(t)) {
-            if (M2C_FIELD(t, void **, 8) == i3dTask_EzDraw) break;
+        taskMake(NULL, i3dTask_Light, NULL, 0);
+        taskMake(NULL, &i3dTask_View, NULL, 1);
+        if (gameGetGameMode() == 1) {
+            taskMake(NULL, i3dTask_WallPaper, NULL, 0);
+            taskMake(NULL, i3dTask_AiAi, NULL, 0xFF);
         }
-        if (t == 0) {
-            taskMake(arg0, i3dTask_EzDraw, NULL, 0);
+        tbl = D_000FD624;
+        for (i = 0; i < 6; i++) {
+            if (sceKernelGetGPI() & 1) {
+                consPrintf("i3dTask_Stage : %d %d %d %d\n", tbl.s[i].a, tbl.s[i].b, tbl.s[i].c, tbl.s[i].d);
+            }
+            taskMake(NULL, i3dTask_Stage, &tbl.s[i], 0);
         }
-        for (i = n; i != 0; i--) {
-            taskMake(arg0, i3dTask_EzModel, &ent[n - i], ent[n - i].prio);
-        }
+        return arg0;
     case 4:
         return arg0;
     case 1:
@@ -81,13 +95,9 @@ void *i3dTask_Landscape(void *arg0, unsigned int arg1, LsEnt *ent, int n) {
     case 3:
         return NULL;
     default:
-        return taskDefaultMsg((int) arg0, arg1, (int) ent, n);
+        return taskDefaultMsg((int) arg0, arg1, arg2, arg3);
     }
 }
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD624);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", i3dTask_EzDraw);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", i3dTask_EzModel);
 
