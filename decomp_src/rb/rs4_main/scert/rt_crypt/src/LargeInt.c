@@ -266,7 +266,39 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/LargeInt", lint
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/LargeInt", lintRandomize);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/LargeInt", lintTryDiv);
+typedef struct PTree { struct PTree *l; struct PTree *r; int v; } PTree;
+extern PTree gPTree;
+extern unsigned char gPrimes[];
+int MODW();
+int lintTryDiv(unsigned int *a)
+{
+    unsigned int cnt = 0;
+    unsigned int bits = 0;
+    unsigned char *pp = gPrimes;
+    PTree *n = &gPTree;
+    unsigned int p = 1;
+    unsigned int words;
+    int ret;
+
+    words = (lintGetBits(a) + 31U) >> 5;
+    ret = 1;
+    for (;;) {
+        if (cnt == 0) {
+            bits = *pp++;
+            cnt = 8;
+        }
+        if (bits & 1) n = n->r;
+        else n = n->l;
+        bits >>= 1;
+        cnt--;
+        if (n->v == 0) break;
+        if (n->v == -1) continue;
+        p += n->v;
+        ret = MODW(a, p, words);
+        if (ret == 0) break;
+    }
+    return ret;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/LargeInt", PRIME_START);
 
