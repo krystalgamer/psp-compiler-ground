@@ -680,7 +680,48 @@ int func_0000C2D8(SsVoice *p)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/voice", func_0000C488);
+static inline int vol_changed(SsVoice *p)
+{
+	if (p->b8 != p->vel)
+		return 1;
+	if (p->b9 != p->pan)
+		return 1;
+	if (p->bA != p->sendVel)
+		return 1;
+	if (p->bB != p->sendPan)
+		return 1;
+	return 0;
+}
+
+void func_0000C488(void)
+{
+	unsigned int i;
+	unsigned int pl, pr, el, er;
+	int pitch;
+
+	for (i = 0; i < g_vmax; i++) {
+		if (g_voice[i].status != 0) {
+			if (vol_changed(&g_voice[i])) {
+				func_0000C6F4(g_voice[i].i34, g_voice[i].vel, g_voice[i].b38, g_voice[i].pan, &pl, &pr);
+				func_0000C6F4(g_voice[i].i3C, g_voice[i].sendVel, g_voice[i].tone.b0, g_voice[i].sendPan, &el, &er);
+				sceSasSetVolume(g_voice[i].no, pl, pr, el, er);
+				g_voice[i].b8 = g_voice[i].vel;
+				g_voice[i].b9 = g_voice[i].pan;
+				g_voice[i].bA = g_voice[i].sendVel;
+				g_voice[i].bB = g_voice[i].sendPan;
+			}
+			if (g_voice[i].iC != g_voice[i].pitch) {
+				pitch = sceSsNote2Pitch(g_voice[i].tone.bD, g_voice[i].tone.bE * 127 / 100, g_voice[i].b5D, g_voice[i].tone.bC * 127 / 100);
+				pitch = (unsigned int)(g_voice[i].i2C * pitch) / 44100 + g_voice[i].pitch;
+				pitch = pitch > 0x4000 ? 0x4000 : pitch;
+				pitch = pitch < 1 ? 1 : pitch;
+				sceSasSetPitch(g_voice[i].no, pitch);
+				g_voice[i].iC = g_voice[i].pitch;
+			}
+		}
+	}
+}
+
 
 int func_0000C658(SsVoice **list, unsigned int count, unsigned int prio)
 {
