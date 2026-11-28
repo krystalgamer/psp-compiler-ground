@@ -459,6 +459,7 @@ public:
     void setNet(common::t_array2d<vector_xyzw> *);
     void setType(int);
     void globalEval();
+    void localEval(vector_xyzw &, float, float);
     /* data */
     common::t_array2d<vector_xyzw> *_f0;
     common::t_array2d<vector_xyzw> _f4;     /* the control net */

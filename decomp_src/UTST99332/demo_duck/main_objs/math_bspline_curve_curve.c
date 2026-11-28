@@ -94,7 +94,19 @@ void math::bspline::surface::setNet(common::t_array2d<vector_xyzw> *net)
     _f0 = net;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_bspline_curve_curve", _ZN4math7bspline7surface10globalEvalEv);
+void math::bspline::surface::globalEval()
+{
+    if ((unsigned)_f4.ny() < 4 || (unsigned)_f4.nx() < 4)
+        return;
+    int nx = _f0->nx();
+    int ny = _f0->ny();
+    float du = 1.0f / (nx - 1);
+    float dv = 1.0f / (ny - 1);
+    vector_xyzw *p = _f0->addr();
+    for (int j = 0; j < ny; j++)
+        for (int i = 0; i < nx; i++)
+            localEval(*p++, du * i, dv * j);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_bspline_curve_curve", _ZN4math7bspline7surface9localEvalERNS_11vector_xyzwEff);
 
