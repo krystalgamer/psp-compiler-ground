@@ -20,7 +20,30 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObjectMess
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObjectMessage", FieldUpdatePacketHandler);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObjectMessage", FindFreeDataStreamBlock);
+extern void *gObjectInterfacePtr;
+char *NetIGetDataStream();
+int FindFreeDataStreamBlock(unsigned int n)
+{
+    unsigned int i;
+    int j, found;
+    unsigned char *ds;
+
+    if (n >= *(unsigned int *)((char *)gObjectInterfacePtr + 0x10C)) return -1;
+    for (i = 0; i < *(unsigned int *)((char *)gObjectInterfacePtr + 0x10C) - n; i++) {
+        ds = NetIGetDataStream(i);
+        if (ds == NULL || ds[0] != 0) continue;
+        found = 1;
+        for (j = i + 1; j < (int)(i + n); j++) {
+            ds = NetIGetDataStream(j);
+            if (ds[0] != 0) {
+                found = 0;
+                break;
+            }
+        }
+        if (found) return i;
+    }
+    return -1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObjectMessage", RequestOwnershipPacketHandler);
 
@@ -56,7 +79,39 @@ int ArbitrateJoinPacketHandler(char *o, int a1, unsigned int idx, unsigned char 
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObjectMessage", SMMigrateOrderPacketHandler);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObjectMessage", GetFreeNetObjectBlock);
+extern void *gObjectInterfacePtr;
+void *NetIGetClient();
+int GetFreeNetObjectBlock(unsigned int n)
+{
+    char *self;
+    int i, c, ok;
+    char *cl;
+
+    if (n >= *(unsigned int *)((char *)gObjectInterfacePtr + 0x100)) return -1;
+    self = *(char **)((char *)gObjectInterfacePtr + 0x138);
+    if (self == NULL) return -1;
+    for (i = 0; i < *(unsigned int *)((char *)gObjectInterfacePtr + 0x100) - n; i++) {
+        ok = 1;
+        for (c = 0; c < *(int *)(self + 0x460); c++) {
+            cl = NetIGetClient(self, c);
+            if (cl == NULL) continue;
+            if (i >= *(int *)(cl + 8) && i < *(int *)(cl + 8) + *(int *)(cl + 0xC)) {
+                ok = 0;
+                break;
+            }
+        }
+        if (!ok) continue;
+        if ((*(int **)((char *)gObjectInterfacePtr + 0x17C))[i] != 0) continue;
+        for (c = i + 1; c < (int)(i + n); c++) {
+            if ((*(int **)((char *)gObjectInterfacePtr + 0x17C))[c] != 0) {
+                ok = 0;
+                break;
+            }
+        }
+        if (ok) return i;
+    }
+    return -1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObjectMessage", AcceptClientIntoGame);
 
