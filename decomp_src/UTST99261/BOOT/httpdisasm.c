@@ -38,6 +38,7 @@ typedef struct SDomiDocumentType {
     SDomiStringH internalSubset;      /* 0x60 */
 } SDomiDocumentType;
 
+typedef struct { char *start; char *end; } STRWORD;
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/httpdisasm", strlinecmp);
 
 int strlinevalue(const char *s)
@@ -51,7 +52,37 @@ int strlinevalue(const char *s)
     return v;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/httpdisasm", strlineword);
+STRWORD strlineword(char *p, char *skip, char *term) {
+    STRWORD w;
+    char q[2];
+    int i;
+    while (*p != '\r' && *p != '\n') {
+        for (i = 0; skip[i]; i++)
+            if (*p == skip[i]) break;
+        if (skip[i] == 0) break;
+        p++;
+    }
+    if (*p == '\r' || *p == '\n') {
+        w.start = NULL;
+        w.end = NULL;
+        return w;
+    }
+    if (*p == '"' || *p == '\'') {
+        q[0] = *p;
+        q[1] = 0;
+        term = q;
+        p++;
+    }
+    w.start = p;
+    while (*p != '\r' && *p != '\n') {
+        for (i = 0; term[i]; i++)
+            if (*p == term[i]) break;
+        if (term[i] != 0) break;
+        p++;
+    }
+    w.end = p;
+    return w;
+}
 
 char *strlinedup(const char *s, int n)
 {
