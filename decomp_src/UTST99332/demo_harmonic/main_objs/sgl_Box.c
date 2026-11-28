@@ -12,7 +12,6 @@ __asm__(".globl _GLOBAL__I__ZN3sgl3BoxC2Ev\n_GLOBAL__I__ZN3sgl3BoxC2Ev = _GLOBAL
 __asm__(".globl _GLOBAL__D__ZN3sgl3BoxC2Ev\n_GLOBAL__D__ZN3sgl3BoxC2Ev = _GLOBAL__D__ZN3sgl3BoxC2Ev__asm");
 
 #include "UTST99332/demo_duck/gl.hpp"
-extern const float D_0016AC6C;      /* 1.0f */
 extern const float D_0016AC74;      /* 1.0f */
 extern const float D_0016AC78;      /* 1.0f */
 extern const char D_0016ACA4[];     /* "_Value.w() == 1.f" */
@@ -22,9 +21,10 @@ extern const char D_0016ACD0[];     /* " *** error " */
 extern const char first_name[] __asm__("_ZZN3sgl3Box5firstEN4math11vector_xyzwEE19__PRETTY_FUNCTION__");
 #define BOX_ASSERT(c, text, fn, line) SGL_ASSERT(c, D_0016ACD0, text, D_0016ACB8, fn, line, D_0016ACCC)
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Box", _ZN3sgl3BoxC2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Box", _ZN3sgl3BoxC1Ev);
+sgl::Box::Box()
+{
+    first(math::vector_xyzw::Origin());
+}
 
 sgl::Box::Box(math::vector_xyzw a, math::vector_xyzw b)
 {
@@ -35,7 +35,7 @@ sgl::Box::Box(math::vector_xyzw a, math::vector_xyzw b)
 
 void sgl::Box::first(math::vector_xyzw p)
 {
-    BOX_ASSERT(p.w == D_0016AC6C, D_0016ACA4, first_name, 46);
+    BOX_ASSERT(p.w == 1.0f, D_0016ACA4, first_name, 46);
     _c[0] = p;
     _c[7] = p;
     finish();

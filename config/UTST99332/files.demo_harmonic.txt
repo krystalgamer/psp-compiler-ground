@@ -455,7 +455,7 @@ rodata 0x16A324 -
 bss 0x18CBF8 main_objs/scene_TraversalVarStack
 bss 0x18CC7C -
 rodata 0x16AC48 main_objs/sgl_Box
-rodata 0x16AC64 -
+rodata 0x16AC70 -
 bss 0x18CF18 main_objs/sgl_Box
 rodata 0x16AD04 main_objs/sgl_Frustum
 rodata 0x16AD20 -

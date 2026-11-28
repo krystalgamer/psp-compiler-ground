@@ -469,7 +469,7 @@ rodata 0x16D24C -
 bss 0x190078 main_objs/scene_TraversalVarStack
 bss 0x1900FC -
 rodata 0x16DB70 main_objs/sgl_Box
-rodata 0x16DB8C -
+rodata 0x16DB98 -
 bss 0x190398 main_objs/sgl_Box
 rodata 0x16DC2C main_objs/sgl_Frustum
 rodata 0x16DC48 -

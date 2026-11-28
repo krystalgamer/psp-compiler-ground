@@ -501,7 +501,7 @@ segments:
       - [0x16D684, rodata, asm/rodata_16D604]
       - [0x16DBD4, .rodata, main_objs/BVH]
       - [0x16DBF0, .rodata, main_objs/sgl_Box]
-      - [0x16DC0C, rodata, asm/rodata_16DB8C]
+      - [0x16DC18, rodata, asm/rodata_16DB98]
       - [0x16DCAC, .rodata, main_objs/sgl_Frustum]
       - [0x16DCC8, rodata, asm/rodata_16DC48]
       - [0x16DE74, .rodata, main_objs/sgl_Heap]
