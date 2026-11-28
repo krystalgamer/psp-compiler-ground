@@ -20,6 +20,9 @@ extern signed char gBuildTimeStamp_10DEB4;
 extern void *gUDPInterfacePtr;
 
 typedef int (*NetIfFn)();
+typedef struct { void *dest; unsigned char type; char pad[3]; int a; int b; char pad2[0x34 - 0x10]; int c; int d; void *data; } DmeSendMsg;
+int NetISendMessage();
+void *memset(void *, int, unsigned int);
 extern void *gObjectInterfacePtr;
 extern void *gStreamMediaInterfacePtr;
 int NetMutexLock();
@@ -177,9 +180,49 @@ int NetRegisterApplicationMessage(int a0, int a1)
     return e;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetSendMessage);
+int NetSendMessage(char type, char *o, int b, int x, int a, int d, void *data)
+{
+    int r, e;
+    DmeSendMsg m;
+    char buf[0x30];
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetSendApplicationMessage);
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    memset(&m, 0, sizeof(m));
+    m.a = a;
+    m.b = b;
+    m.type = type;
+    m.c = *(int *)(o + 0x460);
+    m.d = d;
+    m.data = data;
+    m.dest = o;
+    e = NetISendMessage(&m, buf, x);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
+
+int NetSendApplicationMessage(char type, char *o, int b, int a, int d, void *data)
+{
+    int r, e;
+    DmeSendMsg m;
+    char buf[0x30];
+
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    memset(&m, 0, sizeof(m));
+    m.a = a;
+    m.b = b;
+    m.type = type;
+    m.c = *(int *)(o + 0x460);
+    m.d = d;
+    m.data = data;
+    m.dest = o;
+    e = NetISendMessage(&m, buf, 2);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
 int NetRegisterDataStream(int a0, int a1, int a2, int a3)
 {
@@ -370,7 +413,16 @@ int NetPingIP(void *addr, int cb)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetPingNetAddress);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetOpenDataStream);
+int NetOpenDataStream(a, b, c, d, e, f, g, h, i)
+{
+    int r, v;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    v = (*(NetIfFn *)((char *)gObjectInterfacePtr + 0x14))(a, b, c, d, e, f, g, h, i);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return v;
+}
 
 int NetAddToDataStream(int a0, int a1, int a2)
 {
@@ -394,13 +446,51 @@ int NetEndDataStream(int a0)
     return e;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetSendMyClientUpdate);
+int NetSendMyClientUpdate(int a0, int a1)
+{
+    int r, e = 0x10;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    if (gObjectInterfacePtr != NULL)
+        e = (*(NetIfFn *)((char *)gObjectInterfacePtr + 0xE0))(a0, a1);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetGetDataStream);
+int NetGetDataStream(int *out, int a1)
+{
+    int r;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    if (out == NULL) return 0x17;
+    *out = (*(NetIfFn *)((char *)gObjectInterfacePtr + 0x34))(a1);
+    return NetMapRtError(NetMutexUnlock());
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetGetClientStatus);
+int NetGetClientStatus(int a0, int a1, int a2)
+{
+    int r, e = 0x10;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    if (gObjectInterfacePtr != NULL)
+        e = (*(NetIfFn *)((char *)gObjectInterfacePtr + 0xE4))(a0, a1, a2);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetGetClient);
+int NetGetClient(int *out, int a1, int a2)
+{
+    int r;
+    if (a1 == 0) return 0x17;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    if (out == NULL) return 0x17;
+    if (gObjectInterfacePtr != NULL)
+        *out = (*(NetIfFn *)((char *)gObjectInterfacePtr + 0x48))(a1, a2);
+    return NetMapRtError(NetMutexUnlock());
+}
 
 int NetMutexLock();
 int NetMutexUnlock();
