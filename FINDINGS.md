@@ -1212,3 +1212,18 @@ command byte into a local first (`int cmd = lcmd[light].diffuse;`), which
 adds the same kind of extra freq. Since `REG_FREQ` depends on references
 before combine, register ties in other modules that resist every form may
 have the same cause. The puzzle_bobble parameter tie above is one example.
+
+- **sceGuLight, sceGuLightSpot, sceGuDepthRange** (asm in ~70 modules until
+  now) are source shapes too.  Sony's `send_commandf` is a macro, not an
+  inline function: `do { float f_ = (argument); unsigned int v_ =
+  *(unsigned int *)&f_; v_ >>= 8; v_ &= 0xffffff; send_commandi(cmd, v_); }
+  while (0)`.  The argument is copied into a float local before the command
+  byte is read, which puts the position-word loads ahead of the `lcmd` byte
+  loads in sched1; the `v_` updates settle the remaining register ties
+  (no inline form does).  Every other libgu function matches with the macro
+  (sceGuMorphWeight with `int cmd = 44 + index;`).  sceGuDepthRange has no
+  context-pointer local: each field is written `_ctx[__aw_list_mode].field`;
+  a local pointer makes sched1 compute the address late.  The older libgu's
+  out-of-line `send_commandi` writes the result back into its parameter:
+  `cmd = (cmd << 24) | (argument & 0xffffff); *(pList->current++) = cmd;`.
+  All match with every cc1 (1.5.1.internal's libgu too).
