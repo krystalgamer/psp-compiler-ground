@@ -42,7 +42,48 @@ unsigned int sh::HDRMap::convert255(float v) const
     return (unsigned int)((1 - expf(-_exposure * v)) * 255);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZN2sh6HDRMap4loadEv);
+extern const char D_00172574[], D_0017258C[], D_00172590[], D_0017259C[];
+extern const char load_name[] __asm__("_ZZN2sh6HDRMap4loadEvE19__PRETTY_FUNCTION__");
+void sh::HDRMap::load()
+{
+    {
+        common::FileDump f(0);
+        f.binary();
+        f.blocking(false);
+        if (f.load(_name.c_str()) < 0)
+            return;
+        unsigned int width = (unsigned int)sqrtf(f._size / 12);
+        unsigned int height = width;
+        SGL_ASSERT(f._size == width * height * 4 * 3, D_00172590, D_0017259C, D_00172574, load_name, 84, D_0017258C);
+        _img.resize(width, height);
+        const float *src = (const float *)f._ptr;
+        ABGR_FLOAT *dst = _img.addr();
+        for (unsigned int i = 0; i != width * height; i++) {
+            dst->x = src[0];
+            dst->y = src[1];
+            dst->z = src[2];
+            src += 3;
+            dst++;
+        }
+    }
+    ABGR_FLOAT *p = _img.addr();
+    _max = p->x;
+    _min = p->x;
+    for (int i = 0; i != _img.nx() * _img.ny(); i++, p++) {
+        if (p->x > _max)
+            _max = p->x;
+        if (_max < p->y)
+            _max = p->y;
+        if (_max < p->z)
+            _max = p->z;
+        if (p->x < _min)
+            _min = p->x;
+        if (p->y < _min)
+            _min = p->y;
+        if (p->z < _min)
+            _min = p->z;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZN2sh6HDRMap22save_vert_distributionEv);
 
