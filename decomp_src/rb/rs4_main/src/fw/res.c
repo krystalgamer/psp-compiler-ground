@@ -412,7 +412,37 @@ void resSetTerm(int arg0) {
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FBF80);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resAsmWord);
+char *strchr(const char *, int);
+char *strtok(char *, const char *);
+void *memcpy(void *, const void *, unsigned int);
+char *resAsmWord(int *src, char *dst)
+{
+	int len = src[1];
+	src[4] = (int)dst;
+	if (len > 0) {
+		char *s = (char *)src[0];
+		int n = 0;
+		char **tbl;
+		char *str, *t;
+		while (s) {
+			s = strchr(s, ' ');
+			s += (s != 0);
+			n++;
+		}
+		*(int *)dst = n;
+		tbl = (char **)(dst + 4);
+		str = (char *)(tbl + n);
+		dst = (char *)(((int)(str + len) + 0x10) & ~15);
+		memcpy(str, (char *)src[0], len + 1);
+		n = 0;
+		for (t = strtok(str, " "); t; t = strtok(NULL, " "))
+			tbl[n++] = t;
+	} else {
+		*(int *)dst = 0;
+		dst = (char *)(((int)dst + 0x13) & ~15);
+	}
+	return dst;
+}
 
 void resReleaseWord(void) {
 }
