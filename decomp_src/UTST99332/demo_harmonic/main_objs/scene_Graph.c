@@ -365,7 +365,23 @@ template<class T> int PrimitiveIndex<T>::countTriangles() const
 }
 }
 /* asm: near-miss (tmp/cxx/drafts/scene4/NOTES.md) */
-extern template size_t sgl::PrimitiveIndex<int>::countTrianglesInStrips() const;
+extern "C" const char D_001663E4[], D_00166A60[], D_00166A6C[], D_00166598[];
+extern const char cts_name[] __asm__("_ZZNK3sgl14PrimitiveIndexIiE22countTrianglesInStripsEvE19__PRETTY_FUNCTION___166A10");
+#define CTS_ASSERT(c) SGL_ASSERT(c, D_001663E4, D_00166A60, D_00166A6C, cts_name, 0xE7, D_00166598)
+namespace sgl {
+template<class T> size_t PrimitiveIndex<T>::countTrianglesInStrips() const
+{
+    size_t count = 0;
+    for (int i = 0, k = 0; i != n; i++) {
+        size_t num = _strips[k++];
+        CTS_ASSERT(num >= 3);
+        k += num;
+        count += num - 2;
+    }
+    return count;
+}
+}
+template size_t sgl::PrimitiveIndex<int>::countTrianglesInStrips() const;
 template int sgl::PrimitiveIndex<int>::countTriangles() const;
 /* asm: near-miss (Graph.h newNode<T>, scene.hpp: one delay slot filled from the other path) */
 extern template common::handle<scene::Mesh> scene::Graph::newNode<scene::Mesh>(std::string, bool);
@@ -450,7 +466,6 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph"
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph7newNodeINS_7TextureEEEN6common6handleIT_EESsb);
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph7newNodeINS_13DefaultShaderEEEN6common6handleIT_EESsb);
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZNSt6vectorIN6common6handleIN5scene4NodeEEESaIS4_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS4_S6_EERKS4_);
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZNK3sgl14PrimitiveIndexIiE22countTrianglesInStripsEv);
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZNK4math6matrix5equalERKS0_f);
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene4NodeEEC1EPS2_);
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene4NodeEEC1ERKS3_);
