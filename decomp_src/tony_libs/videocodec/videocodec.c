@@ -155,7 +155,62 @@ end:
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/videocodec/nonmatchings/videocodec", sceVideocodecDecode);
+int sceVideocodecDecode(VideocodecCtx *ctx, unsigned int type)
+{
+	int ret;
+	unsigned int size;
+	unsigned int oldk1;
+
+	K1_SAVE(oldk1);
+	ret = func_00000BB8(ctx, type);
+	if (ret != 0)
+		goto end;
+	ret = 0x806201FE;
+	if (type >= 3)
+		goto end;
+	wbInvNotMe(ctx->unk24, ctx->unk28);
+	switch (type) {
+	case 0:
+		size = 0x28;
+		break;
+	case 1:
+	case 2:
+		wbInvNotMe(ctx->unk14, ctx->unk18);
+		sceKernelDcacheWritebackInvalidateRange((void *)ctx->unk1C, ctx->unk20);
+		size = 0x100;
+		break;
+	default:
+		size = 0;
+		break;
+	}
+	if (size)
+		sceKernelDcacheWritebackInvalidateRange((void *)ctx->unk10, size);
+	ret = sceMeVideo_driver_176BBE07(type, ctx);
+	func_00000D84(ctx, type);
+	switch (ret) {
+	case 0:
+		ret = 0;
+		break;
+	case -1:
+		ret = 0x806201FE;
+		break;
+	case -2:
+		ret = 0x80620002;
+		break;
+	case -3:
+		ret = 0x80628001;
+		break;
+	case -4:
+		ret = 0x80628002;
+		break;
+	default:
+		ret = 0x80628002;
+		break;
+	}
+end:
+	K1_RESTORE(oldk1);
+	return ret;
+}
 
 int sceVideocodecStop(VideocodecCtx *ctx, unsigned int type)
 {
