@@ -44,7 +44,39 @@ void tcp_quench(struct inpcb *inp, int errno);
 extern u_long syn_cache_count;
 #define RTM_RTTUNIT 1000000
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_inet/nonmatchings/tcp_subr", func_00023E20);
+void
+tcp_init(void)
+{
+	int max_linkhdr, max_protohdr;
+
+	tcp_cwm_burstsize = 4;
+	tcp_mssdflt = TCP_MSS;
+	tcprexmtthresh = 3;
+	tcp_log_refused = 0;
+	tcp_rttdflt = TCPTV_SRTTDFLT / PR_SLOWHZ;
+	tcp_cwm = 0;
+	tcp_do_rfc1323 = 1;
+	tcp_do_sack = 1;
+	tcp_do_win_scale = 1;
+	tcp_do_timestamps = 1;
+	tcp_init_win = 1;
+	tcp_do_newreno = 0;
+	tcp_ack_on_push = 0;
+	tcp_mss_ifmtu = 0;
+	tcp_compat_42 = 0;
+	tcp_iss_seq = 0;
+	tcp_now = 0;
+	memset(&tcpstat, 0, sizeof(tcpstat));
+	tcp_timer_init();
+	in_pcbinit(&tcbtable, tcbhashsize, tcbhashsize);
+	LIST_INIT(&tcp_delacks);
+	sceNetIfhandle_lib_5FB31C72(&max_linkhdr, &max_protohdr, NULL, NULL);
+	if (max_protohdr < (int)(sizeof(struct ip) + sizeof(struct tcphdr)))
+		max_protohdr = sizeof(struct ip) + sizeof(struct tcphdr);
+	sceNetIfhandle_lib_62B20015(max_linkhdr, max_protohdr, 0, 0);
+	icmp_mtudisc_callback_register(tcp_mtudisc_callback);
+	syn_cache_init();
+}
 
 struct mbuf *
 tcp_template(struct tcpcb *tp)
