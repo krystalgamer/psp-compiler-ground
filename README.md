@@ -55,9 +55,12 @@ module's data. Without it, cc1plus puts the vtables, typeinfo and type names
 of classes without a key function in `.gnu.linkonce.r.*` sections (and their
 implicit destructors in `.gnu.linkonce.t.*`): `tools/split.py` links each C++
 object's linkonce sections of the symbols in its own `.text`/`.rodata`
-ranges (the first copy wins, as in Sony's link), the `.r` ones after its
-`.rodata`, with its `.rodata.*` (rb/rs4_main has them right after the
-object's strings, in cc1plus's order). With `-O3` cc1plus outputs every function at the end of the
+ranges (the first copy wins, as in Sony's link), the `.r` ones in one input
+statement with its `.rodata` and before its `.rodata.*`: ld then keeps the
+object's own section order, which is the order cc1plus first switches to
+each section (rb/rs4_main has both: network_lobby_message's file name
+string comes first, network_lobby_state's vtable precedes the
+"src/ys/ys_object.h" string its inline `operator delete` needs). With `-O3` cc1plus outputs every function at the end of the
 file, so a C++ unit that still has asm includes `cxx/defer_asm.h`, whose
 `INCLUDE_ASM` defers the asm the same way. A unit's data can be given to it
 with `rodata ADDR UNIT` / `bss ADDR UNIT` lines (and `rodata|bss ADDR -` to

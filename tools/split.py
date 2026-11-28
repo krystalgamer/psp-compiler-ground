@@ -146,12 +146,12 @@ def cxx_linkonce(text, cfg):
 
     Without `#pragma interface`, vtables, typeinfo and type names of classes
     with no key function go to .gnu.linkonce.r.* sections.  rb/rs4_main has
-    them after the object's .rodata (its strings), in the object's order
-    (src/net/network_lobby_message: the file name string, the 11 _ZTV, _ZTI
-    and _ZTS as cc1plus emits them; Ys::Object's typeinfo only in the first
-    object, libmm_semaphore).  So each C++ object also keeps the
-    .gnu.linkonce.r sections of the data symbols in its own .rodata range,
-    linked with its .rodata.* (rodata_order)."""
+    them in the object's section order (src/net/network_lobby_message: the
+    file name string, the 11 _ZTV, _ZTI and _ZTS as cc1plus emits them;
+    src/net/network_lobby_state: its _ZTV before the string; Ys::Object's
+    typeinfo only in the first object, libmm_semaphore).  So each C++ object
+    also keeps the .gnu.linkonce.r sections of the data symbols in its own
+    .rodata range, linked with its .rodata (rodata_order)."""
     funcs, data = [], []
     for path in cfg.get("options", {}).get("symbol_addrs_path", []):
         if Path(path).is_file():
@@ -196,7 +196,9 @@ def rodata_order(text, module):
     release assemblers have .rodata first; the 1.6.1.internal toolchain's
     creates the sections as they are first used (config/compilers.txt
     objorder).  A C++ object's .gnu.linkonce.r sections (cxx_linkonce) are
-    created as first used too, so they link with its .rodata.*."""
+    created as first used too, and so is its .rodata (before or after a
+    vtable), so they link in one statement with its .rodata, before its
+    .rodata.*."""
     sys.path.insert(0, str(Path(__file__).parent))
     import compiler
 
@@ -205,6 +207,11 @@ def rodata_order(text, module):
         u = re.search(r"decomp_src/([^/]+)/" + re.escape(module) + r"/(.+)\.c\.o$", obj)
         if u and compiler.object_order(u[1], module, u[2]):
             return f"{obj}(.rodata .rodata.*{extra});"
+        if extra:
+            # a C++ object's vtables/typeinfo: .rodata and .gnu.linkonce.r in
+            # object-file order (rs4_main has both string-first and
+            # vtable-first objects); its constants still follow
+            return f"{obj}(.rodata{extra});\n        {obj}(.rodata.*);"
         return f"{obj}(.rodata);\n        {obj}(.rodata.*{extra});"
     lo = r"((?: \.gnu\.linkonce\.r\.[^\s)]+)*)"
     text = re.sub(r"(\S+\.c\.o)\(\.rodata \.rodata\.\*" + lo + r"\);", r"\1(.rodata\2);", text)
