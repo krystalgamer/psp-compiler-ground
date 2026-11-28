@@ -22,9 +22,33 @@ extern void *gpfFreeCallback;
 extern void *gpfMallocCallback;
 extern void *gpfReallocCallback;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_memory", rt_memory_allocate);
+int rt_memory_allocate(p, size) void **p; unsigned int size;
+{
+    if (gpfMallocCallback == NULL) {
+        *p = malloc(size);
+        if (*p == NULL)
+            return 100;
+    } else {
+        *p = ((void *(*)(unsigned int))gpfMallocCallback)(size);
+        if (*p == NULL)
+            return 100;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_memory", rt_memory_reallocate);
+int rt_memory_reallocate(p, size) void **p; unsigned int size;
+{
+    if (gpfReallocCallback == NULL) {
+        *p = realloc(*p, size);
+        if (*p == NULL)
+            return 100;
+    } else {
+        *p = ((void *(*)(void *, unsigned int))gpfReallocCallback)(*p, size);
+        if (*p == NULL)
+            return 100;
+    }
+    return 0;
+}
 
 int rt_memory_allocate_init_zero(void **arg0, unsigned int arg1) {
     int temp_v0;
