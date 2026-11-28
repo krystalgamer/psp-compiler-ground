@@ -1202,7 +1202,57 @@ int NetIGetNetUpdateErrors(void *a)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIDisconnect);
+void rt_token_shutdown(); int rt_time_start();
+typedef struct { char *ci; int x; void (*cb)(DmeDiscMsg *); int data; } DmeDisconnectParams;
+int NetIDisconnect(DmeDisconnectParams *p)
+{
+    char *ci;
+
+    if (p == NULL) return 0x17;
+    ci = p->ci;
+    if (ci == NULL) return 0x17;
+    if (*(int *)(ci + 0x4A4) != 0) gbTimebaseEnabled = 0;
+    if (p->cb == NULL) return 0x17;
+    if (gStreamMediaInterfacePtr != NULL && (*(DmeFn0 *)((char *)gStreamMediaInterfacePtr + 0x18))(ci) != 0)
+        (*(DmeFn0 *)((char *)gStreamMediaInterfacePtr + 0x8))(ci);
+    if ((unsigned int)(*(int *)(ci + 0x454) - 1) < 4) {
+        *(long *)(ci + 0x454) = 5;
+        if (gbUDPEnabled && *(int *)(ci + 0x468) == 2) {
+            (*(DmeFn0 *)((char *)gP2PInterfacePtr + 0x38))(*(int *)(ci + 0x474));
+            rt_time_start(ci + 0x490);
+            *(void **)(ci + 0x430) = p->cb;
+            *(int *)(ci + 0x434) = p->data;
+            *(unsigned char *)(ci + 0x48C) = 1;
+        }
+        if (*(int *)(ci + 0x468) != 2) {
+            DmeDiscMsg m;
+            (*(DmeFn0 *)((char *)gMsgClientInterfacePtr + 0x14))(*(int *)(ci + 0x470), p->x);
+            *(long *)(ci + 0x454) = 0;
+            m.d = p->data;
+            m.c = ci;
+            m.a = 0;
+            m.b = 0;
+            m.cc = 0;
+            if (gbUDPEnabled && *(int *)(ci + 0x474) != 0) {
+                (*(DmeFn0 *)((char *)gP2PInterfacePtr + 0x38))(*(int *)(ci + 0x474));
+                rt_time_start(ci + 0x490);
+                *(void **)(ci + 0x430) = p->cb;
+                *(int *)(ci + 0x434) = p->data;
+                *(unsigned char *)(ci + 0x48C) = 1;
+            } else
+                p->cb(&m);
+        }
+    }
+    if (*(int *)(ci + 0x4A0) != 0) {
+        *(int *)(ci + 0x4A0) = 0;
+        *(int *)(ci + 0x4A8) = 0;
+        rt_token_shutdown(ci + 0x40C);
+    }
+    if (*(unsigned char *)(ci + 0x48C) == 0) NetCleanupConnInfo(ci);
+    rt_comm_linkaddress_setnull((char *)gDmeGlobals + 4);
+    *(int *)((char *)gDmeGlobals + 0xC) = 0;
+    return 0;
+}
 
 extern int gbUDPEnabled; void rt_parse_shutdown();
 int NetIClose(void)
