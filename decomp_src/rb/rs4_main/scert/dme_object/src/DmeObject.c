@@ -749,7 +749,45 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject"
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", ElementErrorExceedsThreshold);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", GlobalFieldErrorExceedsThreshold);
+extern char *D_00132A68; int ElementErrorExceedsThreshold();
+typedef struct { int x; int field; int size; int count; char *a; char *b; } DmeErrMsg;
+int GlobalFieldErrorExceedsThreshold(unsigned char *obj, int x, unsigned char field)
+{
+    char *cls;
+    int *f;
+    int off;
+    char *a, *b;
+    int i, n;
+
+    if (obj == NULL) return 0;
+    cls = D_00132A68 + obj[0] * 48;
+    if (cls == NULL) return 0;
+    f = (*(int ***)(cls + 0x28))[field];
+    if (f == NULL) return 0;
+    off = (*(int **)(cls + 0x2C))[field];
+    a = *(char **)(obj + 0x1C) + off;
+    if (a == NULL) return 0;
+    b = *(char **)(obj + 0x20) + off;
+    if (b == NULL) return 0;
+    if (f[5] == 5) {
+        DmeErrMsg m;
+        m.x = x;
+        m.field = field;
+        m.size = f[1];
+        m.a = a;
+        m.count = f[2];
+        m.b = b;
+        if ((int (*)(DmeErrMsg *))f[6] == NULL) return 0;
+        return ((int (*)(DmeErrMsg *))f[6])(&m);
+    }
+    n = f[2];
+    for (i = 0; i < n; i++) {
+        if (ElementErrorExceedsThreshold(f, a, b)) return 1;
+        a += f[1];
+        b += f[1];
+    }
+    return 0;
+}
 
 typedef struct { unsigned char id, b1, b2, b3, b4; char pad; unsigned short used, size, len; } DmeDsPktHdr;
 int rt_circ_buf_is_wrapped();
