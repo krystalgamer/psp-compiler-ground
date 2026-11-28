@@ -158,7 +158,30 @@ void sceGmoModelUpdate(SceGmoModel *model);
 /* module functions defined in other units */
 int sceGmoModelGetCurrentMotion(SceGmoModel *model);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_model", geModelNormalTexFunc);
+void geModelNormalTexFunc(SceGimPicture *picture)
+{
+	if (picture == 0)
+		return;
+	if (picture->m_flags == 0) {
+		SceGimImageHeader *image = picture->m_image;
+		if (image != 0) {
+			void **offsets;
+			sceGuTexMode(image->format, 0, 0, image->order);
+			offsets = (void **)((char *)image + image->offsets);
+			sceGuTexImage(0, image->width, image->height, picture->m_buf_width, *offsets);
+		}
+		{
+		SceGimImageHeader *palette = picture->m_palette;
+		if (palette != 0) {
+			void **offsets;
+			sceGuClutMode(palette->format, 0, 255, 0);
+			offsets = (void **)((char *)palette + palette->offsets);
+			sceGuClutLoad(picture->m_clut_load, *offsets);
+		}
+		}
+		return;
+	}
+}
 
 SceGmoModel *sceGmoModelCreate(void *chunk);
 int sceGmoModelLoadFile(SceGmoModel *model, const void *buf, int size, int index);
