@@ -172,7 +172,23 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", UnitTakenVoice);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", UnitVoiceAlloc);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", UnitFree_85774);
+static inline void SgxPNodeMove(SgxPNode *l, SgxPNode *n) { SgxPNodeUnlink(n); SgxPNodeAddTail(l, n); }
+typedef struct { char pad[0x30]; struct { int a; short res; signed char nv; char p; short v[8]; } s; } UnitT;
+void UnitFree_85774(void *uv)
+{
+    UnitT *u = uv;
+    int i;
+    FadeFreeAll((char *)u + 0x14);
+    for (i = 0; i < u->s.nv; i++) {
+        if (u->s.v[i] >= 0) {
+            sgxVoCtrl(u->s.v[i], 2, 0, 0);
+            sgxVoFree(u->s.v[i]);
+        }
+    }
+    if (u->s.res >= 0) sgxResUnlock(u->s.res);
+    *(int *)((char *)u + 0xC) = 0;
+    SgxPNodeMove((SgxPNode *)&D_0011FED0, (SgxPNode *)u);
+}
 
 void UnitFreeAll_85854(p)
     char *p;
@@ -210,9 +226,44 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", CmdPlayNoise);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", CmdPlayMidi);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", CmdRelAny);
+void CmdRelAny(char *port, int *cmd)
+{
+    UnitT *u;
+    int sh = cmd[0] == 4 ? 0 : 24;
+    int id = cmd[1];
+    int f = cmd[2];
+    for (u = (UnitT *)PortListFirst(port + 0x18); u != NULL; u = (UnitT *)PortListNext((char *)u)) {
+        int i;
+        if ((*(int *)((char *)u + 8) >> sh) != id) continue;
+        for (i = 0; i < u->s.nv; i++) {
+            if (u->s.v[i] >= 0) {
+                sgxVoCtrl(u->s.v[i], 1, 0, 0);
+                if (f) {
+                    sgxVoFree(u->s.v[i]);
+                    u->s.v[i] = -1;
+                }
+            }
+        }
+    }
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", CmdRelAll_86218);
+void CmdRelAll_86218(char *port, int *cmd)
+{
+    UnitT *u;
+    int f = cmd[1];
+    for (u = (UnitT *)PortListFirst(port + 0x18); u != NULL; u = (UnitT *)PortListNext((char *)u)) {
+        int i;
+        for (i = 0; i < u->s.nv; i++) {
+            if (u->s.v[i] >= 0) {
+                sgxVoCtrl(u->s.v[i], 1, 0, 0);
+                if (f) {
+                    sgxVoFree(u->s.v[i]);
+                    u->s.v[i] = -1;
+                }
+            }
+        }
+    }
+}
 
 void CmdStopAny(void *port, int *cmd) {
     UnitFreeByID_8589C(port, cmd[1], (cmd[0] == 7) ? 0 : 0x18);
@@ -226,7 +277,15 @@ void CmdStopAll_86320(void) {
     UnitFreeAll_85854();
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", CmdCtrlID);
+void CmdCtrlID(char *port, int *cmd)
+{
+    char *u;
+    int id = cmd[1], a = cmd[2], b = cmd[3], c = cmd[4], d = cmd[5];
+    for (u = PortListFirst(port + 0x18); u != NULL; u = PortListNext(u)) {
+        if (*(int *)(u + 8) == id)
+            FadeAlloc(u + 0x14, u + 0x54, a, b, c, d);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", CmdCtrlMidi);
 
