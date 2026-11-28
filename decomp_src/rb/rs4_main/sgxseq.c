@@ -271,7 +271,22 @@ void CmdStopAll_82384(void) {
     UnitFreeAll_81DFC();
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", CmdPause_823A0);
+void CmdPause_823A0(void *pv, int cmd)
+{
+	char *p = pv;
+	char *u;
+	int a = ((int *)cmd)[1];
+	if (a) cmd = *(int *)(p + 0xC) | 4;
+	else cmd = *(int *)(p + 0xC) & ~4;
+	if (*(int *)(p + 0xC) == cmd) return;
+	*(int *)(p + 0xC) = cmd;
+	for (u = SeqListFirst(p + 0x14); u != NULL; u = SeqListNext(u)) {
+		int c[12];
+		c[0] = 0x11;
+		c[1] = a;
+		sgxPortCommand(*(short *)(u + 0x1A), (int)c);
+	}
+}
 
 void CmdWait(char *s, int *a) {
     unsigned int n;
@@ -630,7 +645,27 @@ void UnitMidiStrProc(void *a, char *u, int dec)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", SlotUnitProc_84650);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", sgxSeqTickProc);
+void SlotUnitProc_84650(char *p, int t);
+extern const float D_0010ACFC;
+void sgxSeqTickProc(float dt)
+{
+	char *p;
+	int t = dt * D_0010ACFC;
+	for (p = SeqListFirst((char *)&D_0011FE68 - 4); p != NULL; p = SeqListNext(p)) {
+		int f = *(int *)(p + 0xC);
+		char *slot = *(char **)(p + 0x10) + 0x6C;
+		*(int *)(p + 0xC) = f & ~0x140;
+		if (f & 0x204) continue;
+		{
+			int tt = t;
+			int fl = *(short *)(slot + 2);
+			if (fl & 0x400) tt = (t * *(short *)(slot + 0x14)) >> 12;
+			SlotUnitProc_84650(p, tt);
+			if (SeqListFirst(p + 0x14) == NULL) *(int *)(p + 0xC) &= ~2;
+		}
+	}
+}
+const float D_0010ACFC = 1000000.0f;
 
 #ifndef NULL
 #define NULL ((void *)0)
