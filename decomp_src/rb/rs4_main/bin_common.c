@@ -5,7 +5,10 @@ M2C_UNK I3dHierarchy__GetIndexByName(int);          /* extern */
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3dHierarchy__GetIndexByName);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3dIsActiveTypeId);
+int I3dIsActiveTypeId(int id) {
+    if (id == 0x4 || id == 0x16 || id == 0x24 || id == 0x2C || id == 0x2E || id == 0x2F || id == 0x36 || id == 0x3F || id == 0x40 || id == 0x41 || id == 0x48 || id == 0x4E || id == 0x51) return 0;
+    return 1;
+}
 
 
 void ErrorEntity__Pack(void) {
