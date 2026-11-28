@@ -310,7 +310,59 @@ int JSInitInternal(void) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_main", JSEventLoop);
+int JSEventLoop(void)
+{
+    int *g;
+    JSMsg m;
+    JSMsgBody b;
+    int r;
+
+    g = get_global_ptr();
+    for (;;) {
+        m.x00 = 0;
+        m.body.type = 0;
+        m.body.x04 = 0;
+        m.body.x08 = 0;
+        m.body.cmd = 0;
+        m.body.x10 = 0;
+        m.body.x14 = 0;
+        m.body.x18 = 0;
+        m.body.x1C = 0;
+        r = OS_mq_receive(g[6], &m, 0x24, 0);
+        if (r == -1)
+            OS_mq_receive(g[5], &m, 0x24, 0);
+        OS_thread_mutex_lock(jsapi_lock);
+        if (m.body.type == 9)
+            m = *(JSMsg *)m.body.x04;
+        b = m.body;
+        switch (b.cmd) {
+        case 0x401:
+            JSStartInternal(b.x04);
+            break;
+        case 0x402:
+            JSRunInternal((int *)&b);
+            break;
+        case 0x403:
+            g[4] = 1;
+            JSFreeJSPtrInternal(b.x1C, b.x04, 0);
+            r = b.x04;
+            OS_thread_mutex_unlock(jsapi_lock);
+            return r;
+        case 0x404:
+            JSHandleEventInternal((int *)&b);
+            break;
+        case 0x405:
+            break;
+        case 0x409:
+            JSFreeJSPtrInternal(b.x1C, b.x04, 1);
+            break;
+        case 0x810:
+            JSTimer((int *)&b);
+            break;
+        }
+        OS_thread_mutex_unlock(jsapi_lock);
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
