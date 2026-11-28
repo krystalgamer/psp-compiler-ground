@@ -505,6 +505,7 @@ bool textures::Texture::isPow2()
     return IsPow2(m.width) && IsPow2(m.height);
 }
 
+/* FormatName matches as tmp/cxx/drafts/s32/fn3.v (cases 2,1,3,4,5,0), but its jump table (0x176BC8) is outside the unit's carved .rodata */
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures10FormatNameENS_6FormatE);
 
 void textures::Texture::setChannel(Channel c, unsigned char v)

@@ -468,7 +468,39 @@ unsigned int common::File::read(void *p, unsigned int size, unsigned int n)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_GetKernelErrName", _ZN6common4File4openEPKcS2_);
+extern "C" int sceIoOpen(const char *file, int flags, int mode);
+extern "C" const char D_0015E28C[], D_0015E2AC[], D_0015E2B0[], D_0015E2B4[], D_0015E2B8[];
+extern const char File_open_fn[] __asm__("_ZZN6common4File4openEPKcS2_E19__PRETTY_FUNCTION__");
+bool common::File::open(const char *name, const char *mode)
+{
+    int flags = 0;
+    std::string path(D_0015E28C);
+    path += name;
+    std::string m(mode);
+    bool r = m.find_first_of(D_0015E2AC) != std::string::npos;
+    bool a = m.find_first_of(D_0015E2B0) != std::string::npos;
+    bool w = m.find_first_of(D_0015E2B4) != std::string::npos || a;
+    bool plus = m.find_first_of(D_0015E2B8) != std::string::npos;
+    if (r && !w)
+        flags = 1;
+    else if (!r && w)
+        flags = 2;
+    else if (r && w)
+        flags = 3;
+    if (plus)
+        flags |= a ? 0x300 : 0x600;
+    *handle = Handle();
+    handle->fd = sceIoOpen(path.c_str(), flags, 0);
+    if (handle->fd < 0) {
+        const char *e = psp::GetKernelErrName(handle->fd);
+        if (*e) {
+            FILE_ERROR(File_open_fn, e);
+        } else {
+            FILE_ERROR(File_open_fn, D_0015E2BC);
+        }
+    }
+    return is_open();
+}
 
 int common::File::flush()
 {
