@@ -1,4 +1,4 @@
-/* cflags: -Os -fno-strength-reduce */
+/* cflags: -Os */
 #include "common.h"
 #include "m2c_macros.h"
 M2C_UNK _memFree(int, M2C_UNK *, M2C_UNK);
@@ -34,13 +34,56 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD5C4);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD5E0);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", i3dTask_Landscape);
+int taskMake(void *, void *, void *, int);
+void *i3dTask_EzDraw(void *arg0, unsigned int arg1, int arg2, int arg3);
+void *i3dTask_EzModel(void *arg0, unsigned int arg1, void *arg2, int arg3);
+extern unsigned char D_000FD5C4, D_000FD608, D_000FD60C;
+
+typedef struct { int a, b, prio; } LsEnt;
+
+/* the function name string precedes the shared Tp/Vp strings and the jump table */
+const char D_000FD5F4[] = "i3dTask_Landscape";
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD608);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD60C);
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD610);
+void *i3dTask_Landscape(void *arg0, unsigned int arg1, LsEnt *ent, int n) {
+    int t;
+    int i;
+
+    switch (arg1) {
+    case 0:
+        if (arg0 == NULL) {
+            consPrintf(&D_000FD5C4, &D_000FD5E0, 0x71, D_000FD5F4, &D_000FD608);
+        }
+        if (ent == NULL) {
+            consPrintf(&D_000FD5C4, &D_000FD5E0, 0x72, D_000FD5F4, &D_000FD60C);
+        }
+        M2C_FIELD(arg0, int *, 0x28) = 0;
+        M2C_FIELD(arg0, signed char *, 0x24) = 0;
+        M2C_FIELD(arg0, int *, 0x2C) = 0;
+        for (t = taskHeadAlive(); t != 0; t = rsvNextAlive(t)) {
+            if (M2C_FIELD(t, void **, 8) == i3dTask_EzDraw) break;
+        }
+        if (t == 0) {
+            taskMake(arg0, i3dTask_EzDraw, NULL, 0);
+        }
+        for (i = n; i != 0; i--) {
+            taskMake(arg0, i3dTask_EzModel, &ent[n - i], ent[n - i].prio);
+        }
+    case 4:
+        return arg0;
+    case 1:
+        return NULL;
+    case 2:
+        return NULL;
+    case 3:
+        return NULL;
+    default:
+        return taskDefaultMsg((int) arg0, arg1, (int) ent, n);
+    }
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD624);
 
@@ -48,7 +91,57 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", i3dTask_EzDraw)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", i3dTask_EzModel);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", i3dTask_Model);
+M2C_UNK copInitAttr(void *);                        /* extern */
+M2C_UNK i3dDrawMdl(void *, void *, void *);         /* extern */
+M2C_UNK i3dFreeMdl(void *);                         /* extern */
+void *i3dMakeMdl(void *);                           /* extern */
+M2C_UNK i3dMotAnimate(void *);                      /* extern */
+extern unsigned char D_000FD5C4, D_000FD608;
+extern unsigned char D_000FD5C4, D_000FD608;
+extern unsigned char D_000FD60C;
+
+void *i3dTask_Model(void *arg0, unsigned int arg1, void *arg2, int arg3) {
+    void *temp_v0;
+
+    switch (arg1) {
+    case 0:
+        if (arg0 == NULL) {
+            consPrintf(&D_000FD5C4, &D_000FD5E0, 0x125, "i3dTask_Model", &D_000FD608);
+        }
+        if (arg2 == NULL) {
+            consPrintf(&D_000FD5C4, &D_000FD5E0, 0x126, "i3dTask_Model", &D_000FD60C);
+        }
+        M2C_FIELD(arg0, int *, 0x28) = -1;
+        M2C_FIELD(arg0, signed char *, 0x24) = arg3;
+        M2C_FIELD(arg0, int *, 0x2C) = 0;
+        copUnitMat(arg0 + 0x90);
+        copUnitMat(arg0 + 0xD0);
+        copInitAttr(arg0 + 0x60);
+        temp_v0 = i3dMakeMdl(resGetDatTable(M2C_FIELD(arg2, int *, 0), M2C_FIELD(arg2, int *, 4)));
+        if (temp_v0 == NULL) {
+            consPrintf(&D_000FD5C4, &D_000FD5E0, 0x137, "i3dTask_Model", "pI3d");
+        }
+        M2C_FIELD(arg0, void **, 0x30) = temp_v0;
+        if (M2C_FIELD(temp_v0, int *, 0x34) != 0) {
+            i3dMotSetMotion(temp_v0, 0);
+        }
+        /* fallthrough */
+    case 4:
+        return arg0;
+    case 1:
+        { void *m = M2C_FIELD(arg0, void **, 0x30); M2C_FIELD(arg0, void **, 0x30) = NULL; i3dFreeMdl(m); }
+        return NULL;
+    case 2:
+        i3dMotAnimate(M2C_FIELD(arg0, void **, 0x30));
+        copLetMat(arg0 + 0x90, arg0 + 0xD0);
+        return NULL;
+    case 3:
+        i3dDrawMdl(M2C_FIELD(arg0, void **, 0x30), arg0 + 0xD0, arg0 + 0x60);
+        return NULL;
+    default:
+        return taskDefaultMsg((int) arg0, arg1, (int) arg2, (int) arg3);
+    }
+}
 
 extern unsigned char D_000FD5C4, D_000FD608;
 int taskDefaultMsg();
