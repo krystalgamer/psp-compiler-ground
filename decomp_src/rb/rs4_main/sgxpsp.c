@@ -548,7 +548,22 @@ void FileCmdClose(void *f, int fd) {
     if (r < 0) SGX_ERR(0xAED, "close error (%d, %X)\n", fd, r);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", FileCmdRead);
+long long sceIoLseek(int fd, long long offset, int whence);
+int sceIoRead(int fd, void *data, int size);
+void FileCmdRead(void *path, int fd, int pos, void *buf, int size, volatile int *abort) {
+    while (*abort == 0) {
+        long long o;
+        int r;
+        if (IsPathUmd(path)) UmdWaitReadable();
+        o = sceIoLseek(fd, pos, 0);
+        r = o;
+        if (o >= 0) r = sceIoRead(fd, buf, size);
+        if (r == size) return;
+        if (!IsPathUmd(path)) return;
+        SGX_ERR(0xB03, "read error (%s,%X)\n", path, r);
+        WaitOneSec(abort);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", FreqMain);
 
