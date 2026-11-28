@@ -190,6 +190,16 @@ extern char D_001355A0[], D_001355BC[], D_001355D8[], D_001355F4[];
 char *parseSetAuthData(char *, int);
 PsAuth *HST_searchAuthorizationDB(char *);
 int sprintf(char *, const char *, ...);
+extern char D_00135380[];
+extern char D_001353B4[];
+extern char D_001353E4[];
+void *HST_getPostData(int node);
+void HST_freePostData(int node);
+int HST_setMethodType(void *node, int t);
+int HST_getRefURIlen(int node);
+char *HST_getRefURI(int node);
+void HST_setAuthUsername(int node, char *s, int len);
+void HST_setAuthPassword(int node, char *s, int len);
 unsigned short UDomiString_ToLower(unsigned short c) {
     if (c < 0x80) {
         return tolower(c);
@@ -535,7 +545,152 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", D_00135260);
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", D_00135380);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_getsend);
+void ps_getsend(int node, int cache, int mode, void *x)
+{
+    PsIpc m;
+    char crlf[2];
+    int hlen;
+    char *auth;
+    char *ref;
+    int len;
+    char *uri;
+    PsAuth *a;
+    int ulen;
+    int plen;
+    int t;
+    char *up;
+    int rlen;
+    PsHdr *h;
+
+    hlen = 0;
+    auth = NULL;
+    ref = NULL;
+    memcpy(crlf, D_00135380, 2);
+    if (HST_getPostData(node) != NULL) {
+        HST_freePostData(node);
+    }
+    HST_setMethodType((void *)node, 0);
+    HST_setRequestFlag((void *)node, 1);
+    if (HST_getSessionID((void *)node) == 0) {
+        HST_setSessionID((void *)node, ps_sessionGen());
+    }
+    len = HST_getCurURIlen(node);
+    uri = (char *)MEM_malloc(0, len + 1);
+    if (uri == NULL) {
+        ps_halt("(char*)E_malloc(ps_getsend: urlstring_p) failed");
+    }
+    memset(uri, 0, len + 1);
+    memcpy(uri, HST_getCurURI(node), len);
+    if (ps_SendIOMChk(len, uri) != 0) {
+        len = ps_SendIOMChk(len, uri);
+        MEM_free(0, (int)uri);
+        uri = (char *)MEM_malloc(0, len + 1);
+        memset(uri, 0, len + 1);
+        memcpy(uri, HST_getCurURI(node), len);
+    }
+    a = HST_searchAuthorizationDB(uri);
+    if (a != NULL) {
+        ulen = 0;
+        if (a->user != NULL) {
+            ulen = strlen(a->user);
+        }
+        plen = 0;
+        if (a->pass != NULL) {
+            plen = strlen(a->pass);
+        }
+        HST_setAuthUsername(node, a->user, ulen);
+        HST_setAuthPassword(node, a->pass, plen);
+        t = ulen + plen;
+        up = (char *)MEM_malloc(0, t + 2);
+        memset(up, 0, t + 2);
+        memcpy(up, a->user, ulen);
+        up[ulen] = ':';
+        memcpy(up + ulen + 1, a->pass, plen);
+        hlen = t + 0x16;
+        auth = (char *)MEM_malloc(0, hlen);
+        if (auth == NULL) {
+            ps_halt(D_001353B4);
+        }
+        /* STAND-IN: the "Authorization: Basic " literal (also used by asm functions) */
+        memcpy(auth, D_001353E4, 21);
+        memcpy(auth + 21, a->user, ulen);
+        auth[ulen + 21] = ':';
+        memcpy(auth + ulen + 22, a->pass, plen);
+        MEM_free(0, (int)up);
+    }
+    MEM_free(0, (int)uri);
+    rlen = HST_getRefURIlen(node);
+    if (rlen != 0) {
+        if (a != NULL) {
+            ref = (char *)MEM_malloc(0, rlen + 11);
+            memcpy(ref, crlf, 2);
+            memcpy(ref + 2, D_001353FC, 9);
+            memcpy(ref + 11, HST_getRefURI(node), rlen);
+            rlen += 11;
+        } else {
+            ref = (char *)MEM_malloc(0, rlen + 11);
+            memcpy(ref, D_001353FC, 9);
+            memcpy(ref + 9, HST_getRefURI(node), rlen);
+            rlen += 9;
+        }
+    }
+    h = (PsHdr *)MEM_malloc(0, len + hlen + rlen + 0x28);
+    if (h == NULL) {
+        ps_halt(D_00135408);
+    }
+    h->x8 = 0;
+    h->unitId = 0;
+    h->hlen = 0;
+    h->hdr = NULL;
+    h->x20 = 0;
+    h->x24 = 0;
+    h->x0 = 0;
+    h->x4 = 0;
+    h->len = len;
+    h->uri = (char *)(h + 1);
+    memcpy(h->uri, HST_getCurURI(node), len);
+    if ((hlen | rlen) == 0) {
+        h->hlen = 0;
+        h->hdr = NULL;
+    } else {
+        h->hlen = hlen + rlen;
+        h->hdr = len + h->uri;
+        if (a != NULL) {
+            memcpy(h->hdr, auth, hlen);
+            MEM_free(0, (int)auth);
+            if (rlen != 0) {
+                h->hdr = hlen + h->hdr;
+                memcpy(h->hdr, ref, rlen);
+                MEM_free(0, (int)ref);
+            }
+        } else if (rlen != 0) {
+            memcpy(h->hdr, ref, rlen);
+            MEM_free(0, (int)ref);
+        }
+        h->hdr = len + h->uri;
+    }
+    h->x20 = 0;
+    h->x24 = 0;
+    m.type = 2;
+    m.x04 = HST_getSessionID((void *)node);
+    if (mode == 0) {
+        m.x08 = 1;
+    } else {
+        m.x08 = 0;
+    }
+    m.cmd = 2;
+    m.x10 = cache;
+    if (mode == 0 || mode == 2) {
+        m.x14 = 0;
+    } else if (mode == 3) {
+        m.x14 = 2;
+    } else {
+        m.x14 = 1;
+    }
+    m.x18 = len + hlen + 0x28;
+    m.x1C = (int)h;
+    ps_sndmsg(&m, 5);
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", D_001353B4);
 
