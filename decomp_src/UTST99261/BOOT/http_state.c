@@ -48,6 +48,10 @@ int esp_msgThread(void);
 int addThreadTbl(OSThread *t);
 int sceKernelCreateThread(const char *name, void *entry, int prio, int stack, unsigned int attr, void *opt);
 int sceKernelStartThread(int thid, unsigned int len, void *argp);
+void *UTL_dequeue(void *q);
+void UTL_enqueue(void *q, void *e);
+void UTL_relqueue(void *q, void *e);
+char *strcpy(char *, const char *);
 int http_state(int h)
 {
     int st;
@@ -119,7 +123,67 @@ done:
     return st;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_state", htlib_setheaderkey);
+int htlib_setheaderkey(void *q, char *name, char *value, int nth)
+{
+    HtHdr *h;
+    HtHdr *next;
+    int n;
+    char *v;
+
+    if (name == NULL) {
+        while ((h = UTL_dequeue(q)) != NULL) {
+            MEM_free(0, h->value);
+            MEM_free(0, h->name);
+            MEM_free(0, h);
+        }
+    } else if (value == NULL) {
+        for (h = UTL_peekqueue(q, NULL); h != NULL; h = next) {
+            next = UTL_peekqueue(q, h);
+            if (strcasecmp(name, h->name) == 0) {
+                UTL_relqueue(q, h);
+                MEM_free(0, h->value);
+                MEM_free(0, h->name);
+                MEM_free(0, h);
+            }
+        }
+    } else {
+        n = 0;
+        for (h = UTL_peekqueue(q, NULL); h != NULL; h = UTL_peekqueue(q, h)) {
+            if (strcasecmp(name, h->name) == 0) {
+                if (n >= nth)
+                    break;
+                n++;
+            }
+        }
+        if (h != NULL) {
+            v = MEM_malloc(0, strlen(value) + 1);
+            if (v == NULL)
+                return -0x67;
+            strcpy(v, value);
+            MEM_free(0, h->value);
+            h->value = v;
+        } else {
+            h = MEM_malloc(0, sizeof(HtHdr));
+            if (h == NULL)
+                return -0x67;
+            h->name = MEM_malloc(0, strlen(name) + 1);
+            if (h->name == NULL) {
+                MEM_free(0, h);
+                return -0x67;
+            }
+            h->value = MEM_malloc(0, strlen(value) + 1);
+            if (h->value == NULL) {
+                MEM_free(0, h->name);
+                MEM_free(0, h);
+                return -0x67;
+            }
+            strcpy(h->name, name);
+            strcpy(h->value, value);
+            UTL_enqueue(q, h);
+        }
+    }
+    return 0;
+}
 
 char *htlib_getheadervalue(void *q, const char *name, int idx)
 {
