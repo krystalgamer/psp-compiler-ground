@@ -96,7 +96,8 @@ typedef struct {
 	float f18;
 	L2V3 p;
 	L2V3 q;
-	int f34[(0xA4 - 0x34) / 4];
+	L2V3 d;			/* 0x34 step */
+	int f40[(0xA4 - 0x40) / 4];
 } LASER2;
 
 /* boss laser (0x44) */

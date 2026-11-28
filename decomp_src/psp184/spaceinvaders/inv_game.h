@@ -10,7 +10,8 @@ typedef struct {
 extern int inv_status;
 #define IST (*(INV_STATUS *)&inv_status)
 typedef struct {
-	u8 _p0[0x54];
+	int f0, f4;
+	u8 _p8[0x54 - 8];
 	int f54, f58, f5c, f60, f64, f68, f6c;	/* unlocked stages */
 	u8 _p70[0xCC - 0x70];
 	int fcc, fd0, fd4, fd8;
