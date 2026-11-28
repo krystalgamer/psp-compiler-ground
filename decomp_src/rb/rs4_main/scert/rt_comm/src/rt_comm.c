@@ -477,7 +477,17 @@ void rt_comm_metric_update(void)
     rt_time_start(gMetricData);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_metric_update_single);
+typedef struct { unsigned int bytes; float rate; float peak; } RtMetric;
+void rt_comm_metric_update_single(void *p, unsigned int ms)
+{
+    RtMetric *m = p;
+    if (ms != 0)
+        m->rate = (float)m->bytes / ((float)ms / 1000.0f);
+    else
+        m->rate = 0.0f;
+    if (m->rate > m->peak) m->peak = m->rate;
+    m->bytes = 0;
+}
 
 void rt_comm_linkaddress_setnull(RtLinkAddr *a)
 {
