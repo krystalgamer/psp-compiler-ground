@@ -162,7 +162,26 @@ unsigned char I3cIntersect_GetStrictScale(void) {
     return g_bI3cStrictScale;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", CalcBlendRatio);
+void I3dVecSub(float *, const float *, const float *);
+void I3dVecCross(float *, const float *, const float *);
+float I3dVecLengthXYZ(const float *);
+void I3dVecScale(float *, const float *, float);
+extern const float D_00109B24;
+void CalcBlendRatio(float *out, float (*v)[4], unsigned short *tri, float *p)
+{
+	float a[4], b[4], c[4], n0[4], n1[4], n2[4], r[4];
+	I3dVecSub(a, v[tri[0]], p);
+	I3dVecSub(b, v[tri[1]], p);
+	I3dVecSub(c, v[tri[2]], p);
+	I3dVecCross(n0, b, c);
+	I3dVecCross(n1, c, a);
+	I3dVecCross(n2, a, b);
+	r[0] = I3dVecLengthXYZ(n0);
+	r[1] = I3dVecLengthXYZ(n1);
+	r[2] = I3dVecLengthXYZ(n2);
+	I3dVecScale(out, r, D_00109B24 / (r[0] + r[1] + r[2]));
+}
+const float D_00109B24 = 1.0f;
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3cCbService_GetIntersectPointParam);
 
