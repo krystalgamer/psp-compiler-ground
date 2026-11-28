@@ -114,9 +114,53 @@ void sgxSndTerm(void) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", SlotUpdateVolume);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", SlotFree);
+typedef struct SndNode { struct SndNode *prev, *next; } SndNode;
+typedef struct { void *a; void (*term)(void *); int pad[4]; void (*stop)(void *, int); } SndCb;
+void sgxResUnlock(int);
+void sgxBmgFree(int);
+static inline void SndNodeMove(SndNode *l, SndNode *n)
+{
+    SndNode *p = n->prev, *t;
+    if (p != n) {
+        p->next = n->next;
+        n->next->prev = p;
+    }
+    t = l->prev;
+    n->next = l;
+    t->next = n;
+    n->prev = t;
+    n->next->prev = n;
+}
+void SlotFree(char *s, int flag)
+{
+    if (*(unsigned char *)(s + 0x8B) & 1) {
+        if (flag && (*(SndCb **)(s + 0x8C))->stop) (*(SndCb **)(s + 0x8C))->stop(s, 1);
+        if ((*(SndCb **)(s + 0x8C))->term) (*(SndCb **)(s + 0x8C))->term(s);
+    }
+    if (*(short *)(s + 0x12) >= 0) sgxResUnlock(*(short *)(s + 0x12));
+    if (*(short *)(s + 0x1E) >= 0) sgxBmgFree(*(short *)(s + 0x1E));
+    *(int *)(s + 0xC) = 0;
+    sgxDI();
+    SndNodeMove((SndNode *)&D_0011FC98, (SndNode *)s);
+    sgxEI();
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndFlush);
+extern void *D_0011FC8C;
+void sgxSndFlush(void)
+{
+    char *s;
+    sgxDI();
+    for (s = (*(int *)((char *)D_0011FC8C + 8) < 0) ? NULL : D_0011FC8C; s != NULL; s = SndListFirst2(s)) {
+        sgxAttrCopyUpdate(s + 0x52, s + 0x38);
+        s[0x88] |= s[0x86];
+        s[0x89] = s[0x87];
+        *(float *)(s + 0xF4) += *(float *)(s + 0xF0);
+        *(short *)(s + 0x38) = 0;
+        s[0x86] = 0;
+        *(float *)(s + 0xF0) = 0.0f;
+    }
+    sgxEI();
+}
 
 extern void *D_0011FC8C;
 
