@@ -7,17 +7,54 @@
 #define DEMO_STATICS_SGL
 #include "../main.hpp"
 
-/* the module's .ctors/.dtors refer to the static constructor/destructor; cc1plus keys them to the
-   first public symbol, the deferred-asm wrapper of the (still asm) first function */
-__asm__(".globl _GLOBAL__I__ZN3sgl10MeshParamsC2Ev\n_GLOBAL__I__ZN3sgl10MeshParamsC2Ev = _GLOBAL__I__ZN3sgl10MeshParamsC2Ev__asm");
-__asm__(".globl _GLOBAL__D__ZN3sgl10MeshParamsC2Ev\n_GLOBAL__D__ZN3sgl10MeshParamsC2Ev = _GLOBAL__D__ZN3sgl10MeshParamsC2Ev__asm");
+__asm__(".globl _GLOBAL__I__ZN3sgl10MeshParamsC2Ev");
+__asm__(".globl _GLOBAL__D__ZN3sgl10MeshParamsC2Ev");
+
+sgl::MeshParams::MeshParams()
+{
+    _bools.resize(21);
+    _floats.resize(6);
+    _float4s.resize(1);
+    _ints.resize(4);
+    reset();
+}
 
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshParams", _ZN3sgl10MeshParamsC2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshParams", _ZN3sgl10MeshParamsC1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshParams", _ZN3sgl10MeshParams5resetEv);
+void sgl::MeshParams::reset()
+{
+    set((ParamsBool)0, false);
+    set((ParamsBool)1, false);
+    set((ParamsBool)2, false);
+    set((ParamsBool)3, false);
+    set((ParamsBool)4, false);
+    set((ParamsBool)5, false);
+    set((ParamsBool)6, false);
+    set((ParamsBool)7, false);
+    set((ParamsBool)8, false);
+    set((ParamsBool)9, false);
+    set((ParamsBool)13, false);
+    set((ParamsBool)14, false);
+    set((ParamsBool)12, false);
+    set((ParamsBool)10, false);
+    set((ParamsBool)11, false);
+    set((ParamsBool)15, false);
+    set((ParamsBool)16, false);
+    set((ParamsBool)17, true);
+    set((ParamsBool)18, false);
+    set((ParamsBool)19, false);
+    set((ParamsBool)20, true);
+    set((ParamsFloat)0, 60.0f);
+    set((ParamsFloat)1, 1e-5f);
+    set((ParamsFloat)2, 1e-6f);
+    set((ParamsFloat)3, 1e-6f);
+    set((ParamsFloat)4, 1e-6f);
+    set((ParamsFloat)5, 1e-6f);
+    set((ParamsInt)0, 0);
+    set((ParamsInt)1, 3);
+    set((ParamsInt)2, -1);
+    set((ParamsInt)3, -1);
+    set((ParamsFloat4)0, math::vector_xyzw(0.8f, 0.8f, 0.8f, 0));
+}
 
 void sgl::MeshParams::set0(float v)
 {
