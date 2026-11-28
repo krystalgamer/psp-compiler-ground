@@ -36,7 +36,31 @@ void sgxCbCallMode(int mode)
     }
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsys", sgxCbRegist);
+extern int gSgxDebugFlags;
+extern const char *gSgxPrefErr;
+extern const char D_00109CA8[];
+void sgxPrintfPref(const char *, const char *, int, const char *, ...);
+void sgxCbRegist(int mode, int a, int b, int c, int d) {
+    CbQ *q = (CbQ *)gWork_11FBE0[5] + mode;
+    CbEnt *e;
+    if (gWork_11FBE0[2] == 0) {
+        CbCallFunc(a, (void *)b, c, d);
+        return;
+    }
+    if (gWork_11FBE0[6] <= q->count) {
+        if (gSgxDebugFlags & 1) sgxPrintfPref(gSgxPrefErr, D_00109CA8, 0x4B8, "overflow callback\n");
+        return;
+    }
+    e = &q->ent[q->tail];
+    e->b = b;
+    e->a = a;
+    e->c = c;
+    e->d = d;
+    sgxDI();
+    q->tail = (q->tail + 1) % gWork_11FBE0[6];
+    q->count++;
+    sgxEI();
+}
 
 int sgxFormSampleToByte(unsigned int f, int ch, int n)
 {
