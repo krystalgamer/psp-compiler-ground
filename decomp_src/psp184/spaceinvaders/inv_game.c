@@ -3449,7 +3449,79 @@ void status_score_disp2(int x, int y, int a, int b, int c, int d, int val)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", deb_status_disp);
+extern int D_005FB89C;
+extern char D_0007DF48[], D_0007DF58[], D_0007DF64[], D_0007DF6C[], D_0007DF74[];
+int ziki_break_check(void);
+void debug_poly_col();
+void deb_status_disp(void)
+{
+	ZIKI *z = &gmain.ziki;
+	SHW_T *sh;
+	int j, x0, x1, y, i, w, r, m, h, col;
+	u8 a;
+
+	if (gmain.f1058 == 0 || game_cpu_disp != 2)
+		return;
+	a = 10;
+	if (bgm_rank_max_check() == 1)
+		a = gmain.timer.f[19] / 16;
+	col = 0x40F0;
+	sprintf(text_buf, D_0007DF48, bgm_rank(), bgm_rank_max(), (float)bgm_rank() / (float)bgm_rank_max());
+	debug_text(10, 40, text_buf);
+	w = bgm_rank() * 64 / bgm_rank_max();
+	sh = &gmain.shield;
+	debug_poly_col(20, 48, w, 8, (a << 12) | 0xF0);
+	debug_poly_col(w + 20, 52, 64 - w, 4, 0xA080);
+	sprintf(text_buf, D_0007DF58, sh->f4);
+	debug_text(10, 60, text_buf);
+	h = sh->f4 * 64 / 999;
+	debug_poly_col(20, 68, h, 8, 0xAF80);
+	debug_poly_col(h + 20, 72, 64 - h, 4, 0xA800);
+	sprintf(text_buf, D_0007DF64);
+	debug_text(10, 80, text_buf);
+	w = (D_005FB89C - z->f50) * 64 / D_005FB89C;
+	debug_poly_col(20, 88, w, 8, 0xA0FF);
+	debug_poly_col(w + 20, 92, 64 - w, 4, 0xA00F);
+	if (ziki_beat_check() == 1)
+		col = 0xF0FF;
+	sprintf(text_buf, D_0007DF6C);
+	debug_text(10, 100, text_buf);
+	w = cosf((gmain.timer.f[16] / 2) / 180.0f * 3.1415927f) * 64.0f;
+	debug_poly_col(20, 108, w, 8, col);
+	a = 0xA0;
+	if (ziki_break_check() == 1)
+		a = gmain.timer.f[19];
+	debug_poly_col(10, 120, 8, 8, ((a >> 4) << 12) | ((zako_type_color[0][2] >> 4) << 8) | ((zako_type_color[0][1] >> 4) << 4) | (zako_type_color[0][0] >> 4));
+	sprintf(text_buf, D_0007DF74, z->item[0]);
+	debug_text(20, 120, text_buf);
+	debug_poly_col(10, 130, 8, 8, ((a >> 4) << 12) | ((zako_type_color[1][2] >> 4) << 8) | ((zako_type_color[1][1] >> 4) << 4) | (zako_type_color[1][0] >> 4));
+	sprintf(text_buf, D_0007DF74, z->item[1]);
+	debug_text(20, 130, text_buf);
+	debug_poly_col(10, 140, 8, 8, ((a >> 4) << 12) | ((zako_type_color[2][2] >> 4) << 8) | ((zako_type_color[2][1] >> 4) << 4) | (zako_type_color[2][0] >> 4));
+	sprintf(text_buf, D_0007DF74, z->item[2]);
+	debug_text(20, 140, text_buf);
+	debug_poly_col(10, 150, 8, 8, ((a >> 4) << 12) | ((zako_type_color[3][2] >> 4) << 8) | ((zako_type_color[3][1] >> 4) << 4) | (zako_type_color[3][0] >> 4));
+	sprintf(text_buf, D_0007DF74, z->item[3]);
+	debug_text(20, 150, text_buf);
+	y = 192;
+	for (i = 0; i < gmain.egroup_n; i++) {
+		EGROUP *g = &gmain.egroup[i];
+		x0 = (gmain.f10bc - g->x1) * 64.0f / gmain.f10bc + 20.0f;
+		x1 = (gmain.f10bc - g->x0) * 64.0f / gmain.f10bc + 20.0f;
+		h = (g->n - g->dead) * 8 / g->n;
+		debug_poly_col(x0, y - h + 8, x1 - x0, h, 0xA00F);
+	}
+	for (j = 0; j < gmain.ufo_n; j++) {
+		UFO_T *u = &gmain.ufo[j];
+		if (u->fc == 1) {
+			a = gmain.timer.f[19] / 16;
+			debug_poly_col((int)((gmain.f10bc - u->x) * 64.0f / gmain.f10bc + 20.0f), 192, 2, 2, (a << 12) | 0xF0F);
+		}
+	}
+	debug_poly_col(20, 200, 64, 2, 0xA0FF);
+	a = gmain.timer.f[19] / 16;
+	debug_poly_col((int)((gmain.f10bc - gmain.f10b8) * 64.0f / gmain.f10bc + 20.0f), 202, 2, 2, (a << 12) | 0xFFF);
+}
 
 int clippint_check(float x, float w)
 {
