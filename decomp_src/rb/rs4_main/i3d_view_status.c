@@ -193,8 +193,24 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/i3d_view_status", D_00109580);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/i3d_view_status", D_001095C0);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_view_status", ColorFromRGBA4444);
+extern const float D_00109600;
+void ColorFromRGBA4444(float *c, unsigned short v)
+{
+	c[0] = (float)(v & 0xF) * D_00109600;
+	c[1] = (float)((v >> 4) & 0xF) * D_00109600;
+	c[2] = (float)((v >> 8) & 0xF) * D_00109600;
+	c[3] = (float)(v >> 12) * D_00109600;
+}
+const float D_00109600 = 0.06666667014f;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_view_status", ColorFromRGBA5551);
+extern const float D_00109604;
+void ColorFromRGBA5551(float *c, unsigned short v, float a)
+{
+	c[0] = (float)(v & 0x1F) * D_00109604;
+	c[1] = (float)((v >> 5) & 0x1F) * D_00109604;
+	c[2] = (float)((v >> 10) & 0x1F) * D_00109604;
+	c[3] = (v & 0x8000) ? a : 0.0f;
+}
+const float D_00109604 = 0.03225806355f;
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_view_status", ColorFromRGB565);
