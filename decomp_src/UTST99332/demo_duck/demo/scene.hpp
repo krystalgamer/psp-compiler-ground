@@ -563,6 +563,15 @@ public:
     void copy(const sgl::Mesh &);
     void finish();
     void draw(const TraversalVarStack &);
+    void clear();
+    struct ShlColors {
+        std::vector<sh::VectorRGB> _c;
+        bool _valid;
+    } _shl;                                 /* 0x5C */
+    math::vector_xyzw _f6C[3];
+    std::vector<sgl::TexCoord> _t9C;        /* 0x9C */
+    std::vector<sgl::TexCoord> _tA8;        /* 0xA8 */
+    bool _fB4, _fB5, _fB6, _fB7;
 };
 
 /* ../lib/scene/VertexArray.cpp (main_objs/scene_VertexArray) */

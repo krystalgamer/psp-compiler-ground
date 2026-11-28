@@ -73,7 +73,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_MeshDa
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_MeshData", _ZN5scene8MeshData13copy_texcoordERKSt6vectorIN3sgl8TexCoordESaIS3_EE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_MeshData", _ZN5scene8MeshData5clearEv);
+void scene::MeshData::clear()
+{
+    *this = MeshData();
+}
 
 /* instances used by the (asm) methods above */
 namespace math {
