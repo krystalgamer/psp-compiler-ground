@@ -53,7 +53,24 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FBA38);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FBA40);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resTerm);
+extern void *pResBuf;
+extern void *pSystemRes;
+extern unsigned char D_000FBA38, D_000FBA2C;
+void _memFree(void *, const void *, int);
+int resTerm(void)
+{
+	consPrintf("%s\n", "resTerm");
+	if (pResBuf == NULL)
+		consPrintf(&D_000FBA08, &D_000FB9F8, 0x6E, "resTerm", &D_000FBA38);
+	_memFree(pResBuf, &D_000FB9F8, 0x6F);
+	pResBuf = NULL;
+	if (pSystemRes == NULL)
+		consPrintf(&D_000FBA08, &D_000FB9F8, 0x72, "resTerm", &D_000FBA2C);
+	_memFree(pSystemRes, &D_000FB9F8, 0x73);
+	pSystemRes = NULL;
+	pReadInst = NULL;
+	return 1;
+}
 
 void *resGetInst(int arg0) {
     return (arg0 << 5) + &InstBuf;
