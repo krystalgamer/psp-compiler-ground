@@ -158,7 +158,46 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", D_000FCED8);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", D_000FCEE4);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", _i3dAsmMotOpt);
+extern char *D_00111700[3];
+int strncmp(const char *, const char *, unsigned int);
+unsigned int strlen(const char *);
+void _i3dAsmMotOpt(int *pOpt, char *s)
+{
+	int i;
+
+	if (sceKernelGetGPI() & 1)
+		consPrintf(&D_000FCDE0, "_i3dAsmMotOpt");
+	while (*s != 0) {
+		while (*s == '_')
+			s++;
+		for (i = 0; i < 3; i++) {
+			if (strncmp(s, D_00111700[i], strlen(D_00111700[i])) == 0) {
+				switch (i) {
+				case 0:
+					*pOpt = 0;
+					break;
+				case 1:
+					*pOpt = 0x111;
+					break;
+				default:
+					if (sceKernelGetGPI() & 1)
+						consPrintf("Unmounted token : '%s'.\n", D_00111700[i]);
+					break;
+				case 2:
+					*pOpt = 0x222;
+					break;
+				}
+				break;
+			}
+		}
+		if (i == 3 && (sceKernelGetGPI() & 1))
+			consPrintf("Undefined token : '%s'.\n", s);
+		while (*s != 0 && *s != '_')
+			s++;
+	}
+	if (sceKernelGetGPI() & 1)
+		consPrintf(&D_000FCE38);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dAsmMot);
 
