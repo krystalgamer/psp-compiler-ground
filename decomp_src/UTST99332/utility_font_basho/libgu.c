@@ -1162,7 +1162,28 @@ void sceGuViewport(int cx, int cy, int width, int height)
 	send_commandf(70, (float)cy);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/libgu", sceGuDepthRange);
+void sceGuDepthRange(int near, int far)
+{
+	float sz, tz;
+	int minz, maxz;
+
+	_ctx[__aw_list_mode].near_plane = near;
+	_ctx[__aw_list_mode].far_plane = far;
+	if (near < far) {
+		minz = near;
+		maxz = far;
+	} else {
+		minz = far;
+		maxz = near;
+	}
+	tz = (float)((near + far) / 2);
+	sz = tz - (float)near;
+	tz = tz + (float)_ctx[__aw_list_mode].depth_offset;
+	send_commandf(68, sz);
+	send_commandf(71, tz);
+	send_commandi(214, minz);
+	send_commandi(215, maxz);
+}
 
 void sceGuDepthOffset(unsigned int offset)
 {
