@@ -352,7 +352,24 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_001046A4)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", Sub_Shop_WindowPut);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _GetCardPackID);
+float copRand(float r);
+int _GetCardPackID(char *w)
+{
+	int t[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
+	int i, n, a, b, tmp, ret;
+
+	n = (int)copRand(10.0f) % 7 + 10;
+	for (i = 0; i < n; i++) {
+		float r = 100.0f;
+		a = (int)copRand(r) % *(int *)(w + 0x8028);
+		b = (int)copRand(r) % *(int *)(w + 0x8028);
+		tmp = t[a];
+		t[a] = t[b];
+		t[b] = tmp;
+	}
+	tmp = (t[0] & 7) | ((t[1] & 7) << 4) | ((t[2] & 7) << 8);
+	return tmp;
+}
 
 int _DeckCheck(int saveid, int kind)
 {
@@ -370,6 +387,5 @@ int _DeckCheck(int saveid, int kind)
 	return r;
 }
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_001046EC);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_0010470C);
