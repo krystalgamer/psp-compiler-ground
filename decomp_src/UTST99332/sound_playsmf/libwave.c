@@ -69,6 +69,16 @@ static __inline__ void wclr(void *dst, int n)
 		*p++ = 0;
 }
 
+static __inline__ void wcpy(void *dst, const void *src, int n)
+{
+	char *d = dst;
+	const char *s = src;
+	int i;
+
+	for (i = 0; i < n; i++)
+		*d++ = *s++;
+}
+
 int sceWaveInit(void)
 {
 	int i;
@@ -595,8 +605,174 @@ static int func_000065FC(short *dst, unsigned char *vag, int *hist1, int *hist2)
 	return flags;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libwave", func_00006740);
+static void func_00006740(int ch, void *dst)
+{
+	char *data = D_001289B4[ch].data;
+	int ret;
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libwave", func_000069DC);
+	wclr(dst, 0x70);
+	switch ((unsigned char)D_001289B4[ch].flags) {
+	case 0:
+		if (D_001289B4[ch].pos + 16 <= (int)D_001289B4[ch].size) {
+			wcpy(D_00128E80, data + D_001289B4[ch].pos, 16);
+			D_001289B4[ch].pos += 16;
+			func_000065FC(dst, D_00128E80, &D_001289B4[ch].unk30, &D_001289B4[ch].unk34);
+		} else {
+			D_001289B4[ch].pos = 0;
+			D_001289B4[ch].stat = 0;
+		}
+		break;
+	case 1:
+		if ((int)D_001289B4[ch].size < 16)
+			break;
+		for (;;) {
+			if (D_001289B4[ch].pos + 16 <= (int)D_001289B4[ch].size) {
+				int i = 0;
+				char *d = D_00128E80;
+				char *s = data + D_001289B4[ch].pos;
+			cl:
+				*d++ = *s++;
+				i++;
+				if (i < 16)
+					goto cl;
+				goto decode;
+			}
+			break;
+		}
+		D_001289B4[ch].pos = D_001289B4[ch].unk10;
+		wcpy(D_00128E80, data + D_001289B4[ch].pos, 16);
+		goto decode;
+	case 2:
+		if ((int)D_001289B4[ch].size < 16)
+			break;
+		if (D_001289B4[ch].pos + 16 <= (int)D_001289B4[ch].size) {
+			wcpy(D_00128E80, data + D_001289B4[ch].pos, 16);
+		} else {
+			D_001289B4[ch].pos = 0;
+			D_001289B4[ch].stat = 0;
+			break;
+		}
+	decode:
+		ret = func_000065FC(dst, D_00128E80, &D_001289B4[ch].unk30, &D_001289B4[ch].unk34);
+		switch (ret) {
+		case 6:
+			D_001289B4[ch].unk10 = D_001289B4[ch].pos;
+			D_001289B4[ch].pos += 16;
+			break;
+		case 3:
+			D_001289B4[ch].unk14 = D_001289B4[ch].pos;
+			D_001289B4[ch].pos = D_001289B4[ch].unk10;
+			break;
+		default:
+			D_001289B4[ch].pos += 16;
+			break;
+		}
+		break;
+	}
+}
+
+static void func_000069DC(int ch, void *dst)
+{
+	char *data = D_001289B4[ch].data;
+
+	if (!(D_001289B4[ch].flags & 1)) {
+		if (!(D_001289B4[ch].flags & 0x200)) {
+			if (D_001289B4[ch].pos + 0x38 <= (int)D_001289B4[ch].size) {
+				wcpy(dst, data + D_001289B4[ch].pos, 0x38);
+				D_001289B4[ch].pos += 0x38;
+			} else {
+				int m;
+
+				wclr(dst, 0x70);
+				m = D_001289B4[ch].size - D_001289B4[ch].pos;
+				wcpy(dst, data + D_001289B4[ch].pos, m);
+				D_001289B4[ch].pos = 0;
+				D_001289B4[ch].stat = 0;
+			}
+		} else {
+			if (D_001289B4[ch].pos + 0x70 <= (int)D_001289B4[ch].size) {
+				wcpy(dst, data + D_001289B4[ch].pos, 0x70);
+				D_001289B4[ch].pos += 0x70;
+			} else {
+				int m;
+
+				wclr(dst, 0x70);
+				m = D_001289B4[ch].size - D_001289B4[ch].pos;
+				wcpy(dst, data + D_001289B4[ch].pos, m);
+				D_001289B4[ch].pos = 0;
+				D_001289B4[ch].stat = 0;
+			}
+		}
+	} else {
+		for (;;) {
+			if (!(D_001289B4[ch].flags & 0x200)) {
+				if ((int)D_001289B4[ch].size >= 0x38) {
+					if (D_001289B4[ch].pos + 0x38 < (int)D_001289B4[ch].size) {
+						wcpy(dst, data + D_001289B4[ch].pos, 0x38);
+						D_001289B4[ch].pos += 0x38;
+					} else {
+						int m = D_001289B4[ch].size - D_001289B4[ch].pos;
+
+						wcpy(dst, data + D_001289B4[ch].pos, m);
+						D_001289B4[ch].pos = 0;
+						wcpy((char *)dst + m, data, 0x38 - m);
+						D_001289B4[ch].pos = 0x38 - m;
+					}
+				} else {
+					int n, rem;
+
+					n = D_001289B4[ch].size - D_001289B4[ch].pos;
+					wcpy(dst, data + D_001289B4[ch].pos, n);
+					D_001289B4[ch].pos = 0;
+					rem = 0x38 - n;
+					for (;;) {
+						if ((int)D_001289B4[ch].size < rem) {
+							wcpy((char *)dst + n, data, D_001289B4[ch].size);
+							n += D_001289B4[ch].size;
+							rem -= D_001289B4[ch].size;
+						} else {
+							wcpy((char *)dst + n, data, rem);
+							D_001289B4[ch].pos += rem;
+							break;
+						}
+					}
+				}
+				return;
+			}
+			break;
+		}
+		if ((int)D_001289B4[ch].size >= 0x70) {
+			if (D_001289B4[ch].pos + 0x70 < (int)D_001289B4[ch].size) {
+				wcpy(dst, data + D_001289B4[ch].pos, 0x70);
+				D_001289B4[ch].pos += 0x70;
+			} else {
+				int m = D_001289B4[ch].size - D_001289B4[ch].pos;
+
+				wcpy(dst, data + D_001289B4[ch].pos, m);
+				D_001289B4[ch].pos = 0;
+				wcpy((char *)dst + m, data, 0x70 - m);
+				D_001289B4[ch].pos = 0x70 - m;
+			}
+		} else {
+			int n, rem;
+
+			n = D_001289B4[ch].size - D_001289B4[ch].pos;
+			wcpy(dst, data + D_001289B4[ch].pos, n);
+			D_001289B4[ch].pos = 0;
+			rem = 0x70 - n;
+			for (;;) {
+				if ((int)D_001289B4[ch].size < rem) {
+					wcpy((char *)dst + n, data, D_001289B4[ch].size);
+					n += D_001289B4[ch].size;
+					rem -= D_001289B4[ch].size;
+				} else {
+					wcpy((char *)dst + n, data, rem);
+					D_001289B4[ch].pos += rem;
+					break;
+				}
+			}
+		}
+	}
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libwave", func_00006EF4);
