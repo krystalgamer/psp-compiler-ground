@@ -18,7 +18,37 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/file", D_000F9E40);
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/file", D_000F9E44);
 
 void consPrintf(const char *fmt, ...);
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/file", fileInit);
+extern char FileSig[16];
+extern char FilePref[0x400];
+extern char *FileDefaultSig;
+extern char *FileDefaultPref;
+extern int FileHost;
+extern char *FileHostTbl[];
+extern unsigned char D_000F9E54, D_000F9F04, D_000F9E5C, D_000F9E60, D_000F9E94, D_000F9EB4, D_000F9ED8, D_000F9EE8, D_000F9EEC, D_000F9EF4;
+void *memset(void *, int, unsigned int);
+int sprintf(char *, const char *, ...);
+int semaInit(const char *name);
+int fileInit(void)
+{
+	consPrintf(&D_000F9E54, "fileInit");
+	memset(FileSig, 0, 0x10);
+	memset(FilePref, 0, 0x400);
+	sprintf(FileSig, &D_000F9E5C, FileDefaultSig);
+	sprintf(FilePref, &D_000F9E60, FileDefaultSig, FileDefaultPref);
+	FileHost = 1;
+	if (FileSig[15] != 0)
+		consPrintf(&D_000F9E68, &D_000F9E84, 0x88, "fileInit", &D_000F9E94);
+	if (FilePref[0x3FF] != 0)
+		consPrintf(&D_000F9E68, &D_000F9E84, 0x89, "fileInit", &D_000F9EB4);
+	consPrintf(&D_000F9ED8, FileHostTbl[FileHost]);
+	consPrintf(&D_000F9EE8, FileSig);
+	consPrintf(&D_000F9EE8, FilePref);
+	FileSema = semaInit(&D_000F9EEC);
+	if (FileSema <= 0)
+		consPrintf(&D_000F9E68, &D_000F9E84, 0x91, "fileInit", &D_000F9EF4);
+	consPrintf(&D_000F9F04);
+	return 1;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/file", D_000F9E54);
 
