@@ -436,7 +436,27 @@ int FreeData_Normal(int mode, void *p)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", SetData_Sizes);
+extern unsigned char _msDataSize, _msFreeSize, _utilityDataSize;
+void SetData_Save();
+/* STAND-IN: the variable-length copy only matches as the builtin memcpy (dst evaluated before
+   the src call), the 4-byte copy only as a real call (the file's memcpy is not builtin-compatible) */
+void SetData_Sizes(char *p)
+{
+	unsigned int len;
+
+	memset(&_msFreeSize, 0, 0x14);
+	memset(&_msDataSize, 0, 0x40);
+	memset(&_utilityDataSize, 0, 0x1C);
+	*(void **)(p + 0x5D0) = &_msFreeSize;
+	*(void **)(p + 0x5D4) = &_msDataSize;
+	len = strlen((char *)localeGetRegionCntx() + 5);
+	__builtin_memcpy(*(char **)(p + 0x5D4), (char *)localeGetRegionCntx() + 5, len);
+	(*(char **)(p + 0x5D4))[len] = 0;
+	memcpy(*(char **)(p + 0x5D4) + 0x10, &D_00104098, 4);
+	(*(char **)(p + 0x5D4))[0x14] = 0;
+	*(void **)(p + 0x5D8) = &_utilityDataSize;
+	SetData_Save(p, 1);
+}
 
 void FreeData_Sizes(int a)
 {
