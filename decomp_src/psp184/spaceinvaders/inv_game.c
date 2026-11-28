@@ -228,7 +228,7 @@ INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", D_0007DEA0)
 
 const L2V3 D_0007DEAC = { 0.7f, 0.7f, 0.7f };
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", D_0007DEB8);
+const L2V3 D_0007DEB8 = { 0.0f, 180.0f, 0.0f };
 
 const L2V3 D_0007DEC4 = { 2.0f, 2.0f, 2.0f };
 
@@ -1093,7 +1093,73 @@ void zako_init(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", zako_init_once);
+extern const double D_0007E568, D_0007E570, D_0007E578, D_0007E580, D_0007E588, D_0007E590;
+void root_pos_get(L2V3 *out, L2V3 *ofs, float pos, float len);
+void root_rot_get(L2V3 *out, L2V3 *ofs, float pos);
+int zako_shot_count(void);
+void zako_init_once(ENEMY *z, int i, int type, int j, float x)
+{
+	int n;
+	L2V3 o, r, d;
+
+	z->type = type;
+	z->f0 = j;
+	z->f34 = 0;
+	z->dead = 0;
+	z->f8 = 0;
+	z->dmg = 0;
+	z->f68 = x;
+	n = IST.f10 + 1;
+	z->hp = n;
+	if (IST.fc >= 2)
+		z->hp = n + IST.fc - 1;
+	z->f2c = 0;
+	z->f40 = 0;
+	if (gmain.ff28 == 0) {
+		z->f18 = 0;
+		z->f10 = zako_shot_count();
+	} else {
+		z->f18 = 5;
+		z->f10 = 0;
+	}
+	z->grp = i;
+	z->f1c = 0;
+	z->f44 = genrand_real2() * D_0007E568;
+	z->f48 = z->f4c = genrand_real2() + D_0007E570;
+	z->f50 = (genrand_real3() - D_0007E578) * D_0007E580;
+	z->f54 = (genrand_real3() - D_0007E578) * D_0007E588;
+	z->f58 = (genrand_real3() - D_0007E578) * D_0007E590;
+	if (z->f50 < 50.0f && -50.0f < z->f50) {
+		if (0.0f < z->f50)
+			z->f50 = z->f50 + 50.0f;
+		else
+			z->f50 = z->f50 - 50.0f;
+	}
+	if (z->f54 < 50.0f && -50.0f < z->f54) {
+		if (0.0f < z->f54)
+			z->f54 = z->f54 + 50.0f;
+		else
+			z->f54 = z->f54 - 50.0f;
+	}
+	if (z->f58 < 50.0f && -50.0f < z->f58) {
+		if (0.0f < z->f58)
+			z->f58 = z->f58 + 50.0f;
+		else
+			z->f58 = z->f58 - 50.0f;
+	}
+	o.x = 0;
+	o.y = 0;
+	o.z = 0;
+	root_pos_get(&z->base, &o, z->f68, z->f0 * 300.0f + 1000.0f);
+	r = D_0007DEB8;
+	root_rot_get(&z->rot, &r, z->f68);
+	z->ofs.x = 0;
+	z->ofs.y = 0;
+	z->ofs.z = 0;
+	z->fa8[0] = 0;
+	z->fa8[1] = 0;
+	z->fa8[2] = 0;
+}
 
 int particle_set(int tex, int no);
 void mat_local2screen(V3 *v, V3 *o);
@@ -1840,7 +1906,7 @@ void boss_ufo_tex_anime(int *u)
 	u[4] = n;
 }
 
-void zako_init_once(void *z, int i, int type, int j, float x);
+void zako_init_once(ENEMY *z, int i, int type, int j, float x);
 void enemy_gp_init(void)
 {
 	int i, j, k, l, x;
