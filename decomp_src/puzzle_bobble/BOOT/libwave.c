@@ -100,6 +100,16 @@ static __inline__ void wclr(void *dst, int n)
 		*p++ = 0;
 }
 
+static __inline__ void wcpy(void *dst, const void *src, int n)
+{
+	char *d = dst;
+	const char *s = src;
+	int i;
+
+	for (i = 0; i < n; i++)
+		*d++ = *s++;
+}
+
 int sceWaveInit(void)
 {
 	if (D_005612EC != 0)
@@ -587,246 +597,247 @@ static int func_0001ED14(short *dst, unsigned char *vag, int *hist1, int *hist2)
 	return flags;
 }
 
-#ifdef NON_MATCHING
-/* Three instructions long: one-shot (0), loop (1, restart at unk10, loop point marked
- * by flag 6 / end by flag 3) and stop-at-end (2) VAG voice blocks; the copy loops and
- * register use differ. */
 static void func_0001EE58(int ch, void *dst)
 {
-	unsigned char *data = D_00562174[ch].data;
-	SceWaveVoice *v;
-	unsigned char *buf;
-	int i, r;
+	char *data = D_00562174[ch].data;
+	int ret;
 
 	wclr(dst, 0x70);
-	v = &D_00562174[ch];
-	switch ((unsigned char)v->flags) {
+	switch ((unsigned char)D_00562174[ch].flags) {
 	case 0:
-		if ((int)v->size < v->pos + 16) {
-			v->stat = 0;
-			v->pos = 0;
-			return;
-		}
-		buf = D_00562640;
-		for (i = 0; i < 16; i++)
-			buf[i] = data[v->pos + i];
-		D_00562174[ch].pos += 16;
-		func_0001ED14(dst, D_00562640, &D_00562174[ch].unk30, &D_00562174[ch].unk34);
-		return;
-	case 1:
-		if ((int)v->size < 16)
-			return;
-		if ((int)v->size < v->pos + 16) {
-			D_00562174[ch].pos = D_00562174[ch].unk10;
-			for (i = 0; i < 16; i++)
-				((unsigned char *)D_00562640)[i] = data[D_00562174[ch].pos + i];
+		if (D_00562174[ch].pos + 16 <= (int)D_00562174[ch].size) {
+			wcpy(D_00562640, data + D_00562174[ch].pos, 16);
+			D_00562174[ch].pos += 16;
+			func_0001ED14(dst, D_00562640, &D_00562174[ch].unk30, &D_00562174[ch].unk34);
 		} else {
-			for (i = 0; i < 16; i++)
-				((unsigned char *)D_00562640)[i] = data[v->pos + i];
+			D_00562174[ch].pos = 0;
+			D_00562174[ch].stat = 0;
 		}
 		break;
-	case 2:
-		if ((int)v->size < 16)
-			return;
-		if ((int)v->size < v->pos + 16) {
-			v->stat = 0;
-			v->pos = 0;
-			return;
+	case 1:
+		if ((int)D_00562174[ch].size < 16)
+			break;
+		for (;;) {
+			if (D_00562174[ch].pos + 16 <= (int)D_00562174[ch].size) {
+				int i = 0;
+				char *d = D_00562640;
+				char *s = data + D_00562174[ch].pos;
+			cl:
+				*d++ = *s++;
+				i++;
+				if (i < 16)
+					goto cl;
+				goto decode;
+			}
+			break;
 		}
-		for (i = 0; i < 16; i++)
-			((unsigned char *)D_00562640)[i] = data[v->pos + i];
-		break;
-	default:
-		return;
-	}
-	r = func_0001ED14(dst, D_00562640, &D_00562174[ch].unk30, &D_00562174[ch].unk34);
-	if (r == 3) {
-		D_00562174[ch].unk14 = D_00562174[ch].pos;
 		D_00562174[ch].pos = D_00562174[ch].unk10;
-	} else if (r == 6) {
-		D_00562174[ch].unk10 = D_00562174[ch].pos;
-		D_00562174[ch].pos += 16;
-	} else
-		D_00562174[ch].pos += 16;
-}
-#else
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libwave", func_0001EE58);
-#endif
-
-#ifdef NON_MATCHING
-/* Seven instructions short: raw PCM (0x38 mono / 0x70 stereo bytes) block fetch with
- * one-shot and loop modes; the original recomputes &D_00562174[ch] for the stereo
- * loop path and differs in register allocation. */
-static __inline__ void wcpy(void *dst, void *src, int n)
-{
-	char *p = dst, *q = src;
-	int i;
-
-	for (i = 0; i < n; i++)
-		*p++ = *q++;
+		wcpy(D_00562640, data + D_00562174[ch].pos, 16);
+		goto decode;
+	case 2:
+		if ((int)D_00562174[ch].size < 16)
+			break;
+		if (D_00562174[ch].pos + 16 <= (int)D_00562174[ch].size) {
+			wcpy(D_00562640, data + D_00562174[ch].pos, 16);
+		} else {
+			D_00562174[ch].pos = 0;
+			D_00562174[ch].stat = 0;
+			break;
+		}
+	decode:
+		ret = func_0001ED14(dst, D_00562640, &D_00562174[ch].unk30, &D_00562174[ch].unk34);
+		switch (ret) {
+		case 6:
+			D_00562174[ch].unk10 = D_00562174[ch].pos;
+			D_00562174[ch].pos += 16;
+			break;
+		case 3:
+			D_00562174[ch].unk14 = D_00562174[ch].pos;
+			D_00562174[ch].pos = D_00562174[ch].unk10;
+			break;
+		default:
+			D_00562174[ch].pos += 16;
+			break;
+		}
+		break;
+	}
 }
 
 static void func_0001F0F4(int ch, void *dst)
 {
-	unsigned char *data = D_00562174[ch].data;
-	unsigned char *d = dst;
-	int n, rem;
-	SceWaveVoice *v;
+	char *data = D_00562174[ch].data;
 
 	if (!(D_00562174[ch].flags & 1)) {
 		if (!(D_00562174[ch].flags & 0x200)) {
 			if (D_00562174[ch].pos + 0x38 <= (int)D_00562174[ch].size) {
-				wcpy(d, data + D_00562174[ch].pos, 0x38);
+				wcpy(dst, data + D_00562174[ch].pos, 0x38);
 				D_00562174[ch].pos += 0x38;
 			} else {
-				wclr(d, 0x70);
-				wcpy(d, data + D_00562174[ch].pos, D_00562174[ch].size - D_00562174[ch].pos);
+				int m;
+
+				wclr(dst, 0x70);
+				m = D_00562174[ch].size - D_00562174[ch].pos;
+				wcpy(dst, data + D_00562174[ch].pos, m);
 				D_00562174[ch].pos = 0;
 				D_00562174[ch].stat = 0;
 			}
 		} else {
 			if (D_00562174[ch].pos + 0x70 <= (int)D_00562174[ch].size) {
-				wcpy(d, data + D_00562174[ch].pos, 0x70);
+				wcpy(dst, data + D_00562174[ch].pos, 0x70);
 				D_00562174[ch].pos += 0x70;
 			} else {
-				wclr(d, 0x70);
-				wcpy(d, data + D_00562174[ch].pos, D_00562174[ch].size - D_00562174[ch].pos);
+				int m;
+
+				wclr(dst, 0x70);
+				m = D_00562174[ch].size - D_00562174[ch].pos;
+				wcpy(dst, data + D_00562174[ch].pos, m);
 				D_00562174[ch].pos = 0;
 				D_00562174[ch].stat = 0;
 			}
 		}
-		return;
-	}
-	if (!(D_00562174[ch].flags & 0x200)) {
-		if ((int)D_00562174[ch].size >= 0x38) {
-			if (D_00562174[ch].pos + 0x38 < (int)D_00562174[ch].size) {
-				wcpy(d, data + D_00562174[ch].pos, 0x38);
-				D_00562174[ch].pos += 0x38;
-			} else {
-				rem = D_00562174[ch].size - D_00562174[ch].pos;
-				wcpy(d, data + D_00562174[ch].pos, rem);
-				D_00562174[ch].pos = 0;
-				wcpy(d + rem, data, 0x38 - rem);
-				D_00562174[ch].pos = 0x38 - rem;
-			}
-		} else {
-			rem = D_00562174[ch].size - D_00562174[ch].pos;
-			wcpy(d, data + D_00562174[ch].pos, rem);
-			n = 0x38 - rem;
-			D_00562174[ch].pos = 0;
-			v = &D_00562174[ch];
-			for (;;) {
-				if ((int)v->size >= n)
-					break;
-				wcpy(d + rem, data, v->size);
-				n -= v->size;
-				rem += v->size;
-			}
-			wcpy(d + rem, data, n);
-			v->pos += n;
-		}
 	} else {
+		for (;;) {
+			if (!(D_00562174[ch].flags & 0x200)) {
+				if ((int)D_00562174[ch].size >= 0x38) {
+					if (D_00562174[ch].pos + 0x38 < (int)D_00562174[ch].size) {
+						wcpy(dst, data + D_00562174[ch].pos, 0x38);
+						D_00562174[ch].pos += 0x38;
+					} else {
+						int m = D_00562174[ch].size - D_00562174[ch].pos;
+
+						wcpy(dst, data + D_00562174[ch].pos, m);
+						D_00562174[ch].pos = 0;
+						wcpy((char *)dst + m, data, 0x38 - m);
+						D_00562174[ch].pos = 0x38 - m;
+					}
+				} else {
+					int n, rem;
+
+					n = D_00562174[ch].size - D_00562174[ch].pos;
+					wcpy(dst, data + D_00562174[ch].pos, n);
+					D_00562174[ch].pos = 0;
+					rem = 0x38 - n;
+					for (;;) {
+						if ((int)D_00562174[ch].size < rem) {
+							wcpy((char *)dst + n, data, D_00562174[ch].size);
+							n += D_00562174[ch].size;
+							rem -= D_00562174[ch].size;
+						} else {
+							wcpy((char *)dst + n, data, rem);
+							D_00562174[ch].pos += rem;
+							break;
+						}
+					}
+				}
+				return;
+			}
+			break;
+		}
 		if ((int)D_00562174[ch].size >= 0x70) {
 			if (D_00562174[ch].pos + 0x70 < (int)D_00562174[ch].size) {
-				wcpy(d, data + D_00562174[ch].pos, 0x70);
+				wcpy(dst, data + D_00562174[ch].pos, 0x70);
 				D_00562174[ch].pos += 0x70;
 			} else {
-				rem = D_00562174[ch].size - D_00562174[ch].pos;
-				wcpy(d, data + D_00562174[ch].pos, rem);
+				int m = D_00562174[ch].size - D_00562174[ch].pos;
+
+				wcpy(dst, data + D_00562174[ch].pos, m);
 				D_00562174[ch].pos = 0;
-				wcpy(d + rem, data, 0x70 - rem);
-				D_00562174[ch].pos = 0x70 - rem;
+				wcpy((char *)dst + m, data, 0x70 - m);
+				D_00562174[ch].pos = 0x70 - m;
 			}
 		} else {
-			rem = D_00562174[ch].size - D_00562174[ch].pos;
-			wcpy(d, data + D_00562174[ch].pos, rem);
-			n = 0x70 - rem;
+			int n, rem;
+
+			n = D_00562174[ch].size - D_00562174[ch].pos;
+			wcpy(dst, data + D_00562174[ch].pos, n);
 			D_00562174[ch].pos = 0;
-			v = &D_00562174[ch];
+			rem = 0x70 - n;
 			for (;;) {
-				if ((int)v->size >= n)
+				if ((int)D_00562174[ch].size < rem) {
+					wcpy((char *)dst + n, data, D_00562174[ch].size);
+					n += D_00562174[ch].size;
+					rem -= D_00562174[ch].size;
+				} else {
+					wcpy((char *)dst + n, data, rem);
+					D_00562174[ch].pos += rem;
 					break;
-				wcpy(d + rem, data, v->size);
-				n -= v->size;
-				rem += v->size;
-			}
-			wcpy(d + rem, data, n);
-			v->pos += n;
-		}
-	}
-}
-#else
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libwave", func_0001F0F4);
-#endif
-
-#ifdef NON_MATCHING
-/* Four instructions short: fade-out (flag 0x100000) with restore from the backup voice
- * set, then volume-scaled stereo/mono mixing with clipping; register use and the stereo
- * test layout differ. */
-static void func_0001F60C(int ch, void *buf, void *src)
-{
-	SceWaveVoice *v = &D_00562174[ch];
-	SceWaveVoice *b = &D_005623D4[ch];
-	short *out = buf;
-	short *in = src;
-	int i, f, l, r, s;
-
-	for (i = 0; i < 28; i++) {
-		f = v->flags;
-		if (f & 0x100000) {
-			v->unk38 = (v->unk3C - v->unk40) * 127 / v->unk3C;
-			if (v->unk38 < 0)
-				v->unk38 = 0;
-			if (++v->unk40 >= v->unk3C) {
-				f &= ~0x100000;
-				v->flags = f;
-				v->unk40 = 0;
-				if (f & 0x10000) {
-					v->flags = f & ~0x10000;
-					v->stat = b->stat;
-					v->pos = b->pos;
-					v->vol_l = b->vol_l;
-					v->vol_r = b->vol_r;
-					v->unk30 = b->unk30;
-					v->unk34 = b->unk34;
-					v->unk28 = b->unk28;
-					v->unk2C = b->unk2C;
-				} else if (f & 0x20000) {
-					v->flags = f & ~0x20000;
-					v->stat = b->stat;
-					v->pos = b->pos;
-					v->unk30 = b->unk30;
-					v->unk34 = b->unk34;
-					v->unk28 = b->unk28;
-					v->unk2C = b->unk2C;
-				} else if (f & 0x40000) {
-					v->flags = f & ~0x40000;
-					v->stat = b->stat;
 				}
 			}
-		} else
-			v->unk38 = 127;
-		if ((D_00562174[ch].flags & 0x100) && (D_00562174[ch].flags & 0x200)) {
-			l = D_00562174[ch].vol_l * D_00562174[ch].unk38 / 127 * in[i * 2] / 4096;
-			r = D_00562174[ch].vol_r * D_00562174[ch].unk38 / 127 * in[i * 2 + 1] / 4096;
-		} else {
-			r = D_00562174[ch].vol_r * D_00562174[ch].unk38 / 127 * in[i] / 4096;
-			l = D_00562174[ch].vol_l * D_00562174[ch].unk38 / 127 * in[i] / 4096;
 		}
-		s = out[i * 2] + l;
-		if (s > 32767)
-			s = 32767;
-		if (s < -32768)
-			s = -32768;
-		out[i * 2] = s;
-		s = out[i * 2 + 1] + r;
-		if (s > 32767)
-			s = 32767;
-		if (s < -32768)
-			s = -32768;
-		out[i * 2 + 1] = s;
 	}
 }
-#else
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libwave", func_0001F60C);
-#endif
+
+static void func_0001F60C(int ch, void *out_, void *src_)
+{
+	short *out = (short *)out_;
+	short *src = (short *)src_;
+	int i;
+	int l, r, x;
+
+	for (i = 0; i < 28; i++) {
+		if (D_00562174[ch].flags & 0x100000) {
+			D_00562174[ch].unk38 = (D_00562174[ch].unk3C - D_00562174[ch].unk40) * 127 / D_00562174[ch].unk3C;
+			if (D_00562174[ch].unk38 < 0)
+				D_00562174[ch].unk38 = 0;
+			D_00562174[ch].unk40++;
+			if (D_00562174[ch].unk40 >= D_00562174[ch].unk3C) {
+				D_00562174[ch].flags &= ~0x100000;
+				D_00562174[ch].unk40 = 0;
+				if (D_00562174[ch].flags & 0x10000) {
+					D_00562174[ch].flags &= ~0x10000;
+					D_00562174[ch].stat = D_005623D4[ch].stat;
+					D_00562174[ch].pos = D_005623D4[ch].pos;
+					D_00562174[ch].vol_l = D_005623D4[ch].vol_l;
+					D_00562174[ch].vol_r = D_005623D4[ch].vol_r;
+					D_00562174[ch].unk30 = D_005623D4[ch].unk30;
+					D_00562174[ch].unk34 = D_005623D4[ch].unk34;
+					D_00562174[ch].unk28 = D_005623D4[ch].unk28;
+					D_00562174[ch].unk2C = D_005623D4[ch].unk2C;
+				} else if (D_00562174[ch].flags & 0x20000) {
+					D_00562174[ch].flags &= ~0x20000;
+					D_00562174[ch].stat = D_005623D4[ch].stat;
+					D_00562174[ch].pos = D_005623D4[ch].pos;
+					D_00562174[ch].unk30 = D_005623D4[ch].unk30;
+					D_00562174[ch].unk34 = D_005623D4[ch].unk34;
+					D_00562174[ch].unk28 = D_005623D4[ch].unk28;
+					D_00562174[ch].unk2C = D_005623D4[ch].unk2C;
+				} else if (D_00562174[ch].flags & 0x40000) {
+					D_00562174[ch].flags &= ~0x40000;
+					D_00562174[ch].stat = D_005623D4[ch].stat;
+				}
+			}
+		} else {
+			D_00562174[ch].unk38 = 127;
+		}
+		if (!(D_00562174[ch].flags & 0x100)) {
+			l = D_00562174[ch].vol_l * D_00562174[ch].unk38 / 127;
+			r = D_00562174[ch].vol_r * D_00562174[ch].unk38 / 127;
+			l = l * src[i] / 4096;
+			r = r * src[i] / 4096;
+		} else if (!(D_00562174[ch].flags & 0x200)) {
+			l = D_00562174[ch].vol_l * D_00562174[ch].unk38 / 127;
+			r = D_00562174[ch].vol_r * D_00562174[ch].unk38 / 127;
+			l = l * src[i] / 4096;
+			r = r * src[i] / 4096;
+		} else {
+			l = D_00562174[ch].vol_l * D_00562174[ch].unk38 / 127;
+			r = D_00562174[ch].vol_r * D_00562174[ch].unk38 / 127;
+			l = l * src[i * 2] / 4096;
+			r = r * src[i * 2 + 1] / 4096;
+		}
+		x = out[i * 2];
+		x += l;
+		if (x > 32767)
+			x = 32767;
+		if (x < -32768)
+			x = -32768;
+		out[i * 2] = x;
+		x = out[i * 2 + 1];
+		x += r;
+		if (x > 32767)
+			x = 32767;
+		if (x < -32768)
+			x = -32768;
+		out[i * 2 + 1] = x;
+	}
+}
