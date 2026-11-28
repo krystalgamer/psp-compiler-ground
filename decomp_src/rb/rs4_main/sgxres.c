@@ -107,7 +107,33 @@ int MakeResList(void **arg0) {
     return var_a1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResInit);
+void *memset(void *, int, unsigned int);
+int sgxConfReadInt(void *, const char *, int *, int);
+void *sgxMalloc(int, int);
+void sgxListArrayInit(void *, void *, int, int);
+int sgxPrintf(const char *, ...);
+typedef struct ResLH_ { struct ResLH_ *prev, *next; int id; int f; } ResLH_;
+typedef struct { int init; char *slots; int num; ResLH_ used; ResLH_ free; } ResWorkI_;
+static inline void ResListInit_(ResLH_ *l) {
+    l->prev = l->next = l;
+    l->id = -1;
+    l->f = 0;
+}
+int sgxResInit(void *conf) {
+    ResWorkI_ *w = (ResWorkI_ *)&gWork_11FC38;
+    void *p;
+    memset(w, 0, 0x4C);
+    sgxConfReadInt(conf, "sgx-res-nslot", &w->num, 0x40);
+    p = sgxMalloc(w->num * 0x184, 1);
+    w->slots = p;
+    if (p == NULL) return 0;
+    ResListInit_(&w->free);
+    ResListInit_(&w->used);
+    sgxListArrayInit(&w->free, p, w->num, 0x184);
+    if (gSgxDebugFlags & 4) sgxPrintf(" sgx-res-nslot=%d\n", w->num);
+    ((ResWorkI_ *)&gWork_11FC38)->init = 1;
+    return 1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
