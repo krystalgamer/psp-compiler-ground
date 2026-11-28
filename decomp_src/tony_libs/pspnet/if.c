@@ -77,7 +77,39 @@ void _sce_pspnet_if_attach(struct ifnet *ifp)
 		D_0000B038(ifp);
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/if", _sce_pspnet_if_detach);
+#define IFAFREE(ifa) do { \
+	if (--(ifa)->ifa_refcnt == 0) \
+		sceNetFreeInternal(ifa); \
+} while (0)
+
+void _sce_pspnet_if_detach(struct ifnet *ifp)
+{
+	struct ifaddr *ifa;
+	int s, family;
+
+	s = _sce_pspnet_spllock();
+	_sce_pspnet_if_down(ifp);
+	while ((ifa = ifp->if_addrlist.tqh_first) != NULL) {
+		family = ifa->ifa_addr->sa_family;
+		if (family == 18 /* AF_LINK */) {
+			if (D_0000B068 > 0)
+				D_0000B03C(ifa);
+			TAILQ_REMOVE(&ifp->if_addrlist, ifa, ifa_list);
+			IFAFREE(ifa);
+		} else {
+			if (D_0000B068 > 0)
+				D_0000B040(ifp, family);
+		}
+	}
+	if (D_0000B068 > 0)
+		D_0000B044(ifp);
+	IFAFREE(ifnet_addrs[ifp->if_index]);
+	ifnet_addrs[ifp->if_index] = NULL;
+	if (D_0000B068 > 0)
+		D_0000B048(ifp);
+	TAILQ_REMOVE(&ifnet, ifp, if_list);
+	_sce_pspnet_splunlock(s);
+}
 
 void _sce_pspnet_if_down(struct ifnet *ifp)
 {
