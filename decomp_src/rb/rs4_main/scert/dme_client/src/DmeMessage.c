@@ -28,4 +28,49 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeMessage
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeMessage", UpdateClientStatusPacketHandler);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeMessage", RegisterDMEmessages);
+int NetIRegParseMessage();
+int ClientConnectsPacketHandler(); int RequestServersPacketHandler(); int PingPacketHandler(); int UpdateClientStatusPacketHandler();
+int LANFindPacketHandler(); int LANFindResultsPacketHandler(); int LANTextMessageHandler(); int LANRawMessageHandler();
+extern char *gObjectInterfacePtr;
+extern char *gStreamMediaInterfacePtr;
+#define OIF(o) (*(void **)(gObjectInterfacePtr + (o)))
+#define SIF(o) (*(void **)(gStreamMediaInterfacePtr + (o)))
+void RegisterDMEmessages(void)
+{
+    NetIRegParseMessage(0, 0, ServerVersionPacketHandler);
+    NetIRegParseMessage(1, 0, PingPacketHandler);
+    NetIRegParseMessage(0x10, 0, ClientConnectsPacketHandler);
+    NetIRegParseMessage(0x13, 0, RequestServersPacketHandler);
+    NetIRegParseMessage(0x14, 0, ServerResponsePacketHandler);
+    NetIRegParseMessage(0x16, 0, UpdateClientStatusPacketHandler);
+    NetIRegParseMessage(0x19, 0, LANFindPacketHandler);
+    NetIRegParseMessage(0x1A, 0, LANFindResultsPacketHandler);
+    NetIRegParseMessage(0x21, 0, LANTextMessageHandler);
+    NetIRegParseMessage(0x22, 0, LANRawMessageHandler);
+    if (gObjectInterfacePtr != NULL) {
+        NetIRegParseMessage(0xF, 0, OIF(0xEC));
+        NetIRegParseMessage(0x12, 0, OIF(0xE8));
+        NetIRegParseMessage(0x3, 0, OIF(0xAC));
+        NetIRegParseMessage(0x4, 0, OIF(0xB0));
+        NetIRegParseMessage(0x5, 0, OIF(0xB4));
+        NetIRegParseMessage(0x9, 0, OIF(0xB8));
+        NetIRegParseMessage(0xA, 0, OIF(0xBC));
+        NetIRegParseMessage(0xB, 0, OIF(0xC0));
+        NetIRegParseMessage(0xC, 0, OIF(0xC4));
+        NetIRegParseMessage(0xD, 0, OIF(0xC8));
+        NetIRegParseMessage(0xE, 0, OIF(0xCC));
+        NetIRegParseMessage(0x15, 0, OIF(0xD0));
+        NetIRegParseMessage(0x17, 0, OIF(0xD4));
+    }
+    if (gStreamMediaInterfacePtr != NULL) {
+        NetIRegParseMessage(0x18, 0, SIF(0x48));
+        NetIRegParseMessage(0x1B, 0, SIF(0x4C));
+        NetIRegParseMessage(0x1C, 0, SIF(0x50));
+        NetIRegParseMessage(0x1D, 0, SIF(0x54));
+        NetIRegParseMessage(0x1E, 0, SIF(0x58));
+        NetIRegParseMessage(0x1F, 0, SIF(0x5C));
+        NetIRegParseMessage(0x20, 0, SIF(0x60));
+        NetIRegParseMessage(0x23, 0, SIF(0x68));
+        NetIRegParseMessage(0x24, 0, SIF(0x6C));
+    }
+}
