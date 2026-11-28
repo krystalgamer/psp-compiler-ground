@@ -166,4 +166,77 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/refload", D_001037
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/refload", D_001037FC);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/refload", refloadReleaseTask);
+extern unsigned char D_00103740;
+void copUnitMat(void *);
+void copInitAttr(void *);
+void copLetMat(void *, void *);
+int taskKill(void *, int, int);
+int taskDefaultMsg(void *, int, void *, int);
+int resReleaseRefer(int, int);
+typedef struct {
+	char pad0[0x28];
+	int f28;
+	int f2C;
+	RefEnt *ent;
+	char pad34[0x40 - 0x34];
+	int st;
+	int cnt;
+	char pad48[0x60 - 0x48];
+	char attr[0x30];
+	char m0[0x40];
+	char m1[0x40];
+} RrTask;
+int refloadReleaseTask(RrTask *Tp, unsigned int msg, RefEnt *a, int arg)
+{
+	RefEnt *e;
+	switch (msg) {
+	case 0:
+		if (Tp == NULL)
+			consPrintf(&D_0010357C, &D_00103564, 0x174, "refloadReleaseTask", &D_00103740);
+		Tp->f28 = -1;
+		Tp->f2C = 0;
+		copUnitMat(Tp->m0);
+		copUnitMat(Tp->m1);
+		copInitAttr(Tp->attr);
+		Tp->cnt = 5;
+		Tp->st = 0;
+		Tp->ent = a;
+		a->f10 = 1;
+		if (arg)
+			taskKill(Tp, 0, arg);
+		return (int)Tp;
+	case 4:
+		e = Tp->ent;
+		if (e->f10) {
+			resReleaseRefer(e->type, e->local);
+			e->f10 = 0;
+			e->ref = -1;
+			e->fC = -1;
+		}
+		return (int)Tp;
+	case 2:
+		if (Tp->ent->f10 == 0) {
+			consPrintf("%s : Release canceled\n", "refloadReleaseTask");
+			taskKill(Tp, 0, 0);
+			break;
+		}
+		switch (Tp->st) {
+		case 0:
+			if (Tp->cnt > 0)
+				Tp->cnt--;
+			if (Tp->cnt == 0)
+				Tp->st = 1;
+			break;
+		case 1:
+			taskKill(Tp, 0, 0);
+			break;
+		}
+		copLetMat(Tp->m0, Tp->m1);
+		return 0;
+	case 1:
+	case 3:
+	case 5:
+		return 0;
+	}
+	return taskDefaultMsg(Tp, msg, a, arg);
+}
