@@ -25,7 +25,47 @@ INCLUDE_ASM("tmp/asm/tony_libs/sc_sascore/nonmatchings/sc_sascore", __sceSasSetK
 
 INCLUDE_ASM("tmp/asm/tony_libs/sc_sascore/nonmatchings/sc_sascore", __sceSasSetKeyOff);
 
-INCLUDE_ASM("tmp/asm/tony_libs/sc_sascore/nonmatchings/sc_sascore", __sceSasSetVolume);
+int __sceSasSetVolume(SasCore *core, unsigned int voice, int l, int r, int el, int er)
+{
+	unsigned int oldk1 = pspShiftK1();
+	int ret;
+	int m;
+	int vl;
+	int ve;
+	SasVoice *v;
+	int res;
+
+	if (CHECK_CORE(core)) {
+		pspSetK1(oldk1);
+		return 0x80000023;
+	}
+	if (voice >= 32) {
+		ret = 0x80420010;
+	} else {
+		vl = l;
+		m = __builtin_allegrex_min(__builtin_allegrex_min(__builtin_allegrex_min(r, l), el), er);
+		ve = el;
+		m = __builtin_allegrex_max(m, -m);
+		m = __builtin_allegrex_max(__builtin_allegrex_max(__builtin_allegrex_max(__builtin_allegrex_max(m, l), r), el), er);
+		if (m > 0x1000) {
+			ret = 0x80420018;
+		} else {
+			v = &core->voice[voice];
+			vl = __builtin_allegrex_ins(vl, r, 16, 16);
+			ve = __builtin_allegrex_ins(ve, er, 16, 16);
+			res = sceKernelWaitSema(D_00001DD0, 1, 0);
+			if (res < 0) {
+				ret = res;
+			} else {
+				v->vol.pack = vl;
+				v->evol.pack = ve;
+				sceKernelSignalSema(D_00001DD0, 1);
+				ret = 0;
+			}
+		}
+	}
+	return pspRetK1(ret, oldk1);
+}
 
 int __sceSasSetPitch(SasCore *core, unsigned int voice, unsigned int pitch)
 {
