@@ -6,7 +6,6 @@
 int rt_socket_cleanup_stack_platform(void);
 int rt_socket_close_platform(void);
 int rt_socket_recvmsg_platform(void);
-int rt_socket_get_err_platform();                   /* extern */
 int sceNetInetClose();                              /* extern */
 
 int sceNetResolverCreate(int *, void *, int);
@@ -15,7 +14,97 @@ int sceNetResolverDelete(int);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/psp/rt_socket_platform", rcsid_10D120);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/psp/rt_socket_platform", rt_socket_get_err_platform);
+//== rt_socket_get_err_platform
+int sceNetInetGetErrno();
+int rt_socket_get_err_platform()
+{
+    switch (sceNetInetGetErrno()) {
+    case 11:
+        return 0xCF0E;
+    case 22:
+        return 0xCF35;
+    case 23:
+        return 0xCF33;
+    case 24:
+        return 0xCF34;
+    case 32:
+        return 0xCF36;
+    case 66:
+        return 0xCF32;
+    case 81:
+        return 0xCF37;
+    case 90:
+        return 0xCF2D;
+    case 91:
+        return 0xCF2A;
+    case 92:
+        return 0xCF29;
+    case 95:
+        return 0xCF18;
+    case 96:
+        return 0xCF19;
+    case 104:
+        return 0xCF21;
+    case 105:
+        return 0xCF22;
+    case 106:
+        return 0xCF1A;
+    case 107:
+        return 0xCF14;
+    case 108:
+        return 0xCF11;
+    case 109:
+        return 0xCF15;
+    case 110:
+        return 0xCF25;
+    case 111:
+        return 0xCF28;
+    case 112:
+        return 0xCF1B;
+    case 113:
+        return 0xCF20;
+    case 114:
+        return 0xCF1E;
+    case 115:
+        return 0xCF1D;
+    case 116:
+        return 0xCF27;
+    case 117:
+        return 0xCF2B;
+    case 118:
+        return 0xCF2C;
+    case 119:
+        return 0xCF0F;
+    case 120:
+        return 0xCF10;
+    case 121:
+        return 0xCF12;
+    case 122:
+        return 0xCF13;
+    case 123:
+        return 0xCF16;
+    case 124:
+        return 0xCF17;
+    case 125:
+        return 0xCF1C;
+    case 126:
+        return 0xCF1F;
+    case 127:
+        return 0xCF23;
+    case 128:
+        return 0xCF24;
+    case 129:
+        return 0xCF26;
+    default:
+        return 0xCF0B;
+    case 131:
+        return 0xCF2F;
+    case 132:
+        return 0xCF30;
+    case 133:
+        return 0xCF31;
+    }
+}
 
 int rt_time_start();
 void rt_time_elapsed();
@@ -196,7 +285,43 @@ int rt_socket_is_interface_up(int *up)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/psp/rt_socket_platform", rt_socket_is_connected_platform);
+typedef struct { unsigned int bits[8]; } RtFdSet;
+typedef struct { int sec; int usec; } RtTimeval;
+int sceNetInetSelect();
+#define RT_FD_ZERO(p) do { unsigned int _i; char *_c = (char *)(p); for (_i = 0; _i < sizeof(*(p)); _i++) *_c++ = 0; } while (0)
+#define RT_FD_SET(n, p) ((p)->bits[(unsigned int)(n) >> 5] |= 1 << ((n) & 31))
+#define RT_FD_ISSET(n, p) ((p)->bits[(unsigned int)(n) >> 5] & (1 << ((n) & 31)))
+int rt_socket_is_connected_platform(int s, int *conn)
+{
+    RtFdSet rs;
+    RtFdSet ws;
+    RtTimeval tv;
+    int err;
+    int len;
+    int n;
+
+    if (conn == NULL) return 2;
+    *conn = 0;
+    RT_FD_ZERO(&rs);
+    RT_FD_SET(s, &rs);
+    RT_FD_ZERO(&ws);
+    RT_FD_SET(s, &ws);
+    tv.sec = 0;
+    tv.usec = 0;
+    err = n = sceNetInetSelect(s + 1, &ws, &rs, NULL, &tv);
+    if (n <= 0) {
+        if (n == 0) return 0;
+        return rt_socket_get_err_platform();
+    }
+    if (RT_FD_ISSET(s, &ws) || RT_FD_ISSET(s, &rs)) {
+        len = 4;
+        if (sceNetInetGetsockopt(s, 0xFFFF, 0x1007, &err, &len) != 0)
+            return rt_socket_get_err_platform();
+        if (err != 0) return 0xCF28;
+        *conn = 1;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/psp/rt_socket_platform", rt_socket_get_dns_servers_platform);
 
