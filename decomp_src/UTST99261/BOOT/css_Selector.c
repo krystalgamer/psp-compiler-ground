@@ -11,9 +11,47 @@ void CSS_freePoolBuf(void *pb);
 void *_getSelectorText(void *sel);
 void *CSSStyleDeclaration_getCssText(void *decl);
 void MEM_free(int pool, void *p);
+void *_getOneSelectorText(void *sel);
+void CSS_putSPoolBuf(void *pb, const char *s);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_Selector", _getOneSelectorText);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_Selector", _getSelectorText);
+void *_getSelectorText(void *sel)
+{
+    void *pb;
+    void *s;
+    void *p;
+    void *r;
+
+    if (sel == NULL || M2C_FIELD(sel, short *, 0) != 9)
+        return NULL;
+    pb = CSS_newPoolBuf();
+    r = NULL;
+    if (pb != NULL) {
+        if (M2C_FIELD(sel, void **, 0x20) != NULL) {
+            p = M2C_FIELD(sel, void **, 0x20);
+            while (M2C_FIELD(p, void **, 0x20) != NULL)
+                p = M2C_FIELD(p, void **, 0x20);
+            for (; p != NULL; p = M2C_FIELD(p, void **, 0x14)) {
+                s = _getOneSelectorText(p);
+                CSS_putsPoolBuf(pb, s);
+                MEM_free(0, s);
+                if (M2C_FIELD(p, u16 *, 0x1C) & 4)
+                    CSS_putSPoolBuf(pb, " + ");
+                else if (M2C_FIELD(p, u16 *, 0x1C) & 2)
+                    CSS_putSPoolBuf(pb, " > ");
+                else
+                    CSS_putSPoolBuf(pb, " ");
+            }
+        }
+        s = _getOneSelectorText(sel);
+        CSS_putsPoolBuf(pb, s);
+        MEM_free(0, s);
+        s = CSS_getPoolBuf(pb);
+        CSS_freePoolBuf(pb);
+        r = s;
+    }
+    return r;
+}
 
 void *CSSSelector_getCssText(void *sel) {
     void *pb;
