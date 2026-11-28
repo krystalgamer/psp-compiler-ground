@@ -1,0 +1,41 @@
+--- a/gcc/global.c	2026-11-24 10:54:41.000000000 +0000
++++ b/gcc/global.c	2026-11-28 01:09:55.051312527 +0000
+@@ -546,7 +546,18 @@
+       prune_preferences ();
+ 
+       if (file)
+-	dump_conflicts (file);
++	{
++	  for (i = 0; i < (size_t) max_allocno; i++)
++	    {
++	      int a = allocno_order[i];
++	      fprintf (file, ";; PRI reg %d refs %d freq %d live %d size %d pri %d\n",
++		       allocno[a].reg, allocno[a].n_refs, allocno[a].freq,
++		       allocno[a].live_length, allocno[a].size,
++		       (int) (((double) (floor_log2 (allocno[a].n_refs) * allocno[a].freq)
++			       / allocno[a].live_length) * (10000 / REG_FREQ_MAX) * allocno[a].size));
++	    }
++	  dump_conflicts (file);
++	}
+ 
+       /* Try allocating them, one by one, in that order,
+ 	 except for parameters marked with reg_live_length[regno] == -2.  */
+--- a/gcc/local-alloc.c	2026-11-24 10:54:41.000000000 +0000
++++ b/gcc/local-alloc.c	2026-11-28 01:11:34.183349446 +0000
+@@ -1575,6 +1575,16 @@
+       qsort (qty_order, next_qty, sizeof (int), qty_compare_1);
+     }
+ 
++  if (rtl_dump_file)
++    for (i = 0; i < next_qty; i++)
++      {
++	q = qty_order[i];
++	fprintf (rtl_dump_file, ";; QPRI bb %d qty %d reg %d refs %d freq %d life %d-%d pri %d\n",
++		 b, q, qty[q].first_reg, qty[q].n_refs, qty[q].freq,
++		 qty[q].birth, qty[q].death,
++		 qty[q].death > qty[q].birth ? (int) (((double) (floor_log2 (qty[q].n_refs) * qty[q].freq * qty[q].size) / (qty[q].death - qty[q].birth)) * (10000 / REG_FREQ_MAX)) : -1);
++      }
++
+   /* Now for each qty that is not a hardware register,
+      look for a hardware register to put it in.
+      First try the register class that is cheapest for this qty,
