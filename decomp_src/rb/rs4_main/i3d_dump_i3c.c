@@ -10,9 +10,26 @@ void PrintIndent(int n)
 		putchar('\t');
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_dump_i3c", PrintVector);
+int printf(const char *, ...);
+void PrintVector(const char *name, const float *v, int indent)
+{
+	PrintIndent(indent);
+	printf("%s = { %f %f %f %f }\n", name, v[0], v[1], v[2], v[3]);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_dump_i3c", PrintTri);
+int puts(const char *);
+extern const char D_00109944[];
+void PrintTri(unsigned short *t, int indent)
+{
+	PrintIndent(indent++);
+	puts("Triangle {");
+	PrintIndent(indent);
+	printf("iAttr = %d\n", t[3]);
+	PrintIndent(indent);
+	printf("aiPoint = { %d %d %d }\n", t[0], t[1], t[2]);
+	PrintIndent(--indent);
+	puts(D_00109944);
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/i3d_dump_i3c", D_00109944);
 
