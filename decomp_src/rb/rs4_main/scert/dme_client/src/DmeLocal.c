@@ -336,7 +336,19 @@ int NetIGetMyClientIndex(int *arg0, void *arg1) {
     return var_v1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIGetPeerToPeerHostClientIndex);
+int NetIGetPeerToPeerHostClientIndex(char *c, long *idx)
+{
+    unsigned short h = 0xFFFE;
+
+    if (c == NULL) return 0x17;
+    if (*(int *)(c + 0x468) != 2) return 0x17;
+    if (idx == NULL) return 0x17;
+    *idx = 0x100;
+    if ((*(DmeP2pHostFn *)((char *)gP2PInterfacePtr + 0x18))(*(int *)(c + 0x474), &h) != 0) return 0x25;
+    if (h == 0xFFFE) return 1;
+    *idx = h;
+    return 0;
+}
 
 int NetSetPeerToPeerHostChangeCallback(int arg0, int arg1) {
     gpfHostChangeCallback = arg0;
