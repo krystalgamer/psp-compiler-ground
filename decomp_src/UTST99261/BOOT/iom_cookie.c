@@ -39,6 +39,9 @@ void iom_deleteCookie(void *c);
 void iom_freeCookie(void *arg0);
 void iom_deleteDomainCookie(void *arg0);
 int iom_mfree(int arg0);
+typedef struct CkQueue { int w[4]; } CkQueue;
+typedef struct Cookie { void *dom; char *domain; char *name; char *value; int expire; int secure; } Cookie;
+extern char D_00139C98[];
 void iom_cookieFile_init(void) {
     cookieFile_init();
 }
@@ -195,7 +198,56 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_cookie", D_00139CA4);
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_cookie", D_00139CA8);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_cookie", iom_getCookieData);
+int iom_getCookieData(char *dom, char *host, int secure, void *f, int first)
+{
+    CkQueue q;
+    void *e;
+    void *next;
+    Cookie *c;
+    int len;
+    int ret;
+    int f1;
+
+    len = strlen(host);
+    f1 = first != 0;
+    UTL_initqueue(&q);
+    for (e = UTL_peekqueue((int)dom + 0xC, NULL); e != NULL; e = next) {
+        next = UTL_peekqueue((int)dom + 0xC, e);
+        c = M2C_FIELD(e, Cookie **, 8);
+        if (len < (int)strlen(c->domain))
+            continue;
+        if (strncasecmp(c->domain, host, strlen(c->domain)) != 0)
+            continue;
+        if (c->expire == 0)
+            continue;
+        if ((c->secure == 1) & (secure != 1))
+            continue;
+        if (f1 == 0) {
+            if (UTL_mfileputs(f, D_00139C98) < 0)
+                break;
+        } else
+            f1 = 0;
+        if (UTL_mfilesize(f) > 0 && UTL_mfileputs(f, " ") < 0)
+            break;
+        if (UTL_mfileputs(f, c->name) < 0)
+            break;
+        if (c->value != NULL && *c->value != 0) {
+            if (UTL_mfileputs(f, "=") < 0)
+                break;
+            if (UTL_mfileputs(f, c->value) < 0)
+                break;
+        }
+        UTL_relqueue(iomCookie + 4, (char *)c + 0x1C);
+        UTL_enqueue(&q, (char *)c + 0x1C);
+    }
+    if (e != NULL)
+        ret = -0x12D;
+    else
+        ret = 0;
+    while ((e = UTL_dequeue(&q)) != NULL)
+        UTL_enqueue(iomCookie + 4, e);
+    return ret;
+}
 
 void iom_deleteCookie(void *c) {
     void *e;
