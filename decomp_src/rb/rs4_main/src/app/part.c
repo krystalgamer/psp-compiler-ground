@@ -36,7 +36,55 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/part", D_000FDD7C);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/part", D_000FDD8C);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/part", partInit);
+int elmInit(int);                                   /* extern */
+int partInitEmitCntx(int, int, int *, int);         /* extern */
+int partInitEnvCntx(int);                           /* extern */
+extern unsigned char D_000FDDBC;
+extern unsigned char D_000FDDC4;
+extern unsigned char D_000FDDCC;
+
+void *partInit(void *arg0, int arg1, int arg2) {
+    int temp_a1;
+    int temp_s5;
+    int temp_v0_2;
+    void *temp_s1;
+    void *temp_v0;
+    void *temp_v0_3;
+    void *temp_v0_4;
+
+    temp_s1 = M2C_FIELD(arg0, void **, 0x10);
+    temp_v0_2 = partInitEnvCntx(M2C_FIELD(temp_s1, int *, 4));
+    temp_s5 = partInitEmitCntx(temp_v0_2, M2C_FIELD(temp_s1, int *, 0), M2C_FIELD(temp_s1, int **, 8), arg1);
+    temp_v0 = _memAllocZero(0x1CU, &D_000FDD7C, 0x31);
+    if (temp_v0 == NULL) {
+        consPrintf(&D_000FDD8C, &D_000FDD7C, 0x32, "partInit", &D_000FDDB4);
+    }
+    M2C_FIELD(temp_v0, int *, 4) = temp_v0_2;
+    M2C_FIELD(temp_v0, int *, 8) = temp_s5;
+    M2C_FIELD(temp_v0, void **, 0) = temp_s1;
+    M2C_FIELD(temp_v0, int *, 0x14) = elmInit(arg2);
+    switch (*M2C_FIELD(temp_s1, int **, 8)) {
+    default:
+        consPrintf(&D_000FDD8C, &D_000FDD7C, 0x3F, "partInit", &D_000FDDBC);
+        break;
+    case 0:
+        temp_v0_4 = _memAllocZero(arg2 * 4, &D_000FDD7C, 0x43);
+        if (temp_v0_4 == NULL) {
+            consPrintf(&D_000FDD8C, &D_000FDD7C, 0x44, "partInit", &D_000FDDC4);
+        }
+        M2C_FIELD(temp_v0, void **, 0xC) = temp_v0_4;
+        break;
+    case 1:
+        temp_v0_3 = _memAllocZero(arg2 * 4, &D_000FDD7C, 0x49);
+        if (temp_v0_3 == NULL) {
+            consPrintf(&D_000FDD8C, &D_000FDD7C, 0x4A, "partInit", &D_000FDDCC);
+        }
+        M2C_FIELD(temp_v0, void **, 0x10) = temp_v0_3;
+        break;
+    }
+    M2C_FIELD(temp_v0, int *, 0x18) = 0;
+    return temp_v0;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/part", D_000FDDB4);
 

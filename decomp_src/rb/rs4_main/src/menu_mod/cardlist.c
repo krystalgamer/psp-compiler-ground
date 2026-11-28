@@ -107,7 +107,44 @@ int cardlistCpyTtr2Enum(void) {
     return cardlistCpyTtr2Int32() - 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", cardlistInit);
+M2C_UNK cardlistRefresh();                          /* extern */
+int ttrGetMaxNumber(signed char **);                         /* extern */
+extern unsigned char D_00101F94;
+extern unsigned char D_00101F9C;
+extern unsigned char D_00101FB0;
+extern unsigned char D_00101FE4;
+extern unsigned char D_00102004;
+extern unsigned char D_00102014;
+extern unsigned char D_00102038;
+
+int cardlistInit(void) {
+    M2C_UNK *temp_v0;
+    int temp_a5;
+    int temp_v0_2;
+    int temp_v0_4;
+    void *temp_v0_3;
+
+    temp_v0 = "cardlistInit";
+    consPrintf(&D_00101F94, temp_v0);
+    if (l_atCardList != NULL) {
+        consPrintf(&D_00101FB0, &D_00101FCC, 0x9D, temp_v0, &D_00101F9C);
+    }
+    l_nCardNum = ttrGetIndexNum(resGetDatLocal(1, 0xF));
+    if (l_nCardNum > 0x100) {
+        consPrintf(&D_00101FB0, &D_00101FCC, 0xA0, temp_v0, &D_00101FE4);
+    }
+    l_atCardList = _memAllocZero(l_nCardNum * 0xB60, &D_00101FCC, 0xA2);
+    if (l_atCardList == NULL) {
+        consPrintf(&D_00101FB0, &D_00101FCC, 0xA3, temp_v0, &D_00102004);
+    }
+    l_nCardIDMax = ttrGetMaxNumber(resGetDatLocal(1, 0xF));
+    if (l_nCardIDMax >= 0x190) {
+        consPrintf(&D_00101FB0, &D_00101FCC, 0xA6, temp_v0, &D_00102014);
+    }
+    cardlistRefresh();
+    consPrintf(&D_00102038, temp_v0);
+    return 1;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", D_00101F94);
 

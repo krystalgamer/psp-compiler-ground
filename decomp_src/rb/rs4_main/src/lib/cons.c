@@ -12,7 +12,33 @@ void consPrintf(const char *, ...);
 extern int LogIdx;
 extern int pLogBuf;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/cons", consInit);
+void *_memAllocZero(int, void *, int);
+extern unsigned char D_000FAAAC;
+extern unsigned char D_000FAAC4;
+extern unsigned char D_000FAACC;
+
+int consInit(void) {
+    M2C_UNK *temp_s0;
+    int temp_v0_2;
+    void *temp_v0;
+
+    if (pLogBuf != NULL) {
+        consPrintf(&D_000FAA78, &D_000FAA94, 0x23, "consInit", "pLogBuf == 0");
+    }
+    temp_v0 = _memAllocZero(0x400, &D_000FAA94, 0x25);
+    pLogBuf = temp_v0;
+    if (temp_v0 == NULL) {
+        consPrintf(&D_000FAA78, &D_000FAA94, 0x26, "consInit", &D_000FAAA4);
+    }
+    temp_s0 = "consInit";
+    consPrintf(&D_000FAAAC, temp_s0, pLogBuf, 0x400);
+    temp_v0_2 = semaInit(&D_000FAAC4);
+    ConsSema = temp_v0_2;
+    if (temp_v0_2 <= 0) {
+        consPrintf(&D_000FAA78, &D_000FAA94, 0x2C, temp_s0, &D_000FAACC);
+    }
+    return 1;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/lib/cons", D_000FAA78);
 
