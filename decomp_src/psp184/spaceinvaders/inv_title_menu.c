@@ -3,7 +3,7 @@
 #include "m2c_macros.h"
 void inv_logo(void);
 M2C_UNK inv_title_init();                           /* extern */
-M2C_UNK inv_title_memcheck();                       /* extern */
+void inv_title_memcheck(void);
 M2C_UNK inv_title_roop();                           /* extern */
 extern int D_003491E4;
 extern unsigned char D_00349218;
@@ -52,7 +52,14 @@ int inv_title_main(void) {
     return D_003491E4;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", inv_title_memcheck);
+extern int memory_buf;
+void inv_title_memcheck(void)
+{
+	if (memory_buf == -1)
+		memory_buf = malloc_max_size;
+	else if (memory_buf != malloc_max_size)
+		memory_buf = malloc_max_size;
+}
 
 extern int logo;
 extern char *logo_filename[];
