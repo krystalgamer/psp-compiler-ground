@@ -2780,7 +2780,7 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", efc_ufohit_sta
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", efc_shot_del);
 
-extern float camera_mode[4];
+extern float camera_mode[][4];
 void cam_init(void)
 {
 	(&gmain.cam)->f0 = 0;
@@ -2792,10 +2792,10 @@ void cam_init(void)
 		V3 v = D_0007DF24;
 		(&gmain.cam)->f30 = v;
 	}
-	(&gmain.cam)->f50 = camera_mode[0];
-	(&gmain.cam)->f54 = camera_mode[1];
-	(&gmain.cam)->f58 = camera_mode[2];
-	(&gmain.cam)->f5c = camera_mode[3];
+	(&gmain.cam)->f50 = camera_mode[0][0];
+	(&gmain.cam)->f54 = camera_mode[0][1];
+	(&gmain.cam)->f58 = camera_mode[0][2];
+	(&gmain.cam)->f5c = camera_mode[0][3];
 	(&gmain.cam)->f3c = 1;
 	{
 		V3 v = D_0007DF30;
@@ -2810,7 +2810,174 @@ void cam_init(void)
 	(&gmain.cam)->f14 = 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", cam_control);
+float sinf_nb(float) __asm__("sinf");
+int pad_sw();
+int pad_rp2();
+extern int D_005FB7BC;
+typedef struct { s8 on; u8 f1, f2, f3; float x, y, z; u8 pad10[0x14]; int f24, f28, f2c; u8 rest[0x80 - 0x30]; } LIGHT_T;
+typedef struct { int mode; float fovy; L2V3 pos; L2V3 rot; L2V3 hist[8]; float far; L2V3 center; L2V3 up; int f9c; } CAM_D;
+extern CAM_D camera;
+void root_uprot_get(L2V3 *out, float pos, float ang);
+void root_offset_get(L2V3 *out, float pos, float x, float y, float len);
+void cam_control(void)
+{
+	CAMERA *c = &gmain.cam;
+	ZIKI *z = &gmain.ziki;
+	LIGHT_T *l;
+	L2V3 r, p, q;
+
+	if (c->f0 == 0) {
+		c->f4c = gmain.f10b8;
+		while (c->f4c <= 0.0f)
+			c->f4c += gmain.f10bc - 0.0f;
+		while (c->f4c >= gmain.f10bc)
+			c->f4c -= gmain.f10bc - 0.0f;
+		c->eye.y = c->f58 - z->pos.y;
+		c->eye.z = c->f50;
+		c->f30.x = c->f5c;
+		c->f30.y = c->f4c;
+		c->eye.x = 0;
+		c->f30.z = 0;
+		if (gmain.f1070 == 1 && ((pad_sw() & 0x100) || (pad_sw() & 0x200))) {
+			c->f10 = 1;
+			c->fc = 0;
+			if (pad_sw() & 0x200)
+				c->f8++;
+			else if (pad_sw() & 0x100)
+				c->f8--;
+			if (D_005FB7BC == 1) {
+				if (c->f8 < 0)
+					c->f8 = 3;
+				else if (c->f8 >= 4)
+					c->f8 = 0;
+			} else {
+				if (c->f8 < 0)
+					c->f8 = 2;
+				else if (c->f8 >= 3)
+					c->f8 = 0;
+			}
+			c->f60 = c->f50;
+			c->f68 = c->f54;
+			c->f70 = c->f58;
+			c->f78 = c->f5c;
+			c->f64 = camera_mode[c->f8][0];
+			c->f6c = camera_mode[c->f8][1];
+			c->f74 = camera_mode[c->f8][2];
+			c->f7c = camera_mode[c->f8][3];
+			df_blur_start(0, 0, 100, 100, 255, 255, 255, 255, 1, 30);
+		}
+		if (c->f10 == 1) {
+			c->fc += 5;
+			if (c->fc >= 90)
+				c->fc = 90;
+			c->f50 = c->f60 + sinf_nb(c->fc / 180.0f * 3.1415927f) * (c->f64 - c->f60);
+			c->f54 = c->f68 + sinf_nb(c->fc / 180.0f * 3.1415927f) * (c->f6c - c->f68);
+			c->f58 = c->f70 + sinf_nb(c->fc / 180.0f * 3.1415927f) * (c->f74 - c->f70);
+			c->f5c = c->f78 + sinf_nb(c->fc / 180.0f * 3.1415927f) * (c->f7c - c->f78);
+			if (c->fc == 90) {
+				c->f10 = 0;
+				c->fc = 0;
+			}
+		}
+		root_offset_get(&c->f40, c->f4c, c->f58 * 2.0f, 0.0f, 500.0f);
+	} else if (c->f0 == 1) {
+		if (c->f4 == 0) {
+			if (pad_rp2() & 0x10) c->eye.y -= 10.0f;
+			if (pad_rp2() & 0x40) c->eye.y += 10.0f;
+			if (pad_rp2() & 0x80) c->eye.x -= 10.0f;
+			if (pad_rp2() & 0x20) c->eye.x += 10.0f;
+			if (pad_rp2() & 0x100) c->eye.z -= 10.0f;
+			if (pad_rp2() & 0x200) c->eye.z += 10.0f;
+		} else {
+			if (pad_rp2() & 0x10) c->f30.y -= 1.0f;
+			if (pad_rp2() & 0x40) c->f30.y += 1.0f;
+			if (pad_rp2() & 0x80) c->f30.x -= 1.0f;
+			if (pad_rp2() & 0x20) c->f30.x += 1.0f;
+			if (pad_rp2() & 0x100) c->f30.z -= 1.0f;
+			if (pad_rp2() & 0x200) c->f30.z += 1.0f;
+		}
+		if (pad_sw() & 0x8000)
+			c->f4 ^= 1;
+	} else if (c->f0 == 2) {
+		c->f4c = gmain.f10b8;
+		while (c->f4c <= 0.0f)
+			c->f4c += gmain.f10bc - 0.0f;
+		while (c->f4c >= gmain.f10bc)
+			c->f4c -= gmain.f10bc - 0.0f;
+		c->eye.z = c->f50;
+		c->eye.y = c->f58 - z->pos.y;
+		c->f30.x = c->f5c;
+		c->f30.y = c->f4c;
+		c->eye.x = 0;
+		c->f30.z = 0;
+		if (pad_rp2() & 0x10) c->f58 -= 1.0f;
+		if (pad_rp2() & 0x40) c->f58 += 1.0f;
+		if (pad_rp2() & 0x100) c->f50 -= 0.01f;
+		if (pad_rp2() & 0x200) c->f50 += 0.01f;
+		if (pad_rp2() & 0x80) c->f54 -= 100.0f;
+		if (pad_rp2() & 0x20) c->f54 += 100.0f;
+	} else if (c->f0 == 3) {
+		c->f4c = gmain.f10b8;
+		while (c->f4c <= 0.0f)
+			c->f4c += gmain.f10bc - 0.0f;
+		while (c->f4c >= gmain.f10bc)
+			c->f4c -= gmain.f10bc - 0.0f;
+		c->eye.z = c->f50;
+		c->eye.y = c->f58 - z->pos.y;
+		c->f30.x = c->f5c;
+		c->f30.y = c->f4c;
+		c->eye.x = 0;
+		c->f30.z = 0;
+		if (pad_rp2() & 0x10) c->f40.y -= 10.0f;
+		if (pad_rp2() & 0x40) c->f40.y += 10.0f;
+		if (pad_rp2() & 0x80) c->f40.x -= 10.0f;
+		if (pad_rp2() & 0x20) c->f40.x += 10.0f;
+		if (pad_rp2() & 0x100) c->f40.z -= 10.0f;
+		if (pad_rp2() & 0x200) c->f40.z += 10.0f;
+		if (pad_sw() & 0x8000) {
+			if (c->f3c == 0)
+				c->f3c = 1;
+			else
+				c->f3c = 0;
+		}
+	} else if (c->f0 == 10) {
+		while (c->f4c <= 0.0f)
+			c->f4c += gmain.f10bc - 0.0f;
+		while (c->f4c >= gmain.f10bc)
+			c->f4c -= gmain.f10bc - 0.0f;
+		c->eye.z = c->f50;
+		c->eye.y = c->f58 - z->pos.y;
+		c->f30.x = c->f5c;
+		c->f30.y = c->f4c;
+		c->eye.x = 0;
+		c->f30.z = 0;
+	}
+	l = (LIGHT_T *)&D_003538BC;
+	l->f1 = c->f3c;
+	l->f2 = 6;
+	l->x = c->f40.x;
+	l->y = c->f40.y;
+	l->z = c->f40.z;
+	l->on = 1;
+	l->f24 = 0xFF000000;
+	l->f28 = -1;
+	l->f2c = -1;
+	camera.mode = 1;
+	root_uprot_get(&camera.up, c->f4c, c->f14);
+	r.x = 0;
+	r.y = 0;
+	r.z = 0;
+	root_rot_get(&camera.rot, &r, c->f4c);
+	camera.far = c->f54;
+	p.x = 0;
+	p.y = 0;
+	p.z = 0;
+	root_pos_get(&camera.center, &p, c->f4c, c->f54);
+	root_offset_get(&camera.pos, c->f4c, c->f58, c->f14, c->f50 * 500.0f);
+	camera.pos.x += c->f24.x;
+	camera.pos.y += c->f24.y;
+	camera.pos.z += c->f24.z;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

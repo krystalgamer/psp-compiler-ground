@@ -124,6 +124,7 @@ typedef struct {
 	int f3c;
 	L2V3 f40;
 	float f4c, f50, f54, f58, f5c;
+	float f60, f64, f68, f6c, f70, f74, f78, f7c;	/* mode change: from/to pairs */
 } CAMERA;
 
 /* display effects: quake/blur/cap/flash/fade (0x1463C8) */
@@ -203,7 +204,6 @@ typedef struct GMAIN {
 	ITEM_T item[128];	/* 0x133F48 */
 	PARTICLE part[512];	/* 0x135B48 */
 	CAMERA cam;		/* 0x146348 */
-	int f1463a8[8];
 	DISPEFF de;		/* 0x1463C8 */
 	STATUS_W st;		/* 0x146464 */
 	TIMER_W timer;		/* 0x14672C */
