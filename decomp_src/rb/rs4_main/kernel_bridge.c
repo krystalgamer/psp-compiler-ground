@@ -171,7 +171,47 @@ off_t _lseek (int file, off_t offset, int dir)
 	return result;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/kernel_bridge", _exit);
+struct _reent;
+struct _reent *__getreent(void);
+void _reclaim_reent(struct _reent *);
+int sceKernelPrintf(const char *fmt, ...);
+int sceKernelExitThread(int status);
+SceUID sceKernelGetModuleId(void);
+int sceKernelStopModule(SceUID modid, unsigned int args, void *argp, int *status, void *option);
+int sceKernelUnloadModule(SceUID modid);
+int sceKernelStopUnloadSelfModuleWithStatus(int exitcode, unsigned int args, void *argp, int *status, void *option);
+extern struct _reent *_getmodreent(void) __attribute__((weak));
+extern int _clrmodreent(struct _reent *) __attribute__((weak));
+
+/* process (this revision has no "something wrong" report and break after the final call) */
+void _exit(int status) __attribute__((noinline));
+void _exit(int status)
+{
+	int rtn;
+	struct _reent *ptr;
+	int mid;
+
+	if (_getmodreent) {
+		ptr = _getmodreent();
+
+		if (ptr != __getreent()) {
+			sceKernelPrintf("libc:%s: should be called from main thread\n",
+					__FUNCTION__);
+			sceKernelExitThread(status);
+		}
+
+		_reclaim_reent(ptr);
+		mid = _clrmodreent(ptr);
+
+		if (sceKernelGetModuleId() != mid) {
+			sceKernelStopModule(mid, 0, NULL, &rtn, NULL);
+			sceKernelUnloadModule(mid);
+			sceKernelExitThread(status);
+		}
+	}
+
+	sceKernelStopUnloadSelfModuleWithStatus(1 /* NO_RESIDENT */, 0, NULL, NULL, NULL);
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/kernel_bridge", sce_newlib_stop_func);
 
