@@ -175,7 +175,7 @@ INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", my);
 
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", MapXBeginPos);
 
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", BallXPos);
+const u16 BallXPos[] = { 160, 88, 232 };
 
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", PAUSE_PARTZ);
 
@@ -876,8 +876,6 @@ int GetMapRight(int no)
 }
 
 
-#ifdef NON_MATCHING
-/* Close: the SelectPlayer and BallXPos loads come out in the opposite order. */
 void GameValueInit(int pl, int stage, int flag)
 {
 	PZL_STAT *st;
@@ -909,9 +907,6 @@ void GameValueInit(int pl, int stage, int flag)
 		StageNum = stage;
 	st->unk434 = save434;
 }
-#else
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", GameValueInit);
-#endif
 
 extern int OjamaStock[3];
 extern int WinStack[3];
@@ -980,7 +975,7 @@ void SurvValueInit(void)
 	st->unk023 = 0;
 	st->unk027 = 8;
 	st->unk026 = 8;
-	st->bx = BallXPos[1];
+	st->bx = BallXPos[pl];
 	for (i = 0; i < 3; i++) {
 		OjamaStock[i] = 0;
 		WinStack[i] = 0;
