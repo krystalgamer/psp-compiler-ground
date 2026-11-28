@@ -1,6 +1,8 @@
 /* lang: c++ */
-/* cflags: -Os */
+/* cflags: -Os -fno-exceptions */
 #include "common.h"
+struct InstDat;
+struct TBxAnmInitAssign;
 namespace B2A {
 class B2aFile;
 class Manager {
@@ -20,10 +22,15 @@ public:
 };
 class B2aFile {
 public:
+	B2aFile(InstDat *, int, int, TBxAnmInitAssign **);
+	void *data;
+	int size;
 	~B2aFile();
 	void ReAssign();
 };
 void Calc(Manager *);
+Manager *CreateB2A(B2aFile *);
+void Start(Manager *);
 }
 void GpPrim_Init();
 extern "C" {
@@ -57,13 +64,34 @@ B2A::Manager *bxAnmInit(void *p)
 	return bxAnmInitEx(p, 0);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/anm", bxAnmInitEx);
+extern unsigned char D_00108E98, D_00108EA0;
+B2A::Manager *bxAnmInitEx(void *p, int n)
+{
+	B2A::Manager *m;
+	if (sceKernelGetGPI() & 1)
+		consPrintf((const char *)&D_00108E98, __FUNCTION__);
+	m = B2A::CreateB2A(new B2A::B2aFile((InstDat *)p, n, 0, 0));
+	B2A::Start(m);
+	if (sceKernelGetGPI() & 1)
+		consPrintf((const char *)&D_00108EA0);
+	return m;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/anm", D_00108E98);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/anm", D_00108EA0);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/anm", bxAnmInitAssign);
+B2A::Manager *bxAnmInitAssign(void *p, int n, int c, TBxAnmInitAssign **a)
+{
+	B2A::Manager *m;
+	if (sceKernelGetGPI() & 1)
+		consPrintf((const char *)&D_00108E98, __FUNCTION__);
+	m = B2A::CreateB2A(new B2A::B2aFile((InstDat *)p, n, c, a));
+	B2A::Start(m);
+	if (sceKernelGetGPI() & 1)
+		consPrintf((const char *)&D_00108EA0);
+	return m;
+}
 
 }
 template <class T> inline void SafeDelete(T *&p) { delete p; }
