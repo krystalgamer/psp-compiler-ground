@@ -124,6 +124,7 @@ struct Manager {
 	void SetFrame(float);
 	float GetFrame();
 	float GetEndFrame();
+	void SetEndFrame(float f);
 	void SetSpeed(float s);
 	void Refresh();
 	void RefreshOne(int i, bool b);
@@ -494,9 +495,16 @@ float B2A::Manager::GetEndFrame()
 	return e->end - 2;
 }
 
-extern "C" {
+/* inline-asm cvt.w.s (rounds), as in cardlistCpyTtr2Int32 */
+void B2A::Manager::SetEndFrame(float f)
+{
+	SceneEnt *e = &file->hdr->ent[list.tail->player->scene];
+	float r;
+	__asm__ volatile ("cvt.w.s %0, %1" : "=f"(r) : "f"(f));
+	e->end = *(int *)&r + 2;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager11SetEndFrameEf);
+extern "C" {
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108F18);
 
