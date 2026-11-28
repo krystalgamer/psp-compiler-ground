@@ -239,7 +239,34 @@ int sgl::Stripper::count_strips()
     return n;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Stripper", _ZN3sgl8Stripper21convert_to_new_formatEv);
+void sgl::Stripper::convert_to_new_format()
+{
+    int *s = &_prims.strips()[0];
+    if (s == 0)
+        return;
+    if (_size == 0)
+        return;
+    _prims.n = 0;
+    int i;
+    for (i = 0; i < (int)_size; i++)
+        if (s[i] == -1)
+            _prims.n++;
+    for (i = 0; i < (int)_size;) {
+        int first = s[i];
+        int &cnt = s[i];
+        cnt = 0;
+        int j = i;
+        while (s[++j] != -1)
+            ;
+        int next = j + 1;
+        for (; i < j; j--) {
+            s[j] = s[j - 1];
+            cnt++;
+        }
+        s[j + 1] = first;
+        i = next;
+    }
+}
 
 extern "C" {
 void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_CCF18");

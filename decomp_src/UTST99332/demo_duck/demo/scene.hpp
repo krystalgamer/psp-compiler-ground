@@ -564,6 +564,7 @@ public:
     void finish();
     void draw(const TraversalVarStack &);
     void clear();
+    void copy_texcoord(const std::vector<sgl::TexCoord> &);
     struct ShlColors {
         ShlColors() : _valid(false) {}
         std::vector<sh::VectorRGB> _c;

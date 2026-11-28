@@ -69,7 +69,19 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_MeshData",
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_MeshData", _ZN5scene8MeshData4drawERKNS_17TraversalVarStackE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_MeshData", _ZN5scene8MeshData13copy_texcoordERKSt6vectorIN3sgl8TexCoordESaIS3_EE);
+extern const char MD_err[] __asm__("D_0016BDDC");
+extern const char MD_sp[] __asm__("D_0016BE34");
+extern const char MD_file[] __asm__("D_0016BE18");           /* "../lib/scene/MeshData.cpp" */
+extern const char MD_ctc_expr[] __asm__("D_0016C1E8");
+extern const char MD_ctc_name[] __asm__("_ZZN5scene8MeshData13copy_texcoordERKSt6vectorIN3sgl8TexCoordESaIS3_EEE19__PRETTY_FUNCTION__");
+void scene::MeshData::copy_texcoord(const std::vector<sgl::TexCoord> &t)
+{
+    std::vector<sgl::TexCoord>::const_iterator s = t.begin();
+    SGL_ASSERT(getTexCoords().size() == t.size(), MD_err, MD_ctc_expr, MD_file, MD_ctc_name, 514, MD_sp);
+    std::vector<sgl::TexCoord>::iterator d = getTexCoords().begin();
+    for (; s != t.end(); ++s, ++d)
+        *d = *s;
+}
 
 void scene::MeshData::clear()
 {
