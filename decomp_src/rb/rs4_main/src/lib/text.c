@@ -62,7 +62,36 @@ int textTerm(void *arg0) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/text", textGetSJIS);
+/* STAND-IN (maybe): the single-byte ranges as `goto single` tests (predicted not taken, so the
+   delay slots take the next test); one `||` condition gives bnel/target fills instead. */
+int textGetSJIS(unsigned char *s, unsigned char **next)
+{
+	int c = -1;
+	unsigned char *n = NULL;
+	unsigned int c0, c1;
+
+	if (s != NULL) {
+		c0 = s[0];
+		if (c0 < 0x20 || c0 == 0x7F)
+			goto single;
+		if (c0 >= 0x20 && c0 <= 0x7E)
+			goto single;
+		if (c0 >= 0xA1 && c0 <= 0xDF) {
+single:
+			c = c0;
+			n = s + 1;
+		} else if ((c0 >= 0x81 && c0 <= 0x9F) || (c0 >= 0xE0 && c0 <= 0xEF)) {
+			c1 = s[1];
+			if ((c1 >= 0x40 && c1 <= 0x7E) || (c1 >= 0x80 && c1 <= 0xFC)) {
+				c = c1 | (c0 << 8);
+				n = s + 2;
+			}
+		}
+	}
+	if (next != NULL)
+		*next = n;
+	return c;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/text", textGetEUC);
 
