@@ -302,7 +302,14 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", Re
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIInitialize);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIAssignLocalServer);
+void LANFindSetLocalServer(int, int);
+int NetIAssignLocalServer(int a, int b)
+{
+    if (a == 0) return 0x17;
+    LANFindSetLocalServer(a, b);
+    *(int *)((char *)gDmeGlobals + 0xC) = b;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIEnableUDP);
 
@@ -475,7 +482,14 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", Ne
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetMapRtError);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetGetClientPingInfo);
+extern void *gppClientPingInfo[];
+void *DMEmalloc(int);
+void *NetGetClientPingInfo(unsigned int i)
+{
+    if (i >= 256) return NULL;
+    if (gppClientPingInfo[i] == NULL) gppClientPingInfo[i] = DMEmalloc(0x1A0);
+    return gppClientPingInfo[i];
+}
 
 extern void *gppClientPingInfo[256];
 
@@ -523,7 +537,15 @@ void NetDestroyConnInfoBare(void *p)
     DmeFree(&p);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetDestroyConnInfo);
+void NetDestroyClientInfo(void **, int);
+void NetDestroyConnInfo(char *c)
+{
+    int i;
+    if (c != NULL) {
+        for (i = 0; i < 256; i++) NetDestroyClientInfo((void **)c, i);
+        DmeFree((void **)&gppConnInfo + *(int *)(c + 0x46C));
+    }
+}
 
 void *NetGetClientInfo(int arr, int idx)
 {
