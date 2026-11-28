@@ -21,6 +21,11 @@ void lintSub(unsigned int *, unsigned int *, unsigned int *);
 
 extern int gAppUpdateCallback;
 
+typedef struct { unsigned int w[128]; } LInt;
+void ShiftLeft(LInt *, unsigned int);
+void ShiftRight(LInt *, unsigned int);
+int IsNotSmaller();
+
 int KM_SetUpdateCallback(int arg0) {
     int temp_v0;
 
@@ -165,11 +170,75 @@ void MOD(unsigned int *r, unsigned int *a, unsigned int *b)
     memcpy(r, t, 0x200);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/LargeInt", QUO);
+void QUO(unsigned int *r, unsigned int *a, unsigned int *m)
+{
+    unsigned int x[128];
+    unsigned int t[128];
+    unsigned int q[128];
+    unsigned int na, nt, nm;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/LargeInt", QRMOD);
+    memcpy(x, a, 0x200);
+    memcpy(t, m, 0x200);
+    na = lintGetBits(x);
+    nt = lintGetBits(t);
+    nm = nt;
+    lintSetSmallValue((int *)q, 0);
+    if (nt < na) {
+        ShiftLeft((LInt *)t, na - nt);
+        nt = na;
+    }
+    for (;;) {
+        if (na < nm) break;
+        if (na < nt) {
+            ShiftRight((LInt *)t, nt - na);
+            nt = na;
+        }
+        if (IsNotSmaller(x, t)) {
+            lintSubIP(x, t);
+            na = lintGetBits(x);
+            lintSetBit((int)q, nt - nm);
+            continue;
+        }
+        if (nm >= nt) break;
+        nt--;
+        ShiftRight((LInt *)t, 1);
+    }
+    memcpy(r, q, 0x200);
+}
 
-typedef struct { unsigned int w[128]; } LInt;
+void QRMOD(unsigned int *a, unsigned int *m, unsigned int *q, unsigned int *rem)
+{
+    unsigned int t[128];
+    unsigned int na, nt, nm;
+
+    memcpy(t, m, 0x200);
+    memcpy(rem, a, 0x200);
+    na = lintGetBits(rem);
+    nt = lintGetBits(t);
+    nm = nt;
+    lintSetSmallValue((int *)q, 0);
+    if (nt < na) {
+        ShiftLeft((LInt *)t, na - nt);
+        nt = na;
+    }
+    for (;;) {
+        if (na < nm) return;
+        if (na < nt) {
+            ShiftRight((LInt *)t, nt - na);
+            nt = na;
+        }
+        if (IsNotSmaller(rem, t)) {
+            lintSubIP(rem, t);
+            na = lintGetBits(rem);
+            lintSetBit((int)q, nt - nm);
+            continue;
+        }
+        if (nm >= nt) return;
+        nt--;
+        ShiftRight((LInt *)t, 1);
+    }
+}
+
 void MODIP();
 void GCD(LInt *r, LInt *a, LInt *b)
 {
@@ -236,9 +305,70 @@ int lintGetBits(unsigned int *a)
     return bits;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/LargeInt", ShiftRight);
+void ShiftRight(LInt *a, unsigned int n)
+{
+    LInt t;
+    unsigned int w, s, d, carry, k, x;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/LargeInt", ShiftLeft);
+    t = *a;
+    w = n >> 5;
+    n = n - (w << 5);
+    s = w + 128;
+    d = 128;
+    if (n != 0) {
+        k = 32 - n;
+        carry = 0;
+        while (s > 128) { s--; d--; t.w[d] = 0; }
+        while (d != 0) {
+            s--;
+            x = a->w[s];
+            d--;
+            t.w[d] = carry | (x >> n);
+            carry = x << k;
+        }
+    } else {
+        while (s > 128) { s--; d--; t.w[d] = 0; }
+        while (d != 0) {
+            s--;
+            d--;
+            t.w[d] = a->w[s];
+        }
+    }
+    *a = t;
+}
+
+void ShiftLeft(LInt *a, unsigned int n)
+{
+    LInt t;
+    unsigned int w, d, carry, k, x;
+    int s;
+
+    t = *a;
+    w = n >> 5;
+    n = n - (w << 5);
+    s = -w;
+    d = 0;
+    if (n != 0) {
+        k = 32 - n;
+        carry = 0;
+        while (s != 0) { s++; t.w[d] = 0; d++; }
+        while (d < 128) {
+            x = a->w[s];
+            t.w[d] = carry | (x << n);
+            d++;
+            carry = x >> k;
+            s++;
+        }
+    } else {
+        while (s != 0) { s++; t.w[d] = 0; d++; }
+        while (d < 128) {
+            t.w[d] = a->w[s];
+            d++;
+            s++;
+        }
+    }
+    *a = t;
+}
 
 void lintAddIP(int arg0, int arg1) {
     int temp_v0;
@@ -267,7 +397,35 @@ void lintAddIP(int arg0, int arg1) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/LargeInt", lintSubIP);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/LargeInt", MODIP);
+void MODIP(LInt *a, LInt *m)
+{
+    LInt t;
+    unsigned int na, nt, nm;
+
+    t = *m;
+    na = lintGetBits((unsigned int *)a);
+    nt = lintGetBits((unsigned int *)&t);
+    nm = nt;
+    if (nt < na) {
+        ShiftLeft(&t, na - nt);
+        nt = na;
+    }
+    for (;;) {
+        if (na < nm) return;
+        if (na < nt) {
+            ShiftRight(&t, nt - na);
+            nt = na;
+        }
+        if (IsNotSmaller(a, &t)) {
+            lintSubIP(a, &t);
+            na = lintGetBits((unsigned int *)a);
+            continue;
+        }
+        if (nm >= nt) return;
+        nt--;
+        ShiftRight(&t, 1);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/LargeInt", IsGreater);
 
