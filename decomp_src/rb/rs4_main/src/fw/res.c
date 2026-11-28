@@ -419,7 +419,29 @@ int resGetWordPtr(void *arg0, int arg1) {
     return p[arg1];
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resAsmRes);
+void resInitInst();
+char *resReadLocal();
+char *resReadTable();
+char *resReadString();
+char *resAsmRes(char *src, char *dst)
+{
+	int inst = *(unsigned char *)(src + 0x18) & 0xF;
+	int id = *(int *)src;
+	int *d = (int *)dst;
+	char *e = resGetInst(inst);
+	*(char **)(src + 0x10) = dst;
+	dst = (char *)(((int)dst + 0x2F) & ~15);
+	d[2] = *(int *)(e + 8);
+	d[0] = id;
+	d[1] = 0;
+	d[3] = 0;
+	d[4] = 0;
+	d[5] = 0;
+	d[6] = 0;
+	d[7] = 0;
+	resInitInst(inst, id);
+	return resReadString(d, resReadTable(d, resReadLocal(d, dst)));
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resReleaseRes);
 
