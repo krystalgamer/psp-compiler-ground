@@ -641,6 +641,7 @@ segments:
       - [0x1077C4, .rodata, src/net/saru_netlib_controller]
       - [0x10798C, .rodata, src/net/saru_netlib_controller_set]
       - [0x1079DC, .rodata, src/net/saru_netlib_controller_set_task]
+      - [0x107A74, .rodata, src/net/saru_netlib_host]
       - [0x107B68, .rodata, src/net/saru_network]
       - [0x107E0C, .rodata, src/net/saru_network_lobby]
       - [0x107E98, .rodata, src/net/saru_network_lobby_builder]

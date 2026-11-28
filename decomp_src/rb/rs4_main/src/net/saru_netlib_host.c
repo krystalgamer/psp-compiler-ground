@@ -154,3 +154,16 @@ void Host::gCallback_RemoteCreate(int cls, int idx)
 }
 
 
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_host", D_001079B4); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_host", D_001079BC); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_host", _ZTVN10SaruNetLib4HostE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_host", D_001079D8); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_host", _ZTVN10SaruNetLib10Class_HostE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_host", D_001079F0); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_host", _ZTVN10SaruNetLib11_Class_HostE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_host", _ZTIN10SaruNetLib11_Class_HostE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_host", _ZTIN10SaruNetLib10Class_HostE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_host", _ZTIN10SaruNetLib4HostE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_host", _ZTSN10SaruNetLib4HostE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_host", _ZTSN10SaruNetLib10Class_HostE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_host", _ZTSN10SaruNetLib11_Class_HostE); }
