@@ -1,4 +1,4 @@
-/* cflags: -O2 -fno-merge-constants */
+/* cflags: -O2 */
 #include "common.h"
 #include "m2c_macros.h"
 
@@ -62,16 +62,6 @@ const SEL_INIT mode_int[3] = {
 	{ 0, 88, 272, 88, 168 },
 	{ 1, 0, -80, 0, -40 },
 };
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", D_0002F3B8);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", r_num_u);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", r_num_v);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", r_keta);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", D_0002F428);
 
 void SetSpriteColorRGBA(int r, int g, int b, int a);
 int DrawSpriteEz(float z, float x, float y, float w, float h, float u, float v, int no);
@@ -302,10 +292,7 @@ int ModeSelInt(void)
 	return 0;
 }
 
-#ifdef NON_MATCHING
-/* MATCHES (fntest, real static names; both key tests after the MsAccessFlag
- * if/else).  Cannot be installed while the unit is mixed: its jump table must sit at
- * D_0002F3B8, among the INCLUDE_RODATA blocks before the asm functions' floats. */
+/* Both key tests come after the MsAccessFlag if/else. */
 extern int MsAccessFlag;
 extern int SelectModeFlag;
 extern int NowMode;
@@ -321,7 +308,9 @@ int DrawSpriteEx(int no, float z, float f0, float f1, float f2, float f3, float 
 int ModeSelect(void)
 {
 	static int count;
-	static int fade = 30;
+	/* STAND-IN: numbering only; the real `static int fade = 30;` (unused here) is
+	 * .data, which stays asm (D_000408DC) */
+	static int fade __attribute__((section(".pbskipd")));
 	static int SwitchMode;
 	static int SwitchDir;
 	int ret = 0;
@@ -394,21 +383,12 @@ int ModeSelect(void)
 	SpriteKick();
 	return ret;
 }
-#else
-/* STAND-IN: ModeSelect is still asm.  Its statics, in its place and numbered as in
- * the original (count.5, fade.6, SwitchMode.7, SwitchDir.8); initialized ones only keep the numbering (their .data stays asm). */
-static void __attribute__((section(".pbskip"), unused)) ModeSelect_statics(void)
-{
-	static int count;
-	static int fade __attribute__((section(".pbskipd")));
-	static int SwitchMode;
-	static int SwitchDir;
-}
-__asm__("D_0015401C = count.5\n"
-	"D_00154020 = SwitchMode.7\n"
-	"D_00154024 = SwitchDir.8");
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", ModeSelect);
-#endif
+
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", r_num_u);
+
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", r_num_v);
+
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", r_keta);
 
 int GetRound(void) {
     return Round;
