@@ -1602,7 +1602,7 @@ int NetConvertTransportFlags(signed char f, unsigned short *out)
     return 0;
 }
 
-int MyClientConnectsPeerToPeer(char *, int, int, int, int);
+void MyClientConnectsPeerToPeer(char *, unsigned int, int, int, int);
 void p2p_connect_cb(unsigned short idx, int a, int err, char *ci)
 {
     if (ci == NULL) return;
