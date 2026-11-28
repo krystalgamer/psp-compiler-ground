@@ -2,11 +2,8 @@
 /* cflags: -Os -fno-merge-constants -fno-exceptions */
 /* strength reduction on: Manager::Draw matches only with it (scene pointer IV); the rest of the object tolerates both */
 #include "common.h"
-extern "C" {
 
-} /* extern "C" */
-
-struct ScePspFMatrix4 { float m[16]; };
+struct ScePspFMatrix4 { float m[16]; } __attribute__((aligned(16)));
 struct tagGpTEXDESC;
 
 struct GpPrim {
@@ -19,7 +16,6 @@ struct GpPrim {
 	unsigned int col;
 	int pad[2];
 };
-
 
 struct FVEC {
 	float x, y, z, w;
@@ -34,8 +30,6 @@ struct FVEC {
 
 namespace B2A {
 
-
-
 struct Player {
 	float frame;
 	float speed;
@@ -43,41 +37,29 @@ struct Player {
 	short scene;
 	short _e;
 	int pause;
-	unsigned char f14, active;
+	unsigned char f14;
+	bool active;
 	Player(int);
 	~Player();
 	void Set(int);
 };
 
-struct PlayerNode {
-	PlayerNode *prev;
-	PlayerNode *next;
+struct LNode {
+	LNode *prev;
+	LNode *next;
+	LNode() : prev(0), next(0) {}
+};
+
+struct PlayerNode : LNode {
 	Player *player;
-	PlayerNode() : prev(0), next(0) {}
+	Player *&data() { return player; }
 };
 
-struct Scene {
-	char _0[0xA0];
-	unsigned char enable;
-	char _a1[0xF];
-};
-
-struct SceneEnt {
-	char _0[0x30];
-	int end;
-};
-
-struct B2aHdr {
-	int _0, _4, _8;
-	int nScene;
-	int _10, _14;
-	SceneEnt *ent;
-	int nObject;
-};
-
-struct B2aFile {
-	B2aHdr *hdr;
-};
+/* ushort fields, word aligned: the struct copy in Manager() must not alias the int count */
+struct ObjLink {
+	unsigned short sibling, child;
+	unsigned short _4, _6;
+} __attribute__((aligned(4)));
 
 struct ObjState {
 	int _8;
@@ -88,28 +70,125 @@ struct ObjState {
 };
 
 struct Object {
-	unsigned short sibling, child;
-	int _4;
+	ObjLink link;
 	ObjState cur;
 	ObjState prev;
-	char _60[0x40];
+	ScePspFMatrix4 mtx;
 	unsigned char enable;
 	char _a1[0xF];
 	Object();
+	~Object() {}
 	void Clear();
 	void Scale(float, float);
 	void MoveTo(FVEC &v);
 	void Refresh();
 };
+typedef Object Scene;
+
+struct SceneEnt {
+	char _0[0x30];
+	int end;
+};
+
+struct B2aHdr {
+	int _0, nParts, _8;
+	int nScene;
+	ObjLink *link;
+	int _14;
+	SceneEnt *ent;
+	int nObject;
+};
+
+struct TM2Parts {
+	char _0[0x78];
+	TM2Parts();
+	~TM2Parts();
+	void ReAssign();
+};
+
+struct B2aFile {
+	B2aHdr *hdr;
+	TM2Parts *parts;
+	~B2aFile();
+	void ReAssign();
+};
+
+/* STAND-IN: head is typed as the node base so that node->prev stores alias it while tail
+   (N *) does not (CreateB2A/CreatePlayer load order); the real declaration is unknown */
+template <class N> struct List {
+	LNode *head;
+	N *tail;
+	List() { tail = 0; head = 0; }
+	~List() { Clear(); }
+	void Clear()
+	{
+		N *n = tail;
+		while (n) {
+			N *next = (N *)n->next;
+			delete n;
+			n = next;
+		}
+		tail = 0;
+		head = 0;
+	}
+	void Add(N *n)
+	{
+		n->prev = head;
+		if (!tail)
+			tail = n;
+		if (head)
+			head->next = n;
+		head = n;
+	}
+	template <class T> void Push(T *d)
+	{
+		N *node = new N;
+		node->data() = d;
+		Add(node);
+	}
+	template <class T> T *Push2(T *d)
+	{
+		N *node = new N;
+		node->data() = d;
+		Add(node);
+		return d;
+	}
+	template <class T> void Add2(N *node, T *d)
+	{
+		node->data() = d;
+		Add(node);
+	}
+	N *Find(void *d)
+	{
+		for (N *n = tail; n; n = (N *)n->next)
+			if (n->data() == d)
+				return n;
+		return 0;
+	}
+	void Remove(N *n)
+	{
+		if (n->prev)
+			n->prev->next = n->next;
+		N *next = (N *)n->next;
+		if (next)
+			next->prev = n->prev;
+		if (head == n)
+			head = n->prev;
+		if (tail == n)
+			tail = next;
+	}
+};
 
 struct Manager {
 	B2aFile *file;
 	Scene *scene;
-	char _8[0x48];
-	struct List {
-		PlayerNode *head;
-		PlayerNode *tail;
-	} list;
+	int _8, _c;
+	ScePspFMatrix4 mtx;
+	List<PlayerNode> list;
+	int _58;
+	int _5c;
+	Manager(B2aFile *);
+	~Manager();
 	void Calc();
 	void Draw();
 	Player *CreatePlayer(int);
@@ -135,21 +214,20 @@ struct Manager {
 };
 
 void DeletePlayer(Player *);
+Manager *CreateB2A(B2aFile *);
+void Start(Manager *);
+void DeleteManager(Manager *);
 
-struct ManagerNode {
-	ManagerNode *prev;
-	ManagerNode *next;
+struct ManagerNode : LNode {
 	Manager *manager;
+	Manager *&data() { return manager; }
 };
-struct ManagerList {
-	ManagerNode *head;
-	ManagerNode *tail;
-	int count;
-};
-extern ManagerList managerList;
+extern List<ManagerNode> managerList;
 }
 
 extern "C" const float D_00108F30;
+extern "C" const float D_00108F34;
+extern "C" void copUnitMat(ScePspFMatrix4 *);
 
 extern "C" {
 extern GpPrim sample_anm_list[128];
@@ -289,13 +367,25 @@ int GpPrim_GetMax()
 	return GpPrim_cnt;
 }
 
-extern "C" {
+B2A::Manager *B2A::CreateB2A(B2aFile *f)
+{
+	Manager *m = new Manager(f);
+	managerList.Push(m);
+	return m;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A9CreateB2AEPNS_7B2aFileE);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A5StartEPNS_7ManagerE);
-
-} /* extern "C" */
+void B2A::Start(Manager *m)
+{
+	Player *p = m->CreatePlayer(0);
+	int n = 0;
+	p->f14 = 1;
+	p->active = 1;
+	if (m->file)
+		n = m->file->hdr->nScene;
+	for (int i = 0; i < n; i++)
+		m->EnableScene(i);
+	m->play(p->scene, 0.0f);
+}
 
 namespace B2A {
 void Calc(Manager *m)
@@ -304,10 +394,6 @@ void Calc(Manager *m)
 }
 }
 
-extern "C" {
-
-} /* extern "C" */
-
 namespace B2A {
 void Draw(Manager *m)
 {
@@ -315,39 +401,56 @@ void Draw(Manager *m)
 }
 }
 
-extern "C" {
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A13DeleteManagerEPNS_7ManagerE);
-
+void B2A::DeleteManager(Manager *m)
+{
+	ManagerNode *n = managerList.Find(m);
+	if (!n)
+		return;
+	managerList.Remove(n);
+	delete n;
 }
+
 void B2A::DeletePlayer(Player *p)
 {
-	for (ManagerNode *n = managerList.tail; n; n = n->next) {
+	for (ManagerNode *n = managerList.tail; n; n = (ManagerNode *)n->next) {
 		if (n->manager->DeletePlayer(p))
 			return;
 	}
 }
-extern "C" {
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7B2aFileC2EP7InstDatiiPP16TBxAnmInitAssign); }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7B2aFileC2EP7InstDatiiPP16TBxAnmInitAssign);
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7B2aFileC1EP7InstDatiiPP16TBxAnmInitAssign); }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7B2aFileC1EP7InstDatiiPP16TBxAnmInitAssign);
+B2A::B2aFile::~B2aFile()
+{
+	if (hdr)
+		delete[] parts;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7B2aFileD2Ev);
+void B2A::B2aFile::ReAssign()
+{
+	int n = hdr->nParts;
+	for (int i = 0; i < n; i++)
+		parts[i].ReAssign();
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7B2aFileD1Ev);
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7ManagerC2EPNS_7B2aFileE); }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7B2aFile8ReAssignEv);
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7ManagerC1EPNS_7B2aFileE); }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7ManagerC2EPNS_7B2aFileE);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7ManagerC1EPNS_7B2aFileE);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7ManagerD2Ev);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7ManagerD1Ev);
-
-} /* extern "C" */
+B2A::Manager::~Manager()
+{
+	List<PlayerNode> *l = &list;
+	DeleteManager(this);
+	for (PlayerNode *n = l->tail; n; ) {
+		Player *p = n->player;
+		PlayerNode *next = (PlayerNode *)n->next;
+		delete p;
+		n = next;
+	}
+	l->Clear();
+	delete[] scene;
+}
 
 void B2A::Manager::EnableScene(int i)
 {
@@ -355,44 +458,36 @@ void B2A::Manager::EnableScene(int i)
 	s->enable = 1;
 }
 
-extern "C" {
-
-} /* extern "C" */
-
 void B2A::Manager::DisableScene(int i)
 {
 	Scene *s = &scene[i];
 	s->enable = 0;
 }
 
-extern "C" {
-
-}
 extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager12CreatePlayerEi); }
-extern "C" {
-
-}
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager12DeletePlayerEPNS_6PlayerE); }
-extern "C" {
-
+int B2A::Manager::DeletePlayer(Player *p)
+{
+	PlayerNode *n = list.Find(p);
+	if (!n)
+		return 0;
+	list.Remove(n);
+	delete n;
+	return 1;
 }
 void B2A::Manager::RefreshOne(int i, bool clear)
 {
 	for (;;) {
-		Object &o = *(Object *)&scene[i];
+		Object &o = scene[i];
 		if (clear)
 			o.Clear();
 		else
 			o.Refresh();
-		if (o.child)
-			RefreshOne(o.child, clear);
-		if (!o.sibling)
+		if (o.link.child)
+			RefreshOne(o.link.child, clear);
+		if (!o.link.sibling)
 			break;
-		i = o.sibling;
+		i = o.link.sibling;
 	}
-}
-extern "C" {
-
 }
 void B2A::Manager::Refresh()
 {
@@ -400,94 +495,61 @@ void B2A::Manager::Refresh()
 	for (int i = 0; i < n; i++)
 		RefreshOne(i, false);
 }
-extern "C" {
-
-} /* extern "C" */
 
 void B2A::Manager::SetFrame(float f)
 {
 	PlayerNode *p;
 
-	for (p = list.tail; p; p = p->next)
+	for (p = list.tail; p; p = (PlayerNode *)p->next)
 		p->player->frame = f;
 }
-
-extern "C" {
-
-} /* extern "C" */
 
 float B2A::Manager::GetFrame()
 {
 	float f = 0.0f;
 	PlayerNode *p;
 
-	for (p = list.tail; p; p = p->next)
+	for (p = list.tail; p; p = (PlayerNode *)p->next)
 		f = p->player->frame;
 	return f;
 }
-
-extern "C" {
-
-} /* extern "C" */
 
 void B2A::Manager::SetLoop(int v)
 {
 	PlayerNode *p;
 
-	for (p = list.tail; p; p = p->next)
+	for (p = list.tail; p; p = (PlayerNode *)p->next)
 		p->player->loop = v;
 }
-
-extern "C" {
-
-} /* extern "C" */
 
 int B2A::Manager::GetLoop()
 {
 	return list.tail->player->loop;
 }
 
-extern "C" {
-
-} /* extern "C" */
-
 void B2A::Manager::SetPause(int v)
 {
 	PlayerNode *p;
 
-	for (p = list.tail; p; p = p->next)
+	for (p = list.tail; p; p = (PlayerNode *)p->next)
 		p->player->pause = v;
 }
-
-extern "C" {
-
-} /* extern "C" */
 
 int B2A::Manager::GetPause()
 {
 	return list.tail->player->pause;
 }
 
-extern "C" {
-
-}
 void B2A::Manager::SetSpeed(float sp)
 {
-	for (PlayerNode *p = list.tail; p; p = p->next)
+	for (PlayerNode *p = list.tail; p; p = (PlayerNode *)p->next)
 		p->player->speed = sp;
 }
-extern "C" {
-
-} /* extern "C" */
 
 float B2A::Manager::GetSpeed()
 {
 	return list.tail->player->speed;
 }
-
-extern "C" {
-
-} /* extern "C" */
 
 float B2A::Manager::GetEndFrame()
 {
@@ -504,70 +566,61 @@ void B2A::Manager::SetEndFrame(float f)
 	e->end = *(int *)&r + 2;
 }
 
-extern "C" {
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108F18); }
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108F18);
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108F1C); }
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108F1C);
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108F20); }
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108F20);
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108F24); }
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108F24);
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108F28); }
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108F28);
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108F2C); }
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108F2C);
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108F30); }
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108F30);
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108F34); }
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108F34);
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108F38); }
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108F38);
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZZN3B2A7B2aFileC1EP7InstDatiiPP16TBxAnmInitAssignE12__FUNCTION__); }
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZZN3B2A7B2aFileC1EP7InstDatiiPP16TBxAnmInitAssignE12__FUNCTION__);
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108F44); }
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108F44);
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108F50); }
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108F50);
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108F58); }
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108F58);
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108F70); }
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108F70);
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108F84); }
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108F84);
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108FA0); }
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108FA0);
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108FB0); }
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108FB0);
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108FB8); }
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108FB8);
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108FBC); }
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108FBC);
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108FDC); }
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108FDC);
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager7CalcOneEPNS_6PlayerE); }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager7CalcOneEPNS_6PlayerE);
-
-}
 void B2A::Manager::Calc()
 {
 	Refresh();
-	for (PlayerNode *p = list.tail; p; p = p->next) {
+	for (PlayerNode *p = list.tail; p; p = (PlayerNode *)p->next) {
 		Player *pl = p->player;
 		if (pl->active)
 			CalcOne(pl);
 	}
 }
-extern "C" {
-
-}
 void B2A::Manager::DrawOne(int n)
 {
-	ScePspFMatrix4 *m = (ScePspFMatrix4 *)&_8[8];
+	ScePspFMatrix4 *m = &mtx;
 	draw(n, m, m, 0x80808080);
-}
-extern "C" {
-
 }
 void B2A::Manager::Draw()
 {
@@ -578,23 +631,20 @@ void B2A::Manager::Draw()
 			DrawOne(i);
 	}
 }
-extern "C" {
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager4playEif); }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager4playEif);
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager4drawEiP14ScePspFMatrix4S2_j); }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager4drawEiP14ScePspFMatrix4S2_j);
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager8getValueERfRNS_8KeyArrayINS_4LOOPEEEf); }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager8getValueERfRNS_8KeyArrayINS_4LOOPEEEf);
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager8getValueERiRNS_8KeyArrayINS_3PTNEEEf); }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager8getValueERiRNS_8KeyArrayINS_3PTNEEEf);
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager8getValueERfRNS_8KeyArrayINS_3FLTEEEf); }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager8getValueERfRNS_8KeyArrayINS_3FLTEEEf);
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager8getValueER4FVECRNS_8KeyArrayINS_3FXYEEEf); }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager8getValueER4FVECRNS_8KeyArrayINS_3FXYEEEf);
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager8getValueERNS_4RGBAERNS_8KeyArrayIS1_EEf); }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager8getValueERNS_4RGBAERNS_8KeyArrayIS1_EEf);
-
-}
 B2A::Object::Object()
 {
 	cur._8 = 0;
@@ -602,57 +652,32 @@ B2A::Object::Object()
 	Refresh();
 	enable = 0;
 }
-extern "C" {
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A6Object5ClearEv); }
 
-
-}
-extern "C" {
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A6Object5ClearEv);
-
-}
 void B2A::Object::Refresh()
 {
 	prev = cur;
-}
-extern "C" {
-
 }
 void B2A::Object::MoveTo(FVEC &v)
 {
 	cur.pos = v;
 }
-extern "C" {
-
-} /* extern "C" */
 
 void B2A::Object::Scale(float x, float y)
 {
 	cur.scale.Set(x, y, 0.0f, 0.0f);
 }
 
-extern "C" {
-
-
-} /* extern "C" */
-
 B2A::Player::Player(int i)
 {
 	Set(i);
 }
-
-extern "C" {
-
-
-} /* extern "C" */
 
 B2A::Player::~Player()
 {
 	DeletePlayer(this);
 }
 
-extern "C" {
-
-}
 extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A6Player3SetEi); }
 extern "C" {
 
