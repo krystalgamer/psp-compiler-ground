@@ -279,7 +279,23 @@ char *resReadString(int *d, char *p)
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FBD40);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resReadReferThr);
+extern unsigned char D_000FBD5C, D_000FBD68;
+void _resReadRefer(void *arg0);
+int resReadReferThr(int thr, int type, int local, int ref)
+{
+	int arg[3];
+
+	if (!(type >= 0))
+		consPrintf(&D_000FBA08, &D_000FB9F8, 0x2CF, "resReadReferThr", &D_000FBD40);
+	if (!(local >= 0))
+		consPrintf(&D_000FBA08, &D_000FB9F8, 0x2D0, "resReadReferThr", &D_000FBD5C);
+	if (!(ref >= 0))
+		consPrintf(&D_000FBA08, &D_000FB9F8, 0x2D1, "resReadReferThr", &D_000FBD68);
+	arg[0] = type;
+	arg[1] = local;
+	arg[2] = ref;
+	return thrEntry(thr, _resReadRefer, arg, 3);
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FBD5C);
 
