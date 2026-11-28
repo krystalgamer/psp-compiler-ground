@@ -35,6 +35,9 @@ void udp_data_cb(void);
 M2C_UNK rt_comm_linkaddress_toext(void *, void *);  /* extern */
 M2C_UNK rt_mutex_unlock(int, M2C_UNK);              /* extern */
 M2C_UNK rt_timebase_get_globaltime(void *);         /* extern */
+typedef struct { int ip; int port; } DmeLinkAddr;
+void rt_comm_linkaddress_setnull();
+typedef struct { int set; DmeLinkAddr ext; int port; } DmeMyAddr;
 extern void *gObjectInterfacePtr;
 extern void *gDmeGlobals;
 extern void *gUDPInterfacePtr;
@@ -107,7 +110,24 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", Ne
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetISetSendAggregationInterval);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIGetBandwidthInfo);
+int rt_comm_get_metrics();
+typedef struct { float f[16]; } DmeMetrics;
+int NetIGetBandwidthInfo(float *bw)
+{
+    DmeMetrics m;
+
+    if (bw == NULL) return 0x17;
+    rt_comm_get_metrics(&m);
+    bw[2] = m.f[6];
+    bw[3] = m.f[7];
+    bw[0] = m.f[3];
+    bw[1] = m.f[4];
+    bw[6] = m.f[12];
+    bw[7] = m.f[13];
+    bw[4] = m.f[9];
+    bw[5] = m.f[10];
+    return 0;
+}
 
 int NetIGetMyClientIndex(int *arg0, void *arg1) {
     int var_v1;
@@ -154,7 +174,22 @@ void DmeFree(void **p)
         rt_memory_free(p);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIRegisterMemoryCallbacks);
+int rt_memory_register_callbacks();
+int rt_memory_register_another_callback();
+int NetIRegisterMemoryCallbacks(void **cb)
+{
+    int ret = 0x17;
+
+    if (cb != NULL) {
+        if (rt_memory_register_callbacks(cb[0], cb[2]) != 0)
+            ret = 0x16;
+        else if (rt_memory_register_another_callback(cb[1]) != 0)
+            ret = 0x16;
+        else
+            ret = 0;
+    }
+    return ret;
+}
 
 int NetIGetMyIpAddress(void *out)
 {
@@ -245,7 +280,20 @@ int NetIGetConnectStatus(int *st, char *conn)
     return 0x17;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIGetValidClientCount);
+int NetIGetValidClientCount(int *count, char **clients)
+{
+    unsigned int i = 0;
+
+    if (count == NULL) return 0x17;
+    *count = 0;
+    if (clients == NULL) return 0x17;
+    for (; i < 256; i++, clients++) {
+        if (*clients == NULL) continue;
+        if (*(int *)(*clients + 0x20) == 0) continue;
+        (*count)++;
+    }
+    return 0;
+}
 
 int NetIGetConnectionStatus(int *st, char *c)
 {
@@ -278,7 +326,18 @@ int NetIGetServerVersion(char *out, char *dme)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetISendTo);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetBitMaskToSendMask);
+int NetBitMaskToSendMask(unsigned char *out, unsigned int *in, unsigned int nbits)
+{
+    unsigned int i = 0, b;
+
+    for (b = 0; b < nbits; b += 32, i++) {
+        out[i * 4 + 0] = in[i] & 0xFF;
+        out[i * 4 + 1] = (in[i] & 0xFF00) >> 8;
+        out[i * 4 + 2] = (in[i] & 0xFF0000) >> 16;
+        out[i * 4 + 3] = (in[i] & 0xFF000000) >> 24;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetSendMessageByUDP);
 
@@ -315,7 +374,13 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", Ne
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetCreateP2PInfo);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", IncomingMessageFunc);
+void IncomingMessageFunc(char *a, int b, int c, int d)
+{
+    if (d == 0) return;
+    rt_comm_linkaddress_setnull((char *)gDmeGlobals + 0x18);
+    *(int *)((char *)gDmeGlobals + 0x20) = 0;
+    ParseMessageList((void *)NetGetMyWorldID(), a, b, c, d);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -370,7 +435,20 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", My
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", MsgClientConnectCallback);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", MsgClientDisconnectCallback);
+typedef struct { char *c; int a, b, cc, d; } DmeDiscMsg2;
+void MsgClientDisconnectCallback(char *c)
+{
+    DmeDiscMsg2 m;
+
+    if (*(DmeDiscCb *)(c + 0x430) == NULL) return;
+    *(int *)(c + 0x454) = 4;
+    m.c = c;
+    m.a = 4;
+    m.b = 1;
+    m.cc = 0;
+    m.d = *(int *)(c + 0x434);
+    (*(DmeDiscCb *)(c + 0x430))((DmeDiscMsg *)&m);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetSetDefaultConnectParams);
 
@@ -380,7 +458,25 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", Ne
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetConnect_PeerToPeerUDP);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetSetDefaultHostPeerToPeerParams);
+int NetSetDefaultStreamMediaParams();
+int NetSetDefaultHostPeerToPeerParams(int *p)
+{
+    int ret = 0x17;
+    if (p != NULL) {
+        memset(p, 0, 0xC0);
+        p[11] = 8;
+        p[42] = 0;
+        p[43] = 0;
+        p[45] = 1;
+        p[44] = 0;
+        p[46] = 0x2000;
+        p[47] = 0x2000;
+        NetSetDefaultStreamMediaParams(p + 12);
+        p[0] = 1;
+        ret = 0;
+    }
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIHostPeerToPeer);
 
@@ -597,7 +693,23 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", Ne
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetDisablePingIPs);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetGetClientConnectStatus);
+void *NetGetClientInfo();
+int NetGetClientConnectStatus(void *c, unsigned int idx, int *st)
+{
+    char *ci;
+
+    if (c == NULL) return 0x17;
+    if (idx >= 256) return 0x17;
+    if (st == NULL) return 0x17;
+    *st = 0xFFFFFF;
+    ci = NetGetClientInfo(c, idx);
+    if (ci == NULL) return 0x17;
+    if (*(int *)(ci + 0x20) != 0)
+        *st = 1;
+    else
+        *st = 0;
+    return 0x1E;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetProcessP2PDisconnect);
 
@@ -663,9 +775,25 @@ int NetGetMyWorldID(void) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", udp_unconnected_data_cb);
+void udp_unconnected_data_cb(int udp, DmeLinkAddr *addr, int port, int data, int len)
+{
+    DmeLinkAddr a;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", udp_event_cb);
+    a = *addr;
+    *(DmeLinkAddr *)((char *)gDmeGlobals + 0x18) = a;
+    *(int *)((char *)gDmeGlobals + 0x20) = port;
+    ParseMessageList((void *)NetGetMyWorldID(), 0, 0x100, data, len);
+}
+
+void udp_event_cb(int a, int b, int ev)
+{
+    if (gUDPInterfacePtr != NULL) {
+        if (ev == 0)
+            (*(void (**)(int, int))((char *)gUDPInterfacePtr + 0x5C))(a, b);
+        else
+            (*(void (**)(int, int, int))((char *)gUDPInterfacePtr + 0x3C))(a, b, ev);
+    }
+}
 
 void udp_data_cb(void) {
     if (gUDPInterfacePtr != NULL) {
