@@ -12,7 +12,7 @@ extern unsigned char D_0010B074;
 extern int gSgxDebugFlags;
 extern int gSgxPrefErr;
 M2C_UNK FreqAdd(int, M2C_UNK, int, int, M2C_UNK, M2C_UNK, M2C_UNK); /* extern */
-void FreqRemove();                               /* extern */
+void FreqRemove(int id);
 M2C_UNK FreqSync(int, M2C_UNK);                     /* extern */
 float sgxPspVoGetEnvelope(int);
 float sgxPspVoGetVolume(int, int);
@@ -623,14 +623,27 @@ int FreqRopen(int a, int b, int c, int d) {
 #endif
 
 void FreqClose(int arg0, int arg1, int arg2) {
-    FreqRemove();
+    FreqRemove(arg0);
     FreqAdd(arg0, 1, arg1, arg2, 0, 0, 0);
     FreqSync(arg0, 1);
 }
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", FreqRead);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", FreqRemove);
+void FreqRemove(int id) {
+    int i;
+    sceKernelWaitSema(gWork_1207F0[0x4C0 / 4], 1, NULL);
+    for (i = 0; i < gWork_1207F0[0x4D8 / 4]; i++) {
+        int *e = (int *)(gWork_1207F0[0x4C8 / 4] + ((gWork_1207F0[0x4D4 / 4] + i) % gWork_1207F0[0x4CC / 4]) * 32);
+        if (e[0] == id) {
+            e[0] = -1;
+            e[1] = -1;
+        }
+    }
+    if (gWork_1207F0[0x4DC / 4] == id) ((volatile int *)gWork_1207F0)[0x4F8 / 4] = 1;
+    sceKernelSignalSema(gWork_1207F0[0x4C0 / 4], 1);
+    FreqSync(id, 1);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", FreqSync);
 
