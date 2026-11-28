@@ -1,6 +1,7 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
+#include "../minmax.h"
 extern signed char D_001025CC;
 extern signed char D_001026FC;
 extern unsigned char D_00102718;
@@ -95,7 +96,23 @@ int databaseTerm(void) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/database", databaseChkRankingBattle);
+int databaseChkRankingBattle(void *p)
+{
+	int ret;
+	int max = l_anFameList[24];
+	M2C_FIELD(p, unsigned short *, 0x204) = amin(M2C_FIELD(p, unsigned short *, 0x204), max);
+	M2C_FIELD(p, unsigned short *, 0x202) = amax(M2C_FIELD(p, unsigned short *, 0x202), 0);
+	M2C_FIELD(p, unsigned short *, 0x202) = amin(M2C_FIELD(p, unsigned short *, 0x202), 24);
+	ret = 2;
+	if (M2C_FIELD(p, unsigned short *, 0x204) >= l_anFameList[M2C_FIELD(p, unsigned short *, 0x202)])
+	{
+		if (M2C_FIELD(p, unsigned short *, 0x204) < l_anFameList[M2C_FIELD(p, unsigned short *, 0x202) + 1])
+			ret = 0;
+		else
+			ret = 1;
+	}
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/database", databaseCalcRanking);
 

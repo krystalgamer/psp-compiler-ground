@@ -1,6 +1,7 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
+#include "../minmax.h"
 void consPrintf(const char *, ...);
 int sceMpegInit();                                  /* extern */
 int semaInit(M2C_UNK *);                            /* extern */
@@ -170,7 +171,19 @@ int movCleanup(void) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/movie", movPutCB);
+int movPutCB(void *buf, int n)
+{
+	int size;
+	int ret = 0;
+	if (StreamPtr != NULL && StreamSize != 0) {
+		size = amin(n << 11, StreamSize);
+		StreamSize -= size;
+		memcpy(buf, StreamPtr, size);
+		ret = (unsigned int)(size + 0x7FF) >> 11;
+		StreamPtr += size;
+	}
+	return ret;
+}
 
 extern int D_00119B70;
 extern unsigned char Ring;

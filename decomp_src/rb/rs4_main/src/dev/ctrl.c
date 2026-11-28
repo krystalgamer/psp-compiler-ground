@@ -1,5 +1,6 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
+#include "../minmax.h"
 #include "m2c_macros.h"
 int semaInit(M2C_UNK *);                            /* extern */
 extern unsigned char CtrlInfoT;
@@ -207,7 +208,53 @@ int ctrlFlushVirtualDataAll(void) {
     return var_s1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/ctrl", ctrlSetVirtualData);
+typedef struct { int d[4]; } CtrlVData;
+typedef struct { int top; int num; int pad[2]; CtrlVData data[128]; } CtrlVRing;
+#define CtrlRingV ((CtrlVRing *)&CtrlRingBuf)
+extern unsigned char D_000F9D14, D_000F9D2C, D_000F9D34;
+void ctrlLock(void);
+void ctrlUnlock(void);
+int ctrlSetVirtualData(int port, CtrlVData *pData, int num)
+{
+	CtrlVRing *r;
+	int top, cnt, rest, pos, i;
+
+	if (CtrlVirtualType != 3)
+		return 0;
+	ctrlLock();
+	if (port < 0)
+		consPrintf(&D_000F9C50, &D_000F9C6C, 0x107, "ctrlSetVirtualData", &D_000F9D0C);
+	if (port >= 2)
+		consPrintf(&D_000F9C50, &D_000F9C6C, 0x108, "ctrlSetVirtualData", &D_000F9D14);
+	if (pData == NULL)
+		consPrintf(&D_000F9C50, &D_000F9C6C, 0x109, "ctrlSetVirtualData", &D_000F9D2C);
+	if (num > 0) {
+		r = &CtrlRingV[port];
+		cnt = r->num;
+		pos = r->top;
+		rest = 128 - cnt;
+		i = 0;
+		if (rest < num) {
+			consPrintf(&D_000F9D34, "ctrlSetVirtualData");
+			ctrlUnlock();
+			return 0;
+		}
+		pos += cnt;
+		if (pos >= 128)
+			pos -= 128;
+		num = amin(num, rest);
+		for (; num != 0; num--) {
+			r->data[pos] = pData[i];
+			pos++;
+			if (pos >= 128)
+				pos = 0;
+			i++;
+		}
+		r->num = cnt + i;
+	}
+	ctrlUnlock();
+	return 1;
+}
 
 void ctrlTrgProc(CtrlTrg *c)
 {
