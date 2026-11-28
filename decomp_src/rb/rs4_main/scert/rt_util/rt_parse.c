@@ -13,9 +13,53 @@ typedef struct { int used; char pad[0x20]; int time; int x; int y; void *buf; } 
 extern RtFragMsg *gpaFragMsg;
 void rt_parse_update(void);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_parse", rt_parse_initialize);
+extern void *gpfPreExecuteCallback; extern int gMaxMessageSize; extern unsigned char gFragmentID; extern void *gpTempBuf;
+int rt_memory_allocate_init_zero(); int rt_parse_fragment_handler();
+int rt_parse_initialize(int maxmsg, unsigned int types, unsigned int classes, void *precb)
+{
+    int r;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_parse", rt_parse_shutdown);
+    if (gbInitialized_135B94 != 0) return 0x3E8;
+    if (types > 256) return 2;
+    if (classes > 256) return 2;
+    gpfPreExecuteCallback = precb;
+    gMaxTypes = types;
+    gMaxClasses = classes;
+    gMaxMessageSize = maxmsg;
+    r = rt_memory_allocate_init_zero(&gaTypeCount, classes * 4);
+    if (r != 0) return r;
+    r = rt_memory_allocate_init_zero(&gapfParsers, classes * types * 4);
+    if (r != 0) return r;
+    r = rt_memory_allocate_init_zero(&gpTempBuf, maxmsg * 3);
+    if (r != 0) return r;
+    r = rt_memory_allocate_init_zero(&gaExecutionCount, classes * types * 4);
+    if (r != 0) return r;
+    gbInitialized_135B94 = 1;
+    r = rt_parse_reg_parser(2, 0, rt_parse_fragment_handler);
+    if (r != 0) return r;
+    gFragmentID = 0;
+    return 0;
+}
+
+extern void *gpTempBuf;
+int rt_memory_free();
+int rt_parse_shutdown(void)
+{
+    unsigned int i;
+
+    if (gpaFragMsg != NULL) {
+        for (i = 0; i < 256; i++)
+            if (gpaFragMsg[i].buf != NULL)
+                rt_memory_free(&gpaFragMsg[i].buf);
+        rt_memory_free(&gpaFragMsg);
+    }
+    if (gaTypeCount != NULL) rt_memory_free(&gaTypeCount);
+    if (gapfParsers != NULL) rt_memory_free(&gapfParsers);
+    if (gpTempBuf != NULL) rt_memory_free(&gpTempBuf);
+    if (gaExecutionCount != NULL) rt_memory_free(&gaExecutionCount);
+    gbInitialized_135B94 = 0;
+    return 0;
+}
 
 int rt_parse_register(unsigned int *type_out, unsigned int cls, void *fn)
 {
