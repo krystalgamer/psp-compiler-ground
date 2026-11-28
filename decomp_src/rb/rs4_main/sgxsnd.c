@@ -1059,7 +1059,24 @@ void sgxSndUpdateSlotVolumeAll(int tune)
     }
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxCategorySetSoundRange);
+extern const char D_0010A7B0[];
+typedef struct { int lo, hi; } SndRange2;
+typedef struct { char pad[0xB4]; SndRange2 cat[16]; } SndWorkCat2;
+void sgxCategorySetSoundRange(unsigned int c, int lo, int hi)
+{
+    if (c < 16) {
+        if (lo >= 0 && lo <= ((SndWorkS *)&gWork_11FC84)->num - 1) {
+            if (hi >= 0 && hi <= ((SndWorkS *)&gWork_11FC84)->num - 1) {
+                if (lo <= hi) goto ok;
+            }
+        }
+    }
+    SGX_ERR(0x90F, D_0010A7B0, c, lo, hi);
+    return;
+ok:
+    ((SndWorkCat2 *)&gWork_11FC84)->cat[c].lo = lo;
+    ((SndWorkCat2 *)&gWork_11FC84)->cat[c].hi = hi;
+}
 
 typedef struct { int lo, hi; } SndRange;
 typedef struct { char pad[0xB4]; SndRange cat[16]; } SndWorkCat;
