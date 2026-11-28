@@ -25,8 +25,8 @@ typedef struct RPOS { int x; int y; } RPOS;
 void *rnd_findParentBoxnode(void *bn, int type);
 int GUI_ScrollPane_getScrollPosition(void *pane, int *x, int *y);
 void rnd_gdrawGetViewClientSize(void *pane, int *w, int *h);
-typedef struct RLIST { struct RLIST *next; void *data; void *x8; } RLIST;
-typedef struct RNDGLOBAL { int x0; int x4; int x8; RLIST *xC; } RNDGLOBAL;
+typedef struct RLIST { struct RLIST *next; void *data; void *x8; void *xC; } RLIST;
+typedef struct RNDGLOBAL { int x0; int x4; int x8; RLIST *xC; RLIST *x10; RLIST *x14; } RNDGLOBAL;
 extern RNDGLOBAL rnd_global;
 extern void *ui_global;
 int OS_clock_gettime(int id, RPOS *ts);
@@ -202,7 +202,7 @@ void rnd_updateAnimBoxnode(void) {
     flip = 0;
     OS_clock_gettime(0, &ts);
     now = ts;
-    for (l = (*(RLIST * *)((char *)&rnd_global + 0x14)); l != NULL; l = l->next) {
+    for (l = rnd_global.x14; l != NULL; l = l->next) {
         changed |= rnd_updateAnimMarqueeBoxnode(l->data, &now);
         pane = M2C_FIELD(getBodyBox(l->data), void **, 0x2C);
         r = MEM_malloc(0, 0x10);
@@ -212,7 +212,7 @@ void rnd_updateAnimBoxnode(void) {
         r->h = M2C_FIELD(l->data, int *, 0x1C);
         rnd_addUpdateWidgetList((int)pane, (int)r);
     }
-    for (m = (*(RLIST * *)((char *)&rnd_global + 0x10)); m != NULL; m = m->next) {
+    for (m = rnd_global.x10; m != NULL; m = m->next) {
         if (rnd_gdrawImageUpdate(m->data, &now) == 1) {
             for (l = m->x8; l != NULL; l = l->next) {
                 if (rnd_updateAnimImageBoxnode(l->data) != 0) {
@@ -267,9 +267,9 @@ void rnd_resetAnimBoxnode(void) {
     changed = 0;
     OS_clock_gettime(0, &ts);
     now = ts;
-    for (l = (*(RLIST * *)((char *)&rnd_global + 0x14)); l != NULL; l = l->next)
+    for (l = rnd_global.x14; l != NULL; l = l->next)
         changed |= rnd_resetAnimMarqueeBoxnode(l->data, &now);
-    for (m = (*(RLIST * *)((char *)&rnd_global + 0x10)); m != NULL; m = m->next) {
+    for (m = rnd_global.x10; m != NULL; m = m->next) {
         if (rnd_gdrawImageReset(m->data, &now) == 1) {
             for (l = m->x8; l != NULL && !changed; l = l->next)
                 changed |= rnd_resetAnimImageBoxnode(l->data);
