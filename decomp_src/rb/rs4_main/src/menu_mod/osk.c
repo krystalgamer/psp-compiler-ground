@@ -5,7 +5,7 @@
 #define NULL ((void *)0)
 #endif
 void consPrintf(const char *, ...);
-M2C_UNK getOskUtilityTextResult();                  /* extern */
+void getOskUtilityTextResult(void);
 extern void *l_ptCntx;
 extern int sample_type_11A910;
 
@@ -70,7 +70,39 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", D_001031A0);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", D_001031B8);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", getOskUtilityTextResult);
+extern int l_pFieldInfo;
+extern unsigned char D_001031A0, D_001031B8;
+typedef struct { char pad[8]; int *dst; char pad2[0x1C - 0xC]; int result; } OskReq;
+typedef struct { int num; OskReq **req; } OskCntx;
+typedef struct { char pad[0x1C]; unsigned short *desc; unsigned short *intext; int pad24; unsigned short *outtext; int result; char pad30[4]; } OskField;
+void getOskUtilityTextResult(void)
+{
+	OskCntx *c = l_ptCntx;
+	int i;
+	int r;
+
+	consPrintf(&D_001031A0, "getOskUtilityTextResult", l_pFieldInfo);
+	consPrintf(&D_001031B8, "getOskUtilityTextResult", c);
+	for (i = 0; i < c->num; i++) {
+		consPrintf(&D_001031E4, i);
+		if (((OskField *)l_pFieldInfo)[i].result == 1)
+			consPrintf(&D_001031F4, &D_001031F8);
+		else if (((OskField *)l_pFieldInfo)[i].result == 0)
+			consPrintf(&D_001031F4, &D_00103228);
+		else if (((OskField *)l_pFieldInfo)[i].result == 2)
+			consPrintf(&D_001031F4, &D_00103258);
+		((OskField *)l_pFieldInfo)[i].desc = (unsigned short *)textUcs2toUcs4Free(((OskField *)l_pFieldInfo)[i].desc, NULL, 0x20);
+		((OskField *)l_pFieldInfo)[i].intext = (unsigned short *)textUcs2toUcs4Free(((OskField *)l_pFieldInfo)[i].intext, NULL, 0x20);
+		((OskField *)l_pFieldInfo)[i].outtext = (unsigned short *)textUcs2toUcs4Free(((OskField *)l_pFieldInfo)[i].outtext, c->req[i]->dst, 0x20);
+		r = 1;
+		if (*c->req[i]->dst != 0)
+			r = ((OskField *)l_pFieldInfo)[i].result;
+		c->req[i]->result = r;
+	}
+	_memFree(l_pFieldInfo, &D_00103130, 0x154);
+	l_pFieldInfo = 0;
+	l_ptCntx = NULL;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", D_001031E4);
 
