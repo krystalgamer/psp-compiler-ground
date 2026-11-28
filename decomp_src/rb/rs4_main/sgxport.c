@@ -178,11 +178,37 @@ void AllocTakenVoice(int v, short *tbl, int flag) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", UnitTakenVoice);
+typedef struct { char pad[0x30]; struct { int a; short res; signed char nv; char p; short v[8]; } s; } UnitT;
+void UnitTakenVoice(int voice, void *uv, int stop) {
+    UnitT *u = uv;
+    char *e;
+    int i;
+    for (i = 0; i < u->s.nv; i++) {
+        if (u->s.v[i] == voice) {
+            if (stop) {
+                sgxVoCtrl(u->s.v[i], 2, 0, 0);
+                sgxVoFree(u->s.v[i]);
+            }
+            u->s.v[i] = -1;
+            break;
+        }
+    }
+    for (e = PortListFirst(*(char **)((char *)u + 0x10) + 0x18); e != NULL; e = PortListNext(e)) {
+        UnitT *o = (UnitT *)e;
+        if (o != u && *(int *)(e + 8) == *(int *)((char *)u + 8)) {
+            for (i = 0; i < o->s.nv; i++) {
+                if (o->s.v[i] >= 0) {
+                    sgxVoCtrl(o->s.v[i], 2, 0, 0);
+                    sgxVoFree(o->s.v[i]);
+                    o->s.v[i] = -1;
+                }
+            }
+        }
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", UnitVoiceAlloc);
 
-typedef struct { char pad[0x30]; struct { int a; short res; signed char nv; char p; short v[8]; } s; } UnitT;
 void UnitFree_85774(void *uv)
 {
     UnitT *u = uv;
