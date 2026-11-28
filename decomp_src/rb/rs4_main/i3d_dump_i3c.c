@@ -18,7 +18,6 @@ void PrintVector(const char *name, const float *v, int indent)
 }
 
 int puts(const char *);
-extern const char D_00109944[];
 void PrintTri(unsigned short *t, int indent)
 {
 	PrintIndent(indent++);
@@ -28,10 +27,9 @@ void PrintTri(unsigned short *t, int indent)
 	PrintIndent(indent);
 	printf("aiPoint = { %d %d %d }\n", t[0], t[1], t[2]);
 	PrintIndent(--indent);
-	puts(D_00109944);
+	puts("}");
 }
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/i3d_dump_i3c", D_00109944);
 
 typedef struct I3cDumpNode_ { unsigned short num; signed char c[3]; unsigned char e[3]; void *data; } I3cDumpNode_;
 void PrintNode(I3cDumpNode_ *n, int indent)
@@ -60,7 +58,7 @@ void PrintNode(I3cDumpNode_ *n, int indent)
 			PrintTri(&t[i * 4], indent);
 	}
 	PrintIndent(--indent);
-	puts(D_00109944);
+	puts("}");
 }
 
 void PrintTree(float *t, int indent)
@@ -73,10 +71,53 @@ void PrintTree(float *t, int indent)
 	printf("Group = %d\n", *(int *)(t + 8));
 	PrintNode(*(I3cDumpNode_ **)(t + 10), indent);
 	PrintIndent(--indent);
-	puts(D_00109944);
+	puts("}");
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_dump_i3c", I3cRoot__TextDump);
+int I3dTtyPrintf(const char *fmt, ...);
+int I3cRoot__CheckIdString();
+unsigned short I3cRoot__Get_nNode(void *r);
+unsigned short I3cRoot__Get_nGroup(void *r);
+void *I3cRoot__GetGroupName(char *r, unsigned short i);
+int I3cRoot__Unpack();
+int I3cRoot__Pack();
+int I3cRoot__TextDump(char *r)
+{
+	int nNode, nGroup, i, packed;
+	if (I3cRoot__CheckIdString(r) != 0) return 3;
+	nNode = I3cRoot__Get_nNode(r);
+	nGroup = I3cRoot__Get_nGroup(r);
+	I3dTtyPrintf("---- I3c_TextDump ---- \n\n");
+	I3dTtyPrintf("I3cRoot_s {\n");
+	I3dTtyPrintf("\taszIdString  = %s \n", r);
+	I3dTtyPrintf("\tMajorVersion = %d \n", *(unsigned short *)(r + 8));
+	I3dTtyPrintf("\tMinorVersion = %d \n", *(unsigned short *)(r + 0xA));
+	I3dTtyPrintf("\tFileSize     = %d \n", *(int *)(r + 0xC));
+	I3dTtyPrintf("\tPacked       = %d \n", *(unsigned char *)(r + 0x10));
+	I3dTtyPrintf("\tnNode        = %d \n", *(unsigned short *)(r + 0x14));
+	I3dTtyPrintf("\tnGroup       = %d \n", *(unsigned short *)(r + 0x16));
+	packed = *(unsigned char *)(r + 0x10);
+	I3cRoot__Unpack(r);
+	for (i = 0; i < nGroup; i++) {
+		I3dTtyPrintf("\tGroup %d {\n", i);
+		I3dTtyPrintf("\t\tName = \"%s\"\n", I3cRoot__GetGroupName(r, i));
+		I3dTtyPrintf("\t}\n");
+	}
+	for (i = 0; i < nNode; i++) {
+		char *node = *(char **)(r + 0x18) + i * 12;
+		int n = *(unsigned short *)(node + 4);
+		int j;
+		I3dTtyPrintf("\tNode \"%s\" {\n", *(char **)node);
+		I3dTtyPrintf("\t\tnTree = %d\n", n);
+		I3dTtyPrintf("\t\tEnabled = %d\n", *(unsigned short *)(node + 6));
+		for (j = 0; j < n; j++)
+			PrintTree((float *)(*(char **)(node + 8) + j * 0x30), 2);
+		I3dTtyPrintf("\t}\n");
+	}
+	I3dTtyPrintf("}\n\n");
+	if (packed) I3cRoot__Pack(r);
+	return 0;
+}
 
 int I3dParser__PackSub(int *p, int base, int a, int b, int mode)
 {
