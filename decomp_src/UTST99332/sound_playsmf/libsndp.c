@@ -541,7 +541,10 @@ int sceSsVoiceGetStatus(int a0)
 	return voice_getVoiceStatus(a0);
 }
 
-typedef struct { int pad[17]; int group; int prio; int rest[5]; } SsVoiceParam;
+typedef struct { int vag; int prio; int group; unsigned char nclk; unsigned char padD[3]; int pad10[4]; int adsr1; unsigned char b24; unsigned char pad25[3]; int adsr2; unsigned char b2C; unsigned char pad2D[3]; unsigned char b30; unsigned char pad31[3]; unsigned char b34; unsigned char pad35[3]; unsigned char b38; unsigned char pad39[7]; unsigned char b40; unsigned char pad41[3]; unsigned char b44; unsigned char pad45[11]; int i50; int i54; } SsTone;
+typedef struct { int offset; int loop; int size; } SsVag;
+typedef struct { int noise; char * addr; int size; unsigned char nclk; unsigned char padD[3]; int loop; int pitch; int adsr1; unsigned char b1C; unsigned char pad1D[3]; int adsr2; unsigned char b24; unsigned char pad25[3]; int i28; int i2C; signed char b30; unsigned char b31; signed char b32; unsigned char b33; unsigned char b34; unsigned char pad35[3]; int group; int prio; } SsVoiceTone2;
+typedef struct { int i0; unsigned int hd; unsigned int i8; SsVoiceTone2 tone; unsigned char ch; unsigned char note; unsigned char pad4E[2]; int i50; int i54; int pad58[2]; } SsVoiceParam;
 int func_00008544(int a0, int a1, int a2, int a3, int a4, int a5, int a6, int a7)
 {
 	SsVoiceParam param;
@@ -552,8 +555,8 @@ int func_00008544(int a0, int a1, int a2, int a3, int a4, int a5, int a6, int a7
 	ret = func_0000872C(a0, a1, a2, a3, a4, a5, a6, a7, &param);
 	if (ret != 0)
 		return ret;
-	if (param.group != 0) {
-		voices = voice_getVoiceByGroup(param.group, param.prio);
+	if (param.tone.group != 0) {
+		voices = voice_getVoiceByGroup(param.tone.group, param.tone.prio);
 		if (voices != 0) {
 			for (i = 0; i < (int)g_maxvoice; i++) {
 				if ((voices >> i) & 1) {
@@ -563,7 +566,7 @@ int func_00008544(int a0, int a1, int a2, int a3, int a4, int a5, int a6, int a7
 			}
 		}
 	}
-	i = voice_allocVoice(param.prio);
+	i = voice_allocVoice(param.tone.prio);
 	if (i < 0)
 		return 0x80540010;
 	ret = voice_noteOn(i, &param);
@@ -583,8 +586,8 @@ int func_00008628(int a0, unsigned int voice, int a2, int a3, int a4, int a5, in
 	ret = func_0000872C(a0, a2, a3, a4, a5, a6, a7, a8, &param);
 	if (ret != 0)
 		return ret;
-	if (param.group != 0) {
-		voices = voice_getVoiceByGroup(param.group, param.prio);
+	if (param.tone.group != 0) {
+		voices = voice_getVoiceByGroup(param.tone.group, param.tone.prio);
 		if (voices != 0) {
 			for (voice = 0; voice < g_maxvoice; voice++) {
 				if ((voices >> voice) & 1) {
@@ -602,9 +605,6 @@ int func_00008628(int a0, unsigned int voice, int a2, int a3, int a4, int a5, in
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libsndp", func_0000872C);
 
-typedef struct { int vag; int prio; int group; unsigned char nclk; unsigned char padD[3]; int pad10[4]; int adsr1; unsigned char b24; unsigned char pad25[3]; int adsr2; unsigned char b2C; unsigned char pad2D[3]; unsigned char b30; unsigned char pad31[3]; unsigned char b34; unsigned char pad35[3]; unsigned char b38; unsigned char pad39[7]; unsigned char b40; unsigned char pad41[3]; unsigned char b44; unsigned char pad45[11]; int i50; int i54; } SsTone;
-typedef struct { int offset; int loop; int size; } SsVag;
-typedef struct { int noise; char * addr; int size; unsigned char nclk; unsigned char padD[3]; int loop; int pitch; int adsr1; unsigned char b1C; unsigned char pad1D[3]; int adsr2; unsigned char b24; unsigned char pad25[3]; int i28; int i2C; unsigned char b30; unsigned char b31; unsigned char b32; unsigned char b33; unsigned char b34; unsigned char pad35[3]; int group; int prio; } SsVoiceTone2;
 int sdphd_getVagParam(void *pHd, unsigned int idx, void **ppParam);
 int func_00008918(unsigned int hd, unsigned int idx, SsVoiceTone2 *out)
 {
