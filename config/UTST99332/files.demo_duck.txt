@@ -179,8 +179,8 @@ rodata 0x168594 -
 # math_TransformStack: the header statics' float pool, the float pools (Identity()'s 1.0f) of push and identity, strings and __PRETTY_FUNCTION__s
 rodata 0x171BF8 main_objs/math_TransformStack
 rodata 0x171D94 -
-# FloatImage: the float pools of gaussian1, gaussian2, blur2d, blur (blur2d/blur inlines gaussian2 with its literals)
-rodata 0x176278 main_objs/FloatImage
+# FloatImage: the float pools of the static initializer, operator=(Texture), copy (asm), gaussian1, gaussian2, blur2d, blur (blur2d/blur inlines gaussian2 with its literals)
+rodata 0x17624C main_objs/FloatImage
 rodata 0x17629C -
 # math_safe_acosf: the float pool (pi, 2 pi) of math::angle::Relative
 rodata 0x168A3C main_objs/math_safe_acosf
@@ -491,7 +491,8 @@ bss 0x191738 -
 rodata 0x175E90 main_objs/textures_textures_internal_Bmp
 rodata 0x175EAC -
 bss 0x191CE0 main_objs/textures_textures_internal_Bmp
-bss 0x191D64 -
+bss 0x191D64 main_objs/FloatImage
+bss 0x191DE8 -
 rodata 0x1686B0 main_objs/math_bspline_curve_curve
 rodata 0x168700 -
 bss 0x18ECEC main_objs/math_bspline_curve_curve

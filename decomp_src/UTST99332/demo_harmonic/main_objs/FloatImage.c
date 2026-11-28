@@ -2,13 +2,16 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
 #define DEMO_TEMPLATE_DEFS
 #include "../main.hpp"
 
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN10FloatImageC2Ev");
+__asm__(".globl _GLOBAL__D__ZN10FloatImageC2Ev");
+
 /* constants and strings stay in the module's .rodata (asm) */
-extern const float D_00173340;      /* 255 */
-extern const float D_00173344;      /* 1 */
-extern const float D_00173348;      /* 255 */
 extern const char D_001733A8[];     /* " " */
 extern const char D_001733AC[];     /* " *** error " */
 extern const char D_001733B8[];     /* "_Value.width() == width()" */
@@ -24,8 +27,6 @@ extern const char PF_div[] __asm__("_ZZN10FloatImagedvERKS_E19__PRETTY_FUNCTION_
         common::common_internal::on_error(); \
         common::common_internal::clash(); \
     }
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage", _Z41__static_initialization_and_destruction_0ii_FC988);
 
 FloatImage::FloatImage()
 {
@@ -58,10 +59,10 @@ FloatImage &FloatImage::operator=(const textures::Texture &t)
     ABGR_FLOAT *dst = addr();
     for (int y = 0; y != t.height(); y++)
         for (int x = 0; x != t.width(); x++) {
-            dst->x = src[0] / D_00173340;
-            dst->y = src[1] / D_00173340;
-            dst->z = src[2] / D_00173340;
-            dst->w = src[3] / D_00173340;
+            dst->x = src[0] / 255.0f;
+            dst->y = src[1] / 255.0f;
+            dst->z = src[2] / 255.0f;
+            dst->w = src[3] / 255.0f;
             src += 4;
             dst++;
         }
@@ -310,20 +311,3 @@ void FloatImage::blur(int r, float sigma)
     tmp2 *= 1.9f;
     *this = tmp2;
 }
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_FC988");
-void _GLOBAL__I__ZN10FloatImageC2Ev(void);
-void _GLOBAL__D__ZN10FloatImageC2Ev(void);
-}
-
-void _GLOBAL__I__ZN10FloatImageC2Ev(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN10FloatImageC2Ev(void)
-{
-    static_init(0, 0xFFFF);
-}
-

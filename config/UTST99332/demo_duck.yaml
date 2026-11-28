@@ -572,7 +572,7 @@ segments:
       - [0x175EF8, rodata, asm/rodata_175E78]
       - [0x175F10, .rodata, main_objs/textures_textures_internal_Bmp]
       - [0x175F2C, rodata, asm/rodata_175EAC]
-      - [0x1762F8, .rodata, main_objs/FloatImage]
+      - [0x1762CC, .rodata, main_objs/FloatImage]
       - [0x17631C, rodata, asm/rodata_17629C]
       - [0x176454, .rodata, main_objs/textures_Texture]
       - [0x17649C, rodata, asm/rodata_17641C]
@@ -796,7 +796,8 @@ segments:
       - { start: 0x18CFCC, type: .bss, vram: 0x191C4C, name: main_objs/sys_timer_Push }
       - { start: 0x18CFCC, type: .bss, vram: 0x191C78, name: main_objs/sys_timer_GetDeltaTime }
       - { start: 0x18CFCC, type: .bss, vram: 0x191CE0, name: main_objs/textures_textures_internal_Bmp }
-      - { start: 0x18CFCC, type: bss, vram: 0x191D64, name: bss_191D64 }
+      - { start: 0x18CFCC, type: .bss, vram: 0x191D64, name: main_objs/FloatImage }
+      - { start: 0x18CFCC, type: bss, vram: 0x191DE8, name: bss_191DE8 }
       - { start: 0x18CFCC, type: .bss, vram: 0x191E70, name: main_objs/textures_Texture_2 }
       - { start: 0x18CFCC, type: bss, vram: 0x191EF4, name: bss_191EF4 }
       - { start: 0x18CFCC, type: .bss, vram: 0x191EF4, name: main_objs/textures_textures_internal_Tga }
