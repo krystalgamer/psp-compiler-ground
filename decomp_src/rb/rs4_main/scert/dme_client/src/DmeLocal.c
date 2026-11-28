@@ -610,7 +610,39 @@ int NetITick(void)
     return NetProcessEchoRequests(0);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIUpdate);
+extern int gbTimebaseEnabled;
+int rt_time_get_local(); int NetUpdateAll(); int NetProcessEchoRequests(); int rt_parse_update(); int NetProcessP2PDisconnect(); int rt_timebase_get_globaltime();
+int NetIUpdate(void)
+{
+    int t;
+    int r;
+    char *g;
+
+    rt_time_get_local(&t);
+    r = NetUpdateAll(1);
+    if (r != 0) return r;
+    if (gbTimebaseEnabled)
+        rt_timebase_get_globaltime((char *)gDmeGlobals + 0x10);
+    if (gObjectInterfacePtr != NULL) {
+        g = *(char **)((char *)gObjectInterfacePtr + 0x138);
+        if (g != NULL && *(int *)(g + 0x454) == 1 && *(int *)(g + 0x404) < *(int *)(g + 0x460) &&
+            *(int *)((char *)gObjectInterfacePtr + 0x124) != 0) {
+            (*(void (**)())((char *)gObjectInterfacePtr + 0x98))();
+            (*(void (**)())((char *)gObjectInterfacePtr + 0x9C))();
+        }
+    }
+    r = NetCheckForPingTimeouts();
+    if (r != 0) return r;
+    r = NetProcessEchoRequests(1);
+    if (r != 0) return r;
+    if (gObjectInterfacePtr != NULL) {
+        r = (*(int (**)())((char *)gObjectInterfacePtr + 0xA0))();
+        if (r != 0) return r;
+    }
+    r = NetMapRtError(rt_parse_update());
+    if (r != 0) return r;
+    return NetProcessP2PDisconnect();
+}
 
 int NetIGetNetUpdateErrors(void *a)
 {
