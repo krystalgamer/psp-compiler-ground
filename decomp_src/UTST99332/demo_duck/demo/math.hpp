@@ -101,6 +101,7 @@ struct matrix {
     vector_xyz eulerAnglesZXY() const;
     vector_xyz eulerAnglesZYX() const;
     bool isCoordSys(float eps) const;
+    bool equal(const matrix &, float) const;
     const matrix eigenVectors() const;
     matrix fixedCoordSys() const;
     void print(std::string, std::string) const;

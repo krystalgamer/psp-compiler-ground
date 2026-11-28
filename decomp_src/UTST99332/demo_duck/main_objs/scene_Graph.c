@@ -461,6 +461,31 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _Z
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph7newNodeINS_7TextureEEEN6common6handleIT_EESsb);
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph7newNodeINS_13DefaultShaderEEEN6common6handleIT_EESsb);
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt6vectorIN6common6handleIN5scene4NodeEEESaIS4_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS4_S6_EERKS4_);
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNK4math6matrix5equalERKS0_f);
+/* STAND-IN: float pointer views (row y/z/w through a row base register, as in the original) */
+static inline bool matrix_row_equal(const math::vector_xyzw &a, const math::vector_xyzw &b, float e)
+{
+    const float *p = &a.x, *q = &b.x;
+    return fabsf(p[0] - q[0]) < e && fabsf(p[1] - q[1]) < e && fabsf(p[2] - q[2]) < e && fabsf(p[3] - q[3]) < e;
+}
+/* the (asm) callers' inline copy: emitted through a discarded user defined before it */
+extern "C" void scene_Graph_matrix_equal_ref(const math::matrix &a, const math::matrix &b) __attribute__((section(".discard.asm")));
+extern "C" void scene_Graph_matrix_equal_ref(const math::matrix &a, const math::matrix &b)
+{
+    a.equal(b, 0);
+}
+SGL_LINKONCE_BEGIN
+inline bool math::matrix::equal(const matrix &m, float e) const
+{
+    if (!matrix_row_equal(r[0], m.r[0], e))
+        return false;
+    if (!matrix_row_equal(r[1], m.r[1], e))
+        return false;
+    if (!matrix_row_equal(r[2], m.r[2], e))
+        return false;
+    if (!matrix_row_equal(r[3], m.r[3], e))
+        return false;
+    return true;
+}
+SGL_LINKONCE_END
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene4NodeEEC1EPS2_);
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene4NodeEEC1ERKS3_);
