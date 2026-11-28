@@ -400,7 +400,29 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_r
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_send_broadcasts);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_receive_messages);
+typedef struct { unsigned int ip; unsigned int port; } RtUdpLinkAddr;
+int rt_comm_receive_from(); int rt_comm_linkaddress_isequal(RtUdpLinkAddr, RtUdpLinkAddr); int rt_udp_process_message();
+int rt_udp_receive_messages(char *u)
+{
+    RtUdpLinkAddr from;
+    int port;
+    unsigned int len;
+    int r;
+
+    len = 0;
+    do {
+        len = 0;
+        r = rt_comm_receive_from(*(int *)u, &from, &port, *(void **)(u + 0x5C), 0x5AA, &len);
+        if (r == 0) {
+            if (len == 0) break;
+            if (len >= 2) {
+                if (!rt_comm_linkaddress_isequal(from, *(RtUdpLinkAddr *)(u + 0x94)) || port != *(int *)(u + 0x9C))
+                    rt_udp_process_message(u, from, port, len);
+            }
+        }
+    } while (len != 0);
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_process_message);
 
