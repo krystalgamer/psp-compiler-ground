@@ -30,7 +30,10 @@ struct vector_xyz {
 struct vector_xyzw {
     float x, y, z, w;
     vector_xyzw() {}
-    vector_xyzw(float x_, float y_, float z_, float w_) : x(x_), y(y_), z(z_), w(w_) {}
+    /* STAND-IN: the original's vector_xyzw is array based (x()/y()/w() accessors, cf. the "_p.y()" assert texts);
+       a float pointer view in the ctor reproduces its stores (SphereSampling::partition, LineSet Vertex()),
+       member initializers or operator[] stores don't */
+    vector_xyzw(float x_, float y_, float z_, float w_) { float *p = &x; p[0] = x_; p[1] = y_; p[2] = z_; p[3] = w_; }
     float &operator[](int i) { return (&x)[i]; }
     const float &operator[](int i) const { return (&x)[i]; }
     vector_xyzw operator+(const vector_xyzw &b) const { return vector_xyzw(x + b.x, y + b.y, z + b.z, w + b.w); }

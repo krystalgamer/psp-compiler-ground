@@ -23,20 +23,8 @@ extern const char color_name[] __asm__("_ZZN3sgl7LineSet5colorENS_5ColorEE19__PR
 extern const char end_name[] __asm__("_ZZN3sgl7LineSet3endEvE19__PRETTY_FUNCTION__");
 #define LS_ASSERT(c, text, fn, line, msg) SGL_ASSERT(c, D_0016B1E0, text, D_0016B148, fn, line, msg)
 
-/* STAND-IN: float pointer views (the original's vector_xyzw is array-based, cf. invert_normal_vectors) */
-static inline void lsv_set(math::vector_xyzw &v, float x, float y, float z, float w)
-{
-    float *p = &v.x;
-    p[0] = x;
-    p[1] = y;
-    p[2] = z;
-    p[3] = w;
-}
 sgl::LineSet::Line::Vertex::Vertex()
 {
-    lsv_set(p, 0, 0, 0, 1);
-    lsv_set(n, 0, 0, 0, 0);
-    lsv_set(m, 0, 0, 0, 0);
 }
 
 bool sgl::LineSet::Line::zero_length() const

@@ -467,7 +467,6 @@ rodata 0x16F384 -
 bss 0x18DCA0 main_objs/sh_Env
 bss 0x18DD24 -
 rodata 0x170C78 main_objs/sh_SphereSampling_Sample
-rodata 0x170C94 -
 bss 0x18E360 main_objs/sh_SphereSampling_Sample
 bss 0x18E3E4 -
 rodata 0x1713E8 main_objs/sh_Vector
