@@ -136,16 +136,16 @@ void FreeData_GameBuf(char *p)
 	_memFree(*(void **)(p + 0x74), &D_00103954, 0xD8);
 }
 
-void SetData_Icon0Buf(void) {
+void SetData_Icon0Buf(void *p) {
 }
 
-void SetData_Icon1Buf(void) {
+void SetData_Icon1Buf(void *p) {
 }
 
-void SetData_Pic1Buf(void) {
+void SetData_Pic1Buf(void *p) {
 }
 
-void SetData_Snd0Buf(void) {
+void SetData_Snd0Buf(void *p) {
 }
 
 void SetData_Icon0(SavePIcon0 *p)
@@ -328,7 +328,28 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", D_00103
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", ShowResult);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", SetData_Load);
+extern unsigned char D_001040A0, D_001040AC;
+/* STAND-IN: builtin memcpy for the variable-length copy, a real call for the 4-byte one (cf. SetData_Sizes) */
+void SetData_Load(char *p, int mode)
+{
+	unsigned int len;
+
+	len = strlen((char *)localeGetRegionCntx() + 5);
+	__builtin_memcpy(p + 0x3C, (char *)localeGetRegionCntx() + 5, len);
+	*(char *)(len + (int)p + 0x3C) = 0;
+	memcpy(p + 0x4C, &D_00104098, 4);
+	p[0x50] = 0;
+	if (mode != 0)
+		sprintf(p + 0x64, &D_00103BF4, &D_001040A0);
+	else
+		sprintf(p + 0x64, &D_00103BF4, &D_001040AC);
+	SetData_GameBuf(p);
+	memset(p + 0x80, 0, 0x504);
+	SetData_Icon0Buf(p);
+	SetData_Icon1Buf(p);
+	SetData_Pic1Buf(p);
+	SetData_Snd0Buf(p);
+}
 
 void FreeData_Load(int a, int b) {
     FreeData_GameBuf(a);
