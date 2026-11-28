@@ -21,7 +21,18 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeToken", To
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeToken", TokenNotifyEvent);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeToken", NetTokenQuery);
+int rt_token_is_valid();
+void rt_token_check_ownership();
+int NetTokenQuery(char *c, unsigned int tok, int *owner)
+{
+    if (c == NULL) return 0x17;
+    if (owner == NULL) return 0x17;
+    if (*(int *)(c + 0x4A0) == 0) return 0x31;
+    if (!(*(int *)(c + 0x450) & 1)) return 0x31;
+    if (!rt_token_is_valid(tok)) return 0x17;
+    rt_token_check_ownership(tok, owner, *(void **)(c + 0x40C));
+    return 0;
+}
 
 int NetTokenSystemQuery(void *arg0, int *arg1) {
     int var_v1;
@@ -37,9 +48,33 @@ int NetTokenSystemQuery(void *arg0, int *arg1) {
     return var_v1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeToken", NetTokenRequest);
+int rt_token_is_free();
+void rt_token_set_pending_state();
+int SendTokenMessage();
+int NetTokenRequest(char *c, unsigned int tok)
+{
+    if (c == NULL) return 0x17;
+    if (*(int *)(c + 0x4A0) == 0) return 0x31;
+    if (!(*(int *)(c + 0x450) & 1)) return 0x31;
+    if (!rt_token_is_valid(tok)) return 0x17;
+    if (rt_token_is_free(tok, *(void **)(c + 0x40C)) != 1) return 0x31;
+    rt_token_set_pending_state(tok, *(void **)(c + 0x40C));
+    return SendTokenMessage(c, tok, 2);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeToken", NetTokenRelease);
+int rt_token_is_mine();
+int rt_token_is_pending();
+int SendTokenMessage();
+int NetTokenRelease(char *c, unsigned int tok)
+{
+    if (c == NULL) return 0x17;
+    if (*(int *)(c + 0x4A0) == 0) return 0x31;
+    if (!(*(int *)(c + 0x450) & 1)) return 0x31;
+    if (!rt_token_is_valid(tok)) return 0x31;
+    if (rt_token_is_mine(tok, *(int *)(c + 0x404), *(void **)(c + 0x40C)) != 1 &&
+        rt_token_is_pending(tok, *(void **)(c + 0x40C)) != 1) return 0x31;
+    return SendTokenMessage(c, tok, 3);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeToken", NetTokenListRequest);
 
