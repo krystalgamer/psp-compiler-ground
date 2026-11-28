@@ -641,7 +641,28 @@ void MidiCMBend(char *s, int ch) {
     sgxPortCommand(*(short *)(s + 0x1A), (int)cmd);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", MidiCMSysMes);
+void MidiCMSysMes(char *t) {
+    unsigned char buf[0x100];
+    int type = (*(SeqReadFn *)(t + 0x30))(t);
+    unsigned int len = 0;
+    int c;
+    int n;
+    int i;
+    do {
+        c = (*(SeqReadFn *)(t + 0x30))(t);
+        len = (len << 7) | (c & 0x7F);
+    } while (c & 0x80);
+    n = (len > 0x100) ? 0x100 : len;
+    for (i = 0; i < n; i++) buf[i] = (*(SeqReadFn *)(t + 0x30))(t);
+    switch (type) {
+    case 0x2F:
+        t[0x51] = 1;
+        break;
+    case 0x51:
+        *(float *)(t + 0x4C) = (float)((buf[0] << 16) | (buf[1] << 8) | buf[2]) / (float)*(short *)(t + 0x3A);
+        break;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", MidiCore);
 
