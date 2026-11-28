@@ -514,7 +514,7 @@ rodata 0x168E6C -
 bss 0x18C540 main_objs/scene_MeshData
 bss 0x18C644 -
 rodata 0x16B0C0 main_objs/sgl_LineSet_Line_Vertex
-rodata 0x16B0DC -
+rodata 0x16B108 -
 bss 0x18D0A4 main_objs/sgl_LineSet_Line_Vertex
 rodata 0x16B2E8 main_objs/sgl_Mesh
 rodata 0x16B304 -

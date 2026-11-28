@@ -12,10 +12,6 @@
 __asm__(".globl _GLOBAL__I__ZN3sgl7LineSet4Line6VertexC2Ev\n_GLOBAL__I__ZN3sgl7LineSet4Line6VertexC2Ev = _GLOBAL__I__ZN3sgl7LineSet4Line6VertexC2Ev__asm");
 __asm__(".globl _GLOBAL__D__ZN3sgl7LineSet4Line6VertexC2Ev\n_GLOBAL__D__ZN3sgl7LineSet4Line6VertexC2Ev = _GLOBAL__D__ZN3sgl7LineSet4Line6VertexC2Ev__asm");
 
-extern const float D_0016E00C;      /* 1e-6f */
-extern const float D_0016E010;      /* -11.0f */
-extern const float D_0016E020;      /* 30.0f */
-extern const float D_0016E024;      /* degrees -> radians */
 extern const char D_0016E070[];     /* "../lib/sgl/LineSet.cpp" */
 extern const char D_0016E108[];     /* " *** error " */
 extern const char D_0016E114[];     /* "! ready()" */
@@ -27,14 +23,26 @@ extern const char color_name[] __asm__("_ZZN3sgl7LineSet5colorENS_5ColorEE19__PR
 extern const char end_name[] __asm__("_ZZN3sgl7LineSet3endEvE19__PRETTY_FUNCTION__");
 #define LS_ASSERT(c, text, fn, line, msg) SGL_ASSERT(c, D_0016E108, text, D_0016E070, fn, line, msg)
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_LineSet_Line_Vertex", _ZN3sgl7LineSet4Line6VertexC2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_LineSet_Line_Vertex", _ZN3sgl7LineSet4Line6VertexC1Ev);
+/* STAND-IN: float pointer views (the original's vector_xyzw is array-based, cf. invert_normal_vectors) */
+static inline void lsv_set(math::vector_xyzw &v, float x, float y, float z, float w)
+{
+    float *p = &v.x;
+    p[0] = x;
+    p[1] = y;
+    p[2] = z;
+    p[3] = w;
+}
+sgl::LineSet::Line::Vertex::Vertex()
+{
+    lsv_set(p, 0, 0, 0, 1);
+    lsv_set(n, 0, 0, 0, 0);
+    lsv_set(m, 0, 0, 0, 0);
+}
 
 bool sgl::LineSet::Line::zero_length() const
 {
     math::vector_xyzw d = a.p - b.p;
-    return sqrtf(math::dot(d, d)) < D_0016E00C;
+    return sqrtf(math::dot(d, d)) < 0.000001f;
 }
 
 /* STAND-IN: float pointer views: the original orders each first component's load/store before the other loads
@@ -44,7 +52,7 @@ static inline void ls_neg(math::vector_xyzw &v) { float *p = &v.x; p[0] = -p[0];
 void sgl::LineSet::invert_normal_vectors()
 {
     for (std::vector<Line>::iterator i = _lines.begin(); i != _lines.end(); ++i) {
-        ls_scale(i->c, D_0016E010);
+        ls_scale(i->c, -11.0f);
         ls_neg(i->b.m);
         ls_neg(i->a.m);
     }
@@ -52,9 +60,13 @@ void sgl::LineSet::invert_normal_vectors()
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_LineSet_Line_Vertex", _ZN3sgl7LineSet19calc_normal_vectorsEf);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_LineSet_Line_Vertex", _ZN3sgl7LineSetC2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_LineSet_Line_Vertex", _ZN3sgl7LineSetC1Ev);
+sgl::LineSet::LineSet() : _f0(0), _color(0, 0, 0, 0)
+{
+    float a = 30;   /* the original multiplies at run time */
+    _state = 3;
+    _crease = a * 0.0174532924f;
+    _negate_normals = false;
+}
 
 void sgl::LineSet::begin(LineMode m)
 {

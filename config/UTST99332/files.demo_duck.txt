@@ -528,7 +528,7 @@ rodata 0x16BD94 -
 bss 0x18F9C0 main_objs/scene_MeshData
 bss 0x18FAC4 -
 rodata 0x16DFE8 main_objs/sgl_LineSet_Line_Vertex
-rodata 0x16E004 -
+rodata 0x16E030 -
 bss 0x190524 main_objs/sgl_LineSet_Line_Vertex
 rodata 0x16E210 main_objs/sgl_Mesh
 rodata 0x16E22C -

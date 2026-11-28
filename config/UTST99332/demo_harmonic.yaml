@@ -498,7 +498,7 @@ segments:
       - [0x16AF4C, .rodata, main_objs/sgl_Heap]
       - [0x16AF68, rodata, asm/rodata_16AEE8]
       - [0x16B140, .rodata, main_objs/sgl_LineSet_Line_Vertex]
-      - [0x16B15C, rodata, asm/rodata_16B0DC]
+      - [0x16B188, rodata, asm/rodata_16B108]
       - [0x16B368, .rodata, main_objs/sgl_Mesh]
       - [0x16B384, rodata, asm/rodata_16B304]
       - [0x16BCC4, .rodata, main_objs/sgl_Mesh_2]
