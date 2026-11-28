@@ -592,6 +592,7 @@ segments:
       - [0x103624, .rodata, src/menu_mod/refload]
       - [0x103914, .rodata, src/menu_mod/salbum]
       - [0x103A14, .rodata, src/menu_mod/saveutil]
+      - [0x104208, .rodata, src/menu_mod/shop]
       - [0x1047F0, .rodata, src/ys/libmm_semaphore]
       - [0x10489C, .rodata, src/ys/libmm_thread]
       - [0x104958, .rodata, src/ys/vfs_internal]

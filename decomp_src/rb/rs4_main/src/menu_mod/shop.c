@@ -1,7 +1,7 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
-extern const float D_00104710;
+extern const float D_0010470C[];
 void bxAnmSetFrame(int, float);
 void bxAnmSetSpeed(int, float);
 void bxAnmSetLoop(int, int);
@@ -24,6 +24,12 @@ int saveGetCurrentData(void);
 int cardlistGetCardIDFromSaveID(unsigned int arg0);
 void consPrintf(const char *fmt, ...);
 int _BarPutPosSet(void *arg0);
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_00104148);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_00104170);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_0010418C);
+
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", Sub_Shop);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _ShopAniSet);
@@ -31,7 +37,7 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _ShopAniSet);
 void _AniInfoSet_3CB84(int anm)
 {
 	bxAnmSetFrame(anm, 0.0f);
-	bxAnmSetSpeed(anm, D_00104710);
+	bxAnmSetSpeed(anm, D_0010470C[1]);
 	bxAnmSetLoop(anm, 1);
 	bxAnmSetPause(anm, 0);
 }
@@ -85,6 +91,26 @@ int _ShopDeckCheck(char *w, ShopCard *c)
 	return r;
 }
 
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_001041AC);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_001041B0);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_001041CC);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_001041D8);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_001041E4);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_00104208);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_00104224);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_00104238);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_00104300);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_00104388);
+
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _ShopDeckCheckSet);
 
 extern unsigned char D_00104450;
@@ -116,6 +142,18 @@ void _CardListPutDel(int unused, char *p)
 	_TtrFontPutSet_3F420(p + 0xCB, buf, 0, 0);
 	_TtrFontPutSet_3F420(p + 0xD3, buf, 0, 0);
 }
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_00104450);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_0010446C);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_00104478);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_00104484);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_00104490);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_0010449C);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _CardListPutSet);
 
@@ -149,7 +187,57 @@ int _WinPutSet(void) {
     return 0;
 }
 
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_001044BC);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_001044C8);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_001044D4);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_001044E0);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_001044EC);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_001044F8);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_00104504);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_00104510);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_0010451C);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_00104528);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_00104534);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_00104540);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_0010454C);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_00104558);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_00104568);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_00104574);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_00104580);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_001045B4);
+
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _WinPutSet2);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_001045FC);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_00104608);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_00104614);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_00104620);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_0010462C);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_00104638);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_00104644);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _WinPutSetWork);
 
@@ -260,6 +348,8 @@ void _FontNumSet(int *buf, int n, int pct)
 	buf[i + 1] = 0;
 }
 
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_001046A4);
+
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", Sub_Shop_WindowPut);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _GetCardPackID);
@@ -279,3 +369,7 @@ int _DeckCheck(int saveid, int kind)
 		}
 	return r;
 }
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_001046EC);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", D_0010470C);

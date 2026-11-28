@@ -90,6 +90,9 @@
 0x39768 src_menu_mod_save 1.9.2           src/menu_mod/save.c
 0x398E8 src_menu_mod_saveutil 1.9.2           src/menu_mod/saveutil.c
 0x3B33C src_menu_mod_shop 1.9.2           src/menu_mod/shop.c
+# shop.c's .rodata (its strings and local-array initialisers) follows saveutil's: nothing in
+# saveutil references 0x104148 and up, shop does.
+rodata 0x104148 src/menu_mod/shop
 0x40704 src_menu_mod_utilsetting 1.9.2           src/menu_mod/utilsetting.c
 0x40748 src_ys_libmm_semaphore 1.9.2           src/ys/libmm_semaphore.cc
 0x40910 src_ys_libmm_thread 1.9.2           src/ys/libmm_thread.cc
