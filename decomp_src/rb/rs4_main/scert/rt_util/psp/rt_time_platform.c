@@ -9,7 +9,6 @@ void rt_time_platform_fast_elapsed_msecs(void);
 void rt_time_platform_fast_elapsed_secs(void);
 void rt_time_platform_get_gmtime(void);
 M2C_UNK rt_time_elapsed_secs();                     /* extern */
-M2C_UNK rt_time_platform_get_date_time();           /* extern */
 M2C_UNK rt_time_elapsed_msecs();                    /* extern */
 
 int rt_time_platform_init(void) {
@@ -94,7 +93,39 @@ void rt_time_platform_get_gmtime(void) {
     rt_time_platform_get_date_time();
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/psp/rt_time_platform", rt_time_platform_get_date_time);
+int rt_time_platform_get_date_time(RtTimeDate *out)
+{
+    RtTimeDate t;
+    unsigned int now;
+
+    if (out == NULL) return 2;
+    if (!gbTimeDateSet) {
+        if (rt_time_platform_update_date_time() != 0) return 0x640;
+        gbTimeDateSet = 1;
+    }
+    t = *(RtTimeDate *)gCurTimeDate;
+    if (rt_time_get_msecs(&now) != 0) return 0x640;
+    t.ms += now - ((RtTimeDate *)gCurTimeDate)->stamp;
+    t.sec += t.ms / 1000;
+    t.ms %= 1000;
+    t.min += t.sec / 60;
+    t.sec %= 60;
+    t.hour += t.min / 60;
+    t.min %= 60;
+    if (t.hour >= 24) {
+        if (rt_time_platform_update_date_time() != 0) return 0x640;
+        t = *(RtTimeDate *)gCurTimeDate;
+    }
+    out->year = t.year;
+    out->mon = t.mon;
+    out->mday = t.mday;
+    out->hour = t.hour;
+    out->min = t.min;
+    out->sec = t.sec;
+    out->ms = t.ms;
+    out->stamp = t.stamp;
+    return 0;
+}
 
 void rt_time_platform_fast_elapsed_secs(void) {
     rt_time_elapsed_secs();
