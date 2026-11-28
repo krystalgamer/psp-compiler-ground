@@ -341,7 +341,23 @@ int I3dTim2PictureHeader__GetMipMapPictureSize(unsigned char *p, int level, int 
     return (n + 15) & ~15;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_sorter", I3dTim2PictureHeader__Get_pPictureImage);
+unsigned char *I3dTim2PictureHeader__Get_pPictureImage(unsigned char *h, int n) {
+    unsigned char *ret = 0;
+    if (n < h[0x11]) {
+        unsigned char *p = h + *(unsigned short *)(h + 0xC);
+        if (h[0x11] == 1) {
+            ret = p;
+        } else {
+            int i;
+            ret = p;
+            if (n > 0) {
+                for (i = 0; i < n; i++) p += ((int *)(h + 0x40))[i];
+                ret = p;
+            }
+        }
+    }
+    return ret;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
