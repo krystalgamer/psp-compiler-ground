@@ -110,6 +110,7 @@ extern void *gDmeGlobals;
 extern void *gUDPInterfacePtr;
 extern void *gStreamMediaInterfacePtr;
 typedef int (*DmeFn0)();
+typedef struct { int a; int state; } DmeAsyncStatus;
 extern unsigned char gppConnInfo;
 extern unsigned char gMyAddressInfo;
 extern unsigned char gNatService;
@@ -997,7 +998,45 @@ int NetIIncomingClient(int *in, DmeIncRes *out)
     return out->err;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetSetIncomingClient);
+int NetAddressToBinaryAddress();
+typedef struct { LinkAddrS a; LinkAddrS b; int pa; int pb; int port; } DmeIncomingInfo;
+int NetSetIncomingClient(char *ci, int *p, DmeAsyncStatus *st)
+{
+    DmeIncomingInfo info;
+    LinkAddrS bin;
+    unsigned short pa, pb;
+    int type;
+    unsigned int i;
+    char *a;
+
+    if (st == NULL) return 0x17;
+    st->state = 0x1E;
+    st->a = 1;
+    if (p == NULL) { st->state = 0x17; return 0x17; }
+    if (p[0] == 0) { st->state = 0x26; return 0x26; }
+    if (!gbUDPEnabled) { st->state = 0x1A; return 0x1A; }
+    memset(&info, 0, sizeof(info));
+    for (i = 0, a = (char *)(p + 1); i < 2; i++, a += 0x18) {
+        NetAddressToBinaryAddress(a, &type, &bin, &pa, &pb);
+        switch (type) {
+        case 0: case 3:
+            break;
+        case 2: case 5: case 7:
+            info.a = bin;
+            info.pa = pa;
+            info.port = pb;
+            break;
+        case 1: case 4: case 6:
+            info.b = bin;
+            info.pb = pa;
+            info.port = pb;
+            break;
+        }
+    }
+    if ((*(DmeFn0 *)((char *)gP2PInterfacePtr + 0x30))(*(int *)(ci + 0x474), &info) != 0) st->state = 0x25;
+    else st->state = 0;
+    return st->state;
+}
 
 int NetISetMyClientReceiveBroadcast(char *c, int v)
 {
@@ -1068,7 +1107,7 @@ typedef struct { unsigned char state; char pad[3]; DmeLinkAddr addr; char pad2[0
 extern DmeEchoReq gPendingEchoRequest[256];
 extern int gbEchoRequestsEnabled;
 
-void rt_comm_echo_set_default_options(); int rt_comm_echo_enable(); int rt_comm_echo_send(); void rt_time_get_time_stamp();
+void rt_comm_echo_set_default_options(); int rt_comm_echo_enable(); int rt_comm_echo_send(); int rt_time_get_time_stamp();
 int NetIPingIP(DmeLinkAddr addr, void (*cb)(int, char *, int))
 {
     void *opts[1];
