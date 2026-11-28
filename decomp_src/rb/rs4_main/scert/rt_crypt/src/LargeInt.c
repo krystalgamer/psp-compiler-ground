@@ -262,7 +262,30 @@ void GCD(LInt *r, LInt *a, LInt *b)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/LargeInt", EMOD);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/LargeInt", lintIsbSPRP);
+void EMODM(); void XMOD();
+int lintIsbSPRP(unsigned int *n, unsigned int *b)
+{
+    unsigned int nm1[128];
+    unsigned int d[128];
+    unsigned int y[128];
+    unsigned int s;
+    unsigned int j;
+
+    memcpy(nm1, n, 0x200);
+    lintDecrement(nm1, 1);
+    memcpy(d, nm1, 0x200);
+    s = 0;
+    while (!lintGetBit(d, s)) s++;
+    if (s != 0) ShiftRight((LInt *)d, s);
+    EMODM(y, b, d, n);
+    if (IsOne((int *)y) || IsEqual(y, nm1)) return 1;
+    for (j = 1; j < s; j++) {
+        XMOD(y, y, y, n);
+        if (IsEqual(y, nm1)) return 1;
+        if (IsOne((int *)y)) return 0;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/LargeInt", lintRandomize);
 
