@@ -473,7 +473,50 @@ error:
 	return;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", draw_net_hello_list);
+void draw_net_hello_list(int x, int y)
+{
+	char etherstr[32];
+	char mess_buff[128];
+	unsigned char mac[16];
+	char str[64];
+	int i, n, color;
+
+	n = 0;
+	sceKernelWaitSemaCB(minfo_sid, 1, NULL);
+	for (i = 0; i < 4; i++) {
+		if (minfo[i].status == 0) {
+			if (i == _mrinfo.v_cursor_pos)
+				_mrinfo.v_cursor_pos = 0;
+			continue;
+		}
+		if (i == _mrinfo.v_cursor_pos) color = 0xff; else color = 0xffffff;
+		sceNetEtherNtostr(&minfo[i].addr, etherstr);
+		if (minfo[i].hello_opt.nickname.data[0] != 0) {
+			sceNetEtherStrton(etherstr, mac);
+			str[0] = mac2a(mac[0]);
+			str[1] = mac2a(mac[1]);
+			str[2] = mac2a(mac[2]);
+			str[3] = mac2a(mac[3]);
+			str[4] = mac2a(mac[4]);
+			str[5] = mac2a(mac[5]);
+			str[6] = 0;
+			sprintf(mess_buff, D_0007B554, etherstr);
+		} else {
+			sprintf(mess_buff, "#NO NICKNAME");
+		}
+		if (color == 0xffffff)
+			ASC_SetStringRGBA(2, mess_buff, gppostbl[n][0] + 16, gppostbl[n][1], 255, 255, 255, 255);
+		else if (color == 0xff)
+			ASC_SetStringRGBA(2, mess_buff, gppostbl[n][0] + 16, gppostbl[n][1], 255, 0, 0, 255);
+		draw_p2p_game_parameter(i, color, gppostbl[n][0] + 16, gppostbl[n][1] + 10);
+		if (color == 0xffffff)
+			sprite_set(gp_tex[0], gppostbl[n][0], gppostbl[n][1], 16, 16, 0, 0, 100, 100, 0, 0, 255, 255, 255, 255, 100, 2, 1, 255);
+		else if (color == 0xff)
+			sprite_set(gp_tex[0], gppostbl[n][0], gppostbl[n][1], 16, 16, 0, 0, 100, 100, 0, 0, 2, 0xE0, 0xE0, color, 100, 2, 1, color);
+		n++;
+	}
+	sceKernelSignalSema(minfo_sid, 1);
+}
 
 extern char D_0007B5A8[];
 void sceNetEtherNtostr(const struct SceNetEtherAddr *addr, char *str);
