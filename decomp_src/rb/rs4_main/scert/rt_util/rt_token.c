@@ -61,9 +61,32 @@ int rt_token_is_free(unsigned int idx, RtTokTab *t)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_is_pending);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_set_pending_state);
+void rt_token_set_pending_state(unsigned int idx, RtTokTab *t)
+{
+    RtTokEnt *e;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_free_owner);
+    if (t == NULL) rt_token_start(&t);
+    if (t->size == 0) {
+        if (rt_token_create_table(idx, t) != 0) return;
+    } else if (idx >= t->size) {
+        if (rt_token_expand_table(idx, t) != 0) return;
+    }
+    e = (RtTokEnt *)(idx * sizeof(RtTokEnt) + (int)t->ents);
+    if (e->owner == 0xFFFF)
+        e->pending = 1;
+}
+
+void rt_token_free_owner(int owner, RtTokTab *t)
+{
+    unsigned int i;
+
+    if (t == NULL) rt_token_start(&t);
+    if (owner == 0xFFFF) return;
+    if (t->count == 0) return;
+    for (i = 0; i < t->size; i++)
+        if (t->ents[i].owner == owner)
+            rt_token_remove_ownership(i, t);
+}
 
 int rt_token_start();
 void rt_token_get_table_size(int *out, int *t)
@@ -73,7 +96,19 @@ void rt_token_get_table_size(int *out, int *t)
     *out = tt[1];
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_get_table);
+void *memcpy(void *, const void *, unsigned long);
+int rt_token_get_table(void *out, unsigned int *n, RtTokTab *t)
+{
+    if (t == NULL) rt_token_start(&t);
+    if (*n < t->size) {
+        memcpy(out, t->ents, *n * 4);
+        return 0xDAC3;
+    }
+    if (t->ents != NULL)
+        memcpy(out, t->ents, t->size * 4);
+    *n = t->size;
+    return 0;
+}
 
 void rt_token_get_token_count(int *out, int *t)
 {
@@ -119,7 +154,21 @@ int rt_token_create_table(unsigned int n, RtTokTab *t)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_expand_table);
+int rt_token_expand_table(unsigned int n, RtTokTab *t)
+{
+    RtTokEnt *old;
+    unsigned int sz;
+
+    if (t == NULL) return 0xDAC2;
+    if (rt_memory_allocate_init_zero(&old, t->size * 4) != 0) return 0xDAC4;
+    sz = t->size * 4;
+    memcpy(old, t->ents, sz);
+    rt_memory_free(&t->ents);
+    if (rt_token_create_table(n, t) != 0) return 0xDAC4;
+    memcpy(t->ents, old, sz);
+    rt_memory_free(&old);
+    return 0;
+}
 
 void rt_token_destroy_table(int *t)
 {
