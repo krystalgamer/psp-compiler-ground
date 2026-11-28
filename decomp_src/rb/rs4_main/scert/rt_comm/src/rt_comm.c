@@ -463,7 +463,20 @@ void rt_comm_metric_init(void)
     gLastMetricPrintTime = *(RtTimeS *)m;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_metric_add_data);
+typedef struct { unsigned int value; float rate; float peak; } RtMetricV;
+typedef struct { int x[2]; RtMetricV sp, sb, rp, rb; } RtMetricAll;
+void rt_comm_metric_add_data(int sent, int recv, int hdr)
+{
+    if (sent != 0) {
+        ((RtMetricAll *)gMetricData)->sp.value++;
+        ((RtMetricAll *)gMetricData)->sb.value += sent + hdr;
+    }
+    if (recv != 0) {
+        ((RtMetricAll *)gMetricData)->rp.value++;
+        ((RtMetricAll *)gMetricData)->rb.value += recv + hdr;
+    }
+    rt_comm_metric_update();
+}
 
 void rt_comm_metric_update(void)
 {
@@ -548,7 +561,14 @@ int rt_comm_echo_enable(int *cfg)
     return ret;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_echo_send);
+int rt_comm_echo_send(int *sent, RtLinkAddr addr, int a)
+{
+    int ret = 5;
+    *sent = 0;
+    if ((&gEchoInfo)[0] != 0)
+        ret = rt_comm_send_echo((char *)(&gEchoInfo)[1], sent, addr, a);
+    return ret;
+}
 
 typedef struct { int on; int comm; void (*cb)(RtLinkAddr, int); } RtEchoInfo;
 #define EI ((RtEchoInfo *)&gEchoInfo)
