@@ -262,7 +262,20 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__CreateRenderStage);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__InitTexCache);
+int *I3dRender__ReserveTrashQwc(int, int);
+int I3dRenderStage__InitTexCache(int *rs, float z)
+{
+    int *p = I3dRender__ReserveTrashQwc(rs[0x814 / 4], 1);
+    int *last = (int *)rs[3];
+    union { float f; int i; } u;
+    u.f = z;
+    p[0] = u.i ^ ((u.i >> 31) | 0x80000000);
+    last[1] = (int)p;
+    p[2] = 0;
+    rs[3] = (int)p;
+    rs[4]++;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__Construct);
 
