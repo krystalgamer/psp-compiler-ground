@@ -222,7 +222,66 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD8A4);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD8BC);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", i3dTask_WallPaper);
+typedef struct {
+	char pad0[0x24];
+	signed char f24;
+	char pad25[3];
+	int f28;
+	int f2C;
+	void *anm;
+	char pad34[0x60 - 0x34];
+	char attr[0x30];
+	char m0[0x40];
+	char m1[0x40];
+} WpTask;
+extern WpTask *D_001199D8;
+void *resGetDatLocal(int, int);
+void *bxAnmInit(void *);
+void bxAnmTerm(void *);
+int bxAnmExec(void *);
+void bxAnmDraw(void *, void *, void *);
+int taskKill(void *, int, int);
+void *i3dTask_WallPaper(void *arg0, unsigned int arg1, void *arg2, int arg3)
+{
+	WpTask *Tp = arg0;
+	switch (arg1) {
+	case 0:
+		if (Tp == NULL)
+			consPrintf(&D_000FD5C4, &D_000FD5E0, 0x42C, "i3dTask_WallPaper", &D_000FD608);
+		if (D_001199D8 != NULL) {
+			Tp->anm = NULL;
+			taskKill(Tp, 0, 0);
+		} else {
+			Tp->f28 = -1;
+			Tp->f24 = 0;
+			Tp->f2C = 0;
+			copUnitMat(Tp->m0);
+			copUnitMat(Tp->m1);
+			copInitAttr(Tp->attr);
+			Tp->anm = bxAnmInit(resGetDatLocal(1, 0x190));
+			D_001199D8 = Tp;
+		}
+		return Tp;
+	case 4:
+		D_001199D8 = D_001199D8 == Tp ? NULL : D_001199D8;
+		return Tp;
+	case 1:
+		if (Tp->anm) {
+			bxAnmTerm(Tp->anm);
+			Tp->anm = NULL;
+		}
+		return NULL;
+	case 2:
+		bxAnmExec(Tp->anm);
+		copLetMat(Tp->m0, Tp->m1);
+		return NULL;
+	case 3:
+		bxAnmDraw(Tp->anm, Tp->m1, Tp->attr);
+		return NULL;
+	default:
+		return (void *)taskDefaultMsg((int)arg0, arg1, (int)arg2, arg3);
+	}
+}
 
 int i3dCameraInit(void) {
     return 1;
