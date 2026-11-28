@@ -46,6 +46,62 @@ void *getBodyBox(void *box);
 typedef struct FBOX { u8 pad0[0x6C]; void *form; u8 pad70[0x38]; struct FBOX *parent; struct FBOX *child; struct FBOX *next; } FBOX;
 unsigned int strlen(const char *);
 char *strcpy(char *, const char *);
+typedef struct {
+    int len;
+    char *buf;
+} FORMDATA;
+typedef struct {
+    int x00;
+    int sid;
+    int x08;
+    int x0C;
+    int x10;
+    int x14;
+    int x18;
+    int x1C;
+} LP7ARG;
+typedef struct {
+    int type;
+    int sid;
+    int x08;
+    int cmd;
+    int x10;
+    int x14;
+    int x18;
+    void *x1C;
+} JSRUNARG;
+typedef struct {
+    int obj;
+    unsigned short *code;
+    char *js_src;
+    char *target;
+    int uid;
+} JSRUNEV;
+extern unsigned char _DOMaction;
+extern unsigned char _DOMmethod;
+extern unsigned char _DOMuid;
+int Node_getOwnerDocument();
+void *HST_searchDocumentHistoryNode();
+char *getDOMAttributeValue();
+int strncasecmp(const char *a, const char *b, unsigned int n);
+void *make_msg_LP7();
+char *strchr(const char *s, int c);
+int Node_getJSObj();
+int utf8ToUcs2();
+int JSRun();
+char *lo_fullUrl();
+int HST_getCurURIlen();
+char *HST_getCurURI();
+int HST_getCharSet();
+int collectFormData();
+int DOMStringcasecmpCharFast();
+void *URL_new();
+void URL_setQuery();
+char *URL_toString();
+void URL_free();
+char *HST_getTargetName();
+int Element_hasAttribute();
+void *make_msg_LP11();
 RadioEnt *getRadioListByName(void *ctx, void *box) {
     RadioEnt *r = M2C_FIELD(M2C_FIELD(ctx, void **, 0x20), RadioEnt **, 0x80);
 
@@ -407,7 +463,111 @@ int confirmFepInfo(int a, int b, int c, int d, int e) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_form", actFormInput);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_form", actSubmitForm);
+int actSubmitForm(void *box, void *sub, int x, int y)
+{
+    FORMDATA data;
+    DOMString method;
+    LP7ARG lp7;
+    JSRUNARG js;
+    char *url;
+    void *h;
+    int doc;
+    void *msg;
+    void *list;
+    void *u;
+    void *extra;
+    JSRUNEV *ev;
+    unsigned short *code;
+    char *js_src;
+    char *target;
+    int uid;
+
+    extra = NULL;
+    doc = Node_getOwnerDocument(M2C_FIELD(box, int *, 0x28));
+    h = HST_searchDocumentHistoryNode(doc);
+    if (h == NULL)
+        return -1;
+    url = getDOMAttributeValue(M2C_FIELD(box, int *, 0x28), &_DOMaction);
+    if (url != NULL) {
+        if (strncasecmp(url, "mailto:", 7) == 0 || strncasecmp(url, "proc:", 5) == 0 || strncasecmp(url, "fax:", 4) == 0 || strncasecmp(url, "tel:", 4) == 0) {
+            lp7.sid = HST_getSessionID(h);
+            lp7.x14 = 0;
+            msg = make_msg_LP7(&lp7, url);
+            goto send;
+        }
+        if (strncasecmp(url, "javascript:", 11) == 0) {
+            js_src = strchr(url, ':') + 1;
+            js.sid = 0;
+            js.x08 = 0;
+            js.cmd = 0;
+            js.x10 = 0;
+            js.x14 = 0;
+            js.x18 = 0;
+            js.x1C = 0;
+            js.type = 4;
+            js.sid = HST_getSessionID(h);
+            js.cmd = 0x402;
+            js.x14 = 1;
+            ev = MEM_malloc(0, 8);
+            code = MEM_malloc(0, strlen(js_src) * 3 + 1);
+            ev->obj = Node_getJSObj(doc);
+            ev->code = code;
+            code[utf8ToUcs2(code, js_src, strlen(js_src))] = 0;
+            MEM_free(0, url);
+            js.x18 = 8;
+            js.x1C = ev;
+            JSRun(&js);
+            return 0;
+        }
+        url = lo_fullUrl(box, url);
+        if (url == NULL)
+            return -1;
+    } else {
+        url = MEM_malloc(0, HST_getCurURIlen(h) + 1);
+        if (url == NULL)
+            return -1;
+        strcpy(url, HST_getCurURI(h));
+    }
+    list = getFormList(getBodyBox(box), M2C_FIELD(box, int *, 0x28));
+    if (collectFormData(list, sub, x, y, HST_getCharSet(h), &data) < 0) {
+        MEM_free(0, url);
+        return -1;
+    }
+    Element_getAttribute(&method, M2C_FIELD(box, void **, 0x28), &_DOMmethod);
+    if (method.len != 0 && DOMStringcasecmpCharFast(&method, "post") == 0)
+        doc = 1;
+    else {
+        doc = 0;
+        u = URL_new(url);
+        if (u == NULL) {
+            if (data.buf != NULL)
+                MEM_free(0, data.buf);
+            MEM_free(0, url);
+            return -1;
+        }
+        URL_setQuery(u, data.buf);
+        MEM_free(0, url);
+        url = URL_toString(u);
+        if (url == NULL) {
+            URL_free(u);
+            if (data.buf != NULL)
+                MEM_free(0, data.buf);
+            return -1;
+        }
+        URL_free(u);
+    }
+    target = HST_getTargetName(h);
+    uid = Element_hasAttribute(M2C_FIELD(box, int *, 0x28), &_DOMuid) != 0;
+    msg = make_msg_LP11(doc, url, HST_getCurURI(h), &data, target, uid);
+    if (extra != NULL)
+        MEM_free(0, extra);
+    if (data.buf != NULL)
+        MEM_free(0, data.buf);
+send:
+    MEM_free(0, url);
+    putLLIST(REQUEST_LLIST, msg);
+    return 0;
+}
 
 void actResetForm(int form, M2C_UNK x) {
     resetFormData(form, x);
