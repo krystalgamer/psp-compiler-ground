@@ -41,6 +41,9 @@ int iom_mfree(int arg0);
 typedef struct CkQueue { int w[4]; } CkQueue;
 typedef struct Cookie { void *dom; char *domain; char *name; char *value; int expire; int secure; } Cookie;
 extern char D_00139C98[];
+typedef struct { char *start; char *end; } STRWORD;
+STRWORD UTL_strword(char *s, char *delim, char *stop);
+extern char D_00139BEC[];
 void iom_cookieFile_init(void) {
     cookieFile_init();
 }
@@ -148,7 +151,89 @@ int cookieFile_write(CFILE *f, void *src, int n) {
     return n;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_cookie", iom_loadCookie);
+int iom_loadCookie(void) {
+    CFILE *f;
+    int start;
+    int len;
+    int c;
+    int r;
+    char *name;
+    char *value;
+    STRWORD w;
+
+    f = cookieFile_open();
+    if (f == NULL) {
+        return 0;
+    }
+    while (cookieFile_pos(f) < cookieFile_len(f)) {
+        start = cookieFile_pos(f);
+        c = cookieFile_getc(f);
+        while (c > 0 && c != '\n') {
+            c = cookieFile_getc(f);
+        }
+        if (c != '\n') {
+            break;
+        }
+        len = cookieFile_pos(f) - start;
+        if (len < 2) {
+            break;
+        }
+        len--;
+        name = iom_malloc(len + 1);
+        if (name == NULL) {
+            cookieFile_close(f);
+            return -0x12D;
+        }
+        cookieFile_seek(f, start);
+        cookieFile_read(f, name, len);
+        name[len] = 0;
+        cookieFile_getc(f);
+        w = UTL_strword(name, D_00139BEC, "\r\n");
+        *w.end = 0;
+        if (w.start != name) {
+            strcpy(name, w.start);
+        }
+        if (*name == 0) {
+            goto skip;
+        }
+        start = cookieFile_pos(f);
+        c = cookieFile_getc(f);
+        while (c > 0 && c != '\n') {
+            c = cookieFile_getc(f);
+        }
+        if (c != '\n') {
+            goto skip;
+        }
+        len = cookieFile_pos(f) - start;
+        if (len < 2) {
+        skip:
+            iom_mfree((int)name);
+            break;
+        }
+        len--;
+        value = iom_malloc(len + 1);
+        if (value == NULL) {
+            iom_mfree((int)name);
+            cookieFile_close(f);
+            return -0x12D;
+        }
+        cookieFile_seek(f, start);
+        cookieFile_read(f, value, len);
+        value[len] = 0;
+        cookieFile_getc(f);
+        r = iom_addCookie(name, value, 0);
+        if (r < 0) {
+            iom_mfree((int)name);
+            iom_mfree((int)value);
+            cookieFile_close(f);
+            return r;
+        }
+        iom_mfree((int)name);
+        iom_mfree((int)value);
+    }
+    cookieFile_close(f);
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_cookie", iom_saveCookie);
 
