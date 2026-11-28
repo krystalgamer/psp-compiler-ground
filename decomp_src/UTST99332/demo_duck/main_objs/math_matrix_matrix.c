@@ -162,7 +162,11 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_matrix_matr
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_matrix_matrix", _ZNK4math6matrix7inverseEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_matrix_matrix", _ZNK4math6matrix9transposeEv);
+math::matrix math::matrix::transpose() const
+{
+    return matrix(vector_xyzw(r[0][0], r[1][0], r[2][0], r[3][0]), vector_xyzw(r[0][1], r[1][1], r[2][1], r[3][1]),
+                  vector_xyzw(r[0][2], r[1][2], r[2][2], r[3][2]), vector_xyzw(r[0][3], r[1][3], r[2][3], r[3][3]));
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_matrix_matrix", _ZN4math6matrix13EulerRotationEfffNS_13RotationOrderE);
 
