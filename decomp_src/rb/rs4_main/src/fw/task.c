@@ -22,7 +22,29 @@ void consPrintf(const char *, ...);
 void rsvMove();
 M2C_UNK sortPrio(void **, M2C_UNK, M2C_UNK, M2C_UNK, void ***);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", taskInit);
+void *_memAllocZero(int, void *, int);
+int rsvInit(int, int);
+extern unsigned char D_000FC068, D_000FC08C, D_000FC098;
+
+int *taskInit(int n) {
+    int *t;
+
+    consPrintf(&D_000FC050, "taskInit");
+    t = _memAllocZero(8, &D_000FC058, 0x2D);
+    if (t == NULL) {
+        consPrintf(&D_000FC070, &D_000FC058, 0x2E, "taskInit", &D_000FC068);
+    }
+    t[0] = rsvInit(0x160, n);
+    t[1] = (int)_memAllocZero(n * 4, &D_000FC058, 0x31);
+    if (t[0] == 0) {
+        consPrintf(&D_000FC070, &D_000FC058, 0x32, "taskInit", &D_000FC08C);
+    }
+    if (t[1] == 0) {
+        consPrintf(&D_000FC070, &D_000FC058, 0x33, "taskInit", &D_000FC098);
+    }
+    consPrintf(&D_000FC0A8);
+    return t;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", D_000FC050);
 
