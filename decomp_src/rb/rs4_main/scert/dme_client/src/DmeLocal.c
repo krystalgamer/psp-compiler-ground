@@ -1163,7 +1163,39 @@ void p2p_host_change_cb(unsigned short host, char *ctx)
     }
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", udp_resolve_cb);
+extern unsigned char gNatServiceStatus;
+extern void *gpfNatServiceCallback;
+typedef struct { int set; char ext[16]; int port; } DmeNatEnt;
+typedef struct { int done; int err; DmeNatEnt e[2]; } DmeNatStatus;
+void udp_resolve_cb(int a, int err, DmeLinkAddr addr, int port, char *ci)
+{
+    unsigned int i;
+    DmeMyAddr *my;
+    DmeNatEnt *ne;
+    int *p;
+
+    if (err == 0) {
+        ((DmeMyAddr *)&gMyAddressInfo)->ext = addr;
+        ((DmeMyAddr *)&gMyAddressInfo)->port = port;
+        if (ci != NULL && (p = *(int **)(ci + 0x400)) != NULL) {
+            p[0] = addr.ip;
+            p[1] = addr.port;
+            p[2] = port;
+        }
+    }
+    ((DmeNatStatus *)&gNatServiceStatus)->done = 1;
+    ((DmeNatStatus *)&gNatServiceStatus)->err = err == 0 ? 0 : 0x25;
+    ne = ((DmeNatStatus *)&gNatServiceStatus)->e;
+    my = (DmeMyAddr *)&gMyAddressInfo;
+    for (i = 0; i < 2; i++) {
+        ne->set = my->set;
+        ne->port = my->port;
+        rt_comm_linkaddress_toext(ne->ext, my->ext);
+        my++;
+        ne++;
+    }
+    ((void (*)(void *))gpfNatServiceCallback)(&gNatServiceStatus);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", p2p_peer_update_cb);
 
