@@ -456,4 +456,35 @@ void freeDrawObject(BOX *box) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_api_low", freeBoxTree);
+void freeBoxTree(BOX *root, int arg) {
+    BOX *b;
+    BOX *next;
+    BOX *up;
+
+    b = root;
+    while (b != NULL) {
+        freeBoxPre(b);
+        if (b->child != NULL) {
+            b = b->child;
+        } else if (b->next != NULL) {
+            next = b->next;
+            freeBox(b, arg);
+            b = next;
+        } else {
+            if (b == root)
+                return;
+            while (b->next == NULL) {
+                up = b->parent;
+                freeBox(b, arg);
+                b = up;
+                if (b == root)
+                    return;
+            }
+            if (b == root)
+                return;
+            next = b->next;
+            freeBox(b, arg);
+            b = next;
+        }
+    }
+}
