@@ -52,6 +52,11 @@ int mes_util_streq(const UCSChar *a, const UCSChar *b, int n);
 MesValue mes_eval_to_number(MesContext *ctx, MesValue v);
 MesValue mes_regexp_constructor(MesContext *ctx, MesValue pattern, MesValue flags);
 void *mes_regexp_pattern_exec(MesContext *ctx, MesValue re, MesValue s, int i);
+typedef struct SplArray { MesObject obj; unsigned int length; } SplArray;
+typedef struct SplCap { int gc; int n; MesValue *vals; } SplCap;
+typedef struct SplState { int gc; int end; int cap; } SplState;
+SplArray *mes_array_new(MesContext *ctx, unsigned int len);
+void mes_array_set(MesContext *ctx, SplArray *a, MesValue v);
 MesValue mes_string_new(MesContext *ctx, const void *str, int len)
 {
     MesStr *s;
@@ -479,7 +484,66 @@ MesValue mes_string_slice(MesContext *ctx, MesValue a, MesValue b)
     return mes_string_new(ctx, str + start, end - start);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_split);
+MesValue mes_string_split(MesContext *ctx, MesValue sep, MesValue limit)
+{
+    unsigned int lim;
+    UCSChar *str;
+    MesValue s;
+    SplArray *arr;
+    int len;
+    int p;
+    int i;
+    SplState *st;
+    int cap;
+    int j;
+
+    s = mes_eval_to_string(ctx, (MesValue)ctx->frame->thisobj);
+    *--ctx->sp = s;
+    arr = mes_array_new(ctx, 0);
+    *--ctx->sp = (MesValue)arr;
+    lim = -1;
+    if (limit != 0)
+        lim = mes_eval_to_uint32(ctx, limit);
+    len = ((MesStr *)(s & ~3))->len;
+    str = ((MesStr *)(s & ~3))->str;
+    p = 0;
+    if (sep != 0 && (!MES_IS_OBJECT(sep) || ((MesObject *)sep)->gc->kind != 8))
+        sep = mes_eval_to_string(ctx, sep);
+    *--ctx->sp = sep;
+    if (lim != 0) {
+        if (sep == 0)
+            mes_array_set(ctx, arr, s);
+        else if (len == 0) {
+            if (mes_regexp_pattern_exec(ctx, sep, s, 0) == NULL)
+                mes_array_set(ctx, arr, s);
+        } else {
+            for (i = p; i < len; i++) {
+                st = mes_regexp_pattern_exec(ctx, sep, s, i);
+                if (st == NULL || st->end <= p)
+                    continue;
+                *--ctx->sp = (MesValue)st;
+                mes_array_set(ctx, arr, mes_string_new(ctx, str + p, i - p));
+                ctx->sp++;
+                if (arr->length >= lim)
+                    break;
+                p = st->end;
+                cap = st->cap;
+                if (cap == 0)
+                    continue;
+                *--ctx->sp = (MesValue)cap;
+                for (j = 0; j < ((SplCap *)cap)->n && arr->length < lim; j++)
+                    mes_array_set(ctx, arr, ((SplCap *)cap)->vals[j]);
+                ctx->sp++;
+                if (arr->length >= lim)
+                    break;
+            }
+            if (i == len)
+                mes_array_set(ctx, arr, mes_string_new(ctx, str + p, len - p));
+        }
+    }
+    ctx->sp += 3;
+    return (MesValue)arr;
+}
 
 MesValue mes_string_substring(MesContext *ctx, MesValue a, MesValue b)
 {
