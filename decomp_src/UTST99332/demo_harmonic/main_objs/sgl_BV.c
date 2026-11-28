@@ -11,14 +11,15 @@ extern const char D_0016A774[];
 extern const char D_0016A7B8[];     /* file */
 extern const char longestAxis_name[] __asm__("_ZZNK3sgl2BV11longestAxisEvE19__PRETTY_FUNCTION__");
 
-extern const float D_0016A708;      /* 1.0f */
-extern const float D_0016A70C;      /* 1.0f */
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _Z41__static_initialization_and_destruction_0ii_9F58C);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZN3sgl2BVC2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZN3sgl2BVC1Ev);
+sgl::BV::BV()
+{
+    _type = 0;
+    _m84 = math::matrix::Identity();
+    _started = true;
+}
 
 void sgl::BV::setType(sgl::BV::Type v)
 {
@@ -27,8 +28,8 @@ void sgl::BV::setType(sgl::BV::Type v)
 
 void sgl::BV::start()
 {
-    Box::first(math::vector_xyzw(0, 0, 0, D_0016A708));
-    Box::add(math::vector_xyzw(0, 0, 0, D_0016A708));
+    Box::first(math::vector_xyzw(0, 0, 0, 1));
+    Box::add(math::vector_xyzw(0, 0, 0, 1));
     _started = true;
 }
 
@@ -49,7 +50,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZN
 
 void sgl::BV::add(float x, float y, float z)
 {
-    add(math::vector_xyzw(x, y, z, D_0016A70C));
+    add(math::vector_xyzw(x, y, z, 1));
 }
 
 void sgl::BV::add(const BV &o)

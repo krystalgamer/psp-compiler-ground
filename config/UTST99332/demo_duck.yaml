@@ -499,6 +499,8 @@ segments:
       - [0x16D3BC, rodata, asm/rodata_16D33C]
       - [0x16D660, .rodata, main_objs/VertexColorEnv]
       - [0x16D684, rodata, asm/rodata_16D604]
+      - [0x16D6A8, .rodata, main_objs/sgl_BV]
+      - [0x16D6B8, rodata, asm/rodata_16D638]
       - [0x16DBD4, .rodata, main_objs/BVH]
       - [0x16DBF0, .rodata, main_objs/sgl_Box]
       - [0x16DC18, rodata, asm/rodata_16DB98]

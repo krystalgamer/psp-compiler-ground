@@ -616,3 +616,6 @@ rodata 0x17641C -
 # vertex_cache1 float pools
 rodata 0x166EA8 main_objs/glutils_vertex_cache1
 rodata 0x166F18 -
+# sgl_BV: the 1.0f pools of BV() (C2, C1), start(), add(float, float, float)
+rodata 0x16D628 main_objs/sgl_BV
+rodata 0x16D638 -

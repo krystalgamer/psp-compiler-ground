@@ -1022,7 +1022,7 @@ public:
     bool intersect(float &, const math::vector_xyzw &, const math::vector_xyzw &) const;
     static std::vector<math::vector_xyzw> _points;
     int _type;              /* 0x80 */
-    char _p84[0xC4 - 0x84];
+    math::matrix _m84;      /* 0x84 */
     float _h[3];            /* 0xC4: half extents */
     char _pD0[0xE4 - 0xD0];
     bool _started;          /* 0xE4 */
