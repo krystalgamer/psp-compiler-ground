@@ -95,16 +95,11 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/lib/thr", D_000FB680);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/lib/thr", D_000FB690);
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/lib/thr", D_000FB698);
-
 typedef struct { int size; char name[32]; int attr; int status; int rest[16]; } ThrInfo;
 int sceKernelReferThreadStatus(int thid, ThrInfo *info);
-extern const ThrInfo D_000FB698;
 int thrState(ThrCntx *pCntx)
 {
-	/* STAND-IN: the source is `ThrInfo info = { sizeof(ThrInfo) };` (one constant shared with
-	   thrVSync); copy the extern template while thrVSync is asm */
-	ThrInfo info = D_000FB698;
+	ThrInfo info = { sizeof(ThrInfo) };
 	int ret;
 
 	ret = sceKernelReferThreadStatus(pCntx->Thid, &info);
@@ -164,4 +159,56 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/thr", thrDelete);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/thr", thrProc);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/thr", thrVSync);
+int sceKernelWakeupThread(int thid);
+void thrVSync(void)
+{
+	ThrCntx *p;
+	int ret;
+
+	for (p = pThrEntry; p != NULL; p = p->pNext) {
+		ThrInfo info = { sizeof(ThrInfo) };
+
+		ret = sceKernelReferThreadStatus(p->Thid, &info);
+		switch (ret) {
+		case 0:
+			switch (info.status) {
+			case 4:
+				ret = sceKernelWakeupThread(p->Thid);
+				switch (ret) {
+				case 0:
+					p->Prio = info.rest[5];
+					break;
+				default:
+					THR_ASSERT(0x13F, "thrVSync");
+					break;
+				case 0x80020198:
+					THR_ASSERT(0x140, "thrVSync");
+					break;
+				case 0x80020064:
+					THR_ASSERT(0x141, "thrVSync");
+					break;
+				case 0x800201A2:
+					THR_ASSERT(0x142, "thrVSync");
+					break;
+				}
+				break;
+			case 1:
+			case 2:
+			case 8:
+			case 12:
+			case 16:
+				break;
+			}
+			break;
+		default:
+			THR_ASSERT(0x149, "thrVSync");
+			break;
+		case 0x80020198:
+			THR_ASSERT(0x14A, "thrVSync");
+			break;
+		case 0x80020197:
+			THR_ASSERT(0x14B, "thrVSync");
+			break;
+		}
+	}
+}
