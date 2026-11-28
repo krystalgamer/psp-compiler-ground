@@ -165,7 +165,27 @@ int _partFree3DBaseCntx(void *p)
 	return 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", _partEzEnvelope);
+extern unsigned char D_000FE100;
+extern const float D_000FE28C;
+int _partEzEnvelope(float *out, float a, float b, float c, float d, float w)
+{
+	if (!(0.0f <= w))
+		consPrintf(&D_000FE100, &D_000FE0C4, 0x21A, "_partEzEnvelope", "0.0f<= w");
+	if (w < b) {
+		*out = (a - D_000FE28C) * (D_000FE28C - w / b) + D_000FE28C;
+		return 0;
+	}
+	if (D_000FE28C <= w) {
+		*out = d;
+		return D_000FE28C < w;
+	}
+	if (c < w) {
+		*out = (d - D_000FE28C) * (w - c) / (D_000FE28C - c) + D_000FE28C;
+		return 0;
+	}
+	*out = D_000FE28C;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partCusConvExt);
 
@@ -241,7 +261,7 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FE290);
 
 extern const float D_000FE294, D_000FE298;
 void i3dPosture2Mat(int arg0, int arg1);
-void _partEzEnvelope(float *out, float a, float b, float c, float d, float t);
+int _partEzEnvelope(float *out, float a, float b, float c, float d, float t);
 int partEmitAnimate(char *e)
 {
 	char *env = *(char **)(e + 0x7C);
