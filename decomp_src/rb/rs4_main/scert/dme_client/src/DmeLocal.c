@@ -658,7 +658,25 @@ int NetFragSendCB(int len, NetFragCtx *c)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetISendMessage);
+typedef struct { int target; unsigned int mask[9]; unsigned int nbits; } DmeTarget;
+typedef struct { char *dest; unsigned char type; char pad[3]; int id; DmeTarget t; int len; int data; } DmeMsgOut;
+int rt_parse_fragment_message(int, int, int, int, int (*)(int, NetFragCtx *), NetFragCtx *);
+int NetISendMessage(DmeMsgOut *m, DmeSendInfo *s, int x)
+{
+    NetFragCtx ctx;
+    int r;
+
+    if (m->dest == NULL) return 0x17;
+    if (*(int *)(m->dest + 0x468) == 4) return 0xF;
+    *(DmeTarget *)&s->target = m->t;
+    if (m->len >= 0x1FF) ctx.idx = m->type | 0x50;
+    else ctx.idx = m->type;
+    ctx.conn = m->dest;
+    ctx.buf = s;
+    r = rt_parse_fragment_message(x, m->id, m->data, m->len, NetFragSendCB, &ctx);
+    if (r != 0 && s->err == 0) s->err = NetMapRtError(r);
+    return s->err;
+}
 
 int rt_parse_execute();
 extern int gaParseErrors[];
