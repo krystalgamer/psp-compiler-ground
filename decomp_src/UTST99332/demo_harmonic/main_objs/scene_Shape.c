@@ -26,9 +26,11 @@ SCENE_LINKONCE_ORDER(
 
 extern const char D_00169DDC[];
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Shape", _ZN5scene5ShapeC2ESsb);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Shape", _ZN5scene5ShapeC1ESsb);
+scene::Shape::Shape(std::string name, bool b) : Group(name, b)
+{
+    set_default_name();
+    _bvdata.create((sgl::BV::Type)0);
+}
 
 scene::Shape::~Shape()
 {
