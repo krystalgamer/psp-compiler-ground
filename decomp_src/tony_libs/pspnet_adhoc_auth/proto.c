@@ -284,7 +284,31 @@ void func_00003188(AuthCtx *ctx, Peer *peer, char *pkt)
 	func_00003818(ctx, peer, 4);
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc_auth/nonmatchings/proto", func_00003330);
+void func_00003330(AuthCtx *ctx, Peer *peer, char *pkt)
+{
+	unsigned int seq;
+	int s;
+
+	if (peer == 0 || peer->state != 4)
+		return;
+	char *hdr = pkt + 0x14;
+
+	if (sceMemab_driver_B54E1AA7(&peer->sa, pkt + 0x34, 16, hdr, 1, 0) < 0)
+		return;
+	memcpy(&seq, ((struct authpkt *)pkt)->seq, 4);
+	seq = ntohl(seq);
+	if (peer->seq < seq) {
+		peer->seq = seq;
+		s = sceKernelCpuSuspendIntr();
+		if (peer->alarm[2] > 0) {
+			sceKernelCancelAlarm(peer->alarm[2]);
+			peer->alarm[2] = 0;
+		}
+		peer->alarm[2] = sceKernelSetAlarm(ctx->unkE8, func_000034D0, &peer->arg[2]);
+		sceKernelCpuResumeIntr(s);
+	}
+}
+
 
 unsigned int func_00003424(void *common)
 {
