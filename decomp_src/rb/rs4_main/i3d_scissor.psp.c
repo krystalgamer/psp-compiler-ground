@@ -115,7 +115,19 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dDrawArrayWith
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuMaterial_PSP);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuColor_PSP);
+unsigned int *I3dGuColor_PSP(unsigned int *p, unsigned int color)
+{
+    unsigned int a = 0x55000000;
+    unsigned int b;
+    a = __builtin_allegrex_ins(a, color, 0, 24);
+    b = a + 0x01000000;
+    p[1] = 0x58000000 | (color >> 24);
+    p[2] = b;
+    b += 0x01000000;
+    p[3] = b;
+    p[0] = a;
+    return p + 4;
+}
 
 unsigned int *I3dGuClutMode_PSP(unsigned int *p, int cpsm, int shift, int mask, int a3)
 {
