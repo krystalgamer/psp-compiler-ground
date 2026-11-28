@@ -85,6 +85,9 @@ extern char D_0013C41C[];
 extern char D_0013C428[];
 extern char D_0013C444[];
 extern char D_0013C44C[];
+int mes_class_instance_of(MesObject *obj, void *cls);
+extern void *mes_event_class;
+int mes_class_call(MesContext *ctx, int f, int argc, MesValue *argv, MesObject *thisobj);
 void mes_window_check_validate(MesContext *ctx, void **a, void **b, int *sid, void **node)
 {
     MesObject *o;
@@ -625,4 +628,71 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", D_0013C504)
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", D_0013C50C);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_event_handle_event);
+int mes_event_handle_event(MesContext *ctx, MesObject *obj, int type)
+{
+    MesObject *self;
+    int f;
+
+    if (mes_class_instance_of(obj, mes_event_class) == 1) {
+        self = ctx->frame->thisobj;
+        switch (type) {
+        case 1:
+            f = mes_class_property_get(ctx, self, "onabort");
+            break;
+        case 2:
+            f = mes_class_property_get(ctx, self, "onblur");
+            break;
+        case 3:
+            f = mes_class_property_get(ctx, self, "onchange");
+            break;
+        case 4:
+            f = mes_class_property_get(ctx, self, "onclick");
+            break;
+        case 7:
+            f = mes_class_property_get(ctx, self, "onerror");
+            break;
+        case 8:
+            f = mes_class_property_get(ctx, self, "onfocus");
+            break;
+        case 12:
+            f = mes_class_property_get(ctx, self, "onload");
+            break;
+        case 13:
+            f = mes_class_property_get(ctx, self, "onmousedown");
+            break;
+        case 14:
+            f = mes_class_property_get(ctx, self, "onmousemove");
+            break;
+        case 15:
+            f = mes_class_property_get(ctx, self, "onmouseout");
+            break;
+        case 16:
+            f = mes_class_property_get(ctx, self, "onmouseover");
+            break;
+        case 18:
+            f = mes_class_property_get(ctx, self, "onmove");
+            break;
+        case 20:
+            f = mes_class_property_get(ctx, self, "onresize");
+            break;
+        case 21:
+            f = mes_class_property_get(ctx, self, "onselect");
+            break;
+        case 17:
+        case 19:
+        case 22:
+            f = mes_class_property_get(ctx, self, "onmouseup");
+            break;
+        case 23:
+            f = mes_class_property_get(ctx, self, "onunload");
+            break;
+        default:
+            f = 0x20;
+            break;
+        }
+        if (f != 0x20)
+            mes_class_call(ctx, f, ctx->frame->args != NULL ? ctx->frame->args->argc : 0,
+                           ctx->frame->args != NULL ? ctx->frame->args->argv : NULL, self);
+    }
+    return 0xC;
+}
