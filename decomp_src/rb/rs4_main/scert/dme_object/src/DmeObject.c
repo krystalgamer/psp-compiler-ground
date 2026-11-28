@@ -849,7 +849,36 @@ void NetISendFieldUpdates(void) {
     SendGroupedFieldUpdate(NetIGetObject(), 0, 0);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", SendClientNetObjectUpdates);
+extern void *gDmeGlobals;
+void SendClientNetObjectUpdates(void)
+{
+    char *ci;
+    unsigned int me;
+    char *o;
+
+    ci = (char *)gObjectInterface.p138;
+    if (ci == NULL) return;
+    me = *(unsigned int *)(ci + 0x404);
+    if (me >= 256) return;
+    for (o = *(char **)((char *)&gObjectInterface + 0x12C); o != NULL; o = *(char **)(o + 0x4C)) {
+        int i;
+        if (*(unsigned int *)(o + 0x3C) == 0) {
+            NetISendObjectFullUpdate(-1, o, 1);
+            continue;
+        }
+        if (*(unsigned int *)(o + 0x38) != 0 && *(unsigned int *)(o + 0x3C) + *(unsigned int *)(o + 0x38) < *(unsigned int *)((char *)gDmeGlobals + 0x10)) {
+            NetISendObjectFullUpdate(-1, o, 0);
+            continue;
+        }
+        for (i = 0; i < *(int *)(ci + 0x460); i++) {
+            int *c = NetIGetClient(ci, i);
+            if (c == NULL) continue;
+            if (i == me) continue;
+            if ((*(int **)(o + 0x40))[i] == 0 && *c != 0) NetISendObjectFullUpdate(i, o, 1);
+        }
+        SendGroupedFieldUpdate((int)o, 0, 0);
+    }
+}
 
 int NetSetSessionMasterClientIndex(void *arg0, int arg1) {
     int var_v0;
