@@ -773,7 +773,69 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_udp_e
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_udp_data_cb);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_send_peer_info);
+int rt_p2p_set_peer_update_bit(char *, unsigned short, unsigned short);
+int rt_msg_set_u4byte();
+int rt_timebase_get_globaltime();
+int rt_msg_set_u2byte();
+typedef struct { unsigned short type; unsigned char key[0x40]; } RtP2PKeyMsg2;
+void rt_p2p_send_peer_info(p, peer, idx)
+    char *p;
+    RtP2PPeer *peer;
+    unsigned short idx;
+{
+    RtP2PVec vec;
+    RtP2PKeyMsg2 km;
+    struct { unsigned char type[2]; unsigned char a[4]; unsigned char b[4]; } tm;
+    int gt;
+    unsigned short host, me, i;
+    RtP2PPeer *q;
+
+    host = *(unsigned short *)(p + 0x1A4);
+    me = *(unsigned short *)(p + 0x1A2);
+    if (peer->a == 2) {
+        peer->a = 3;
+        if (me == host) {
+            if (*(unsigned short *)((char *)peer + 0x34) == 0)
+                *(unsigned short *)((char *)peer + 0x34) = ++*(unsigned short *)(p + 0x1E0);
+            if (rt_p2p_set_peer_update_bit(p, me, idx) != 0) return;
+            i = 0;
+            q = *(RtP2PPeer **)(p + 0x184);
+            for (; i < *(unsigned short *)(p + 0x19C); i++, q++) {
+                if (q->a == 3) {
+                    if (i == idx || i == host) continue;
+                    if (rt_p2p_set_peer_update_bit(p, i, idx) != 0) return;
+                    if (rt_p2p_set_peer_update_bit(p, idx, i) != 0) return;
+                }
+            }
+            if (rt_p2p_set_peer_update_bit(p, idx, idx) != 0) return;
+            if (gCryptInterfacePtr != NULL) {
+                km.type = rt_p2p_pack_type(0x11, 0x42);
+                ((void (*)(int, int, void *))((void **)gCryptInterfacePtr)[0x28 / 4])(-1, 0, km.key);
+                vec.e[0].buf = &km;
+                vec.e[0].len = 0x42;
+                vec.total = 0x42;
+                vec.n = 1;
+                if (rt_p2p_isend((int *)p, (int *)peer, 0xF000, (int)&vec) != 0) return;
+            }
+        }
+    } else if (peer->a == 1) {
+        peer->a = 4;
+    } else
+        return;
+    if (rt_p2p_send_my_broadcast_flag(p, idx) != 0) return;
+    if (*(void **)(p + 0x210) != NULL)
+        (*(void (**)(int, unsigned short))(p + 0x210))(*(int *)(p + 0x218), idx);
+    if (host != me) return;
+    rt_msg_set_u4byte(tm.a, 0);
+    rt_timebase_get_globaltime(&gt);
+    rt_msg_set_u4byte(tm.b, gt);
+    rt_msg_set_u2byte(tm.type, rt_p2p_pack_type(0xF, 0xA));
+    vec.e[0].buf = &tm;
+    vec.e[0].len = 0xA;
+    vec.total = 0xA;
+    vec.n = 1;
+    rt_p2p_isend((int *)p, (int *)&(*(RtP2PPeer **)(p + 0x184))[idx], 0xF000, (int)&vec);
+}
 
 int rt_p2p_save_backlog_connection(char *p, int conn); int rt_udp_get_virtual_port(); int rt_udp_set_peer_id(); int rt_udp_accept(); int rt_udp_set_buffer_size(); int rt_udp_deny();
 void rt_p2p_handle_connect_event(char *p, int conn)
@@ -807,7 +869,7 @@ void rt_p2p_handle_connect_event(char *p, int conn)
     }
 }
 
-int rt_p2p_send_peer_info();
+void rt_p2p_send_peer_info();
 
 void rt_p2p_handle_connected_event(char *p, int conn)
 {
