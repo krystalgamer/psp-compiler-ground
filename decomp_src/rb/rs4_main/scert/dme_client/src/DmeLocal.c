@@ -885,7 +885,19 @@ int NetSetConnInfo(int arg0, int arg1) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetCreateConnInfo);
+int NetCreateConnInfo(unsigned int idx, char **out)
+{
+    if (out == NULL) return 0x17;
+    *out = NULL;
+    if (idx >= 4) return 0x17;
+    if (((char **)&gppConnInfo)[idx] == NULL) {
+        ((char **)&gppConnInfo)[idx] = NetCreateConnInfoBare();
+        if (((char **)&gppConnInfo)[idx] == NULL) return 0x16;
+        *(unsigned int *)(((char **)&gppConnInfo)[idx] + 0x46C) = idx;
+    }
+    *out = ((char **)&gppConnInfo)[idx];
+    return 0;
+}
 
 void NetDestroyConnInfoBare(void *p)
 {
