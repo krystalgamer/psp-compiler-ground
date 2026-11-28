@@ -36,7 +36,7 @@ int GetKeyHit();                                    /* extern */
 int PollShutter(M2C_UNK);                           /* extern */
 extern int gim_bg_endress;
 extern int ColorRndMaxVS;
-int SpriteDrawZoom(int no, int color, float z, float x, float y, float w, float h, float u, float v, float cx, float cy, float sx, float sy);
+int SpriteDrawZoom(int no, int color, float z, float x, float y, float w, float h, float u, float v, float cx, float cy, float sx, float sy, float rot);
 extern int ColorTableVS[];
 int CvtBallPos2MapPos(PZL_STAT *st, int x, int y);
 int CheckBallAround(PZL_STAT *st, int x, int y);
@@ -749,13 +749,15 @@ int EndressMain(void)
 }
 
 #ifdef NON_MATCHING
-/* One instruction short: the original computes zoom as !(t | (col >= 8)) with t = (scale ==
- * 0) as a value (ours folds it to an and), and in the SpriteDrawZoom call it reloads the
- * 0.0f for v from a stack slot (sw zero / lwc1) instead of mtc1 $0. */
+/* diff 9, same size: t = (scale == 0) kept as a value and `zoom = t | (col >= 8);
+ * zoom ^= 1;` (one expression gets De Morgan-folded into an and); SpriteDrawZoom has 14
+ * parameters (rot = 0 stored at 12(sp), which v's 0.0f is reloaded from).  Left: the
+ * 2.0f %hi is loaded first, into v1, in the original (both calls). */
 void DrawBubble(float scale, int x, int y, int col, int frame)
 {
 	int a = frame_anim[col] / 6;
 	int zoom;
+	int t;
 
 	if (a > 4)
 		a = 4;
@@ -763,13 +765,15 @@ void DrawBubble(float scale, int x, int y, int col, int frame)
 		a = frame_anim[9] * 4 / 30;
 	if (col == 10)
 		a = 0;
-	zoom = !((scale == 0.0f) | (col >= 8));
+	t = scale == 0.0f;
+	zoom = t | (col >= 8);
+	zoom ^= 1;
 	if (scale < 1.0f && scale > 0.0f)
 		zoom = 1;
 	if (!zoom)
 		SpriteDrawEz(col + 50, 2.0f, -1, x, y, 16.0f, 16.0f, a * 16, 0.0f);
 	else
-		SpriteDrawZoom(col + 50, -1, 2.0f, x, y, 16.0f, 16.0f, a * 16, 0.0f, 8.0f, 8.0f, scale, scale);
+		SpriteDrawZoom(col + 50, -1, 2.0f, x, y, 16.0f, 16.0f, a * 16, 0.0f, 8.0f, 8.0f, scale, scale, 0);
 }
 #else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DrawBubble);
