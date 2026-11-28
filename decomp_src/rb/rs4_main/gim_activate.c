@@ -1,4 +1,4 @@
-/* SDK libgim_picture gim_activate.o (1.9.2 -O2 -std=gnu9x): the SDK 6.6.0 src/gim_picture/gim_activate.c, preprocessed with the SDK headers and its Makefile's SCEGIM_SUPPORT_* defines, without sceGimPictureGetActiveImage/Palette; set_null/set_texture/set_renderstate differ in this SDK and stay asm */
+/* SDK libgim_picture gim_activate.o (1.9.2 -O2 -std=gnu9x): the SDK 6.6.0 src/gim_picture/gim_activate.c, preprocessed with the SDK headers and its Makefile's SCEGIM_SUPPORT_* defines, without sceGimPictureGetActiveImage/Palette; psp-gcc predefines __psp_gcc__, so allegrex.h uses the clz builtin (SCE_ALLEGREX_USE_BUILTIN) and gim_picture.h the builtin Pow2/CLZ/CTZ, and its gecmd.h the older address-of SCE_GE_EXTRACT_FLOAT24 macro */
 /* cflags: -O2 -std=gnu9x */
 #include "common.h"
 static __inline__ int sceAllegrexClz(int x);
@@ -25,16 +25,7 @@ static __inline__ int sceAllegrexTrunc(float fs);
 static __inline__ float sceAllegrexSqrt(float fs);
 static __inline__ int sceAllegrexClz(int x)
 {
- int n = 1;
- unsigned int ui;
- ui = (unsigned int)x;
- if (ui==0) return (32);
- if ((ui>>16)==0) { n = n + 16; ui = ui<<16; }
- if ((ui>>24)==0) { n = n + 8; ui = ui<< 8; }
- if ((ui>>28)==0) { n = n + 4; ui = ui<< 4; }
- if ((ui>>30)==0) { n = n + 2; ui = ui<< 2; }
- n = n - (ui>>31);
- return (n);
+ return __builtin_allegrex_clz(x);
 }
 static __inline__ int sceAllegrexClo(int x)
 {
@@ -1822,21 +1813,15 @@ void sceGimPictureInitDevice( void *device, int flags ) ;
 void sceGimPictureTermDevice( void ) ;
 static __inline__ int sceGimPicturePow2( int num )
 {
- union { float f ; int i ; } u ;
- u.f = (float)num - 0.5f ;
- return 1 << ( ( u.i >> 23 ) - 126 ) ;
+ return 1 << ( 32 - __builtin_allegrex_clz( num - 1 ) ) ;
 }
 static __inline__ int sceGimPictureCLZ( int num )
 {
- int i ;
- for ( i = 31 ; i >= 0 ; -- i ) if ( ( 1 << i ) & num ) return 31 - i ;
- return 32 ;
+ return __builtin_allegrex_clz( num ) ;
 }
 static __inline__ int sceGimPictureCTZ( int num )
 {
- int i ;
- for ( i = 0 ; i <= 31 ; i ++ ) if ( ( 1 << i ) & num ) return i ;
- return 32 ;
+ return __builtin_allegrex_ctz( num ) ;
 }
 static __inline__ int sceGimImageGetFormat( const SceGimImageHeader *image )
 {
@@ -2032,13 +2017,13 @@ static __inline__ void sceGimPutTexLevelMode( unsigned int **pkt, int calc, floa
 }
 static __inline__ void sceGimPutTexOffset( unsigned int **pkt, float tu, float tv )
 {
- sceGimPutCommand( pkt, (((0x4AU)<<24) | sceGeExtractFloat24(tu)) ) ;
- sceGimPutCommand( pkt, (((0x4BU)<<24) | sceGeExtractFloat24(tv)) ) ;
+ sceGimPutCommand( pkt, (((0x4AU)<<24) | ((((const ScePspUnion32 *)&(tu))->ui)>>8)) ) ;
+ sceGimPutCommand( pkt, (((0x4BU)<<24) | ((((const ScePspUnion32 *)&(tv))->ui)>>8)) ) ;
 }
 static __inline__ void sceGimPutTexScale( unsigned int **pkt, float su, float sv )
 {
- sceGimPutCommand( pkt, (((0x48U)<<24) | sceGeExtractFloat24(su)) ) ;
- sceGimPutCommand( pkt, (((0x49U)<<24) | sceGeExtractFloat24(sv)) ) ;
+ sceGimPutCommand( pkt, (((0x48U)<<24) | ((((const ScePspUnion32 *)&(su))->ui)>>8)) ) ;
+ sceGimPutCommand( pkt, (((0x49U)<<24) | ((((const ScePspUnion32 *)&(sv))->ui)>>8)) ) ;
 }
 static __inline__ void sceGimPutBlendFunc( unsigned int **pkt, int equ, int asel, int bsel, int afix, int bfix )
 {
@@ -2166,11 +2151,152 @@ _Bool sceGimPictureActivateEx( SceGimPicture *picture, unsigned int **pkt, unsig
  if ( size != 0 ) *size = (char *)end - (char *)ptr ;
  return 1 ;
 }
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/gim_activate", set_null);
+/* the module's SDK keeps these tables in .data (still asm) */
+extern unsigned short D_001148D0[];
+#define NullTexture D_001148D0
+_Bool set_null( SceGimPicture *picture, unsigned int **pkt, unsigned int *end, int flags )
+{
+	if ( *pkt + 6 > end ) return 0 ;
+	sceGimPutTexMode( pkt, 0, 0, 0, 0 ) ;
+	sceGimPutTexImage( pkt, 0, 1, 1, 8, NullTexture ) ;
+	sceGimPutTexFlush( pkt ) ;
+	return 1 ;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/gim_activate", set_texture);
+_Bool set_texture( SceGimPicture *picture, unsigned int **pkt, unsigned int *end, int flags )
+{
+ if ( picture == 0 ) return 0 ;
+ if ( *pkt + (34) > end ) return 0 ;
+ SceGimPixelCache *cache = picture->m_pixel_cache ;
+ SceGimImageHeader *img = ( cache != 0 ) ? cache->m_image : picture->m_image ;
+ SceGimPaletteHeader *pal = ( cache != 0 ) ? cache->m_palette : picture->m_palette ;
+ if ( picture->m_flags == 0 ) {
+  if ( img != 0 ) {
+   sceGimPutTexMode( pkt, img->format, 0, 0, img->order ) ;
+   void **offsets = (void **)( (char *)img + img->offsets ) ;
+   sceGimPutTexImage( pkt, 0, img->width, img->height, picture->m_buf_width, *offsets ) ;
+  }
+  sceGimPutTexFlush( pkt ) ;
+  if ( pal != 0 ) {
+   sceGimPutClutMode( pkt, pal->format,
+    picture->m_palette_offset[ 0 ],
+    picture->m_palette_offset[ 1 ],
+    picture->m_palette_offset[ 2 ] ) ;
+   void **offsets = (void **)( (char *)pal + pal->offsets ) ;
+   sceGimPutClutLoad( pkt, picture->m_clut_load, *offsets ) ;
+  }
+  return 1 ;
+ }
+ if ( img != 0 ) {
+  int w = img->width ;
+  int h = img->height ;
+  int w2 = sceGimPicturePow2( w ) ;
+  int h2 = sceGimPicturePow2( h ) ;
+  int align = img->pitch_align * 8 / img->bpp - 1 ;
+  int n_levels = img->level_count ;
+  void **offsets = (void **)( (char *)img + img->offsets ) ;
+  int n_frames = img->frame_count ;
+  int frame = picture->m_image_frame % n_frames ;
+  if ( frame < 0 ) frame += n_frames ;
+  if ( picture->m_enable_bits & SCEGIM_ENABLE_DISSOLVE ) {
+   int clut = 0 ;
+   if ( picture->m_flags & SCEGIM_PICTURE_HAS_PALETTE_FRAMES ) {
+    clut = 1 ;
+   }
+   sceGimPutTexMode( pkt, img->format, 1, clut, img->order ) ;
+   w = ( w + align ) & ~align ;
+   void *buf = offsets[ frame * n_levels ] ;
+   sceGimPutTexImage( pkt, 0, w2, h2, w, buf ) ;
+   frame = picture->m_image_frame2 % n_frames ;
+   if ( frame < 0 ) frame = frame + n_frames ;
+   buf = offsets[ frame * n_levels ] ;
+   sceGimPutTexImage( pkt, 1, w2, h2, w, buf ) ;
+  } else {
+   offsets += frame * n_levels ;
+   int clut = 0 ;
+   if ( picture->m_flags & SCEGIM_PICTURE_HAS_PALETTE_LEVELS ) {
+    clut = 1 ;
+   }
+   sceGimPutTexMode( pkt, img->format, n_levels - 1, clut, img->order ) ;
+   for ( int i = 0 ; i < n_levels ; i ++ ) {
+    void *buf = *( offsets ++ ) ;
+    sceGimPutTexImage( pkt, i, w2, h2, ( w + align ) & ~align, buf ) ;
+    if ( img->level_type == SCEGIM_TYPE_MIPMAP ) {
+     w = ( w + 1 ) / 2 ;
+     w2 = ( w2 + 1 ) / 2 ;
+     h2 = ( h2 + 1 ) / 2 ;
+    }
+   }
+  }
+  sceGimPutTexFlush( pkt ) ;
+ }
+ if ( pal != 0 ) {
+  sceGimPutClutMode( pkt, pal->format,
+   picture->m_palette_offset[ 0 ],
+   picture->m_palette_offset[ 1 ],
+   picture->m_palette_offset[ 2 ] ) ;
+  void **offsets = (void **)( (char *)pal + pal->offsets ) ;
+  int n_levels = pal->level_count ;
+  int n_frames = pal->frame_count ;
+  int frame = picture->m_palette_frame % n_frames ;
+  if ( frame < 0 ) frame = frame + n_frames ;
+  if ( !( picture->m_enable_bits & SCEGIM_ENABLE_DISSOLVE ) ) {
+   sceGimPutClutLoad( pkt, picture->m_clut_load, offsets[ frame * n_levels ] ) ;
+  } else {
+   int count = pal->width / 16 ;
+   if ( pal->format == 3 ) count *= 2 ;
+   int frame2 = picture->m_palette_frame2 % n_frames ;
+   if ( frame2 < 0 ) frame2 = frame2 + n_frames ;
+   if ( frame2 == frame + 1 && n_levels == 1 && count <= 16 ) {
+    sceGimPutClutLoad( pkt, count * 2, offsets[ frame * n_levels ] ) ;
+   } else {
+    sceGimPutClutLoad( pkt, count * 2, (char *)offsets[ frame2 * n_levels ]
+        - count * 32 ) ;
+    sceGimPutClutLoad( pkt, count, offsets[ frame * n_levels ] ) ;
+   }
+  }
+ }
+ return 1 ;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/gim_activate", set_renderstate);
+extern float D_001148E0[];
+extern int D_001148F0[][4];
+#define NoCrop D_001148E0
+#define BlendFuncModes D_001148F0
+_Bool set_renderstate( SceGimPicture *picture, unsigned int **pkt, unsigned int *end, int flags )
+{
+ if ( picture == 0 ) return 0 ;
+ int enable = picture->m_enable_bits ;
+ if ( enable == 0 ) return 1 ;
+ if ( *pkt + (11) > end ) return 0 ;
+ if ( enable & SCEGIM_ENABLE_FACTOR ) {
+  if ( enable & SCEGIM_ENABLE_DISSOLVE ) {
+   sceGimPutTexLevelMode( pkt, 1, picture->m_dissolve ) ;
+  } else {
+   sceGimPutTexLevelMode( pkt, 0, 0 ) ;
+  }
+ }
+ if ( enable & SCEGIM_ENABLE_CROP ) {
+  const float *crop = picture->m_image_crop ;
+  if ( !( picture->m_flags & SCEGIM_PICTURE_IS_CROPPED ) ) crop = NoCrop ;
+  sceGimPutTexOffset( pkt, crop[ 0 ], crop[ 1 ] ) ;
+  sceGimPutTexScale( pkt, crop[ 2 ], crop[ 3 ] ) ;
+ }
+ if ( enable & SCEGIM_ENABLE_BLEND ) {
+  const int *modes = BlendFuncModes[ picture->m_blend[ 0 ] ] ;
+  sceGimPutBlendFunc( pkt, modes[ 0 ], modes[ 1 ], modes[ 2 ], 0xffffffff, modes[ 3 ] ) ;
+ }
+ if ( enable & SCEGIM_ENABLE_FUNC ) {
+  sceGimPutTexFunc( pkt, picture->m_func[ 0 ], picture->m_func[ 1 ] ) ;
+ }
+ if ( enable & SCEGIM_ENABLE_FILTER ) {
+  sceGimPutTexFilter( pkt, picture->m_filter[ 1 ], picture->m_filter[ 0 ] ) ;
+ }
+ if ( enable & SCEGIM_ENABLE_WRAP ) {
+  sceGimPutTexWrap( pkt, picture->m_wrap[ 0 ], picture->m_wrap[ 1 ] ) ;
+ }
+ return 1 ;
+}
 
 SceGimImageHeader *copy_image( SceGimImageHeader *dst, const SceGimImageHeader *src )
 {
