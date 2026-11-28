@@ -443,7 +443,25 @@ char *resAsmRes(char *src, char *dst)
 	return resReadString(d, resReadTable(d, resReadLocal(d, dst)));
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resReleaseRes);
+typedef struct { int p0, p4, f8, fC, p10, p14, f18, f1C; } ResEntX;
+int resReleaseRes(char *r)
+{
+	char *hdr = (char *)(*(int **)r)[1];
+	OvlFn *tbl = (OvlFn *)(*(int **)(r + 0x10))[2];
+	ResEntX *e = *(ResEntX **)(hdr + 0x10);
+	unsigned int i;
+	for (i = 0; i < *(unsigned int *)(hdr + 0x14); i++, e++) {
+		if (e->f1C < 0) {
+			if (tbl) tbl[0](7, (int)e, 0);
+			e->fC = 0;
+			e->f1C &= 0x7FFFFFFF;
+			e->f18 |= 0xF0;
+			e->f8 = 0;
+		}
+		if (tbl) tbl[0](5, (int)e, 0);
+	}
+	return 1;
+}
 
 int resInstGetEntrySect(void *arg0, int arg1) {
     return M2C_FIELD(((arg1 * 8) + M2C_FIELD(arg0, int *, 4)), int *, 4);
