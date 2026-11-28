@@ -55,9 +55,10 @@ void sgl::MeshBuilder::extruded_var::reset()
     *this = extruded_var();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN3sgl11MeshBuilder9begin_varC2ENS_9InputModeENS_9BeginModeE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN3sgl11MeshBuilder9begin_varC1ENS_9InputModeENS_9BeginModeE);
+sgl::MeshBuilder::begin_var::begin_var(InputMode im, BeginMode bm)
+    : _write_primitive(bm), _input_mode(im), _f8(0), _fC(0), _f10(0), _color(0, 0, 0, 0), _normal(0, 0, 0), _texcoord(0, 0)
+{
+}
 
 
 void sgl::MeshBuilder::begin_var::reset()

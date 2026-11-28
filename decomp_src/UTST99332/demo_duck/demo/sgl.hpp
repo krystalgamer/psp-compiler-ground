@@ -93,10 +93,13 @@ struct TexCoord : math::vector_xyzw {
         x = 0;
         y = 0;
     }
+    /* STAND-IN: float pointer view for the original's array/accessor based vector (as vector_xyzw's ctor);
+       fixes the store order of MeshBuilder::begin_var() */
     TexCoord(float u, float v)
     {
-        x = u;
-        y = v;
+        float *p = &x;
+        p[0] = u;
+        p[1] = v;
     }
 };
 struct Triangle {
@@ -613,8 +616,8 @@ public:
     struct begin_var {
         begin_var(InputMode, BeginMode) __attribute__((noinline));
         void reset();
-        int _write_primitive;       /* BeginMode */
-        int _input_mode;            /* InputMode */
+        BeginMode _write_primitive;
+        InputMode _input_mode;
         int _f8, _fC, _f10;
         struct Indices : Triangle {
             Indices()
