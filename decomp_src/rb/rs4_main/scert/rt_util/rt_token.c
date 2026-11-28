@@ -3,6 +3,8 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+typedef struct { unsigned short owner; unsigned short pending; } RtTokEnt;
+typedef struct { int count; unsigned int size; RtTokEnt *ents; } RtTokTab;
 int rt_token_is_valid(unsigned int arg0);
 void rt_token_shutdown(int *arg0);
 M2C_UNK rt_memory_free(void *);                     /* extern */
@@ -37,7 +39,25 @@ int rt_token_is_valid(unsigned int arg0) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_is_mine);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_is_free);
+int rt_token_is_free(unsigned int idx, RtTokTab *t)
+{
+    int ret;
+    if (t == NULL) {
+        rt_token_start(&t);
+        ret = 1;
+    } else {
+        ret = 1;
+        if (t->count != 0) {
+            ret = 0;
+            if (idx < t->size) {
+                if (t->ents[idx].owner == 0xFFFF)
+                    ret = 1;
+            } else
+                ret = 1;
+        }
+    }
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_is_pending);
 
@@ -62,7 +82,14 @@ void rt_token_get_token_count(int *out, int *t)
     *out = tt[0];
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_check_ownership);
+void rt_token_check_ownership(unsigned int idx, int *owner, RtTokTab *t)
+{
+    if (t == NULL) rt_token_start(&t);
+    if (t->count != 0 && idx < t->size && t->ents[idx].owner != 0xFFFF)
+        *owner = t->ents[idx].owner;
+    else
+        *owner = 0xFFFF;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_grant_ownership);
 
@@ -78,7 +105,19 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_list_update_ownership);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_create_table);
+int rt_memory_allocate_init_zero();
+int rt_token_create_table(unsigned int n, RtTokTab *t)
+{
+    unsigned int i;
+
+    if (t == NULL) return 0xDAC2;
+    t->size = (n >> 4) * 16 + 16;
+    rt_memory_free(&t->ents);
+    if (rt_memory_allocate_init_zero(&t->ents, t->size * 4) != 0) return 0xDAC4;
+    for (i = 0; i < t->size; i++)
+        t->ents[i].owner = 0xFFFF;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_expand_table);
 
@@ -99,7 +138,16 @@ void rt_token_add_ownership(int idx, int owner, int *t) {
     t[0]++;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_remove_ownership);
+void rt_token_remove_ownership(int idx, RtTokTab *t)
+{
+    RtTokEnt *e = (RtTokEnt *)(idx * sizeof(RtTokEnt) + (int)t->ents);
+
+    if (e->owner == 0xFFFF) return;
+    e->owner = 0xFFFF;
+    e->pending = 0;
+    if (--t->count == 0)
+        rt_token_destroy_table((int *)t);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_build_token_msg);
 
