@@ -210,7 +210,79 @@ int mes_object_delete_one(MesPage *pg, int idx)
     return --pg->n < 2;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_object", mes_object_delete_page);
+int mes_object_delete_page(pg, id)
+MesPage *pg;
+unsigned int id;
+{
+    int i;
+    int j;
+    MesPage *c;
+    MesPage *l;
+
+    if (pg == NULL)
+        return 0;
+    for (i = 0; i < pg->n && pg->items[i].id < id; i++)
+        ;
+    if (i < pg->n && pg->items[i].id == id) {
+        c = pg->child[i + 1];
+        if (c != NULL) {
+            while (c->child[0] != NULL)
+                c = c->child[0];
+            id = c->items[0].id;
+            pg->items[i] = c->items[0];
+            i++;
+        } else
+            return mes_object_delete_one(pg, i);
+    }
+    c = pg->child[i];
+    if (mes_object_delete_page(c, id)) {
+        if (i > 0) {
+            l = pg->child[i - 1];
+            if (l->n >= 3) {
+                for (j = c->n; j > 0; j--) {
+                    c->items[j] = c->items[j - 1];
+                    c->child[j + 1] = c->child[j];
+                }
+                c->child[1] = c->child[0];
+                c->n++;
+                c->items[0] = pg->items[i - 1];
+                pg->items[i - 1] = l->items[l->n - 1];
+                c->child[0] = l->child[l->n];
+                l->n--;
+                return 0;
+            }
+        } else {
+            l = pg->child[1];
+            if (l->n >= 3) {
+                c->items[c->n] = pg->items[0];
+                c->n++;
+                c->child[c->n] = l->child[0];
+                pg->items[0] = l->items[0];
+                l->n--;
+                l->child[0] = l->child[1];
+                for (j = 1; j <= l->n; j++) {
+                    l->items[j - 1] = l->items[j];
+                    l->child[j] = l->child[j + 1];
+                }
+                return 0;
+            }
+            i = 1;
+            c = l;
+            l = pg->child[0];
+        }
+        l->n++;
+        l->items[l->n - 1] = pg->items[i - 1];
+        l->child[l->n] = c->child[0];
+        for (j = 1; j <= c->n; j++) {
+            l->n++;
+            l->items[l->n - 1] = c->items[j - 1];
+            l->child[l->n] = c->child[j];
+        }
+        MEM_free(0, c);
+        return mes_object_delete_one(pg, i - 1);
+    }
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
