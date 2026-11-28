@@ -603,7 +603,29 @@ void UnitSesqStrProc(void *a, char *u, int dec)
     if (*(int *)(u + 0x48) > 0) *(int *)(u + 0x48) -= dec;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", MidiCMNoteOnOff);
+void MidiCMNoteOnOff(void *u, char *s, int ch, int on) {
+    int cmd[12];
+    int note = (*(SeqReadFn *)(s + 0x30))(s);
+    int vel = (*(SeqReadFn *)(s + 0x30))(s);
+    if (vel == 0) on = 0;
+    if (((*(unsigned short *)(s + 0x54) >> ch) & 1) && on == 0) return;
+    if ((*(unsigned short *)(s + 0x52) >> ch) & 1) {
+        cmd[0] = 8;
+        cmd[1] = ch;
+        sgxPortCommand(*(short *)(s + 0x1A), (int)cmd);
+    }
+    if (on) {
+        cmd[0] = 3;
+        cmd[1] = (ch << 24) | note;
+        cmd[2] = note;
+        cmd[3] = vel << 5;
+    } else {
+        cmd[0] = 4;
+        cmd[1] = (ch << 24) | note;
+        cmd[2] = 0;
+    }
+    sgxPortCommand(*(short *)(s + 0x1A), (int)cmd);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", MidiCMCtrlChg);
 
