@@ -261,7 +261,22 @@ void *sgxResFindRgn(int id, int idx, int *out) {
     return ret;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResFindSeq);
+void *sgxResFindSeq(int id, int seq, int idx)
+{
+	char *p = ResGetSlot(id, SLOT_NAME("FindSeq"));
+	char *t, *s;
+	int o;
+	void *ret;
+	if (p == NULL || (t = *(char **)(p + 0x34)) == NULL || seq < 0 || *(int *)(p + 0x38) - 1 < seq || (o = *(int *)(t + seq * 4 + 8)) == 0) {
+		ret = NULL;
+	} else {
+		char *d = *(char **)(p + 0x14);
+		s = d + o;
+		if (idx < 0 || *(int *)(s + 4) - 1 < idx || (o = *(int *)(s + idx * 4 + 8)) == 0) ret = NULL;
+		else ret = d + o;
+	}
+	return ret;
+}
 
 int sgxResFindAdsr(int id, int idx) {
     char *p = ResGetSlot(id, SLOT_NAME("FindAdsr"));
