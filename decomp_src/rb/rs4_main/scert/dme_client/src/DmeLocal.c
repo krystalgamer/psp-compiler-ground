@@ -1046,7 +1046,52 @@ int NetIPing(char *conn, unsigned int idx, int x)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIPingIP);
+typedef struct { unsigned char state; char pad[3]; DmeLinkAddr addr; char pad2[0x10]; void (*cb)(int, char *, int); } DmeEchoReq;
+extern DmeEchoReq gPendingEchoRequest[256];
+extern int gbEchoRequestsEnabled;
+
+void rt_comm_echo_set_default_options(); int rt_comm_echo_enable(); int rt_comm_echo_send(); void rt_time_get_time_stamp();
+int NetIPingIP(DmeLinkAddr addr, void (*cb)(int, char *, int))
+{
+    void *opts[1];
+    int sent;
+    DmeEchoReq *e, *found;
+    unsigned int i;
+    unsigned short seq;
+    int r;
+
+    if (rt_comm_linkaddress_isnull(addr)) return NetDisablePingIPs();
+    if (cb == NULL) return 0x17;
+    if (!gbEchoRequestsEnabled) {
+        rt_comm_echo_set_default_options(opts);
+        opts[0] = EchoRequestCallback;
+        r = NetMapRtError(rt_comm_echo_enable(opts));
+        if (r != 0) return r;
+        memset(gPendingEchoRequest, 0, sizeof(gPendingEchoRequest));
+        gbEchoRequestsEnabled = 1;
+    }
+    seq = 0;
+    found = NULL;
+    for (i = 0, e = gPendingEchoRequest; i < 256; i++, e++) {
+        if (e->state == 0) found = e;
+        if (rt_comm_linkaddress_isequal(addr, e->addr)) {
+            unsigned int id = *(unsigned int *)((char *)e + 0xC);
+            if (id >= seq) seq = id + 1;
+        }
+    }
+    if (found == NULL) return 8;
+    found->state = 1;
+    *(int *)((char *)found + 0xC) = seq;
+    found->cb = cb;
+    found->addr = addr;
+    r = NetMapRtError(rt_comm_echo_send(&sent, found->addr, seq));
+    if (r != 0) return r;
+    if (sent != 0) {
+        found->state = 2;
+        rt_time_get_time_stamp((char *)found + 0x10);
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetUpdateAll);
 
@@ -1315,9 +1360,6 @@ int NetIsPeerToPeerHost(char *c, int *is)
     return 0;
 }
 
-typedef struct { unsigned char state; char pad[3]; DmeLinkAddr addr; char pad2[0x10]; void (*cb)(int, char *, int); } DmeEchoReq;
-extern DmeEchoReq gPendingEchoRequest[256];
-extern int gbEchoRequestsEnabled;
 
 void EchoRequestCallback(DmeLinkAddr addr, int id)
 {
