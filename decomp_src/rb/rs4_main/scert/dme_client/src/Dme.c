@@ -725,7 +725,28 @@ int NetGetValidClientCount(int a0, int a1)
     return e;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetSetDefaultStreamMediaParams);
+int NetSetDefaultStreamMediaParams(int *p)
+{
+    int ret = 0x17;
+    if (p != NULL) {
+        memset(p, 0, 0x70);
+        p[2] = 1;
+        p[3] = 1;
+        p[7] = 0;
+        p[5] = 0x2000;
+        p[8] = 1;
+        p[9] = 0x10;
+        p[10] = 0x1F40;
+        p[11] = 1;
+        p[4] = 0x9C4;
+        p[6] = 0x2000;
+        p[12] = 0x10;
+        p[13] = 0x1F40;
+        p[0] = 1;
+        ret = 0;
+    }
+    return ret;
+}
 
 int NetMutexUnlock();
 int NetMapRtError();
