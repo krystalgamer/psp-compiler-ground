@@ -557,7 +557,31 @@ pollattach(struct thread_info *ti, struct pollfd *fds, int nfd)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_inet/nonmatchings/uipc_syscalls", func_00007A8C);
+static __inline void
+pollthread(struct thread_info *ti, struct pollfd *fds, int nfd, int op)
+{
+	int i;
+	struct socket *so;
+
+	for (i = 0; i < nfd; i++, fds++) {
+		so = getsock(fds->fd);
+		if (so == NULL)
+			continue;
+		if (op == 0) {
+			if (so->so_thread == NULL)
+				sothread_attach(ti, so);
+		} else if (op == 1) {
+			if (so->so_thread == ti)
+				sothread_detach(ti, so);
+		}
+	}
+}
+
+__attribute__((noinline)) void
+polldetach(struct thread_info *ti, struct pollfd *fds, int nfd)
+{
+	pollthread(ti, fds, nfd, 1);
+}
 
 int
 sceNet_ioctl(int s, u_long com, caddr_t data)
