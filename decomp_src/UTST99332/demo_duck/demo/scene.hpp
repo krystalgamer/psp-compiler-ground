@@ -621,7 +621,7 @@ class MeshDataInterleaved {
 public:
     struct SharedData;
     struct VertexData;
-    void draw(const TraversalVarStack &);
+    bool draw(const TraversalVarStack &);
     void convert(const MeshData &);
     MeshDataInterleaved();
     MeshDataInterleaved(const MeshDataInterleaved &);

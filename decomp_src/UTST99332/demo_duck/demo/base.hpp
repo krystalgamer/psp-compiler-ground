@@ -1403,7 +1403,7 @@ public:
 const char *FormatName(Format);
 void SaveBmp(const char *, int, int, const unsigned char *, const unsigned char *, int);
 void SaveTga(const char *, int, int, const unsigned char *, int);
-void SaveGlBuffer(const char *, int);
+bool SaveGlBuffer(const char *, int);
 void TgaSnapshot(const char *);
 void TgaAutoNamedSnapshot(const char *);
 int closestPow2(int, bool);

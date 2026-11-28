@@ -1018,7 +1018,7 @@ public:
     void finish();
     void draw() const;
     void draw(int) const;
-    int longestAxis() const;
+    short longestAxis() const;
     bool intersect(float &, const math::vector_xyzw &, const math::vector_xyzw &) const;
     static std::vector<math::vector_xyzw> _points;
     int _type;              /* 0x80 */
