@@ -90,7 +90,18 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", N
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetRequestCreateRemoteNamedObject);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetGetObject);
+int NetGetObject(void **out, int id)
+{
+    int r;
+    char *o;
+    if (out == NULL) return 0x17;
+    *out = NULL;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    o = NetIGetObject(id);
+    if (o != NULL) *out = o + 8;
+    return NetMapRtError(NetMutexUnlock());
+}
 
 int NetMutexLock();
 int NetMutexUnlock();
@@ -369,11 +380,32 @@ int NetIGetSessionMasterClientIndex(int *arg0, void *arg1) {
     return var_v1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", RemoteObjectCreation);
+typedef void (*RemObjCb)(unsigned int, int);
+extern RemObjCb *D_00132A54;
+void RemoteObjectCreation(unsigned int ci, int id)
+{
+    unsigned char *o;
+    RemObjCb cb;
+    if (ci >= 256) return;
+    o = NetIGetObject(id);
+    if (o == NULL) return;
+    cb = D_00132A54[o[8]];
+    if (cb != NULL) cb(ci, id);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", RemoteObjectUpdate);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", RemoteObjectDelete);
+extern RemObjCb *D_00132A5C;
+void RemoteObjectDelete(unsigned int ci, int id)
+{
+    unsigned char *o;
+    RemObjCb cb;
+    if (ci >= 256) return;
+    o = NetIGetObject(id);
+    if (o == NULL) return;
+    cb = D_00132A5C[o[8]];
+    if (cb != NULL) cb(ci, id);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetFreeRemoteObject);
 
@@ -387,7 +419,25 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", F
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetIFreeAllObjects);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetIJoin);
+int NetJoin2(int *);
+int NetIJoin(int *a, int *st)
+{
+    int r;
+    if (st == NULL) return 0x17;
+    st[1] = 0x1E;
+    st[0] = 1;
+    if (a == NULL) {
+        st[1] = 0x17;
+        return 0x17;
+    }
+    if (a[0] == 0) {
+        st[1] = 0x26;
+        return 0x26;
+    }
+    r = NetJoin2(a);
+    st[1] = r;
+    return r;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetJoin2);
 
