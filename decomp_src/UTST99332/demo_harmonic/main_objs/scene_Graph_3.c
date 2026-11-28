@@ -152,4 +152,36 @@ template int sgl::PrimitiveIndex<int>::countVerticesInStrips() const;
 #undef INCLUDE_ASM
 #define INCLUDE_ASM(FOLDER, NAME) INCLUDE_ASM_LINKONCE(FOLDER, NAME)
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph_3", _ZNK3sgl14PrimitiveIndexIiE5rangeERiS2_);
+template<class T> void sgl::PrimitiveIndex<T>::range(int &mn, int &mx) const
+{
+    bool found = false;
+    for (unsigned int i = 0; i != _tri.size(); i++)
+        {
+        const T &v = _tri[i];
+        if (!found) {
+            mn = mx = v;
+            found = true;
+        }
+        if (v > mx)
+            mx = v;
+        if (v < mn)
+            mn = v;
+    }
+    for (int s = 0, k = 0; s != n; s++) {
+        int len = _strips[k++];
+        for (int j = 0; j != len; j++)
+            {
+            const T &v = _strips[k + j];
+            if (!found) {
+                mn = mx = v;
+                found = true;
+            }
+            if (v > mx)
+                mx = v;
+            if (v < mn)
+                mn = v;
+        }
+        k += len;
+    }
+}
+template void sgl::PrimitiveIndex<int>::range(int &, int &) const;
