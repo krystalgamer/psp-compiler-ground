@@ -565,15 +565,12 @@ int PuzzleMain(void)
 	return ret;
 }
 
-#ifdef NON_MATCHING
-/* Close: the two (x + 3) % 6 temporaries get a3/t0 swapped. */
 void VSValueInit(int pl, int a1, int flag);
 extern const int bgmsort[];
 void VSModeInit(int cont)
 {
 	int enemy = Stat[2].player;
 	int n;
-	s8 sel;
 
 	if (cont) {
 		enemy++;
@@ -582,11 +579,10 @@ void VSModeInit(int cont)
 	VSValueInit(1, 0, 0);
 	VSValueInit(2, 0, 0);
 	SpriteSetFader(1.0f);
-	sel = *(s8 *)&SelectPlayer;
-	Stat[1].snd.unk2 = (sel + 3) % 6;
-	Stat[2].snd.unk2 = ((s8)enemy + 3) % 6;
-	Stat[1].player = sel;
+	Stat[1].player = SelectPlayer;
 	Stat[2].player = enemy;
+	Stat[1].snd.unk2 = (Stat[1].player + 3) % 6;
+	Stat[2].snd.unk2 = (Stat[2].player + 3) % 6;
 	Stat[1].cur = GetBallNext(&Stat[1], 0);
 	n = GetBallNext(&Stat[1], 0);
 	Stat[2].cur = Stat[1].cur;
@@ -595,9 +591,6 @@ void VSModeInit(int cont)
 	LoadGimFile(0, gim_bg_vs[isSurvival * 6 + Stat[2].player]);
 	bgm_play(bgmsort[Stat[2].player % 6]);
 }
-#else
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", VSModeInit);
-#endif
 
 void VSInit(void)
 {
