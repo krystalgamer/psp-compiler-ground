@@ -1005,11 +1005,17 @@ libgcc/libsupc++ DWARF names `gcc-3.3.6/` paths.
   Confidence: medium-high.  A VFPU function with DWARF
   (vector-typed variables) or one whose VFPU code is interleaved with
   scheduled C would reopen it.
-- The game's C++ objects keep their float constants with their strings
-  and aggregates in one `.rodata` in emission order (ys_fx_fade_cif:
-  `"src/ys/ys_object.h"`, two `1.0f`, then the vtable); with this repo's
-  link order that needs `-fno-merge-constants` per unit, as for 1.8.4's
-  mixed units.  The C++ is `-Os -fno-exceptions` with strength reduction
+- The game's C++ objects were built with the default `-fmerge-constants`.
+  Their layout (ys_screen_panel: strings, `1.0f`, then the first vtable)
+  is the object's own section order: cc1plus creates `.rodata`, then
+  `.rodata.cst4`, then the `.gnu.linkonce.r` vtables, and the linker
+  placed them in that order.  An earlier note here said they needed
+  `-fno-merge-constants`; that came from this repo's old link order,
+  which put `.rodata.cst*` after the vtables.  With the object-order rule
+  in tools/split.py all 23 all-C++ units match with merge-constants, and
+  ys_screen_panel and ys_text_menu_view match only with it.  Units that
+  still include asm keep `-fno-merge-constants` as a stand-in for their
+  asm-held rodata.  Confidence: high.  The C++ is `-Os -fno-exceptions` with strength reduction
   per object (counted over each whole object): on in ys_anim_task,
   saru_netlib_controller(_set), network_data_transfer_client,
   saru_network_lobby_menu(_view), vfs_tartefs, vfs_internal, network_lobby,
