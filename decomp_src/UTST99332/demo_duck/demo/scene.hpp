@@ -56,6 +56,7 @@ namespace glutils {
 class Material {
 public:
     void setup();
+    void print(std::ostream &);
     math::vector_xyzw ambient, diffuse, specular, emission;
     float shininess;
     int f44;
