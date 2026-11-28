@@ -369,4 +369,87 @@ int func_00002590(int event, int error)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhocctl/nonmatchings/main", func_00002614);
+int func_00002614(SceSize args, void *argp)
+{
+	struct gm_request *gm = &D_00006F8C;
+	struct adhocctl_ctx *p = *(struct adhocctl_ctx **)argp;
+	unsigned int bits;
+	int ret;
+	int r;
+
+	for (;;) {
+		bits = 0;
+		sceKernelWaitEventFlag(p->evf, 0x1FF, 1, &bits, NULL);
+		if (bits & 0x8) {
+			sceKernelClearEventFlag(p->evf, ~0x8);
+			if (p->state == 1 || p->state == 3) {
+				ret = func_00002D64(p);
+				if (ret < 0)
+					goto notify_error;
+			}
+		}
+		if (bits & 0x1) {
+			sceKernelClearEventFlag(p->evf, ~0x1);
+			ret = func_000008C0(p);
+			if (ret < 0)
+				goto error;
+			notify(1, 0);
+		}
+		if (bits & 0x2) {
+			sceKernelClearEventFlag(p->evf, ~0x2);
+			func_000014B4(p);
+			notify(2, 0);
+		}
+		if (bits & 0x4) {
+			sceKernelClearEventFlag(p->evf, ~0x4);
+			ret = func_00000B40(p);
+			if (ret < 0)
+				goto error;
+			notify(3, 0);
+		}
+		if (bits & 0x10) {
+			sceKernelClearEventFlag(p->evf, ~0x10);
+			ret = func_00002F7C(p, gm);
+			if (ret < 0)
+				goto error;
+			notify(4, 0);
+		}
+		if (bits & 0x20) {
+			sceKernelClearEventFlag(p->evf, ~0x20);
+			ret = func_0000378C(p, gm);
+			if (ret < 0)
+				goto error;
+			notify(4, 0);
+		}
+		if (bits & 0x40) {
+			sceKernelClearEventFlag(p->evf, ~0x40);
+			func_00004730(p, gm);
+			notify(2, 0);
+		}
+		if (bits & 0x80) {
+			sceKernelClearEventFlag(p->evf, ~0x80);
+			ret = func_00000E50(p);
+			if (ret < 0)
+				goto error;
+			notify(1, 0);
+		}
+		if (bits & 0x100) {
+			sceKernelClearEventFlag(p->evf, ~0x100);
+			ret = func_00001154(p);
+			if (ret < 0)
+				goto error;
+			notify(1, 0);
+		}
+		p->busy = 0;
+		continue;
+
+error:
+		r = func_00002D84(p);
+		if (r < 0)
+			ret = r;
+notify_error:
+		p->busy = 0;
+		notify(0, ret);
+	}
+	return 0;
+}

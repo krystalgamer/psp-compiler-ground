@@ -377,6 +377,13 @@ int sceNetConfig80211GetBssDesc(const char *ifname, struct bss_desc *desc);
 int sceUtilityGetSystemParamString(int id, char *str, int len);
 int sceUtilityGetSystemParamInt(int id, int *value);
 
+/* STAND-IN: gcse hashes SYMBOL_REF names (gcse.c hash_expr_1), so the stripped original's real
+ * symbol names decide the order of the PRE-created address pseudos and with it a global-alloc
+ * tie in func_00002614 (%hi(D_00007060) vs %hi(D_000068A4) in s6/s7).  This alias only changes
+ * the hashed string ("*D_00007060"); the object still references D_00007060.  Renaming the
+ * symbol for the whole unit breaks func_000021DC, so the real name is still unknown. */
+extern struct handler notify_handler __asm__("D_00007060");
+
 static inline void notify(int event, int error)
 {
 	struct adhocctl_ctx *p = &D_000068A4;
@@ -387,8 +394,8 @@ static inline void notify(int event, int error)
 		if (D_00007048[i].func != NULL)
 			D_00007048[i].func(event, error, D_00007048[i].arg);
 	}
-	if (D_00007060.func != NULL)
-		D_00007060.func(event, error, D_00007060.arg);
+	if (notify_handler.func != NULL)
+		notify_handler.func(event, error, notify_handler.arg);
 	sceKernelSignalSema(p->sema, 1);
 }
 
