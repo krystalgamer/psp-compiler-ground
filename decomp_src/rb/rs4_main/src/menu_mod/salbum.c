@@ -1,6 +1,7 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
+#include "../minmax.h"
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
@@ -9,7 +10,7 @@ extern unsigned char D_00103854;
 extern unsigned char D_00103870;
 extern unsigned char D_001038A4;
 extern unsigned char D_001038B0;
-M2C_UNK salbumCalcCardNumBySaveID(int, int, unsigned char, int); /* extern */
+int salbumCalcCardNumBySaveID(int, int, int, int);
 int salbumClearNewFlagBySaveID();
 
                            /* extern */
@@ -86,7 +87,34 @@ void salbumGetCardDup(int arg0, void *arg1, int arg2, int arg3) {
     salbumGetCardDupBySaveID(arg0, cardlistGetSaveID((int) M2C_FIELD(arg1, unsigned short *, 2)), M2C_FIELD(arg1, unsigned char *, 0), arg2, arg3);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/salbum", salbumCalcCardNumBySaveID);
+typedef struct { unsigned int num : 7; unsigned int new : 1; } SalCard;
+int salbumCalcCardNumBySaveID(int p, int id, int kind, int add)
+{
+	SalCard (*tbl)[3] = (SalCard (*)[3])p;
+	int c, n, o, ret;
+
+	if (tbl == NULL)
+		consPrintf(&D_00103854, &D_00103870, 0x5D, "salbumCalcCardNumBySaveID", &D_001038A4);
+	if ((unsigned int)id >= 256 || kind >= 3)
+		return -1;
+	if (add > 0) {
+		c = tbl[id][kind].num;
+		if (c == 0 || c == 0x7F)
+			tbl[id][kind].new = 1;
+		tbl[id][kind].num = amin(c != 0x7F ? c + add : add, 9);
+	} else if (add < 0) {
+		n = tbl[id][kind].num;
+		o = n;
+		if (n != 0 && n != 0x7F)
+			n += add;
+		n = amax(n, 0);
+		if (n == 0 && o != 0x7F)
+			n = 0x7F;
+		tbl[id][kind].num = n;
+	}
+	ret = tbl[id][kind].num;
+	return ret == 0x7F ? 0 : ret;
+}
 
 void salbumCalcCardNum(int arg0, void *arg1, int arg2) {
     if (arg1 == NULL) {
