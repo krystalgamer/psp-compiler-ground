@@ -160,6 +160,10 @@ extern const int e_icon_image_width;
 extern const int e_icon_image_height;
 extern RGIMAGE *D_00584CAC;
 void rnd_drawBasicBoxnode();
+typedef struct { char *str; int selStart; int selEnd; int len; } RTXT;
+#define TX ((RTXT *)box->sub)
+#define ST(o) M2C_FIELD(box->style, s16 *, o)
+extern int rnd_global;
 int color2rgb(int *rgb, int c) {
     rgb[0] = ((unsigned int)c >> 16) & 0xFF;
     rgb[1] = (c & 0xFF00) >> 8;
@@ -1126,7 +1130,68 @@ void rnd_drawRepaint(int w, int g, int sid, int x, int y, int wd, int h) {
     GUI_Graphics_freePixmap(pm);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_drawTextBoxnode);
+void rnd_drawTextBoxnode(int g, RBN *box, int ox, int oy) {
+    int x;
+    int y;
+    int h;
+    int color;
+    int font;
+    int deco;
+    char *s1;
+    int n1;
+    char *s2;
+    int n2;
+    char *s3;
+    int n3;
+    int w;
+    int hh;
+    int w2;
+    int h2;
+
+    rnd_drawBasicBoxnode(g, box, ox, oy);
+    if ((M2C_FIELD(box->style, u8 *, 0x6C) & 8) && rnd_global == 0) {
+        return;
+    }
+    x = box->x + ST(0x26) + ST(0x36) + ST(0x2E) + ox;
+    y = box->y + ST(0x20) + ST(0x30) + ST(0x28) + oy;
+    h = box->h - (ST(0x20) + ST(0x24)) - (ST(0x30) + ST(0x34)) - (ST(0x28) + ST(0x2C));
+    color = M2C_FIELD(box->style, int *, 0x54);
+    font = M2C_FIELD(box->style, int *, 0x64);
+    deco = M2C_FIELD(box->style, s8 *, 0x6C);
+    if (TX->selStart < TX->selEnd) {
+        s1 = NULL;
+        n1 = 0;
+        if (TX->selStart != 0) {
+            s1 = TX->str;
+            n1 = TX->selStart;
+        }
+        s2 = n1 + TX->str;
+        n2 = TX->selEnd - TX->selStart;
+        if (TX->selEnd < TX->len) {
+            s3 = s2 + n2;
+            n3 = TX->len - TX->selEnd;
+        } else {
+            s3 = NULL;
+            n3 = 0;
+        }
+        if (n1 > 0) {
+            x += rnd_gdrawStrings(g, font, color, x, y, s1, n1, deco);
+        }
+        GUI_Graphics_getStringSize(font, s2, n2, &w, &hh);
+        rnd_gdrawFillrectangle(g, 0xFF, x, y, w, h);
+        x += rnd_gdrawStrings(g, font, 0xFFFFFF, x, y, s2, n2, deco);
+        if (n3 > 0) {
+            rnd_gdrawStrings(g, font, color, x, y, s3, n3, deco);
+        }
+    } else if (M2C_FIELD(box->style, s8 *, 0x6D) != 0) {
+        color = M2C_FIELD(box->style, int *, 0x60);
+        GUI_Graphics_getStringSize(font, TX->str, TX->len, &w2, &h2);
+        rnd_gdrawFillrectangle(g, color, x, y, w2, h);
+        rnd_gdrawStrings(g, font, ~color, x, y, TX->str, TX->len, deco);
+    } else {
+        rnd_gdrawStrings(g, font, color, x, y, TX->str, TX->len, deco);
+    }
+}
 
 int rnd_updateAnimTextBoxnode(n)
     RBN *n;
