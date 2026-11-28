@@ -1057,7 +1057,37 @@ void *NetGetConnInfo(unsigned int idx)
     return p;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetCleanupConnInfo);
+int NetCleanupConnInfo(char *ci)
+{
+    unsigned int i = 0;
+    int *c;
+
+    if (*(int *)(ci + 0x474) != 0) {
+        (*(void (**)(int))((char *)gP2PInterfacePtr + 4))(*(int *)(ci + 0x474));
+        *(int *)(ci + 0x474) = 0;
+    }
+    for (; i < 0x100; i++) {
+        c = NetGetClientInfo(ci, i);
+        if (c != NULL) {
+            memset(c, 0, 0x2C);
+        }
+    }
+    *(int *)(ci + 0x404) = 0x100;
+    *(int *)(ci + 0x408) = 0x100;
+    *(int *)(ci + 0x458) = -1;
+    *(int *)(ci + 0x454) = 0;
+    *(int *)(ci + 0x400) = 0;
+    *(int *)(ci + 0x438) = 0;
+    *(int *)(ci + 0x43C) = 0;
+    *(int *)(ci + 0x440) = 0;
+    *(int *)(ci + 0x444) = 0;
+    *(int *)(ci + 0x448) = 0;
+    *(int *)(ci + 0x44C) = 0;
+    *(int *)(ci + 0x450) = 0;
+    *(int *)(ci + 0x45C) = 0;
+    NetDestroyConnInfo(ci);
+    return 0;
+}
 
 void *NetCreateConnInfoBare(void) {
     return DMEmalloc(0x4AC);
