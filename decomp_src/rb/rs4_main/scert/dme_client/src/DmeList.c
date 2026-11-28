@@ -31,8 +31,46 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeList", Net
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeList", NetBitMaskUnSet);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeList", NetGenerateClientList);
+typedef struct { unsigned int bits[8]; int base; int end; } DmeBitMaskL;
+typedef struct { int max; DmeBitMaskL mask; } DmeClientList;
+int NetBitMaskSet();
+int NetGenerateClientList(char *ci, DmeClientList *l)
+{
+    int i;
+    char *c;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeList", NetGenerateJoinedClientList);
+    if (ci == NULL) return 0x17;
+    if (l == NULL) return 0x17;
+    memset(l, 0, sizeof *l);
+    l->max = 0x100;
+    l->mask.end = *(int *)(ci + 0x460);
+    for (i = 0; i < *(int *)(ci + 0x460); i++) {
+        c = ((char **)ci)[i];
+        if (c != NULL && c != *(char **)(ci + 0x400) && *(int *)(c + 0x20) != 0)
+            NetBitMaskSet(&l->mask, i);
+    }
+    return 0;
+}
+
+int NetGenerateJoinedClientList(char *ci, DmeClientList *l)
+{
+    int i;
+    char *c;
+
+    if (ci == NULL) return 0x17;
+    if (l == NULL) return 0x17;
+    memset(l, 0, sizeof *l);
+    l->max = 0x100;
+    l->mask.end = *(int *)(ci + 0x460);
+    for (i = 0; i < *(int *)(ci + 0x460); i++) {
+        c = ((char **)ci)[i];
+        if (c != *(char **)(ci + 0x400))
+            if (c != NULL)
+                if (*(int *)(c + 0x20) != 0)
+                    if ((unsigned int)(*(int *)(c + 0xC) - 4) < 2)
+                        NetBitMaskSet(&l->mask, i);
+    }
+    return 0;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeList", rcsid_10E144);
