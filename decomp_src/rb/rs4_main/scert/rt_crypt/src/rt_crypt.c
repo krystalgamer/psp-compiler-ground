@@ -52,7 +52,7 @@ extern void **gCryptInterfacePtr;
 
 void GetSoftwareKeyPair();
 
-int KM_CompareSymmetricKey();
+int KM_CompareSymmetricKey(void *, int, unsigned char *);
 
 int KM_Create();
 
@@ -376,7 +376,20 @@ int KM_GetSymmetricKey(int a, unsigned int id, void *out)
     return -1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_CompareSymmetricKey);
+int KM_CompareSymmetricKey(void *km, int id, unsigned char *key)
+{
+    unsigned char k[64];
+    int i;
+
+    if (IsNullRCKey(key)) return -1;
+    if (KM_GetSymmetricKey(km, id, k) != 0) return 1;
+    i = 63;
+    do {
+        if (key[i] > k[i]) return 1;
+        if (key[i] < k[i]) return -1;
+    } while (i-- > 0);
+    return 0;
+}
 
 void KM_DeleteSymmetricKey(int a, unsigned int id)
 {
