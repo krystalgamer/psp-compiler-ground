@@ -3,6 +3,8 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+typedef struct { unsigned char state; char pad[3]; int count; int owner; } RtMutexU;
+int rt_mutex_platform_get_thread_id();
 
 int rt_mutex_platform_create();
 int rt_mutex_create(char *m)
@@ -34,7 +36,28 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_mutex", rt_mutex_
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_mutex", rt_mutex_lock_no_block);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_mutex", rt_mutex_unlock);
+int rt_mutex_platform_get_thread_id();
+int rt_mutex_platform_unlock();
+int rt_mutex_unlock(RtMutexU *m, int *count)
+{
+    int ret;
+    int tid;
+
+    if (m == NULL) return 2;
+    if (m->state != 1) return 2;
+    ret = rt_mutex_platform_get_thread_id(&tid);
+    if (ret != 0) return ret;
+    if (tid != m->owner) return 0x385;
+    if (m->count == 0) return 0x386;
+    m->count--;
+    if (count != NULL) *count = m->count;
+    if (m->count == 0) {
+        m->owner = 0;
+        ret = rt_mutex_platform_unlock(m);
+        if (ret != 0) return ret;
+    }
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
