@@ -1,9 +1,7 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "iom_global.h"
 #include "m2c_macros.h"
-typedef struct { u8 pad[0x3C]; unsigned int x3C; } IOMC_T;
-extern IOMC_T iom;
-extern int D_0058512C;
 void iom_updateCache();
 int iom_saveCache(void);
 void iom_deleteCache(int);
@@ -13,9 +11,6 @@ void iom_freeCache(void *c);
 signed char *MEM_malloc(M2C_UNK, int);                       /* extern */
 extern signed char D_0013F28C;
 void UTL_initqueue(M2C_UNK *);                   /* extern */
-extern unsigned char D_00585130;
-extern unsigned char D_00585138;
-extern unsigned char D_00585144;
 
 
 int iom_addCache(int, int, int *);
@@ -141,10 +136,10 @@ void *memset(void *s, int c, unsigned int n);
 int iom_attachCache(void) {
     int temp_s0;
 
-    UTL_initqueue(&D_00585130);
-    UTL_initqueue(&D_00585138);
-    memset(&D_00585144, 0, 0x7EU);
-    M2C_FIELD(&D_00585144, int *, -0x18) = 0;
+    UTL_initqueue(&iom.cacheList);
+    UTL_initqueue(&iom.cacheList2);
+    memset(iom.cache.ids, 0, 0x7EU);
+    iom.x28 = 0;
     temp_s0 = iom_loadCache();
     iom_saveCache();
     return temp_s0;
@@ -154,10 +149,10 @@ int iom_detachCache(void) {
     void *e;
     int r = 0;
     iom_updateCache();
-    if (D_0058512C != 0) {
+    if (iom.x28 != 0) {
         r = iom_saveCache();
     }
-    while ((e = UTL_peekqueue(&D_00585130, 0)) != NULL) {
+    while ((e = UTL_peekqueue(&iom.cacheList, 0)) != NULL) {
         iom_freeCache(M2C_FIELD(e, void **, 8));
     }
     return r;
@@ -172,7 +167,7 @@ int iom_setCache(int url, int *data) {
         return 0;
     iom_updateCache();
     ret = iom_addCache(url, -1, data);
-    if (D_0058512C != 0)
+    if (iom.x28 != 0)
         iom_saveCache();
     return ret;
 }
@@ -181,10 +176,10 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_list", iom_getCache);
 
 void iom_capacityCache(void) {
     iom_updateCache();
-    while (iom_preferenceCache() < iom.x3C) {
+    while (iom_preferenceCache() < iom.cache.size) {
         iom_deleteCache(0);
     }
-    if (D_0058512C != 0) {
+    if (iom.x28 != 0) {
         iom_saveCache();
     }
 }

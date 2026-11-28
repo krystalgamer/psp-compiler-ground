@@ -1,10 +1,9 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "iom_global.h"
 #include "m2c_macros.h"
-extern int D_0058510C;
 int iom_translateMsg(void *msg);
 M2C_UNK iom_sendMsg(void *, int);                   /* extern */
-extern int D_00585108;
 
 
 int UTL_mfileread(void *f, void *buf, int n);
@@ -30,15 +29,15 @@ int iom_sendRequestFailed(IMSGF *msg, int err) {
     }
     if (msg->type == 2) {
         t = D_0013F41C;
-        mq = D_00585108;
+        mq = iom.mqReply;
         code = 0x22;
     } else if (msg->type == 4) {
         t = D_0013F41C;
-        mq = D_0058510C;
+        mq = iom.mq8;
         code = 0x504;
     } else if (iom_translateMsg(msg) == 0xF || iom_translateMsg(msg) == 0x10 || iom_translateMsg(msg) == 0x11) {
         t = D_0013F46C;
-        mq = D_00585108;
+        mq = iom.mqReply;
         code = 0x22;
     } else {
         return 0;
@@ -66,13 +65,13 @@ int iom_sendRequestComplete(void *msg) {
     int code;
     void *m;
     if (M2C_FIELD(msg, int *, 4) == 2) {
-        mq = D_00585108;
+        mq = iom.mqReply;
         code = 0x23;
     } else if (M2C_FIELD(msg, int *, 4) == 4) {
-        mq = D_0058510C;
+        mq = iom.mq8;
         code = 0x502;
     } else if (iom_translateMsg(msg) == 0xF) {
-        mq = D_00585108;
+        mq = iom.mqReply;
         code = 0x23;
     } else {
         return 0;
@@ -114,7 +113,7 @@ int iom_sendReceiveStatus(void *arg0, int arg1, int arg2, int arg3) {
         M2C_FIELD(M2C_FIELD(temp_v0, int *, 0x20), int *, 4) = arg3;
         M2C_FIELD(M2C_FIELD(temp_v0, int *, 0x20), int *, 8) = (int) M2C_FIELD(temp_s2, int *, 0);
         M2C_FIELD(M2C_FIELD(temp_v0, int *, 0x20), int *, 0xC) = (int) M2C_FIELD(temp_s2, int *, 4);
-        iom_sendMsg(temp_v0, D_00585108);
+        iom_sendMsg(temp_v0, iom.mqReply);
         var_v0 = 0;
         /* Duplicate return node #4. Try simplifying control flow for better match */
         return var_v0;
@@ -131,7 +130,7 @@ int iom_sendContent(void *msg, int a1, void *mf, int len) {
         return 0;
     }
     if (M2C_FIELD(msg, int *, 4) == 2) {
-        mq = D_00585108;
+        mq = iom.mqReply;
         if (M2C_FIELD(msg, int *, 0x10) == 2) {
             code = 0x24;
         } else if (M2C_FIELD(msg, int *, 0x10) == 3) {
@@ -142,7 +141,7 @@ int iom_sendContent(void *msg, int a1, void *mf, int len) {
             return 0;
         }
     } else if (M2C_FIELD(msg, int *, 4) == 4) {
-        mq = D_0058510C;
+        mq = iom.mq8;
         if (M2C_FIELD(msg, int *, 0x10) == 0x10) {
             code = 0x501;
         } else if (M2C_FIELD(msg, int *, 0x10) == 0x12) {
@@ -176,10 +175,10 @@ int iom_sendLocation(IMSGL *msg, int a1, char *url, char *url2) {
 
     if (msg->type == 2 || (msg->type == 5 && iom_translateMsg(msg) == 0xF)) {
         code = 0x2D;
-        mq = D_00585108;
+        mq = iom.mqReply;
     } else if (msg->type == 4) {
         code = 0x506;
-        mq = D_0058510C;
+        mq = iom.mq8;
     } else {
         return -0x12E;
     }
@@ -202,7 +201,7 @@ int iom_sendLocation(IMSGL *msg, int a1, char *url, char *url2) {
     if (msg->type == 2) {
         m = iom_newMsg(msg);
         if (m != NULL) {
-            mq = D_0058510C;
+            mq = iom.mq8;
             m->code = 0x506;
             m->a1 = -1;
             m->size = strlen(url2) + 8;

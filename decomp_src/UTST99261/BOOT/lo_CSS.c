@@ -1,5 +1,6 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "iom_global.h"
 #include "dom_domi.h"
 #include "nflayout.h"
 #include "lo_css.h"
@@ -20,7 +21,6 @@ int iom_addCookie(char *url, char *hdr, int x);
 void iom_freeCookie(void *c);
 void innerCSSSetIntParam(CSSVALUE *val, int *out, BOX *parent, int fontSize, int inherit);
 extern int *gCOOKIE_IDX_GLOBAL;
-extern int D_00585114[];
 extern char D_00139C00[];
 void UTL_initqueue(void *q);
 int OS_thread_mutex_create(void);
@@ -1202,7 +1202,7 @@ void applyCSSInlinePropertyToBox(void *node, BOX *box) {
 int iom_attachCookie(void) {
     int r;
     int *p;
-    iomCookie = D_00585114;
+    iomCookie = iom.cookie;
     UTL_initqueue(iomCookie + 1);
     UTL_initqueue(iomCookie + 3);
     p = iomCookie;

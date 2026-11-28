@@ -1,18 +1,15 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "iom_global.h"
 #include "m2c_macros.h"
 extern int IOM_CONFIG[12];
-typedef struct { int mq; u8 pad[0xFC]; int x100; } IOMG_T;
-#define IOMG ((IOMG_T *)&iom)
 extern int (*D_0013F290[])(void *msg, void *data);
 void UTL_initqueue(M2C_UNK *);                   /* extern */
 int http_attach(M2C_UNK, int);                      /* extern */
-extern unsigned char D_005851FC;
 int http_detach();                                  /* extern */
 M2C_UNK iom_sendMsg(int, int);                      /* extern */
 M2C_UNK iom_setCache(int, int);                     /* extern */
 M2C_UNK iom_setCookie2(void *);                     /* extern */
-extern int iom;
 void *UTL_dequeue(M2C_UNK *);                       /* extern */
 int UTL_mfiledelete(int);                           /* extern */
 M2C_UNK http_delete(int);                           /* extern */
@@ -27,20 +24,15 @@ char *strcpy(char *, const char *);
 unsigned int strlen(const char *);
 char *http_getresponseheader_SetCookie(int h, int i);
 int iom_setCookie(char *url, char *cookie, int flag);
-extern int D_00585204;
 extern int G_sendflag;
-typedef struct { int state; int x4[4]; void *msg; int x18[8]; } HCTXE;
 typedef struct { int x0; int x4; void *msg; } HQE;
-extern HCTXE D_005851C4[];
 void *UTL_peekqueue(void *q, void *e);
 void UTL_relqueue(void *q, void *e);
 void *iom_freeMsg(void *msg);
 int iom_mfree(void *p);
-typedef struct { int mq; u8 pad[0xBC]; HCTXE ctx[1]; int xF8; int xFC; int x100; } IOMX_T;
 void *iom_newMsg(void *);
 void UTL_enqueue(void *q, void *e);
 extern char D_0013F38C[];
-extern int D_00585108;
 int sprintf(char *, const char *, ...);
 typedef struct { int len0; char *s0; int len1; char *s1; int len2; char *s2; } HCBD;
 typedef struct { void *f; int pos; int size; int xC; int x10; int x14; int x18[2]; } LFILE;
@@ -67,7 +59,7 @@ int iom_evHttpCtx(void *msg) {
 #endif
 
 int iom_attachHttpCtx(void) {
-    UTL_initqueue(&D_005851FC);
+    UTL_initqueue(&iom.httpQueue);
     return (((int) ~http_attach(0x320, IOM_CONFIG[11]) >> 0x1F) & 0x12C) - 0x12C;
 }
 
@@ -89,12 +81,12 @@ int iom_addHttpCtx(void *msg) {
 
     t = M2C_FIELD(msg, int *, 4);
     if (t == 2 || t == 4) {
-        for (e = UTL_peekqueue(&D_005851FC, NULL); e != NULL; e = UTL_peekqueue(&D_005851FC, e)) {
+        for (e = UTL_peekqueue(&iom.httpQueue, NULL); e != NULL; e = UTL_peekqueue(&iom.httpQueue, e)) {
             if (M2C_FIELD(msg, int *, 4) == M2C_FIELD(e->msg, int *, 4) && M2C_FIELD(msg, int *, 8) == M2C_FIELD(e->msg, int *, 8))
                 return -0x12E;
         }
         for (i = 0; i < 1; i++) {
-            c = &D_005851C4[i];
+            c = &iom.ctx[i];
             if (c->state != 0 && c->state != 6) {
                 if (M2C_FIELD(msg, int *, 4) == M2C_FIELD(c->msg, int *, 4) && M2C_FIELD(msg, int *, 8) == M2C_FIELD(c->msg, int *, 8))
                     return -0x12E;
@@ -102,18 +94,18 @@ int iom_addHttpCtx(void *msg) {
         }
     }
     for (i = 0; i < 1; i++) {
-        if (((IOMX_T *)&iom)->ctx[i].state == 0) {
-            if (((IOMX_T *)&iom)->x100 != 0)
+        if (iom.ctx[i].state == 0) {
+            if (iom.x100 != 0)
                 return -0x133;
             m = iom_newMsg(NULL);
             if (m == NULL)
                 return -0x12D;
-            ((IOMX_T *)&iom)->ctx[i].state = 1;
-            ((IOMX_T *)&iom)->ctx[i].msg = msg;
-            ((IOMX_T *)&iom)->ctx[i].x18[7] = 0;
+            iom.ctx[i].state = 1;
+            iom.ctx[i].msg = msg;
+            iom.ctx[i].x18[7] = 0;
             M2C_FIELD(m, int *, 0x10) = 0x12;
-            M2C_FIELD(m, void **, 0x20) = &D_005851C4[i];
-            iom_sendMsg((int)m, iom);
+            M2C_FIELD(m, void **, 0x20) = &iom.ctx[i];
+            iom_sendMsg((int)m, iom.mq);
             break;
         }
     }
@@ -123,7 +115,7 @@ int iom_addHttpCtx(void *msg) {
     if (m == NULL)
         return -0x12D;
     ((HQE *)m)->msg = msg;
-    UTL_enqueue(&D_005851FC, m);
+    UTL_enqueue(&iom.httpQueue, m);
 end:
     return 0;
 }
@@ -134,17 +126,17 @@ void iom_stopHttpCtx(void *msg) {
     HCTXE *c;
     int i;
 
-    for (e = UTL_peekqueue(&D_005851FC, NULL); e != NULL; e = n) {
-        n = UTL_peekqueue(&D_005851FC, e);
+    for (e = UTL_peekqueue(&iom.httpQueue, NULL); e != NULL; e = n) {
+        n = UTL_peekqueue(&iom.httpQueue, e);
         if (msg == NULL || (M2C_FIELD(msg, int *, 4) == M2C_FIELD(e->msg, int *, 4) && (M2C_FIELD(msg, int *, 0x14) == 0 || (M2C_FIELD(msg, int *, 0x14) == 1 && M2C_FIELD(msg, int *, 8) == M2C_FIELD(e->msg, int *, 8))))) {
-            UTL_relqueue(&D_005851FC, e);
+            UTL_relqueue(&iom.httpQueue, e);
             iom_sendRequestFailed(e->msg, -0x133);
             e->msg = iom_freeMsg(e->msg);
             iom_mfree(e);
         }
     }
     for (i = 0; i < 1; i++) {
-        c = &D_005851C4[i];
+        c = &iom.ctx[i];
         if (c->state != 0 && c->state != 6) {
             if (msg == NULL || (M2C_FIELD(msg, int *, 4) == M2C_FIELD(c->msg, int *, 4) && (M2C_FIELD(msg, int *, 0x14) == 0 || (M2C_FIELD(msg, int *, 0x14) == 1 && M2C_FIELD(msg, int *, 8) == M2C_FIELD(c->msg, int *, 8))))) {
                 iom_sendRequestFailed(c->msg, -0x133);
@@ -191,7 +183,7 @@ int iom_cacheStateHttpCtx(int arg0, void *arg1) {
     iom_setCache(M2C_FIELD(arg1, int *, 0x10), arg1 + 0x18);
     iom_setCookie2(arg1);
     M2C_FIELD(arg1, int *, 0) = 6;
-    iom_sendMsg(arg0, iom);
+    iom_sendMsg(arg0, iom.mq);
     return 0;
 }
 
@@ -212,7 +204,7 @@ int iom_doneStateHttpCtx(void *arg0, void *arg1) {
     M2C_FIELD(arg1, int *, 0x34) = 0;
     M2C_FIELD(arg0, int *, 0x20) = 0;
     iom_freeMsg(arg0);
-    temp_v0 = UTL_dequeue(&D_005851FC);
+    temp_v0 = UTL_dequeue(&iom.httpQueue);
     if (temp_v0 != NULL) {
         temp_v0_2 = iom_addHttpCtx(M2C_FIELD(temp_v0, void **, 8));
         if (temp_v0_2 < 0) {
@@ -308,7 +300,7 @@ void iom_httpCallback(void *h, int type, ...) {
             p->len2 = strlen(c) + strlen(d) + 3;
             p->s2 = p->s1 + p->len1 + 1;
             sprintf(p->s2, "%s - %s", c, d);
-            iom_sendMsg((int)m, D_00585108);
+            iom_sendMsg((int)m, iom.mqReply);
             } else
                 iom_mfree(p);
         }
@@ -470,10 +462,10 @@ int iom_evLoadStop(void *msg) {
     iom_freeMsg(msg);
     return 0;
 ok:
-    IOMG->x100 = 1;
+    iom.x100 = 1;
     M2C_FIELD(m, int *, 0x10) = 7;
     M2C_FIELD(m, void ***, 0x20) = p;
-    iom_sendMsg(m, IOMG->mq);
+    iom_sendMsg(m, iom.mq);
     return 0;
 }
 
@@ -486,7 +478,7 @@ int iom_evLoadStop2(void *msg) {
 
     iom_freeMsg(msg);
     ctx = h;
-    D_00585204 = 0;
+    iom.x100 = 0;
     G_sendflag = 0;
     iom_stopHttpCtx(ctx);
     flag = G_sendflag;

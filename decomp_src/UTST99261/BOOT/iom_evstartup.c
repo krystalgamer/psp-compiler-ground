@@ -12,6 +12,8 @@ int UTL_mfilewrite(void *f, void *buf, int len);
 unsigned int strlen(const char *s);
 void MEM_free(void *pool, void *p);
 typedef struct MQATTR { int x0; int x4; int x8; int xC; } MQATTR;
+/* iom.mqReply, iom.mq8, iom.x100 (iom_global.h): as members cse shares &iom across the
+   OS_mq_open calls in iom_evStartup (base kept in s0), the original stores each address afresh */
 extern int D_00585108;
 extern int D_0058510C;
 extern int D_00585204;

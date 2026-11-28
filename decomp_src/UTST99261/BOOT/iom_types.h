@@ -18,15 +18,7 @@ typedef struct IOMMSG {
     IOMBODY b;                  /* 0x4 */
 } IOMMSG;
 
-typedef struct IOMGLOBAL {
-    int mq;                     /* 0x0 */
-    int mqReply;                /* 0x4 */
-    int mq8;                    /* 0x8 */
-    u8 unkC[0xF4];
-    int x100;
-} IOMGLOBAL;
-
-extern IOMGLOBAL iom;
+#include "iom_global.h"
 
 int OS_mq_getattr(int mq, void *attr);
 int OS_mq_receive(int mq, void *buf, int len, unsigned int *prio);

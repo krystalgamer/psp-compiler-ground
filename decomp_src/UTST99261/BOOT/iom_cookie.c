@@ -1,5 +1,6 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "iom_global.h"
 #include "m2c_macros.h"
 int strcasecmp(const char *, const char *);
 unsigned int strlen(const char *);
@@ -21,8 +22,6 @@ M2C_UNK cookieFile_init();                          /* extern */
 #endif
 
 void *memset(void *, int, unsigned int);
-typedef struct { int mq; int x4; int x8; int xC; } IOMHDR;
-extern IOMHDR iom;
 extern int (*D_00139CB4[])(void *msg);
 void CLIB_tzset(void);
 void iom_initializeEnvironment(void);

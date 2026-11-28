@@ -1,18 +1,14 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "iom_global.h"
 #include "m2c_macros.h"
 /* cache ids: a struct at 0x3C, so &iom.cache.ids[i] is iom + i + 0x30 with displacement 0x10 */
-typedef struct { unsigned int size; u8 ids[125]; } IOMCACHE_T;
-typedef struct { u8 pad[0x28]; int x28; u8 pad2[0x10]; IOMCACHE_T cache; } IOMCID_T;
-extern IOMCID_T iom;
 void *UTL_peekqueue(void *q, void *e);
 int strcasecmp(const char *a, const char *b);
 void iom_freeCache(void *c);
 M2C_UNK UTL_mfiledelete(int);                       /* extern */
 void UTL_relqueue(M2C_UNK *, void *);            /* extern */
-extern unsigned char D_00585130;
 int UTL_sizequeue(int);                             /* extern */
-extern unsigned char D_00585138;
 
 
 
@@ -39,8 +35,8 @@ void iom_updateCache(void) {
     void *e;
     void *next;
 
-    for (e = UTL_peekqueue((void *)iom.pad2, NULL); e != NULL; e = next) {
-        next = UTL_peekqueue((void *)iom.pad2, e);
+    for (e = UTL_peekqueue(&iom.cacheList, NULL); e != NULL; e = next) {
+        next = UTL_peekqueue(&iom.cacheList, e);
         e = M2C_FIELD(e, void **, 8);
         if ((unsigned int)(M2C_FIELD(e, int *, 0x14) + 1) >= 2 && iom_diffexpire(M2C_FIELD(e, int *, 0x14), CLIB_time(NULL)) < 0) {
             M2C_FIELD(e, int *, 0x14) = 0;
@@ -54,7 +50,7 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_cache", iom_addCache);
 void iom_deleteCache(void *c) {
     void *e;
     if (c == NULL) {
-        e = UTL_peekqueue(&D_00585130, NULL);
+        e = UTL_peekqueue(&iom.cacheList, NULL);
         if (e == NULL) {
             return;
         }
@@ -77,7 +73,7 @@ void iom_deleteCache(void *c) {
 void iom_freeCache(void *arg0) {
     int temp_a0;
 
-    UTL_relqueue(&D_00585130, arg0 + 0x20);
+    UTL_relqueue(&iom.cacheList, arg0 + 0x20);
     UTL_relqueue(M2C_FIELD(arg0, int *, 0) + 0xC, arg0 + 0x2C);
     iom_deleteDomainCache(M2C_FIELD(arg0, int *, 0));
     temp_a0 = M2C_FIELD(arg0, int *, 0x1C);
@@ -95,7 +91,7 @@ void iom_freeCache(void *arg0) {
 
 void iom_deleteDomainCache(void *arg0) {
     if (UTL_sizequeue(arg0 + 0xC) <= 0) {
-        UTL_relqueue(&D_00585138, arg0);
+        UTL_relqueue(&iom.cacheList2, arg0);
         iom_mfree(M2C_FIELD(arg0, int *, 8));
         iom_mfree((int) arg0);
     }
@@ -103,7 +99,7 @@ void iom_deleteDomainCache(void *arg0) {
 
 void *iom_domainCache(char *name) {
     void *e;
-    for (e = UTL_peekqueue(&D_00585138, NULL); e != NULL; e = UTL_peekqueue(&D_00585138, e)) {
+    for (e = UTL_peekqueue(&iom.cacheList2, NULL); e != NULL; e = UTL_peekqueue(&iom.cacheList2, e)) {
         if (strcasecmp(M2C_FIELD(e, char **, 8), name) == 0) {
             return e;
         }
