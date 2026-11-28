@@ -35,7 +35,13 @@ bool interp::VectorRGBAnim::isRecording() const
     return _recording;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_VectorRGBAnim", _ZN6interp13VectorRGBAnim14startRecordingEv);
+extern const char D_001744CC[];     /* "start recording shl anim\n" */
+void interp::VectorRGBAnim::startRecording()
+{
+    *this = VectorRGBAnim();
+    _recording = true;
+    common::Log() << D_001744CC;
+}
 
 void interp::VectorRGBAnim::addRecord(sh::VectorRGB v)
 {
