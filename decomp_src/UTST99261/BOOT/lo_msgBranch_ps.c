@@ -775,6 +775,57 @@ int HST_getTargetName();
 int make_msg_LP8();
 int strcmp();
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_msgBranch_ps", proc_msg_TM);
+void proc_msg_TM(PMSG *msg) {
+    PMSG m;
+    int *node;
+    PBOX *body;
+    char *cur;
+    char *url;
+    int mode;
+    PURL *u1;
+    PURL *u2;
+
+    switch (msg->unk8) {
+    case 0:
+        drawAnimation();
+        return;
+    case 2:
+        node = HST_searchSessionIDHistoryNode(msg->unk4);
+        if (node != NULL && (body = (PBOX *)node[0x6C / 4]) != NULL && checkBoxValidity(body) == 1) {
+        cur = HST_getCurURI(node);
+        if (M2C_FIELD(M2C_FIELD(body, void **, 0x20), char **, 0x30) == NULL) {
+            url = cur;
+            mode = 1;
+        } else {
+            url = M2C_FIELD(M2C_FIELD(body, void **, 0x20), char **, 0x30);
+            u1 = URL_new(cur);
+            if (u1 == NULL) {
+                return;
+            }
+            u2 = URL_new(url);
+            if (u2 == NULL) {
+                MEM_free(0, u1);
+                return;
+            }
+            if (URL_equals(u1, u2) && (u1->frag != NULL || u2->frag != NULL)) {
+                if (u1->frag != NULL && u2->frag != NULL) {
+                    strcmp(u1->frag, u2->frag);
+                }
+            }
+            URL_free(u1);
+            URL_free(u2);
+            mode = 2;
+        }
+        m.unk4 = msg->unkC;
+        m.unk10 = 0;
+        lo_clearTimer(msg->unk10);
+        putLLIST(&REQUEST_LLIST, make_msg_LP8(&m, url, cur, HST_getTargetName(node), mode, 1, 0));
+        break;
+        }
+    case 1:
+        lo_clearTimer(msg->unk10);
+        break;
+    }
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_msgBranch_ps", D_001338FC);
