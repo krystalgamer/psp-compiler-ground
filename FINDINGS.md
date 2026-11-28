@@ -941,6 +941,15 @@ libgcc/libsupc++ DWARF names `gcc-3.3.6/` paths.
     conflicting `memcpy` declaration in those files, not a library-wide
     `-fno-builtin`.
   - The title key archive `PIPOSARU2SCEJ_11444key_psp.a` is the 1.3.1 object.
+  - SCERT's "real branch instead of movn/movz" is source, not a flag: its
+    sources return early (`r = f(); if (r != 0) return r; ... return 0;`,
+    the check often written out in each arm).  In the RTL, cse deletes
+    `ret = 0` where the value is known, ce1 converts any single-predecessor
+    arm into movn/movz, and only a success block with two or more
+    predecessors (a shared `return 0`) survives; the per-arm checks are
+    merged after reload into the original's single branch on v0.
+    `-fno-if-conversion` does not reproduce it.  rt_memory and rt_circ_buf
+    contain no movn/movz at all; most other SCERT objects do.
   - `i3d_parser_i3c` is exported under i3d_collision_psp.a but linked
     before the i3d_share_psp.a objects, i.e. the copy pulled in from
     i3d_model_psp.a: taken as 1.9.2 (medium confidence; its C compiles the
