@@ -57,6 +57,10 @@ typedef struct SplCap { int gc; int n; MesValue *vals; } SplCap;
 typedef struct SplState { int gc; int end; int cap; } SplState;
 SplArray *mes_array_new(MesContext *ctx, unsigned int len);
 void mes_array_set(MesContext *ctx, SplArray *a, MesValue v);
+typedef struct RepRx { int gc; char pad4[0x1C]; double lastIndex; int ncap; unsigned char global; } RepRx;
+typedef struct RepState { int gc; int end; void *cap; } RepState;
+void mes_util_string_put(void *s, unsigned short c);
+MesValue mes_string_replace_sub(MesContext *ctx, MesValue repl, int isfunc, MesValue matched, void *m, int pos, MesValue str, MesValue thisv);
 MesValue mes_string_new(MesContext *ctx, const void *str, int len)
 {
     MesStr *s;
@@ -431,7 +435,70 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_match);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_replace_sub);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_replace);
+MesValue mes_string_replace(MesContext *ctx, MesValue re, MesValue repl)
+{
+    int isfunc;
+    int isre;
+    UCSChar *str;
+    MesValue s;
+    int len;
+    int i;
+    void *buf;
+    MesValue st;
+    MesValue r;
+
+    s = mes_eval_to_string(ctx, (MesValue)ctx->frame->thisobj);
+    str = ((MesStr *)(s & ~3))->str;
+    len = ((MesStr *)(s & ~3))->len;
+    *--ctx->sp = s;
+    if (MES_IS_OBJECT(repl) && (((MesObject *)repl)->gc->kind == 3 || ((MesObject *)repl)->gc->kind == 4))
+        isfunc = 1;
+    else {
+        isfunc = 0;
+        repl = mes_eval_to_string(ctx, repl);
+    }
+    *--ctx->sp = repl;
+    if (MES_IS_OBJECT(re) && ((MesObject *)re)->gc->kind == 8)
+        isre = 1;
+    else {
+        isre = 0;
+        re = mes_eval_to_string(ctx, re);
+    }
+    *--ctx->sp = re;
+    i = 0;
+    if (isre)
+        i = ((RepRx *)re)->lastIndex;
+    buf = mes_util_string_new();
+    while (i <= len) {
+        st = (MesValue)mes_regexp_pattern_exec(ctx, re, s, i);
+        if (st != 0) {
+            *--ctx->sp = st;
+            r = mes_string_new(ctx, str + i, ((RepState *)st)->end - i);
+            *--ctx->sp = r;
+            mes_util_string_put_string(buf, mes_string_replace_sub(ctx, repl, isfunc, r, ((RepState *)st)->cap, i, s, (MesValue)ctx->frame->thisobj));
+            if ((((RepState *)st)->end == i) & (i < len)) {
+                mes_util_string_put(buf, str[i++]);
+            } else
+                i = ((RepState *)st)->end;
+            ctx->sp += 2;
+            if (!isre || !((RepRx *)re)->global)
+                break;
+            ((RepRx *)re)->lastIndex = ((RepState *)st)->end;
+        } else {
+            if (i < len)
+                mes_util_string_put(buf, str[i]);
+            i++;
+        }
+    }
+    while (i < len)
+        mes_util_string_put(buf, str[i++]);
+    if (isre && ((RepRx *)re)->global)
+        ((RepRx *)re)->lastIndex = 0;
+    ctx->sp += 3;
+    r = mes_string_new3(ctx, buf);
+    mes_util_string_free(buf);
+    return r;
+}
 
 MesValue mes_string_search(MesContext *ctx, MesValue re)
 {
