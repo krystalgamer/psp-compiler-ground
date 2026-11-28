@@ -97,7 +97,7 @@ int rt_time_get_local();
 char *strncpy(char *, const char *, unsigned int);
 
 extern char gNetUpdateErrors[];
-void *memcpy(void *, const void *, unsigned long);
+void memcpy(void *, const void *, unsigned long);
 
 int NetGetNatService(M2C_UNK **arg0);
 
@@ -606,7 +606,41 @@ int NetSendMessageByUDP(signed char flags, char *conn, DmeSendInfo *s, int len)
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetSendMessageByTCP);
+extern char D_00132BA8[];
+int NetSendMessageByTCP(signed char flags, char *conn, DmeSendInfo *s, DmeIovec *v)
+{
+    unsigned char mask[32];
+    int reliable = 0;
+    char *p = D_00132BA8;
+    int target = s->target;
+    int i;
+    int r;
+
+    if (v->total == 0) return 0x17;
+    if (v->total >= 0x201) return 0x1F;
+    i = v->n - 1;
+    s->err = 0;
+    for (; i >= 0; i--) {
+        DmeIov *e = (DmeIov *)(i * 8 + (int)v);
+        if (e->buf != NULL && e->len != 0) {
+            memcpy(p, e->buf, e->len);
+            p += e->len;
+        }
+    }
+    if (flags & 1) reliable = 1;
+    if (s->target == 0x100) {
+        NetBitMaskToSendMask(mask, s->mask, s->nbits);
+        if (flags < 0) reliable = 1;
+        r = (*(int (**)(int, int, int, unsigned char *, int, char *, int, int))((char *)gMsgClientInterfacePtr + 0x28))(*(int *)(conn + 0x470), 0, s->nbits - 1, mask, flags, D_00132BA8, v->total, reliable);
+    } else {
+        if (s->target == -1) target = 0xFFFE;
+        else if (s->target == 0xFFFF) target = 0xFFFF;
+        else if (s->target == *(int *)(conn + 0x404)) return s->err;
+        r = (*(int (**)(int, int, int, char *, unsigned short, int))((char *)gMsgClientInterfacePtr + 0x24))(*(int *)(conn + 0x470), target, flags, D_00132BA8, v->total, reliable);
+    }
+    s->err = NetMapRtError(r);
+    return r;
+}
 
 typedef struct { signed char idx; char pad[3]; char *conn; void *buf; } NetFragCtx;
 int NetFragSendCB(int len, NetFragCtx *c)
