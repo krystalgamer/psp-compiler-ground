@@ -22,6 +22,8 @@ char *FIO_readdir(void *d);
 void FIO_closedir(void *d);
 void FIO_remove(char *path);
 int strcmp(const char *a, const char *b);
+int strncasecmp(const char *a, const char *b, unsigned int n);
+char *iom_strnmcat(char *dst, int n, ...);
 int iom_preferenceCache(void) {
     int r;
 
@@ -157,7 +159,48 @@ int iom_mfree(int arg0) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_preference", iom_getheadervalue);
+char *iom_getheadervalue(char *buf, int len, char *name)
+{
+    int nlen;
+    int i;
+    char *p;
+    char *v;
+    int vlen;
+    char *r;
+
+    nlen = strlen(name);
+    while (len > 0) {
+        i = 0;
+        while (i < len && buf[i] != '\n')
+            i++;
+        if (len < i)
+            break;
+        if (buf[i] == '\0' || buf[i] == '\n') {
+            if (i > nlen && strncasecmp(buf, name, nlen) == 0) {
+                p = buf + nlen;
+                while (*p == ' ' || *p == '\t')
+                    p++;
+                p += (*p == ':');
+                while (*p == ' ' || *p == '\t')
+                    p++;
+                v = p;
+                while (*p != '\0' && *p != '\r' && *p != '\n')
+                    p++;
+                len = p - v;
+                r = iom_malloc(len + 1);
+                if (r == NULL)
+                    return NULL;
+                iom_strnmcat(r, 1, len, v);
+                return r;
+            }
+            len -= i;
+            len--;
+            buf += i + 1;
+        } else
+            break;
+    }
+    return NULL;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_preference", D_00139DD0);
 
