@@ -7,7 +7,7 @@ void NetFreeClientPointers(void);
 void NetInitializeClients(void);
 void *DMEmalloc(M2C_UNK);                           /* extern */
 M2C_UNK DmeFree(M2C_UNK *);                         /* extern */
-extern void *NetClientPointerList;
+extern void **NetClientPointerList;
 extern void *gObjectInterfacePtr;
 
 void *memset(void *s, int c, unsigned int n);
@@ -19,7 +19,12 @@ void NetInitializeClients(void) {
     memset(NetClientPointerList, 0, 0x400U);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/ClientMgr", NetIGetClient);
+void *NetIGetClient(void *o, unsigned int idx)
+{
+    if (gObjectInterfacePtr != NULL && o != NULL && o == *(void **)((char *)gObjectInterfacePtr + 0x138) && idx < 256 && NetClientPointerList != NULL)
+        return NetClientPointerList[idx];
+    return NULL;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/ClientMgr", NetIGetClientStatus);
 

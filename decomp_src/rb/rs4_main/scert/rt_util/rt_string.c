@@ -5,7 +5,17 @@
 #endif
 int rt_strlen(signed char *arg0);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_string", rt_string_strncpy);
+char *rt_string_strncpy(char *d, const char *s, int n)
+{
+    char *r = d;
+
+    if (n != 0) {
+        while (--n != -1 && (*d++ = *s++) != 0)
+            ;
+        d[-1] = 0;
+    }
+    return r;
+}
 
 int rt_strlen(signed char *arg0) {
     int var_v0;

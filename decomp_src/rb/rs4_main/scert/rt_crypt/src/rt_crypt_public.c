@@ -35,6 +35,17 @@ loop_2:
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt_public", KM_GetLocalPublicKey);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt_public", GetKeyMaster);
+extern char **gCryptGlobals;
+void *GetKeyMaster(int id)
+{
+    char *k = *gCryptGlobals;
+
+    while (k != NULL) {
+        if (*(int *)(k + 0x10) == id) break;
+        k = *(char **)(k + 4);
+        if (k == *gCryptGlobals) k = NULL;
+    }
+    return k;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt_public", rcsid_10E888);
