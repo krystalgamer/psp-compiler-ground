@@ -68,7 +68,21 @@ int rt_token_is_free(unsigned int idx, RtTokTab *t)
     return ret;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_is_pending);
+int rt_token_is_pending(unsigned int idx, RtTokTab *t)
+{
+    int ret;
+    if (t == NULL) {
+        rt_token_start(&t);
+        ret = 0;
+    } else {
+        ret = 0;
+        if (idx < t->size) {
+            if (t->ents[idx].owner == 0xFFFF)
+                ret = t->ents[idx].pending == 1;
+        }
+    }
+    return ret;
+}
 
 void rt_token_set_pending_state(unsigned int idx, RtTokTab *t)
 {
