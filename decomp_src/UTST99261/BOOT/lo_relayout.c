@@ -94,6 +94,7 @@ typedef struct {
     void *d;
     void *e;
     s16 f;
+    s16 g;
 } RLCTX;
 
 typedef struct SAVEDATA { /* size 0x1C */
@@ -134,6 +135,8 @@ void *HST_getHistoryGarbageList();                  /* extern */
 int getPreferredFontSize();
 void setBoxSize(RBOX *b, int w, int h);
 typedef struct UIFTBL { int v[1][7]; } UIFTBL;
+extern int D_00584CEC;
+#define UIG(o) (((int *)ui_global)[(o) / 4])
 int restoreSpaceText(RBOX *box) {
     char *old;
     char *p;
@@ -723,7 +726,77 @@ void updateLiFirstLineList(void *arg0) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", relayoutAtBody);
+void relayoutAtBody(RBOX *box, int mode)
+{
+    RLCTX ctx;
+    int redo;
+    int over;
+    int bw;
+    int h;
+    int w;
+    int sb;
+
+    redo = 0;
+    over = 0;
+    if (box == NULL || box->content != 1)
+        return;
+    ctx.a = box;
+    ctx.b = box;
+    ctx.c = box;
+    ctx.d = (u8 *)box->geom + 0x90;
+    ctx.e = box->region;
+    ctx.f = 0;
+    ctx.g = mode;
+    bw = FG(box)[0x10 / 4];
+    h = box->unk1C;
+    w = UIG(0x88);
+    sb = 0;
+    if (D_00584CEC == 0) {
+        sb = GUI_ScrollPane_getVScrollbarWidth(((int *)box)[0xB]);
+        if (FG(box)[2] < bw) {
+            if (FG(box)[3] - sb < h)
+                over = 1;
+        } else {
+            if (FG(box)[3] < h)
+                over = 1;
+        }
+        if (over == 1 && UIG(0x88) <= FG(box)[2] && UIG(0x8C) <= FG(box)[3])
+            w -= sb;
+    }
+    repositionBox_body2(box, 1, w, UIG(0x8C));
+    relayoutBoxTreeLoop(&ctx, box);
+    calcBoxSize(&ctx, box);
+    if (box->flags40 & 1)
+        redo = 1;
+    if (D_00584CEC == 0 && w == UIG(0x88)) {
+        if (w < FG(box)[0x10 / 4]) {
+            if (UIG(0x8C) - sb < box->unk1C)
+                redo = 1;
+        } else {
+            if (box->unk1C > UIG(0x8C))
+                redo = 1;
+        }
+    }
+    if (redo == 1) {
+        ctx.a = box;
+        ctx.b = box;
+        ctx.c = box;
+        ctx.d = (u8 *)box->geom + 0x90;
+        ctx.e = box->region;
+        ctx.f = 0;
+        ctx.g = 0;
+        repositionBox_body2(box, 1, box->unk18 - sb, UIG(0x8C));
+        relayoutBoxTreeLoop(&ctx, box);
+        calcBoxSize(&ctx, box);
+    }
+    if (box->parent == NULL)
+        FG(box)[2] = UIG(0x88);
+    if (box->unk18 < FG(box)[0x10 / 4])
+        box->unk18 = FG(box)[0x10 / 4];
+    if (box->unk1C < FG(box)[0x14 / 4])
+        box->unk1C = FG(box)[0x14 / 4];
+    confirmScrollInfo(FG(box)[0x38 / 4]);
+}
 
 void relayoutAtBodyOnly(RBOX *box) {
     RLCTX ctx;
