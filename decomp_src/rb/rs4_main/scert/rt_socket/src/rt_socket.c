@@ -190,13 +190,40 @@ int rt_socket_get_send_buffer_size(int s, int *out)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rt_socket_bind);
+int rt_socket_bind(int s, int port)
+{
+    RtSin2 sin;
+    memset(&sin, 0, sizeof sin);
+    sin.addr = __builtin_allegrex_wsbw(0);
+    sin.family = 2;
+    sin.port = __builtin_allegrex_wsbh((unsigned short)port);
+    if (sceNetInetBind(s, &sin, sizeof sin) != 0) return rt_socket_get_err_platform();
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rt_socket_bind_with_ip);
+int rt_socket_bind_with_ip(int s, int ip, int port)
+{
+    RtSin2 sin;
+    memset(&sin, 0, sizeof sin);
+    sin.family = 2;
+    sin.addr = ip;
+    sin.port = __builtin_allegrex_wsbh((unsigned short)port);
+    if (sceNetInetBind(s, &sin, sizeof sin) != 0) return rt_socket_get_err_platform();
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rt_socket_bind_dynamic);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rt_socket_connect_to_service);
+int rt_socket_connect_to_service(int s, int ip, int port)
+{
+    RtSin2 sin;
+    memset(&sin, 0, sizeof sin);
+    sin.family = 2;
+    sin.addr = ip;
+    sin.port = __builtin_allegrex_wsbh((unsigned short)port);
+    if (sceNetInetConnect(s, &sin, sizeof sin) != 0) return rt_socket_get_err_platform();
+    return 0;
+}
 
 void rt_socket_find_sockets_with_data(void) {
     rt_socket_find_sockets_with_data_platform();
