@@ -107,11 +107,20 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_safe_ac
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_safe_acosf", _ZN4math11compactnessENS_11vector_xyzwES0_S0_);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_safe_acosf", _ZNK4math11vector_xyzw5printESsSsSs);
+void math::vector_xyzw::print(std::string pre, std::string sep, std::string post) const
+{
+    std::cout << pre << x << sep << y << sep << z << sep << w << post;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_safe_acosf", _ZNK4math10vector_xyz5printESsSsSs);
+void math::vector_xyz::print(std::string pre, std::string sep, std::string post) const
+{
+    std::cout << pre << x << sep << y << sep << z << post;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_safe_acosf", _ZNK4math9vector_xy5printESsSsSs);
+void math::vector_xy::print(std::string pre, std::string sep, std::string post) const
+{
+    std::cout << pre << x << sep << y << post;
+}
 
 extern "C" {
 void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_51AA0");

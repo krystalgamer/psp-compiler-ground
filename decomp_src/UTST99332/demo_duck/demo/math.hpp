@@ -25,6 +25,7 @@ struct vector_xyz {
     vector_xyz() {}
     vector_xyz(float x_, float y_, float z_) : x(x_), y(y_), z(z_) {}
     vector_xyz operator*(float s) const { return vector_xyz(x * s, y * s, z * s); }
+    void print(std::string, std::string, std::string) const;
 };
 struct vector_xyzw {
     float x, y, z, w;
@@ -38,6 +39,7 @@ struct vector_xyzw {
     vector_xyzw operator*(float s) const { return vector_xyzw(x * s, y * s, z * s, w * s); }
     vector_xyzw operator*(const vector_xyzw &b) const { return vector_xyzw(x * b.x, y * b.y, z * b.z, w * b.w); }
     vector_xyzw operator/(vector_xyzw b) const { return vector_xyzw(x / b.x, y / b.y, z / b.z, w / b.w); }
+    void print(std::string, std::string, std::string) const;
 };
 inline float dot(const vector_xyzw &a, const vector_xyzw &b)
 {
@@ -58,6 +60,7 @@ struct vector_xy {
     float x, y, _pad[2];
     vector_xy() {}
     vector_xy(float x_, float y_) : x(x_), y(y_) {}
+    void print(std::string, std::string, std::string) const;
 };
 struct quaternion;
 enum RotationOrder { };

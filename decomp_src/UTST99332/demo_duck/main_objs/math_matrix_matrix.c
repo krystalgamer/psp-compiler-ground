@@ -351,4 +351,8 @@ math::matrix math::matrix::fixedCoordSys() const
     return m;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_matrix_matrix", _ZNK4math6matrix5printESsSs);
+extern const char D_00168DA8[], D_00168DAC[];
+void math::matrix::print(std::string a, std::string b) const
+{
+    std::cout << a << D_00168DA8 << (*this)[0][0] << D_00168DA8 << (*this)[1][0] << D_00168DA8 << (*this)[2][0] << D_00168DA8 << (*this)[3][0] << D_00168DAC << D_00168DA8 << (*this)[0][1] << D_00168DA8 << (*this)[1][1] << D_00168DA8 << (*this)[2][1] << D_00168DA8 << (*this)[3][1] << D_00168DAC << D_00168DA8 << (*this)[0][2] << D_00168DA8 << (*this)[1][2] << D_00168DA8 << (*this)[2][2] << D_00168DA8 << (*this)[3][2] << D_00168DAC << D_00168DA8 << (*this)[0][3] << D_00168DA8 << (*this)[1][3] << D_00168DA8 << (*this)[2][3] << D_00168DA8 << (*this)[3][3] << D_00168DAC << b;
+}

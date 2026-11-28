@@ -351,4 +351,8 @@ math::matrix math::matrix::fixedCoordSys() const
     return m;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_matrix_matrix", _ZNK4math6matrix5printESsSs);
+extern const char D_00165E88[], D_00165E8C[];
+void math::matrix::print(std::string a, std::string b) const
+{
+    std::cout << a << D_00165E88 << (*this)[0][0] << D_00165E88 << (*this)[1][0] << D_00165E88 << (*this)[2][0] << D_00165E88 << (*this)[3][0] << D_00165E8C << D_00165E88 << (*this)[0][1] << D_00165E88 << (*this)[1][1] << D_00165E88 << (*this)[2][1] << D_00165E88 << (*this)[3][1] << D_00165E8C << D_00165E88 << (*this)[0][2] << D_00165E88 << (*this)[1][2] << D_00165E88 << (*this)[2][2] << D_00165E88 << (*this)[3][2] << D_00165E8C << D_00165E88 << (*this)[0][3] << D_00165E88 << (*this)[1][3] << D_00165E88 << (*this)[2][3] << D_00165E88 << (*this)[3][3] << D_00165E8C << b;
+}
