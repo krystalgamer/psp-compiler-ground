@@ -342,7 +342,15 @@ unsigned int *I3dGuPatchDivide_PSP(unsigned int *p, int x, int y)
     return p + 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuPatchPrim_PSP);
+unsigned int *I3dGuPatchPrim_PSP(unsigned int *p, int prim)
+{
+    unsigned int v;
+    if (prim == 4) v = 0x37000000;
+    else if (prim == 2) v = 0x37000001;
+    else v = 0x37000002;
+    *p = v;
+    return p + 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuDrawBezier_PSP);
 
