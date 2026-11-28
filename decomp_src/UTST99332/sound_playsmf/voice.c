@@ -134,7 +134,57 @@ int voice_init(unsigned int num)
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/voice", voice_refresh);
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/voice", voice_allocVoice);
+int voice_allocVoice(unsigned int prio)
+{
+	int v;
+
+	if (g_vstate == -1)
+		return 0x80450001;
+	if (g_cnt1 != 0)
+		return g_lst1[0]->no;
+	if (g_cnt5 != 0) {
+		v = func_0000C658(g_lst5, g_cnt5, prio);
+		if (v != -1)
+			return v;
+	}
+	if (g_cnt4 != 0) {
+		v = func_0000C658(g_lst4, g_cnt4, prio);
+		if (v != -1)
+			return v;
+	}
+	if (g_cnt7 != 0) {
+		v = func_0000C658(g_lst7, g_cnt7, prio);
+		if (v != -1)
+			return v;
+	}
+	if (g_cnt3 != 0) {
+		v = func_0000C658(g_lst3, g_cnt3, prio);
+		if (v != -1)
+			return v;
+	}
+	if (g_cnt8 != 0) {
+		v = func_0000C658(g_lst8, g_cnt8, prio);
+		if (v != -1)
+			return v;
+	}
+	if (g_cnt9 != 0) {
+		v = func_0000C658(g_lst9, g_cnt9, prio);
+		if (v != -1)
+			return v;
+	}
+	if (g_cnt2 != 0) {
+		v = func_0000C658(g_lst2, g_cnt2, prio);
+		if (v != -1)
+			return v;
+	}
+	/* the last test checks list 6 but searches list 2 (as in the original) */
+	if (g_cnt6 != 0) {
+		v = func_0000C658(g_lst2, g_cnt2, prio);
+		if (v != -1)
+			return v;
+	}
+	return 0x80540010;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/voice", voice_noteOn);
 
