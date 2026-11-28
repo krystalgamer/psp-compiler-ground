@@ -3,11 +3,12 @@
 
 M2C_UNK init_gims();                                /* extern */
 M2C_UNK puts(M2C_UNK *);                            /* extern */
-extern int FuncInit;
-extern int GameStat;
-extern int state;
-extern int press;
-extern unsigned int D_0014E778;
+/* The unit's .bss (config `bss 0x14E768 game_main`): these, KeySync's prev.0,
+ * then buf (tentative). */
+static int GameStat = 0;
+static int FuncInit = 0;
+static int state = 0;
+static int press = 0;
 typedef struct {
 	unsigned int TimeStamp;
 	unsigned int Buttons;
@@ -19,7 +20,7 @@ typedef struct {
 	int (*init)(void);
 	int (*main)(void);
 } MAIN_FUNC;
-extern CtrlData buf[8];
+static CtrlData buf[8];
 extern MAIN_FUNC main_func[];
 int sceCtrlReadBufferPositive(CtrlData *, int);
 int LoadGimFile(int no, int file);
@@ -53,14 +54,16 @@ int game_main(void)
 
 void KeySync(void)
 {
+	static unsigned int prev;
+
 	if (sceCtrlReadBufferPositive(buf, 8) == 0) {
 		buf[0].Lx = 0x80;
 		buf[0].Ly = 0x80;
 		buf[0].Buttons = 0;
 	}
 	state = buf[0].Buttons;
-	press = state & ~D_0014E778;
-	D_0014E778 = state;
+	press = state & ~prev;
+	prev = state;
 }
 
 int GetKeyStat(void) {

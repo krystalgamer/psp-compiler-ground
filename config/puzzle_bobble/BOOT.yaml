@@ -252,7 +252,7 @@ segments:
       - [0x31840, data, data]
       - { start: 0x5540C, type: bss, vram: 0x55380, name: bss_55380 }
       - { start: 0x5540C, type: .bss, vram: 0xD6488, name: wrap_sprite }
-      - { start: 0x5540C, type: bss, vram: 0x14E768, name: bss_14E768 }
+      - { start: 0x5540C, type: .bss, vram: 0x14E768, name: game_main }
       - { start: 0x5540C, type: .bss, vram: 0x14E7FC, name: PuzzleMain }
       - { start: 0x5540C, type: .bss, vram: 0x15295C, name: Title }
       - { start: 0x5540C, type: bss, vram: 0x152978, name: bss_152978 }
