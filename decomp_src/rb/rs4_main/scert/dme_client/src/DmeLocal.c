@@ -1221,7 +1221,33 @@ int NetCheckForPingTimeouts(void)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIsPeerToPeerHost);
+int NetIsPeerToPeerHost(char *c, int *is)
+{
+    unsigned short host = 0xFFFE;
+    unsigned short me = 0xFFFE;
+    int i;
+
+    if (is == NULL) return 0x17;
+    *is = 0;
+    if (c != NULL) {
+        if ((*(DmeP2pHostFn *)((char *)gP2PInterfacePtr + 0x18))(*(int *)(c + 0x474), &host) != 0) return 0x25;
+        if ((*(DmeP2pHostFn *)((char *)gP2PInterfacePtr + 0x14))(*(int *)(c + 0x474), &me) != 0) return 0x25;
+        if (me != 0xFFFE && host == me) *is = 1;
+        return 0;
+    }
+    for (i = 0; i < 4; i++) {
+        c = NetGetConnInfo(i);
+        if (c != NULL) {
+            if ((*(DmeP2pHostFn *)((char *)gP2PInterfacePtr + 0x18))(*(int *)(c + 0x474), &host) != 0) return 0x25;
+            if ((*(DmeP2pHostFn *)((char *)gP2PInterfacePtr + 0x14))(*(int *)(c + 0x474), &me) != 0) return 0x25;
+            if (me != 0xFFFE && host == me) {
+                *is = 1;
+                break;
+            }
+        }
+    }
+    return 0;
+}
 
 typedef struct { unsigned char state; char pad[3]; DmeLinkAddr addr; char pad2[0x10]; void (*cb)(int, char *, int); } DmeEchoReq;
 extern DmeEchoReq gPendingEchoRequest[256];
