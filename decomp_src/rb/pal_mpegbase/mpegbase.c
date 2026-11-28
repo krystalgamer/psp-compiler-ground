@@ -219,7 +219,61 @@ int sceMpegbase_0530BE4E(int arg0)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/rb/pal_mpegbase/nonmatchings/mpegbase", sceMpegBasePESpacketCopy);
+int sceMpegBasePESpacketCopy(PesPacket *pkt)
+{
+	unsigned int oldk1;
+	int ret;
+	int res;
+	unsigned int i;
+	PesDesc *d;
+	PesCtx *ctx;
+	unsigned int size, src, dst, ctrl;
+
+	K1_SAVE(oldk1);
+	if (sceSysregGetTachyonVersion() < 0x140000) {
+		sceKernelDcacheWritebackAll();
+		ret = sceMeCore_driver_3D5F109C(7, pkt);
+		K1_RESTORE(oldk1);
+		return ret;
+	}
+	res = sceKernelWaitSema(D_00001780.sema, 1, 0);
+	if (res < 0) {
+		K1_RESTORE(oldk1);
+		return res;
+	}
+	d = D_00001780.desc;
+	for (i = 0, ctx = &D_00001780; i < 100; i++) {
+		size = pkt[i].size & 0xFFF;
+		src = pkt[i].src;
+		if (dynBufBad(src, size) || staBufBad(dst = pkt[i].dst, size)) {
+			sceKernelSignalSema(ctx->sema, 1);
+			K1_RESTORE(oldk1);
+			return 0x80000023;
+		}
+		d->src = K1_USER() ? __builtin_allegrex_ins(0x40000000, src, 0, 29) : __builtin_allegrex_ext(src, 0, 29);
+		d->dst = K1_USER() ? __builtin_allegrex_ins(0x40000000, dst, 0, 29) : __builtin_allegrex_ext(dst, 0, 29);
+		d->next = (void *)__builtin_allegrex_ext((unsigned int)(d + 1), 0, 29);
+		ctrl = size | 0x0A909000;
+		d->ctrl = ctrl;
+		if (pkt[i].next == 0) {
+			d->ctrl = ctrl | 0x80000000;
+			d->next = 0;
+			break;
+		}
+		d++;
+	}
+	if (i >= 99 && D_00001780.desc[99].next != 0) {
+		sceKernelSignalSema(D_00001780.sema, 1);
+		K1_RESTORE(oldk1);
+		return 0x80000104;
+	}
+	sceKernelDcacheWritebackInvalidateRange(D_00001780.desc, (i + 1) * sizeof(PesDesc));
+	ret = sceDmacplus_driver_3438DA0B(D_00001780.desc);
+	sceDmacplus_driver_58DE4914(0, 0);
+	sceKernelSignalSema(D_00001780.sema, 1);
+	K1_RESTORE(oldk1);
+	return ret;
+}
 
 int func_00000BA0(void)
 {
