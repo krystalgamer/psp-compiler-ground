@@ -147,7 +147,16 @@ int sgxResAttachBodyFile(int id, const char *name, int size) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResClose);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResCloseAll);
+static inline char *ResListFirstL(char *l) {
+    char *p = *(char **)(l + 4);
+    return (*(int *)(p + 8) < 0) ? NULL : p;
+}
+void sgxResCloseAll(void)
+{
+    char *p;
+    while ((p = ResListFirstL((char *)&D_0011FC44)) != NULL)
+        sgxResClose(*(int *)(p + 8));
+}
 
 void *sgxResGetHeaderPtr(int id) {
     char *p = ResGetSlot(id, SLOT_NAME("GetHeader"));
@@ -548,7 +557,15 @@ int sgxResRoundWavePos(int id, int idx, long long pos) {
     return RoundWavePos(w, pos);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResWaveTimeToPos);
+long long sgxResWaveTimeToPos(int id, int idx, void *round, float t)
+{
+    char *w = sgxResFindWave(id, idx, NULL);
+    long long pos;
+    if (w == NULL) return -1;
+    pos = (long long)((double)*(int *)(w + 0xC) * t);
+    if (round != NULL) pos = RoundWavePos(w, pos);
+    return pos;
+}
 
 float sgxResWavePosToTime(int id, int idx, long long pos, void *round)
 {
