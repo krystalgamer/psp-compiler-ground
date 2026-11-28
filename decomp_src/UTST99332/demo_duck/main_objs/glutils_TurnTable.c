@@ -67,4 +67,12 @@ math::matrix glutils::TurnTable::getPivotFrame() const
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_TurnTable", _ZN7glutils9TurnTable5trackEbbbii);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_TurnTable", _ZN7glutils9TurnTable5trackEv);
+void glutils::TurnTable::track()
+{
+    bool a = psp::pad().down(4);
+    bool b = psp::pad().down(6);
+    bool c = psp::pad().down(5);
+    int dx = psp::pad().down(3) - psp::pad().down(2);
+    int dy = psp::pad().down(0) - psp::pad().down(1);
+    track(a, b, c, dx, dy);
+}

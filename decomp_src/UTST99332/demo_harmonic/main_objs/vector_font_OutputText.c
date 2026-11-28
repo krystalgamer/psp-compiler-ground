@@ -27,6 +27,7 @@ public:
     static void LineStart();
     static void Margin(float, float);
     static void NextChar();
+    static void Begin(float, float, float, float, float);
     static void End();
     static void PrevLine();
     static void NextLine();
@@ -44,7 +45,28 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/vector_font_
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/vector_font_OutputText", _ZN11vector_font11DrawIntegerEifffffb);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/vector_font_OutputText", _ZN11vector_font10OutputText5BeginEfffff);
+extern "C" void glGetFloatv(unsigned int, float *);
+extern "C" void glLoadMatrixf(const float *);
+void vector_font::OutputText::Begin(float x, float y, float z, float sx, float sy)
+{
+    glPushMatrix();
+    glTranslatef(x, y, z);
+    float m[16];
+    glGetFloatv(0xBA6, m);
+    m[0] = 1;
+    m[1] = 0;
+    m[2] = 0;
+    m[4] = 0;
+    m[5] = 1;
+    m[6] = 0;
+    m[8] = 0;
+    m[9] = 0;
+    m[10] = 1;
+    glPushMatrix();
+    glLoadMatrixf(m);
+    glScalef(sx, sy, 1);
+    _current = Pos();
+}
 
 void vector_font::OutputText::End()
 {

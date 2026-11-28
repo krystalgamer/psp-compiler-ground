@@ -1034,6 +1034,7 @@ class TurnTable : public PositioningInterface {
 public:
     enum Speed { NUM_SPEEDS = 3 };
     virtual ~TurnTable();
+    void track();
     void track(bool, bool, bool, int, int);
     void setIsYUp(bool);
     bool isYUp() const;
