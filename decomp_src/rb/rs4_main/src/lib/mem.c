@@ -147,7 +147,17 @@ void *_memAllocZeroMBL(unsigned int arg0) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", _memDiag);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", memDiag);
+int memDiag(int Chk)
+{
+	int Ret = _memDiag(0);
+
+	if (Ret == 0 || (Chk != 0 && Chk != Ret)) {
+		_memDiag(1);
+		consPrintf("%s : %x %x\n", "memDiag", Chk, Ret);
+		consPrintf(&D_000FACF8, &D_000FAD14, 0x2C8, "memDiag", "FALSE");
+	}
+	return Ret;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", memSnap);
 
