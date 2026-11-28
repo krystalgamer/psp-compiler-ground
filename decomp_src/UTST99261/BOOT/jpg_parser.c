@@ -65,6 +65,12 @@ int png_setBuffer();                                /* extern */
 #define NULL ((void *)0)
 #endif
 void *memcpy(void *, const void *, unsigned int);
+/* STAND-IN: val entries as a one-int struct: only a COMPONENT_REF store evaluates &val[n] before the getByte call like the original */
+typedef struct JHV { int v; } JHV;
+typedef struct JHT { unsigned int count; int *size; int *code; JHV *val; } JHT;
+typedef struct JDHTCTX { JBS *bs; u8 pad4[0x108]; JHT ht[2][4]; u8 pad18C[0x501]; s8 progressive; } JDHTCTX;
+u8 *getNextAddress(JBS *bs);
+void *memset(void *p, int c, unsigned int n);
 int mrkRES(void) {
     return 1;
 }
@@ -113,7 +119,118 @@ int mrkSOF3(void) {
     return -1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", mrkDHT);
+int mrkDHT(JDHTCTX *ctx) {
+    u8 bits[16];
+    u8 *end;
+    unsigned int len;
+    unsigned int c;
+    int tc;
+    int th;
+    JHT *h;
+    JBS *bs;
+    unsigned int n;
+    int i;
+    int j;
+    int code;
+    int si;
+
+    end = getNextAddress(ctx->bs);
+    len = getWord(ctx->bs, 1) & 0xFFFF;
+    if (len < 0x14) {
+        return -1;
+    }
+    end += len;
+    if (end == 0) {
+        return -2;
+    }
+    do {
+        bs = ctx->bs;
+        if (bs->valid == 0) {
+            return -1;
+        }
+        c = getByte(bs);
+        tc = (u8)(c >> 4);
+        th = c & 0xF;
+        if (ctx->progressive == 0) {
+            if (tc >= 2 || th >= 2) {
+                return -1;
+            }
+        } else {
+            if (tc >= 2 || th >= 4) {
+                return -1;
+            }
+        }
+        h = &ctx->ht[tc][th];
+        if (h->count != 0) {
+            if (h->size != NULL) {
+                ESP_free(h->size);
+                h->size = NULL;
+            }
+            if (h->code != NULL) {
+                ESP_free(h->code);
+                h->code = NULL;
+            }
+            if (h->val != NULL) {
+                ESP_free(h->val);
+                h->val = NULL;
+            }
+        }
+        n = 0;
+        for (i = 0; i < 16; i++) {
+            bits[i] = getByte(ctx->bs);
+            n += bits[i];
+        }
+        h->count = n;
+        if (n == 0) {
+            return -1;
+        }
+        if ((h->size = ESP_malloc(n * 4)) == NULL) {
+            goto nomem;
+        }
+        memset(h->size, 0, h->count * 4);
+        if ((h->code = ESP_malloc(h->count * 4)) == NULL) {
+            goto nomem;
+        }
+        memset(h->code, 0, h->count * 4);
+        if ((h->val = ESP_malloc(h->count * 4)) == NULL) {
+            goto nomem;
+        }
+        memset(h->val, 0, h->count * 4);
+        n = 0;
+        for (i = 1; i < 17; i++) {
+            for (j = 1; j <= bits[i - 1]; j++) {
+                if (n >= h->count) {
+                    return -1;
+                }
+                h->size[n++] = i;
+            }
+        }
+        n = 0;
+        code = 0;
+        si = h->size[0];
+        for (;;) {
+            while (h->size[n] == si) {
+                h->code[n++] = code++;
+                if (n >= h->count) {
+                    break;
+                }
+            }
+            if (n >= h->count) {
+                break;
+            }
+            do {
+                si++;
+                code <<= 1;
+            } while (h->size[n] != si);
+        }
+        for (n = 0; n < h->count; n++) {
+            h->val[n].v = getByte(ctx->bs);
+        }
+    } while (getNextAddress(ctx->bs) < end);
+    return 1;
+nomem:
+    return -2;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
