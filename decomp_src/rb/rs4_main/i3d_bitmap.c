@@ -127,7 +127,17 @@ void I3dClut__FlushCache(void) {
     I3dResourceTag__PurgeCache();
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", I3dLzc);
+int I3dLzc(int x)
+{
+	unsigned int v = x < 0 ? ~x : x;
+	int n = 0;
+	if ((v & 0xFFFF8000) == 0) { v <<= 16; n = 16; }
+	if ((v & 0xFF800000) == 0) { v <<= 8; n += 8; }
+	if ((v & 0xF8000000) == 0) { v <<= 4; n += 4; }
+	if ((v & 0xE0000000) == 0) { v <<= 2; n += 2; }
+	n += (v & 0xC0000000) == 0;
+	return n;
+}
 
 void I3dVecClearA();
 void I3dFogStatusParam__ClearA(int *f)
