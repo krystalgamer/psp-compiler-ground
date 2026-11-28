@@ -41,9 +41,44 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", D_000FB8E4);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", D_000FB8F4);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", drawTerm);
+M2C_UNK _memFree(int, M2C_UNK *, M2C_UNK);          /* extern */
+M2C_UNK sceDisplaySetVblankCallback(M2C_UNK, M2C_UNK, M2C_UNK); /* extern */
+extern unsigned char D_000FB8E4, D_000FB850, D_000FB840;
+extern void *pDispList[2];
+extern int pMatStack;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", drawStart);
+void drawTerm(void) {
+    consPrintf("%s\n", "drawTerm");
+    _memFree(pMatStack, &D_000FB840, 0x19A);
+    pMatStack = 0;
+    _memFree(pDispList[1], &D_000FB840, 0x19D);
+    _memFree(pDispList[0], &D_000FB840, 0x19E);
+    pDispList[1] = 0;
+    pDispList[0] = 0;
+    sceGuSetCallback(4, NULL);
+    sceGuTerm();
+    sceDisplaySetVblankCallback(0, 0, 0);
+}
+
+extern unsigned char D_000FB8E4, D_000FB850, D_000FB840;
+extern void *pDispList[2];
+extern void *pDispKick;
+typedef struct { void *buf; int width; int fmt; int pad[2]; } DrawEnv;
+
+int drawStart(void) {
+    int e = Env;
+    DrawEnv *d;
+    void *l;
+
+    l = pDispList[e];
+    d = &((DrawEnv *)((int *)&Env + 1))[e];
+    pDispKick = l;
+    if (sceGuStart(2, l, 0x10000) != 0) {
+        consPrintf(&D_000FB850, &D_000FB840, 0x1B4, "drawStart", &D_000FB8E4);
+    }
+    sceGuDrawBufferList(d->fmt, d->buf, d->width);
+    return e;
+}
 
 int drawSwap(void) {
     int temp_s0;
