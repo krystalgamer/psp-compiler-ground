@@ -97,7 +97,44 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/lib/thr", D_000FB690);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/lib/thr", D_000FB698);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/thr", thrState);
+typedef struct { int size; char name[32]; int attr; int status; int rest[16]; } ThrInfo;
+int sceKernelReferThreadStatus(int thid, ThrInfo *info);
+extern const ThrInfo D_000FB698;
+int thrState(ThrCntx *pCntx)
+{
+	/* STAND-IN: the source is `ThrInfo info = { sizeof(ThrInfo) };` (one constant shared with
+	   thrVSync); copy the extern template while thrVSync is asm */
+	ThrInfo info = D_000FB698;
+	int ret;
+
+	ret = sceKernelReferThreadStatus(pCntx->Thid, &info);
+	switch (ret) {
+	case 0:
+		switch (info.status) {
+		default:
+			THR_ASSERT(0x7F, "thrState");
+			return -1;
+		case 16:
+			return 0;
+		case 1:
+		case 2:
+		case 4:
+		case 8:
+		case 12:
+			return 1;
+		}
+	default:
+		THR_ASSERT(0x91, "thrState");
+		break;
+	case 0x80020198:
+		THR_ASSERT(0x92, "thrState");
+		break;
+	case 0x80020197:
+		THR_ASSERT(0x93, "thrState");
+		break;
+	}
+	return -1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/thr", thrEntry);
 
