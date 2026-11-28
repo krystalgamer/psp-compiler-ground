@@ -69,6 +69,7 @@ typedef struct { int f0, f4, f8; } GameDataHd;
 extern unsigned char D_000FCC0C;
 typedef struct { int f0, f4, f8; } GameDataHd2;
 
+M2C_UNK *viewGetDefault(void);
 M2C_UNK *gameGetCntx(void) {
     return &GameData;
 }

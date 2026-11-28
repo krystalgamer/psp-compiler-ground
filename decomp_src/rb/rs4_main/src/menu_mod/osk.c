@@ -23,6 +23,9 @@ void *_memAlloc(int, void *, int);
 int _memFree();
 typedef struct { char pad[0x28]; unsigned short *text; unsigned int result; char pad2[0x34 - 0x30]; } OskData;
 
+M2C_UNK *gameGetCntx(void);
+void gameEnSoftReset(void);
+void UtilityUnlink(void);
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", setOskUtilityPraram);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", D_00103130);

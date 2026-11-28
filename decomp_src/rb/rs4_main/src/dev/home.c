@@ -18,6 +18,7 @@ int sceKernelDeleteCallback(int);                   /* extern */
 int sceKernelCreateCallback(const char *name, void *func, void *arg);
 int sceKernelRegisterExitCallback(int cbid);
 
+void consPrintf(const char *fmt, ...);
 int homeInit(void) {
     M2C_UNK *temp_v0;
     int temp_v0_2;

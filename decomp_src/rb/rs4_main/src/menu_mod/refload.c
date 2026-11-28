@@ -15,6 +15,7 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/refload", D_001035
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/refload", D_0010357C);
 
+int refloadReleaseAll2(int inst, int arg, RefEnt *tbl, int n);
 int refloadSetRef2CardFunc(int arg0) {
     if (arg0 >= 5) {
         consPrintf(&D_0010357C, &D_00103564, 0x1B, "refloadSetRef2CardFunc", "Inst < Inst_Num");

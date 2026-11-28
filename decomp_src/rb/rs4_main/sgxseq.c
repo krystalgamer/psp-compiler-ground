@@ -21,6 +21,7 @@ void sgxSndSetSysReg(int, int);
 int sgxSndGetSysReg(int);
 void *SlotGetAt_81530(int, int);
 typedef int (*SeqReadFn)(void *);
+int sgxPortGetUnitStatus(int id, int uid);
 static inline char *SeqListFirst(char *l) {
     char *n = *(char **)(l + 4);
     return (*(int *)(n + 8) < 0) ? NULL : n;

@@ -6,6 +6,7 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+int I3mRoot__CheckIdString(signed char *arg0);
 void AddOfs_(int *arg0, int arg1) {
     int temp_v0;
 

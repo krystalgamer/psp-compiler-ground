@@ -25,6 +25,8 @@ float cardlistCpyTtr2Float32();
 
 void cardlistCpyTtr2Ascii();
 
+int ttrGetIndexNum(char **p);
+void *_memAllocZero(int, void *, int);
 int cardlistGetCardID(int id)
 {
 	int a, b;

@@ -27,6 +27,9 @@ extern unsigned char D_0011FC10;
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", D_00109F94);
 
 #define WW ((BmgWorkS *)&gWork_11FC0C)
+int sgxBmgGetFree(int id);
+int sgxBmgGetLeft(int id);
+void CheckLowBuf(char *b);
 void *SlotGetAt_7A70C(int id, const char *name)
 {
     if (id >= 0 && id <= WW->num - 1) {

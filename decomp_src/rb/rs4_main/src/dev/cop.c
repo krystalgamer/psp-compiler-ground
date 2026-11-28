@@ -11,6 +11,7 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/cop", D_000F9BF0);
 #define NULL ((void *)0)
 #endif
 
+void consPrintf(const char *fmt, ...);
 void copInit(void) {
     consPrintf(&D_000F9BF0, "copInit");
 }

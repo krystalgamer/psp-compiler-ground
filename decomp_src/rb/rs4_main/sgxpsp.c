@@ -31,6 +31,13 @@ int sceKernelDeleteThread(int);
 int sceKernelCpuResumeIntr(int);
 #define GW ((char *)gWork_1207F0)
 
+void sgxMutexDelete(int *arg0);
+void FreqClose(int arg0, int arg1, int arg2);
+int sgxVoGetSlotNum(void);
+int sceKernelWaitSema(int, int, unsigned int *);
+int sceKernelSignalSema(int, int);
+int sceKernelDeleteEventFlag(int);
+int sceKernelWaitEventFlag(int, unsigned int, int, unsigned int *, unsigned int *);
 void ssePrint(const char *s) {
     if (gSgxDebugFlags & 4) sgxPrintf(" %s", s);
 }

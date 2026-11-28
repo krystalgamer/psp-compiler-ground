@@ -1,6 +1,14 @@
 /* cflags: -O2 -fno-strict-aliasing */
 #include "common.h"
 
+int I3rLayer__IsExistAdjustStq(void *arg0);
+int I3rLayer__GetAdjustStq(void *arg0);
+int I3rAdjustStq__IsExistOffset(void *arg0);
+int I3rAdjustStq__GetOffset(void *arg0);
+int I3rAdjustStq__IsExistRepeat(void *arg0);
+int I3rAdjustStq__GetRepeat(void *arg0);
+int I3rAdjustStq__IsExistRotate(void *arg0);
+int I3rAdjustStq__GetRotate(void *arg0);
 int pow2(int n)
 {
 	float f = n;

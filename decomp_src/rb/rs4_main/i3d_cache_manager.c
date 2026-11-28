@@ -8,6 +8,8 @@ M2C_UNK sceGimPictureDelete(int);                   /* extern */
 
 typedef struct MBLnk2 { struct MBk2 *next, *prev; } MBLnk2;
 typedef struct MBk2 { MBLnk2 l[1]; } MBk2;
+void I3dResourceTag__SetMemBlock(void *arg0, int arg1);
+int I3dCacheManager__PurgeAllCache(char *cm);
 void I3dMemBlock__RemoveList(MBk2 *b, int i)
 {
 	MBk2 *n = b->l[i].next;
@@ -337,7 +339,7 @@ int I3dCacheManager__CreateOriginGarbage(char *cm)
 
 void I3dCacheManager__SetBaseAddress(int *arg0, int arg1) {
     *arg0 = arg1;
-    I3dCacheManager__PurgeAllCache();
+    I3dCacheManager__PurgeAllCache((char *)arg0);
 }
 
 #ifndef NULL
@@ -346,7 +348,7 @@ void I3dCacheManager__SetBaseAddress(int *arg0, int arg1) {
 
 void I3dCacheManager__SetTotalMemSize(void *arg0, int arg1) {
     M2C_FIELD(arg0, int *, 4) = arg1;
-    I3dCacheManager__PurgeAllCache();
+    I3dCacheManager__PurgeAllCache(arg0);
 }
 
 typedef struct MBLnk5 { struct MBk5 *next, *prev; } MBLnk5;

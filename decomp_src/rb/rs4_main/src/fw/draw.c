@@ -19,6 +19,10 @@ void sceGuTexMapMode(int mode, unsigned int a1, unsigned int a2);
 void sceGuClutMode(unsigned int cpsm, unsigned int shift, unsigned int mask, unsigned int a3);
 void sceGuClutLoad(int num_blocks, const void *cbp);
 
+void consPrintf(const char *fmt, ...);
+int sceGuTerm(void);
+int sceGuStart(int list_mode, void *p, int size);
+void sceGuDrawBufferList(int fpf, void *fbp, int fbw);
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", drawInit);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", D_000FB840);

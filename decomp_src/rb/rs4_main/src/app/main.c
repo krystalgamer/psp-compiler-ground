@@ -25,6 +25,7 @@ int sceKernelCreateThread(const char *, void *, int, int, int, void *);
 int sceKernelStartThread(int, int, void *);
 int mainBoot(void);
 
+void mainSpritArgs(int len, char *p);
 int empty_start(int len, char *args)
 {
 	int info[0x6C / 4];

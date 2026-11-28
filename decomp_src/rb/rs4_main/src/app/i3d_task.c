@@ -41,6 +41,12 @@ extern unsigned char D_000FD5C4, D_000FD608, D_000FD60C;
 
 typedef struct { int a, b, prio; } LsEnt;
 
+void consPrintf(const char *fmt, ...);
+int taskDefaultMsg(int task, unsigned int msg, int p1, int p2);
+void copUnitMat();
+void *resGetDatTable(int a, int b);
+int i3dMotSetMotion(void *arg0, int arg1);
+void copLetMat();
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", i3dTask_Landscape);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", D_000FD608);

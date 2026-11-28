@@ -27,6 +27,14 @@ int sgxSndPause();
 extern unsigned char D_000FE65C, D_000FE6BC;
 int sgxSndGetStatus();
 
+int sgxSetMallocFunc(int arg0);
+int sgxSetFreeFunc(int arg0);
+int sgxSetPrintFunc(int arg0);
+int sgxSetDebugFlags(int arg0);
+void sgxSndSetMasterVolume(int a, int b);
+void sgxEffSetType(int ch, unsigned int type);
+void sgxEffSetDepth(int ch, int l, int r);
+void sgxEffSetParam(int ch, int which, int v);
 void *scxMalloc(int size)
 {
 	return _memAlloc(size, D_000FE5A0, 0x34);

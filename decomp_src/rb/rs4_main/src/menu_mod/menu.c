@@ -40,6 +40,13 @@ typedef struct { char pad[0x348]; int a; char pad2[0x64C - 0x34C]; int b; } Menu
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/menu", D_00102E94);
 
+int menuGetFlowName(int arg0, int arg1);
+int menuGetFlowID(int arg0);
+int menuNextFlow(int sel);
+void cusSetInst(int arg0);
+void cusSetSection(int arg0, int arg1);
+void cusGetKeyNum(int arg0, int arg1);
+int menuIsCardBattle(void);
 int menuGetModule(int id)
 {
 	char name[32];

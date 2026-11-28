@@ -56,6 +56,8 @@ extern const char D_0010A5BC[];
 extern const char D_0010A5C8[];
 void SlotUpdateVolume(void *, int);
 void sgxAttrCopyUpdate(void *, void *);
+int sgxSndGetStatus(int id);
+void sgxSndUpdateSlotVolumeAll(int tune);
 static inline char *SndListFirst2(char *l) { char *n = *(char **)(l + 4); return (*(int *)(n + 8) < 0) ? NULL : n; }
 
 extern int gSgxPrefWarn;

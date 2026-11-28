@@ -9,6 +9,10 @@ M2C_UNK I3dCacheManager__Construct(void *, void *, M2C_UNK, void *); /* extern *
 extern unsigned char I3dPkDefaultTermTag;
 
 
+int I3dRender__OpenTrashUca(void *arg0);
+int I3dRender__CloseTrashUca(void *arg0, int arg1);
+int I3dSorter__Construct(int *s, int a, int b, int c, int d);
+int I3dCacheManager__Destruct(void *arg0);
 int I3dRender__EndScene_PkAllocTex(void *r, int a)
 {
 	return a;
@@ -98,8 +102,8 @@ int I3dRender__ReserveTrashQwcUca(char *r, int n)
 #define NULL ((void *)0)
 #endif
 
-int I3dRender__OpenTrash(void) {
-    return (I3dRender__OpenTrashUca() + 0x7F) & 0x3FFFFF80;
+int I3dRender__OpenTrash(void *arg0) {
+    return (I3dRender__OpenTrashUca(arg0) + 0x7F) & 0x3FFFFF80;
 }
 
 #ifndef NULL

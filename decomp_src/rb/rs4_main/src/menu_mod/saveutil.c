@@ -56,6 +56,9 @@ extern int D_0011B058;
 int _memFree();
 int memcmp(const void *, const void *, unsigned int);
 
+void consPrintf(const char *fmt, ...);
+int SetData_Normal(int mode, char *p);
+void FreeData_Sizes(int a);
 void SetData_Paramsfo_String(int arg0) {
     signed char *temp_s2;
 

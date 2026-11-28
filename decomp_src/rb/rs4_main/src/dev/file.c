@@ -17,6 +17,7 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/file", D_000F9E40);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/file", D_000F9E44);
 
+void consPrintf(const char *fmt, ...);
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/file", fileInit);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/file", D_000F9E54);

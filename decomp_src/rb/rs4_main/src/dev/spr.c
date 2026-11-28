@@ -18,6 +18,7 @@ M2C_UNK _memFree(int, M2C_UNK *, M2C_UNK);          /* extern */
 #define NULL ((void *)0)
 #endif
 
+void consPrintf(const char *fmt, ...);
 int sprInit(void) {
     M2C_UNK *temp_v0;
     int temp_v0_2;

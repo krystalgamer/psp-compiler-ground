@@ -14,6 +14,7 @@ int salbumClearNewFlagBySaveID();
 
                            /* extern */
 
+int cardlistGetSaveID(int arg0);
 int salbumCalcKinds(int *p)
 {
 	int (*k)[3] = (int (*)[3])p;

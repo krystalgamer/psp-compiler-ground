@@ -71,6 +71,7 @@ static int func_0009B838(unsigned int args, void *argp);
 
 
 
+static int func_0009B794(int prio);
 static __inline__ void wclr_i(void *dst, unsigned int n)
 {
 	char *p = dst;

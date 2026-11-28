@@ -72,6 +72,13 @@ extern unsigned char D_000FD358;
 int I3dRenderStage__GetCurrentViewStatus(int);
 int copPersVec();
 
+int I3dRender__Destruct(void *arg0);
+int I3dPicture__Get_wPixel(char *p, int lv);
+int I3dPicture__Get_hPixel(char *p, int lv);
+int I3dRender__GetTrashRest(void *arg0);
+int I3dRender__GetTrashOverRun(void *arg0);
+int I3dRender__EndScene(void *arg0);
+int I3dRender__GetDisplayListStartPoint(void *arg0);
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dInit);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", D_000FCC88);

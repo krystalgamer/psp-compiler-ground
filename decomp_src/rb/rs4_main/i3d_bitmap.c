@@ -4,6 +4,8 @@
 M2C_UNK I3dResourceTag__PurgeCache();               /* extern */
 
 
+int I3dResourceTag__Construct(int *t);
+void I3dClut__FlushCache(void);
 void RemapOnMemorySub(int *dst, int *a, int *b, int w) {
     int x = 0;
     unsigned int y = 0;

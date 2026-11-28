@@ -14,6 +14,7 @@ extern unsigned char D_00102E5C;
 
 void taskKill();
 
+int ttrFontTerm(int **arg0);
 int AnmIsSuicide(void *arg0) {
     return (M2C_FIELD(arg0, int *, 0x40) & 3) == 0;
 }

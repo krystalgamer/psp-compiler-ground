@@ -11,6 +11,15 @@ extern unsigned char DefView;
 typedef struct View { struct View *next, *prev; } View;
 extern View *pMount, *pChain;
 
+void copLetVec();
+void copRevMat3();
+void copRotVec();
+void copMulMat();
+void sceGumMatrixMode(int mode);
+void sceGumLoadIdentity(void);
+void sceGumStoreMatrix(void *m);
+void sceGuSetMatrix(int mode, const void *m);
+void sceGumLoadMatrix(const void *m);
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/view", viewInit);
 
 int viewTerm(void) {

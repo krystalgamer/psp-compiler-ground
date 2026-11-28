@@ -6,6 +6,8 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+void I3dSortStrictStable(void *a, void *b, void *c, unsigned int n);
+void I3dSortTag__ConstructAsHead(int *t);
 void EntryAscending(int arg0, void *arg1, int arg2) {
     void *temp_v0;
     void *temp_v1;
@@ -58,8 +60,8 @@ int I3dSortNop(int arg0) {
 #define NULL ((void *)0)
 #endif
 
-void I3dSortByOT(void) {
-    I3dSortStrictStable();
+void I3dSortByOT(void *a, void *b, void *c, unsigned int n) {
+    I3dSortStrictStable(a, b, c, n);
 }
 
 extern int (*s_apI3dSortFunc[])();

@@ -24,6 +24,7 @@ extern int l_anFameList[26];
 int ttrGetIndexNum();
 int cardlistCpyTtr2Int32();
 
+void consPrintf(const char *fmt, ...);
 int databaseFameRefresh(void)
 {
 	int ttr = resGetDatLocal(1, 0x4F);

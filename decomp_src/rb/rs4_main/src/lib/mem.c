@@ -23,6 +23,8 @@ extern int MemBreak;
 void *memset(void *s, int c, unsigned int n);
 void *memset(void *s, int c, unsigned int n);
 
+void memLock(void);
+void memUnlock(void);
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", memInit);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", D_000FACEC);

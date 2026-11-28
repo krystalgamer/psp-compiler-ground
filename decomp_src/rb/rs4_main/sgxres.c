@@ -15,6 +15,8 @@ extern unsigned char D_0011FC44;
 int *ResGetFileHeader(int *arg0);
 
 void sgxResClose(int id);
+void sceKernelDcacheWritebackInvalidateAll(void);
+int sgxResSyncUse(int, int);
 static inline char *ResListFirst(void) {
     char *p = *(char **)(&D_0011FC44 + 4);
     return (*(int *)(p + 8) < 0) ? NULL : p;

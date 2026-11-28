@@ -12,6 +12,11 @@ M2C_UNK I3dSorter__OpenPacketAndClearStateUca_ByUint32(int, M2C_UNK, M2C_UNK); /
 unsigned int *I3dPkSendViewStatus();
 unsigned int *I3dPkSendFogStatus();
 unsigned int *I3dPkSetPixelBlend();
+int I3dRenderStage__SetCurrentPacketEntry(char *st, char *e);
+int I3dRenderStage__GetDefaultPacketEntry(void *arg0);
+void I3dRenderStage__ClosePacketUca(void *arg0, int p);
+int I3dRenderStage__OpenPacketUca_ByUint32(char *st, unsigned int n);
+int I3dSorter__ClosePacketAndClearState(void *arg0, int arg1);
 unsigned int *SendDefaultStatus(unsigned int *p, void *st)
 {
 	p = I3dPkSendViewStatus(p, st);
@@ -28,7 +33,7 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage
 #endif
 
 int I3dRenderStage__DrawSphereMarkerA(int arg0, int arg1, int arg2, float fparg0) {
-    I3dRenderStage__SetCurrentPacketEntry(arg0, I3dRenderStage__GetDefaultPacketEntry());
+    I3dRenderStage__SetCurrentPacketEntry(arg0, I3dRenderStage__GetDefaultPacketEntry(arg0));
     I3dRenderStage__ClosePacketUca(arg0, I3dPkDrawSphereMarkerA(SendDefaultStatus(I3dRenderStage__OpenPacketUca_ByUint32(arg0, 0), arg0), arg0, arg1, arg2, fparg0));
     return 0;
 }
@@ -38,7 +43,7 @@ int I3dRenderStage__DrawSphereMarkerA(int arg0, int arg1, int arg2, float fparg0
 #endif
 
 int I3dRenderStage__DrawBoxMarkerA(int arg0, int arg1, int arg2, int arg3, int arg4) {
-    I3dRenderStage__SetCurrentPacketEntry(arg0, I3dRenderStage__GetDefaultPacketEntry());
+    I3dRenderStage__SetCurrentPacketEntry(arg0, I3dRenderStage__GetDefaultPacketEntry(arg0));
     I3dRenderStage__ClosePacketUca(arg0, I3dPkDrawBoxMarkerA(SendDefaultStatus(I3dRenderStage__OpenPacketUca_ByUint32(arg0, 0), arg0), arg0, arg1, arg2, arg3, arg4));
     return 0;
 }
@@ -48,7 +53,7 @@ int I3dRenderStage__DrawBoxMarkerA(int arg0, int arg1, int arg2, int arg3, int a
 #endif
 
 int I3dRenderStage__DrawObbMarkerA(int arg0, int arg1, int arg2, int arg3) {
-    I3dRenderStage__SetCurrentPacketEntry(arg0, I3dRenderStage__GetDefaultPacketEntry());
+    I3dRenderStage__SetCurrentPacketEntry(arg0, I3dRenderStage__GetDefaultPacketEntry(arg0));
     I3dRenderStage__ClosePacketUca(arg0, I3dPkDrawObbMarkerA(SendDefaultStatus(I3dRenderStage__OpenPacketUca_ByUint32(arg0, 0), arg0), arg0, arg1, arg2, arg3));
     return 0;
 }
@@ -137,8 +142,8 @@ int I3dRenderStage__OpenPacket_ByUint32(char *st, unsigned int n)
 #define NULL ((void *)0)
 #endif
 
-void I3dRenderStage__ClosePacket(void *arg0) {
-    I3dSorter__ClosePacketAndClearState(M2C_FIELD(arg0, int *, 0x818));
+void I3dRenderStage__ClosePacket(void *arg0, int p) {
+    I3dSorter__ClosePacketAndClearState(M2C_FIELD(arg0, int *, 0x818), p);
 }
 
 int I3dSorter__OpenPacketAndClearStateUca_ByUint32();
@@ -159,8 +164,8 @@ int I3dRenderStage__OpenPacketUca_ByUint32(char *st, unsigned int n)
 #define NULL ((void *)0)
 #endif
 
-void I3dRenderStage__ClosePacketUca(void *arg0) {
-    I3dSorter__ClosePacketAndClearStateUca(M2C_FIELD(arg0, int *, 0x818));
+void I3dRenderStage__ClosePacketUca(void *arg0, int p) {
+    I3dSorter__ClosePacketAndClearStateUca(M2C_FIELD(arg0, int *, 0x818), p);
 }
 
 #ifndef NULL
@@ -175,8 +180,8 @@ void I3dRenderStage__OpenInitPacket(void *arg0) {
 #define NULL ((void *)0)
 #endif
 
-void I3dRenderStage__CloseInitPacket(void *arg0) {
-    I3dSorter__ClosePacketAndClearState(M2C_FIELD(arg0, int *, 0x81C));
+void I3dRenderStage__CloseInitPacket(void *arg0, int p) {
+    I3dSorter__ClosePacketAndClearState(M2C_FIELD(arg0, int *, 0x81C), p);
 }
 
 #ifndef NULL
@@ -191,8 +196,8 @@ void I3dRenderStage__OpenInitPacketUca(void *arg0) {
 #define NULL ((void *)0)
 #endif
 
-void I3dRenderStage__CloseInitPacketUca(void *arg0) {
-    I3dSorter__ClosePacketAndClearStateUca(M2C_FIELD(arg0, int *, 0x81C));
+void I3dRenderStage__CloseInitPacketUca(void *arg0, int p) {
+    I3dSorter__ClosePacketAndClearStateUca(M2C_FIELD(arg0, int *, 0x81C), p);
 }
 
 #ifndef NULL
@@ -207,8 +212,8 @@ void I3dRenderStage__OpenTermPacket(void *arg0) {
 #define NULL ((void *)0)
 #endif
 
-void I3dRenderStage__CloseTermPacket(void *arg0) {
-    I3dSorter__ClosePacketAndClearState(M2C_FIELD(arg0, int *, 0x81C));
+void I3dRenderStage__CloseTermPacket(void *arg0, int p) {
+    I3dSorter__ClosePacketAndClearState(M2C_FIELD(arg0, int *, 0x81C), p);
 }
 
 #ifndef NULL
@@ -223,8 +228,8 @@ void I3dRenderStage__OpenTermPacketUca(void *arg0) {
 #define NULL ((void *)0)
 #endif
 
-void I3dRenderStage__CloseTermPacketUca(void *arg0) {
-    I3dSorter__ClosePacketAndClearStateUca(M2C_FIELD(arg0, int *, 0x81C));
+void I3dRenderStage__CloseTermPacketUca(void *arg0, int p) {
+    I3dSorter__ClosePacketAndClearStateUca(M2C_FIELD(arg0, int *, 0x81C), p);
 }
 
 #ifndef NULL

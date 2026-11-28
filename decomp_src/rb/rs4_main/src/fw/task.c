@@ -26,6 +26,12 @@ void *_memAllocZero(int, void *, int);
 int rsvInit(int, int);
 extern unsigned char D_000FC068, D_000FC08C, D_000FC098;
 
+void *rsvHeadAlive(void **arg0);
+int taskSendParent(int *t, int a, int b, int c);
+int taskSendElder(int *t, int a, int b, int c);
+int taskSendYoung(int *t, int a, int b, int c);
+int taskSendChild(int *t, int a, int b, int c);
+void *rsvNextAlive(void **p);
 int *taskInit(int n) {
     int *t;
 

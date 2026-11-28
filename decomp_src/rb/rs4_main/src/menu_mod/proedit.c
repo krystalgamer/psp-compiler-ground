@@ -5,6 +5,7 @@ void bxAnmSetSpeed(int, float);
 void bxAnmSetLoop(int, int);
 void bxAnmSetPause(int, int);
 
+int _TtrFontPutSet_382C4(int dat, int x, void *str);
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/proedit", Sub_ProfileEdit);
 
 typedef struct { int d[10]; } AniTbl;

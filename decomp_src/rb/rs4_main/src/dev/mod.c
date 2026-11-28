@@ -5,6 +5,9 @@ M2C_UNK semaLock(int);                              /* extern */
 extern int SemaMod;
 M2C_UNK semaUnlock(int);
 
+void consPrintf(const char *fmt, ...);
+void fileLock(void);
+void fileUnlock(void);
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/mod", modInit);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/mod", D_000FA398);

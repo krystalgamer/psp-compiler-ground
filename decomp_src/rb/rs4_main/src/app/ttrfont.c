@@ -19,6 +19,7 @@ int fontInit(int, int, int);
 int fontTerm(void);
 extern int l_tTtrFontOpenCntx;
 extern unsigned char D_000FE7C4, D_000FE7E8;
+int fontImgTerm(int *arg0);
 int ttrFontOpen(void)
 {
 	int r;

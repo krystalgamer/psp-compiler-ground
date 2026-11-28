@@ -19,6 +19,11 @@ void UnitFree_85774(void *);
 void sgxVoFree(int);
 void FadeFreeAll(char *);
 extern int D_00113C94[];
+void sgxVoCtrl(int v, int a, int b, int c);
+void sgxResUnlock(int arg0);
+int sgxResLock(int arg0);
+int sgxResFindAdsr(int id, int idx);
+int FadeAlloc(char *, char *, int, int, int, int);
 static inline char *PortListFirst(char *l) {
     char *n = *(char **)(l + 4);
     return (*(int *)(n + 8) < 0) ? NULL : n;

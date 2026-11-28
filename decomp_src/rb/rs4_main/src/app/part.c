@@ -18,6 +18,10 @@ M2C_UNK partFreeEnvCntx(int);extern int g_nInst;
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/part", D_000FDD64);
 
+int partFreeEmitCntx(void *arg0);
+int partFree2DCntx(void *p);
+int partFree3DCntx(void *p);
+void *_memAllocZero(int, void *, int);
 void partAsm(void *arg0, int arg1) {
     if (sceKernelGetGPI() & 1) {
         consPrintf(&D_000FDD64, "partAsm");

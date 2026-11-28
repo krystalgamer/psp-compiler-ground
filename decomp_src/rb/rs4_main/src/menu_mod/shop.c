@@ -20,6 +20,10 @@ typedef struct { unsigned char b[4]; } CardWork4;
 
 typedef struct { unsigned char kind; char pad; unsigned short id; } SortCard;
 
+int saveGetCurrentData(void);
+int cardlistGetCardIDFromSaveID(unsigned int arg0);
+void consPrintf(const char *fmt, ...);
+int _BarPutPosSet(void *arg0);
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", Sub_Shop);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _ShopAniSet);

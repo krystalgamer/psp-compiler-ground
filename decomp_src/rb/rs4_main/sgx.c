@@ -24,6 +24,7 @@ void *sgxStackMemAlloc(void *, int, int);
 extern int gWork_11FBE0[];
 typedef void (*SgxFreeFn)(void *);
 typedef void (*SgxPrintFn)(const char *);
+void sgxPrintf(const char *fmt, ...);
 static inline char *SgxListFirst(char *l) { char *n = *(char **)(l + 4); return (*(int *)(n + 8) < 0) ? NULL : n; }
 static inline char *SgxListNext(char *e) { char *n = *(char **)(e + 4); return (*(int *)(n + 8) < 0) ? NULL : n; }
 
