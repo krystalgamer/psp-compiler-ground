@@ -605,3 +605,6 @@ bss 0x18EDEC -
 # psp_vram: psp::vram (.bss)
 bss 0x18D7D8 main_objs/psp_vram
 bss 0x18D85C -
+# CubeMap float pools
+rodata 0x1637E0 main_objs/CubeMap_Face_Texture
+rodata 0x16383C -

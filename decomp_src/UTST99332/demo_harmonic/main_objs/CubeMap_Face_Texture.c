@@ -3,6 +3,7 @@
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
+#include "UTST99332/demo_duck/gl.hpp"
 
 /* the strings stay in the module's .rodata (asm) */
 extern const char D_00160DD4[];     /* "../lib/glutils/CubeMap.cpp" */
@@ -31,9 +32,23 @@ CubeMap::Face::Texture::~Texture()
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/CubeMap_Face_Texture", _ZN7CubeMapC2Ev);
+extern const char D_00160D9C[];
+CubeMap::CubeMap()
+{
+    cube_size = 2000.0f;
+    linear = true;
+    resize = 0;
+    textures = false;
+    wireframe = false;
+    basename = D_00160D9C;
+    init_face((FaceEnum)0);
+    init_face((FaceEnum)1);
+    init_face((FaceEnum)2);
+    init_face((FaceEnum)3);
+    init_face((FaceEnum)4);
+    init_face((FaceEnum)5);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/CubeMap_Face_Texture", _ZN7CubeMapC1Ev);
 
 void CubeMap::setBasename(const char *name)
 {
@@ -69,9 +84,33 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/CubeMap_Face
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/CubeMap_Face_Texture", _ZN7CubeMap10face_setupENS_8FaceEnumE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/CubeMap_Face_Texture", _ZN7CubeMap9draw_faceENS_8FaceEnumE);
+void CubeMap::draw_face(FaceEnum f)
+{
+    Face &face = faces[f];
+    face_setup(f);
+    glPushMatrix();
+    glMultMatrixf(GetFaceTransform(f));
+    glBegin(GL_QUADS);
+    glNormal3f(-1.0f, 0, 0);
+    glTexCoord2f(face.tc_min, face.tc_max);
+    glVertex3f(1.0f, 1.0f, -1.0f);
+    glTexCoord2f(face.tc_max, face.tc_max);
+    glVertex3f(1.0f, -1.0f, -1.0f);
+    glTexCoord2f(face.tc_max, face.tc_min);
+    glVertex3f(1.0f, -1.0f, 1.0f);
+    glTexCoord2f(face.tc_min, face.tc_min);
+    glVertex3f(1.0f, 1.0f, 1.0f);
+    glEnd();
+    glPopMatrix();
+}
 
 void CubeMap::draw_face_w(FaceEnum) {
+(void)0;
+(void)0;
+(void)0;
+(void)0;
+(void)0;
+(void)0;
 }
 
 void CubeMap::load()
@@ -84,12 +123,51 @@ void CubeMap::load()
     load_face_texture((FaceEnum)5);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/CubeMap_Face_Texture", _ZN7CubeMap9draw_cubeEv);
-
-void CubeMap::draw_cube_w() {
+void CubeMap::draw_cube()
+{
+    draw_face((FaceEnum)0);
+    draw_face((FaceEnum)1);
+    draw_face((FaceEnum)2);
+    draw_face((FaceEnum)3);
+    draw_face((FaceEnum)4);
+    draw_face((FaceEnum)5);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/CubeMap_Face_Texture", _ZN7CubeMap4drawEb);
+void CubeMap::draw_cube_w() {
+    draw_face_w((FaceEnum)0);
+    draw_face_w((FaceEnum)1);
+    draw_face_w((FaceEnum)2);
+    draw_face_w((FaceEnum)3);
+    draw_face_w((FaceEnum)4);
+    draw_face_w((FaceEnum)5);
+}
+
+void CubeMap::draw(bool unit)
+{
+    if (cube_size == 0)
+        return;
+    glPushAttrib(0x2000);
+    glShadeModel(0x1D00);
+    glDisable(0xBD0);
+    glCullFace(0x405);
+    glEnable(0xB44);
+    glEnable(0xB71);
+    glEnable(0xB57);
+    glDisable(0xB50);
+    glDepthFunc(0x203);
+    glDisable(0xBE2);
+    glDisable(0xBC0);
+    glColor3ub(0xFF, 0xFF, 0xFF);
+    glPushMatrix();
+    float s = unit ? 1.0f : cube_size;
+    glScalef(s, s, s);
+    draw_cube();
+    if (wireframe)
+        draw_cube_w();
+    glPopMatrix();
+    glPopAttrib();
+    glShadeModel(0x1D01);
+}
 
 void CubeMap::setLinear(bool l)
 {
