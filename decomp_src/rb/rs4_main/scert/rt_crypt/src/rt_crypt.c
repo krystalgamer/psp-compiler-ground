@@ -330,9 +330,44 @@ void KM_DeleteSymmetricKey(int a, unsigned int id)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_CopyKeys);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_DigiSign);
+int IsNullRSAKey(); void RSADecrypt();
+int KM_DigiSign(int id, int chain, void *key, void *mod, unsigned char *out)
+{
+    char *km;
+    char *kc;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_DigiVerify);
+    if (out == NULL || IsNullRSAKey(key) || IsNullRSAKey(mod)) return -1;
+    km = GetKeyMaster(id);
+    if (km == NULL) return -1;
+    kc = GetKeyChain(km, chain);
+    if (kc == NULL) return -1;
+    if (IsNullRCKey(*(unsigned char **)(kc + 0x1C))) return -1;
+    KM_SHA1(*(void **)(kc + 0x1C), 4, out, 0x40);
+    RSADecrypt(key, mod, out, out, 0x40);
+    return 0;
+}
+
+void RSAEncrypt();
+int KM_DigiVerify(int id, int chain, void *key, void *sig)
+{
+    unsigned int hash[16];
+    unsigned int dec[16];
+    char *km;
+    char *kc;
+    unsigned int i;
+
+    if (sig == NULL || IsNullRSAKey(key)) return -1;
+    km = GetKeyMaster(id);
+    if (km == NULL) return -1;
+    kc = GetKeyChain(km, chain);
+    if (kc == NULL) return -1;
+    if (IsNullRCKey(*(unsigned char **)(kc + 0x1C))) return -1;
+    KM_SHA1(*(void **)(kc + 0x1C), 4, hash, 0x40);
+    RSAEncrypt(key, sig, dec, 0x40);
+    for (i = 0; i < 16; i++)
+        if (hash[i] != dec[i]) return -1;
+    return 0;
+}
 
 void DeleteKeyChain();
 void RemoveKeyChain();
