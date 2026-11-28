@@ -156,7 +156,14 @@ void DmeFree(void **p)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIRegisterMemoryCallbacks);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIGetMyIpAddress);
+int NetIGetMyIpAddress(void *out)
+{
+    char tmp[16];
+    if (out == NULL) return 0x17;
+    NetIGetMyExtIP(tmp);
+    rt_comm_linkaddress_toext(out, tmp);
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIGetMyNetAddress);
 
@@ -222,7 +229,21 @@ int NetIGetTime(void *arg0) {
     return var_v1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIGetConnectStatus);
+int NetIGetConnectStatus(int *st, char *conn)
+{
+    unsigned int i;
+    if (st == NULL) return 0x17;
+    if (conn != NULL) {
+        for (i = 0; i < 4; i++) {
+            if (conn == ((char **)&gppConnInfo)[i]) {
+                *st = *(int *)(conn + 0x454);
+                return 0;
+            }
+        }
+    }
+    *st = 0;
+    return 0x17;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIGetValidClientCount);
 
