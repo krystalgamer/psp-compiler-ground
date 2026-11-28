@@ -390,6 +390,31 @@ int *textStr(int *s, int *k)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/text", textMid);
+int *textMid(int *s, int start, int len)
+{
+	int *p, *d;
+	int c;
+
+	if (s == NULL)
+		return NULL;
+	p = (int *)_memAlloc(len * 4 + 4, &D_000FB408, 0x481);
+	d = p;
+	if (p == NULL)
+		consPrintf(&D_000FB428, &D_000FB408, 0x484, "textMid", "pMid");
+	s += start;
+	while (len != 0 && s != NULL) {
+		c = *s;
+		s++;
+		if (c == 0 || c == -1)
+			s = NULL;
+		else {
+			*d = c;
+			len--;
+			d++;
+		}
+	}
+	*d = -1;
+	return p;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/text", textPrintf);
