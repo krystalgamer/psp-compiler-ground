@@ -37,13 +37,18 @@ typedef struct {
     u16 gctSize;                /* 0x12 */
     u8 *pal;                    /* 0x14 */
     int loop;                   /* 0x18 */
-    u8 unk1C[0x8];
+    int frames;                 /* 0x1C */
+    s8 transFlag;               /* 0x20 */
+    u8 unk21[3];
     int trans;                  /* 0x24 */
     u8 tr;                      /* 0x28 */
     u8 tg;
     u8 tb;
     u8 transIdx;                /* 0x2B */
-    u8 unk2C[0x8];
+    int disposal;               /* 0x2C */
+    u16 delay;                  /* 0x30 */
+    s8 interlace;               /* 0x32 */
+    u8 unk33;
     int *rows;                  /* 0x34 */
     int rowIdx;                 /* 0x38 */
     int offset;                 /* 0x3C */
@@ -93,10 +98,17 @@ typedef struct {
     s16 top;
     u16 width;                  /* 0x8 */
     u16 height;
-    u8 unkC[4];
+    int size;                   /* 0xC */
     int hasTrans;               /* 0x10 */
     u8 tc[3];                   /* 0x14 */
-    u8 unk17[0x11];
+    u8 unk17;
+    int disposal;               /* 0x18 */
+    u16 delay;                  /* 0x1C */
+    u8 lct;                     /* 0x1E */
+    u8 unk1F;
+    u16 palSize;                /* 0x20 */
+    u8 unk22[2];
+    u8 *lpal;                   /* 0x24 */
     u8 *buf;                    /* 0x28 */
 } GIFIMG;
 
