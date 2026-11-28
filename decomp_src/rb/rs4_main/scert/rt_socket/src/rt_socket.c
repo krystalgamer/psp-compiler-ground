@@ -491,7 +491,27 @@ unsigned short in_cksum(unsigned short *p, int len)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rt_socket_create_icmp_echo);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rt_socket_send_icmp_echo_request);
+typedef struct { unsigned char type, code; unsigned short cksum; unsigned short id, seq; int data[6]; } RtIcmpEcho;
+int rt_socket_send_icmp_echo_request(int s, int ip, int *sent, int seq)
+{
+    RtSin2 sin;
+
+    if (sent == NULL) return 2;
+    *sent = 0;
+    if (ip == 0) return 2;
+    sin.family = 2;
+    sin.addr = ip;
+    {
+        RtIcmpEcho pkt = { 0 };
+        pkt.type = 8;
+        pkt.id = 0xABCD;
+        pkt.seq = seq;
+        pkt.cksum = in_cksum((unsigned short *)&pkt, sizeof pkt);
+        if (sceNetInetSendto(s, &pkt, sizeof pkt, 0, &sin, sizeof sin) == -1) return rt_socket_get_err_platform();
+    }
+    *sent = 1;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rt_socket_recv_icmp_echo_response);
 
