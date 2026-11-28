@@ -151,9 +151,32 @@ void rt_comm_adhoc_destroy(int id)
     }
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/psp/rtadhocnet/src/rt_comm_platform", rt_comm_adhoc_send_to);
+int sceNetAdhocPdpSend();
+int rt_comm_adhoc_send_to(int id, RtLinkAddr addr, unsigned int port, void *data, int len, int *sent)
+{
+    if (gbInitialized_130B2C == 0) return 5;
+    if (id < 0) return 2;
+    if (rt_comm_adhoc_linkaddress_isnull(addr)) return 2;
+    if (port & 0xFFFF0000) return 2;
+    *sent = 0;
+    if (sceNetAdhocPdpSend(id, &addr, (unsigned short)port, data, len, 0, 1) < 0) return 0xC350;
+    *sent = len;
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/psp/rtadhocnet/src/rt_comm_platform", rt_comm_adhoc_vsend_to);
+extern char D_00130B30[];
+typedef struct { struct { void *buf; int len; } e[8]; int total; int n; } RtAdhocVec;
+int rt_comm_adhoc_vsend_to(int id, RtLinkAddr addr, unsigned int port, RtAdhocVec *v, int *sent)
+{
+    int i;
+    char *p = D_00130B30;
+
+    for (i = 0; i < v->n; i++) {
+        memcpy(p, v->e[i].buf, v->e[i].len);
+        p += v->e[i].len;
+    }
+    return rt_comm_adhoc_send_to(id, addr, port, D_00130B30, v->total, sent);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/psp/rtadhocnet/src/rt_comm_platform", rt_comm_adhoc_receive_from);
 
