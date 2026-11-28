@@ -334,7 +334,30 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_com
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_generate_lookup_query);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_resend_lookup_query);
+typedef struct { int comm; int timer[2]; RtLinkAddr addr; char buf[0x200]; int len; int pad; unsigned int tries; void (*cb)(void *); } RtLookup;
+extern char D_001353FC[];
+int rt_time_elapsed(); int rt_time_start();
+int rt_comm_resend_lookup_query(RtLookup *ld)
+{
+    unsigned int elapsed;
+    int sent = 0;
+
+    if (ld->cb == NULL) return 0;
+    rt_time_elapsed(&ld->timer, &elapsed);
+    if (elapsed > 500) {
+        rt_comm_send_to(ld->comm, ld->addr, 0x35, ld->buf, ld->len, &sent);
+        rt_time_start(&ld->timer);
+        ld->tries++;
+    }
+    if (ld->tries == 0x3C) {
+        memset(D_001353FC, 0, 0x88);
+        *(int *)(D_001353FC + 0x84) = 0xC358;
+        ld->cb(D_001353FC);
+        rt_comm_destroy(ld->comm);
+        memset(ld, 0, 0x224);
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_check_for_query_response);
 
@@ -488,7 +511,27 @@ int rt_comm_echo_enable(int *cfg)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_echo_send);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_echo_update);
+typedef struct { int on; int comm; void (*cb)(RtLinkAddr, int); } RtEchoInfo;
+#define EI ((RtEchoInfo *)&gEchoInfo)
+int rt_comm_echo_update(void)
+{
+    RtLinkAddr addr;
+    int got;
+    int d;
+    int r;
+
+    d = 0;
+    got = 0;
+    if (EI->on == 0) return 5;
+    do {
+        r = rt_comm_receive_echo(EI->comm, &got, &addr, &d);
+        if (r != 0) return r;
+        if (got == 0) return 0;
+        if (EI->cb != 0)
+            EI->cb(addr, d);
+    } while (got != 0);
+    return 0;
+}
 
 int rt_comm_echo_shutdown(void)
 {
