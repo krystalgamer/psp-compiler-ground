@@ -72,7 +72,11 @@ int IsEqual(unsigned int *a, unsigned int *b)
 
 void *memcpy(void *, const void *, unsigned long);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/LargeInt", lintGetBit);
+int lintGetBit(unsigned int *a, unsigned int bit)
+{
+    unsigned int w = bit >> 5;
+    return ((1 << (bit - (w << 5))) & a[w]) ? 1 : 0;
+}
 
 void lintSetBit(int arg0, unsigned int arg1) {
     int *temp_a2;
@@ -92,7 +96,23 @@ void lintClearBit(int arg0, unsigned int arg1) {
     *temp_a2 &= ~(1 << (arg1 - (temp_v0 << 5)));
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/LargeInt", lintIncrement);
+void lintIncrement(unsigned int *a, unsigned int v)
+{
+    unsigned int i;
+    unsigned int t;
+
+    for (i = 0; i < 128; i++, a++) {
+        if (i != 0) {
+            t = *a + 1;
+            *a = t;
+            if (t != 0) return;
+        } else {
+            t = *a + v;
+            *a = t;
+            if (t >= v) return;
+        }
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/LargeInt", lintDecrement);
 

@@ -25,6 +25,19 @@ int NetISendMessage();
 void *memset(void *, int, unsigned int);
 extern void *gObjectInterfacePtr;
 extern void *gStreamMediaInterfacePtr;
+int NetMapRtError();
+extern int gbInitialized_132A84;
+extern void *gDmeGlobals;
+int rt_mutex_lock();
+int rt_mutex_unlock();
+#define DME_LOCK(r) \
+    if (gbInitialized_132A84 != 1) return 0x11; \
+    if (*(int *)((char *)gDmeGlobals + 0x24) != gbInitialized_132A84) return 0x2B; \
+    r = NetMapRtError(rt_mutex_lock((char *)gDmeGlobals + 0x28, 0)); \
+    if (r != 0) return r
+#define DME_UNLOCK(r) \
+    r = NetMapRtError(rt_mutex_unlock((char *)gDmeGlobals + 0x28, 0)); \
+    if (r != 0) return r
 int NetMutexLock();
 int NetMutexUnlock();
 int NetMapRtError();
@@ -850,9 +863,28 @@ int NetJoin(int a0, int a1)
     return e;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetSetFieldChanged);
+int NetISetFieldChanged();
+int NetSetFieldChanged(int a0, int a1)
+{
+    int r, e;
+    DME_LOCK(r);
+    e = NetISetFieldChanged(a0, a1);
+    DME_UNLOCK(r);
+    return e;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetSendFieldUpdates);
+int NetSendFieldUpdates(int a0)
+{
+    int r, e;
+    if (gbInitialized_132A84 != 1) return 0x11;
+    if (*(int *)((char *)gDmeGlobals + 0x24) != gbInitialized_132A84) return 0x2B;
+    if (gObjectInterfacePtr == NULL) return 0x11;
+    r = NetMapRtError(rt_mutex_lock((char *)gDmeGlobals + 0x28, 0));
+    if (r != 0) return r;
+    e = (*(NetIfFn *)((char *)gObjectInterfacePtr + 0xDC))(a0);
+    DME_UNLOCK(r);
+    return e;
+}
 
 void *memset(void *s, int c, unsigned int n);
 int NetSetDefaultLookupParams(void *arg0) {
@@ -866,9 +898,25 @@ int NetSetDefaultLookupParams(void *arg0) {
     return var_v1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetGetHostByName);
+int NetIGetHostByName();
+int NetGetHostByName(int a0)
+{
+    int r, e;
+    DME_LOCK(r);
+    e = NetIGetHostByName(a0);
+    DME_UNLOCK(r);
+    return e;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetGetClientBufferStatus);
+int NetIGetClientBufferStatus();
+int NetGetClientBufferStatus(int a0, int a1, int a2, int a3, int a4, int a5)
+{
+    int r, e;
+    DME_LOCK(r);
+    e = NetIGetClientBufferStatus(a0, a1, a2, a3, a4, a5);
+    DME_UNLOCK(r);
+    return e;
+}
 
 int NetSetDefaultAppMessageParams(int *p)
 {
@@ -968,7 +1016,20 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetGetG
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetGetConnectivityType);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetGetLocalizationSettings);
+int NetGetLocalizationSettings(int *p)
+{
+    int ret = 0x17;
+    if (p != NULL) {
+        memset(p, 0, 8);
+        ret = 0x11;
+        if (*(int *)((char *)gDmeGlobals + 0x24) != 0) {
+            ret = 0;
+            p[0] = *(int *)((char *)gDmeGlobals + 0x40);
+            p[1] = *(int *)((char *)gDmeGlobals + 0x44);
+        }
+    }
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", BinaryAddressToNetAddress);
 

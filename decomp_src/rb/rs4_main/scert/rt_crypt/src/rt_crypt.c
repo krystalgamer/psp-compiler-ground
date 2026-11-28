@@ -28,7 +28,18 @@ int IsNullRCKey(unsigned char *k) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", NewKeyChain);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", DeleteKeyChain);
+int rt_memory_free();
+void DeleteKeyChain(int *kc)
+{
+    int *k = kc;
+
+    if (k == NULL) return;
+    if (k[4] != 0) rt_memory_free(&k[4]);
+    if (k[7] != 0) rt_memory_free(&k[7]);
+    if (k[5] != 0) rt_memory_free(&k[5]);
+    if (k[6] != 0) rt_memory_free(&k[6]);
+    rt_memory_free(&kc);
+}
 
 void AppendKeyChain(char *kc, char *k) {
     char *t;
@@ -45,9 +56,33 @@ void AppendKeyChain(char *kc, char *k) {
     *(char **)(kc + 0xC) = k;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", GetKeyChain);
+void *GetKeyChain(char *km, unsigned int id)
+{
+    char *k = NULL;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", RemoveKeyChain);
+    id &= 0x1FFFFFFF;
+    if (km != NULL) {
+        for (k = *(char **)(km + 8); k != NULL; k = *(char **)(k + 4))
+            if (*(unsigned int *)(k + 8) == id) break;
+    }
+    return k;
+}
+
+typedef struct KmKey { struct KmKey *prev; struct KmKey *next; } KmKey;
+typedef struct { int a, b; KmKey *head; KmKey *tail; } KmMaster;
+void RemoveKeyChain(KmMaster *km, KmKey *k)
+{
+    if (km != NULL && k != NULL) {
+        if (k->next != NULL)
+            k->next->prev = k->prev;
+        else
+            km->tail = k->prev;
+        if (k->prev != NULL)
+            k->prev->next = k->next;
+        else
+            km->head = k->next;
+    }
+}
 
 void KM_GenerateRSAKeyPair(int arg0, int arg1) {
     InitializePRNG();
@@ -101,7 +136,20 @@ void KM_SetLocalClientID(int a, int id) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_SetPublicKey);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_GetPublicKey);
+int IsNullRSAKey();
+int KM_GetPublicKey(int a, unsigned int id, void *out)
+{
+    char *km, *kc;
+
+    km = (char *)GetKeyMaster(a);
+    if (km != NULL && (kc = (char *)GetKeyChain(km, id)) != NULL && !IsNullRSAKey(*(void **)(kc + 0x10))) {
+        memcpy(out, *(void **)(kc + 0x10), 0x40);
+        return 0;
+    }
+    if (out != NULL)
+        memset(out, 0, 0x40);
+    return -1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_SetLocalKeyPair);
 
@@ -123,7 +171,20 @@ int KM_GetGameSessionKey(int a, int b, unsigned char *out)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_AddSymmetricKey);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_GetSymmetricKey);
+int KM_GetSymmetricKey(int a, unsigned int id, void *out)
+{
+    char *km, *kc;
+
+    km = GetKeyMaster(a);
+    if (km == NULL || out == NULL) return -1;
+    kc = GetKeyChain(km, id);
+    if (kc != NULL && !IsNullRCKey(*(void **)(kc + 0x1C))) {
+        memcpy(out, *(void **)(kc + 0x1C), 0x40);
+        return 0;
+    }
+    memset(out, 0, 0x40);
+    return -1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_CompareSymmetricKey);
 
@@ -177,7 +238,19 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_D
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_Decrypt2);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_RSAAdjust);
+void lintAddIP();
+void KM_RSAAdjust(void *a, void *b)
+{
+    unsigned int x[128];
+    unsigned int y[128];
+
+    memset(x, 0, 0x200);
+    memset(y, 0, 0x200);
+    memcpy(x, a, 0x40);
+    memcpy(y, b, 0x40);
+    lintAddIP(x, y);
+    memcpy(a, x, 0x40);
+}
 
 typedef struct { int w[16]; } RtKey64;
 extern char *gCryptGlobals;

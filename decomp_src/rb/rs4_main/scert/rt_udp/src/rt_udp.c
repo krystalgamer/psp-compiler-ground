@@ -3,7 +3,7 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
-void *memcpy(void *, const void *, unsigned long);
+void memcpy(void *, const void *, unsigned long);
 int KM_GetLocalPublicKey();
 int rt_list_buf_clear();
 int rt_list_buf_get_pool_used();
@@ -296,7 +296,23 @@ char *rt_udp_find_free_connection(char *u)
     return NULL;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_setup_packet_sub_header);
+void rt_udp_setup_packet_sub_header(char *u, char *c, unsigned short flags, int len, unsigned short *h)
+{
+    h[0] = (flags & 0xF800) | (len & 0x7FF);
+    h[1] = 0;
+    if (flags & 0x4000) {
+        if (c != NULL) {
+            h[1] = *(unsigned short *)(c + 0x64);
+            if (++*(unsigned short *)(c + 0x64) == 0)
+                ++*(unsigned short *)(c + 0x64);
+        }
+    } else if (flags & 0x2000) {
+        h[1] = *(unsigned short *)(u + 0x7C);
+        if (++*(unsigned short *)(u + 0x7C) == 0)
+            ++*(unsigned short *)(u + 0x7C);
+    } else
+        h[1] = 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_buffer_data_for_send);
 
