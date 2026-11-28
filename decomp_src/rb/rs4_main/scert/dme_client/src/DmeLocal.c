@@ -154,9 +154,42 @@ int GetSoftwareID(void) {
     return *(int *)gDmeGlobals;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIGetMyIntIP);
+int rt_comm_get_local_ip();
+int NetIGetMyIntIP(int *out)
+{
+    int ret;
+    int *m = (int *)&gMyAddressInfo;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIGetMyExtIP);
+    out[0] = m[5];
+    out[1] = m[6];
+    if (rt_comm_linkaddress_isnull(out)) {
+        ret = NetMapRtError(rt_comm_get_local_ip(out));
+        if (ret != 0) return ret;
+        m[5] = out[0];
+        m[6] = out[1];
+        *(long *)&m[4] = 2;
+        if (gUDPInterfacePtr != NULL)
+            m[7] = *(int *)((char *)gUDPInterfacePtr + 0x84);
+    }
+    return 0;
+}
+
+int NetIGetMyIntIP();
+int NetIGetMyExtIP(int *out)
+{
+    int *m = (int *)&gMyAddressInfo;
+    out[0] = m[1];
+    out[1] = m[2];
+    if (rt_comm_linkaddress_isnull(out)) {
+        NetIGetMyIntIP(out);
+        m[1] = out[0];
+        *(long *)&gMyAddressInfo = 1;
+        m[2] = out[1];
+        if (gUDPInterfacePtr != NULL)
+            m[3] = *(int *)((char *)gUDPInterfacePtr + 0x84);
+    }
+    return 0;
+}
 
 int NetGetMsgClientIndex(void *arg0) {
     return M2C_FIELD(arg0, int *, 0x470);
