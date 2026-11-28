@@ -240,7 +240,34 @@ int rt_p2p_set_send_aggregation(int *arg0) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_host);
+int rt_p2p_host(char *p, unsigned short *idx)
+{
+    short me;
+    int st;
+    unsigned char key[64];
+    RtP2PPeer *peer;
+
+    st = 0;
+    me = -2;
+    if (idx == NULL) return 2;
+    *idx = 0xFFFE;
+    if (p == NULL) return 2;
+    rt_p2p_get_my_peer_status(p, &st, &me);
+    if (st != 0) return 0xD4E7;
+    peer = *(RtP2PPeer **)(p + 0x184);
+    *(unsigned short *)((char *)peer + 0x34) = *(unsigned short *)(p + 0x1E0);
+    *idx = 0;
+    peer->conn1 = 0;
+    peer->conn2 = 0;
+    peer->a = 9;
+    *(unsigned short *)(p + 0x1A4) = 0;
+    *(unsigned short *)(p + 0x1A2) = 0;
+    if (gCryptInterfacePtr != NULL) {
+        (*(void (**)(void *))((char *)gCryptInterfacePtr + 0x54))(key);
+        (*(void (**)(int, int, void *))((char *)gCryptInterfacePtr + 0x24))(-1, 0, key);
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_incoming_peer);
 
