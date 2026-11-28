@@ -87,7 +87,7 @@ def main():
             if unit in units:
                 own = compiler.compiler(a.target, a.module, unit)
                 cc1s = [own] + [c for c in cc1s if c != own]
-    m = re.search(r"cflags: (-O[0-9s](?: -(?:[fm][\w-]+|std)(?:=[\w.:]+)?)*)", Path(a.file).read_text())
+    m = re.search(r"cflags: (-O[0-9s](?: +-(?:[fm][\w-]+|std)(?:=[\w.:]+)?)*)", Path(a.file).read_text())
     flags = a.flags or [m.group(1) if m else "-O2"]
     with tempfile.TemporaryDirectory() as td:
         for c in cc1s:
