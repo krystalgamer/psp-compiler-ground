@@ -123,7 +123,21 @@ void lintIncrement(unsigned int *a, unsigned int v)
     }
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/LargeInt", lintDecrement);
+void lintDecrement(unsigned int *a, unsigned int v)
+{
+    unsigned int i;
+    unsigned int t;
+
+    for (i = 0; i < 128; i++, a++) {
+        if (i != 0) {
+            if (*a != 0) { *a = *a - 1; return; }
+            *a = 0xFFFFFFFF;
+        } else {
+            if (*a < v) *a = *a - v;
+            else { *a = *a - v; return; }
+        }
+    }
+}
 
 void lintAdd(unsigned int *r, unsigned int *a, unsigned int *b)
 {
