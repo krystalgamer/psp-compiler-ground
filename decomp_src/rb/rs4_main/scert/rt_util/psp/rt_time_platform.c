@@ -62,7 +62,33 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/psp/rt_time_platf
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/psp/rt_time_platform", header_rcsid_10F0E8);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/psp/rt_time_platform", rt_time_platform_get_time_string);
+typedef struct { unsigned int ms, sec, min, hour, mday, mon, year, wday, stamp; } RtTimeDate;
+extern unsigned char gbTimeDateSet;
+
+int sprintf(char *, const char *, ...);
+int rt_time_platform_get_time_string(char *buf)
+{
+    RtTimeDate t;
+    unsigned int now;
+
+    if (buf == NULL) return 2;
+    if (!gbTimeDateSet) {
+        if (rt_time_platform_update_date_time() != 0) return 0x640;
+        gbTimeDateSet = 1;
+    }
+    t = *(RtTimeDate *)gCurTimeDate;
+    if (rt_time_get_msecs(&now) != 0) return 0x640;
+    t.ms += now - ((RtTimeDate *)gCurTimeDate)->stamp;
+    t.sec += t.ms / 1000;
+    t.ms %= 1000;
+    t.min += t.sec / 60;
+    t.sec %= 60;
+    t.hour += t.min / 60;
+    t.min %= 60;
+    t.hour %= 24;
+    sprintf(buf, "%02d:%02d:%02d", t.hour, t.min, t.sec);
+    return 0;
+}
 
 void rt_time_platform_get_gmtime(void) {
     rt_time_platform_get_date_time();
