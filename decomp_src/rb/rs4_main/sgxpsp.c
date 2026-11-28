@@ -11,7 +11,7 @@ int sgxPrintfPref(int, const void *, int, const char *, ...);
 extern unsigned char D_0010B074;
 extern int gSgxDebugFlags;
 extern int gSgxPrefErr;
-M2C_UNK FreqAdd(int, M2C_UNK, int, int, M2C_UNK, M2C_UNK, M2C_UNK); /* extern */
+int FreqAdd(int, int, int, int, int, int, int);
 void FreqRemove(int id);
 int FreqSync(int id, int wait);
 float sgxPspVoGetEnvelope(int);
@@ -612,7 +612,25 @@ void FileCmdRead(void *path, int fd, int pos, void *buf, int size, volatile int 
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", FreqMain);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", FreqAdd);
+int FreqAdd(int a0, int a1, int a2, int a3, int a4, int a5, int a6) {
+    int *w = gWork_1207F0;
+    int *e;
+    sceKernelWaitSema(w[0x4BC / 4], 1, NULL);
+    sceKernelWaitSema(w[0x4C0 / 4], 1, NULL);
+    e = (int *)(w[0x4C8 / 4] + w[0x4D0 / 4] * 32);
+    e[0] = a0;
+    e[1] = a1;
+    e[2] = a2;
+    e[3] = a3;
+    e[4] = a4;
+    e[5] = a5;
+    e[6] = a6;
+    e[7] = 0;
+    w[0x4D0 / 4] = (w[0x4D0 / 4] + 1) % w[0x4CC / 4];
+    w[0x4D8 / 4]++;
+    sceKernelSignalSema(w[0x4C0 / 4], 1);
+    return sceKernelSignalSema(w[0x4B8 / 4], 1);
+}
 
 int FreqRopen(int a, int b, int c, int d) {
     return FreqAdd(a, 0, b, c, d, 0, 0);
