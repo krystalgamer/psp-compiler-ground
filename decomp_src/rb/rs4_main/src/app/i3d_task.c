@@ -481,4 +481,155 @@ int i3dLightTerm(int a, char *p)
 	return 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", i3dLightProc);
+extern char *pLightNodeTbl[];
+void copRotVec(void *, void *, void *);
+void copRotTraVec(void *, void *, void *);
+int i3dLightProc(char *Tp, char *Lp)
+{
+	float col[4];
+	float dir[4];
+	float pos[4];
+	float att[4];
+	void *root = *(void **)Lp;
+	unsigned int i;
+	float r, r2;
+	switch (*(int *)(Lp + 0x6C)) {
+	case 0:
+		{
+		float *q = *(float **)(Lp + 0x70);
+		dir[0] = q[0];
+		dir[1] = q[1];
+		dir[2] = q[2];
+		col[0] = q[4];
+		col[1] = q[5];
+		col[2] = q[6];
+		}
+		break;
+	case 1:
+		{
+		float *q = *(float **)(Lp + 0x70);
+		pos[0] = q[0];
+		pos[1] = q[1];
+		pos[2] = q[2];
+		col[0] = q[4];
+		col[1] = q[5];
+		col[2] = q[6];
+		}
+		break;
+	case 2:
+		{
+		float *q = *(float **)(Lp + 0x70);
+		pos[0] = q[0];
+		pos[1] = q[1];
+		pos[2] = q[2];
+		dir[0] = q[4];
+		dir[1] = q[5];
+		dir[2] = q[6];
+		col[0] = q[8];
+		col[1] = q[9];
+		col[2] = q[10];
+		att[0] = q[12];
+		att[1] = q[13];
+		}
+		break;
+	case 3:
+		{
+		float *q = *(float **)(Lp + 0x70);
+		col[0] = q[0];
+		col[1] = q[1];
+		col[2] = q[2];
+		}
+		break;
+	}
+	for (i = 0; i < 4; i++) {
+		int idx = I3rRoot__GetNodeIndexByName(root, pLightNodeTbl[i]);
+		char *n;
+		if (idx < 0)
+			continue;
+		n = *(char **)(Lp + 4) + idx * 64;
+		switch ((int)i) {
+		default:
+			consPrintf(&D_000FD5C4, &D_000FD5E0, 0x5C9, "i3dLightProc", &D_000FD840);
+			break;
+		case 0:
+			col[0] = *(float *)(n + 0x30);
+			col[1] = *(float *)(n + 0x34);
+			col[2] = *(float *)(n + 0x38);
+			break;
+		case 1:
+			dir[0] = *(float *)(n + 0x30);
+			dir[1] = *(float *)(n + 0x34);
+			dir[2] = *(float *)(n + 0x38);
+			break;
+		case 2:
+			pos[0] = *(float *)(n + 0x30);
+			pos[1] = *(float *)(n + 0x34);
+			pos[2] = *(float *)(n + 0x38);
+			break;
+		case 3:
+			att[0] = *(float *)(n + 0x30);
+			att[1] = *(float *)(n + 0x34);
+			att[2] = *(float *)(n + 0x38);
+			break;
+		}
+	}
+	copRotVec(Tp + 0xD0, dir, dir);
+	copRotTraVec(Tp + 0xD0, pos, pos);
+	switch (*(int *)(Lp + 0x6C)) {
+	case 0:
+		{
+		float *q = *(float **)(Lp + 0x70);
+		q[0] = dir[0];
+		q[1] = dir[1];
+		q[2] = dir[2];
+		q[4] = col[0];
+		q[5] = col[1];
+		q[6] = col[2];
+		taskSendProc(Tp, i3dTask_Light, 0x14, (int)q, 0);
+		}
+		break;
+	case 1:
+		{
+		float *q = *(float **)(Lp + 0x70);
+		q[0] = pos[0];
+		q[1] = pos[1];
+		q[2] = pos[2];
+		r = att[0] == 0.0f ? 16777215.0f : att[0];
+		att[0] = r;
+		q[4] = col[0] * (r * r);
+		q[5] = col[1] * (r * r);
+		q[6] = col[2] * (r * r);
+		taskSendProc(Tp, i3dTask_Light, 0x15, *(int *)(Lp + 0x70), 0);
+		}
+		break;
+	case 2:
+		{
+		float *q = *(float **)(Lp + 0x70);
+		q[0] = pos[0];
+		q[1] = pos[1];
+		q[2] = pos[2];
+		q[4] = dir[0];
+		q[5] = dir[1];
+		q[6] = dir[2];
+		r = att[2] == 0.0f ? 16777215.0f : att[2];
+		att[2] = r;
+		q[8] = col[0] * (r * r);
+		q[9] = col[1] * (r * r);
+		q[10] = col[2] * (r * r);
+		q[12] = att[0] * 57.29578f;
+		q[13] = att[1] * 57.29578f;
+		taskSendProc(Tp, i3dTask_Light, 0x16, *(int *)(Lp + 0x70), 0);
+		}
+		break;
+	case 3:
+		{
+		float *q = *(float **)(Lp + 0x70);
+		q[0] = col[0];
+		q[1] = col[1];
+		q[2] = col[2];
+		taskSendProc(Tp, i3dTask_Light, 0x17, (int)q, 0);
+		}
+		break;
+	}
+	return 1;
+}
