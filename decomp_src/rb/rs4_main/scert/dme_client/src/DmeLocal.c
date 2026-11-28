@@ -1546,7 +1546,29 @@ int NetConvertTransportFlags(signed char f, unsigned short *out)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", p2p_connect_cb);
+int MyClientConnectsPeerToPeer(char *, int, int, int, int);
+void p2p_connect_cb(unsigned short idx, int a, int err, char *ci)
+{
+    if (ci == NULL) return;
+    if (*(int *)(ci + 0x468) == 2) {
+        if (err == 0 && idx != 0xFFFE) {
+            MyClientConnectsPeerToPeer(ci, idx, 1, a, 0);
+            if (gStreamMediaInterfacePtr != NULL && (*(DmeFn0 *)((char *)gStreamMediaInterfacePtr + 0x18))(ci) != 0)
+                (*(DmeFn0 *)((char *)gStreamMediaInterfacePtr + 0x20))(ci, idx);
+        } else {
+            MyClientConnectsPeerToPeer(ci, 0x100, 0, 0, 1);
+        }
+        return;
+    }
+    if (gStreamMediaInterfacePtr != NULL && (*(DmeFn0 *)((char *)gStreamMediaInterfacePtr + 0x18))(ci) != 0) {
+        if (err == 0 && idx != 0xFFFE) {
+            (*(DmeFn0 *)((char *)gStreamMediaInterfacePtr + 0x20))(ci, idx);
+        } else {
+            (*(DmeFn0 *)((char *)gStreamMediaInterfacePtr + 0x28))(ci);
+            (*(DmeFn0 *)((char *)gStreamMediaInterfacePtr + 0x64))(ci, 0xFFFE);
+        }
+    }
+}
 
 void p2p_disconnect_cb(int reason, char *c)
 {
