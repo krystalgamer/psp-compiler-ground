@@ -461,7 +461,41 @@ int smf_getChannelMuteBit(unsigned int id, unsigned int *bit)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/smf", func_00009EDC);
+int func_00009EDC(SmfData *p, unsigned int id)
+{
+	unsigned int i;
+
+	p->status = 4;
+	p->data = 0;
+	p->tempo = 1000000;
+	p->unkC = 1;
+	p->ptr = 0;
+	p->addTempo = 0;
+	p->hd = -1;
+	p->delta = 0;
+	p->unk30 = 0;
+	p->unk8 = -1;
+	p->unk34 = 0;
+	p->unk38 = 0;
+	p->vel = 0x7f;
+	p->pan = 0x40;
+	p->sendVel = 0x7f;
+	p->sendPan = 0x40;
+	p->unk25 = -1;
+	p->mute = -1;
+	p->unk20 = 0;
+	p->unk24 = 0;
+	for (i = 0; i < 16; i++) {
+		p->ch[i].unk0 = 0;
+		p->ch[i].vol = 0x7f;
+		p->ch[i].exp = 0x7f;
+		p->ch[i].pan = 0x40;
+		p->ch[i].bend = 0x2000;
+		p->ch[i].id = (id << 8) | i | 0xff000000;
+		p->ch[i].unk4 = 0;
+	}
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/smf", func_00009FA4);
 
