@@ -28,7 +28,25 @@ int rt_upnp_get_version_string(void) {
     return gpszVersionString;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_upnp/src/rt_upnp", rt_upnp_create);
+int rt_upnp_create(char **out, int sock, int arg)
+{
+    char *u = NULL;
+    int r;
+
+    if (out == NULL) return 2;
+    *out = NULL;
+    if (sock == 0) return 2;
+    if (rt_memory_allocate_init_zero(&u, 0x4C) != 0) return 100;
+    r = rt_comm_get_local_ip(u + 4);
+    if (r != 0) {
+        rt_memory_free(&u);
+        return r;
+    }
+    *(int *)(u + 0x14) = arg;
+    *(int *)u = sock;
+    *out = u;
+    return 0;
+}
 
 int rt_upnp_destroy(void *u)
 {
@@ -137,7 +155,23 @@ int rt_upnp_set_memory_ceiling(void) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_upnp/src/rt_upnp", upnp_iresolve_cb);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_upnp/src/rt_upnp", process_heartbeat_timeslice);
+int process_heartbeat_timeslice(char *u)
+{
+    unsigned int el;
+    int sent;
+    unsigned char msg[4];
+
+    sent = 0;
+    if (*(int *)(u + 0x38) != 0) {
+        rt_time_elapsed(u + 0x2C, &el);
+        if (el > 5000) {
+            msg[3] = 0xD4;
+            rt_comm_send_to(*(int *)u, u + 0x1C, *(int *)(u + 0x24), msg, 4, &sent);
+            rt_time_get_time_stamp(u + 0x2C);
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_upnp/src/rt_upnp", process_nat_resolution_timeslice);
 
