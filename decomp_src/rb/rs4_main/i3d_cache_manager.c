@@ -1,6 +1,5 @@
 #include "common.h"
 #include "m2c_macros.h"
-M2C_UNK I3dResourceTag__PurgeCache();               /* extern */
 M2C_UNK I3dVecClear(int);                           /* extern */
 M2C_UNK I3dPicture__FlushCache(void *);             /* extern */
 M2C_UNK sceGimPictureDelete(int);                   /* extern */
@@ -44,11 +43,11 @@ void I3dMemBlock__MoveList(MBk3 *b, int i, MBk3 *h)
 	h->l[i].prev = b;
 }
 
-int I3dMemBlock__ChangeAttributeToCache(char *b, void *t)
+void I3dMemBlock__ChangeAttributeToCache(char *b, void *t)
 {
 	*(void **)(b + 0x40) = t;
 	*(unsigned int *)(b + 0x30) = (*(unsigned int *)(b + 0x30) & ~1) | 0x10;
-	return I3dResourceTag__SetMemBlock(t, b);
+	I3dResourceTag__SetMemBlock(t, b);
 }
 
 void I3dMemBlock__ChangeAttributeToGarbage(b)
@@ -79,7 +78,13 @@ void I3dResourceTag__SetMemBlock(void *arg0, int arg1) {
     M2C_FIELD(arg0, int *, 8) = arg1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dResourceTag__PurgeCache);
+int I3dResourceTag__PurgeCache(t)
+    char *t;
+{
+    char *b = *(char **)(t + 8);
+    if (b) I3dMemBlock__ChangeAttributeToGarbage(b);
+    return 0;
+}
 
 int I3dResourceTag__Construct(int *t)
 {
@@ -205,7 +210,20 @@ int I3dCacheManager__ClearAllMoveAttr(char *cm)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dCacheManager__ChangeGarbageToCache);
+int I3dCacheManager__ChangeGarbageToCache(char *cm, char *b, int *t)
+{
+    unsigned int size = t[1];
+    unsigned int bs = *(unsigned int *)(b + 0x38);
+    if (bs < size) return 0xF;
+    if (size < bs) {
+        if (I3dCacheManager__CreateNewMemBlockAsGarbage((int *)cm, bs - size, b) == 0) return 1;
+        *(unsigned int *)(b + 0x38) = size;
+    }
+    I3dMemBlock__ChangeAttributeToCache(b, t);
+    *(unsigned int *)(b + 0x30) |= 0x10000;
+    I3dMemBlock__InsertList((void *)b, 4, (void *)(cm + 0x18));
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -324,7 +342,31 @@ int I3dCacheManager__ResetProfile(char *c)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dCacheManager__Construct);
+int I3dCacheManager__Construct(int *cm, char *blocks, unsigned int n, int *ptrs)
+{
+    unsigned int i;
+    int *h;
+    cm[0] = 0;
+    cm[1] = 0;
+    cm[2] = 0;
+    cm[3] = 0;
+    cm[4] = (int)blocks;
+    cm[5] = n;
+    h = cm + 6;
+    I3dMemBlock__Construct(h);
+    h[12] |= 0x1000000;
+    cm[23] = (int)ptrs;
+    cm[24] = n;
+    cm[25] = 0;
+    cm[26] = 0;
+    cm[27] = 0;
+    for (i = 0; i < n; i++) {
+        I3dMemBlock__Construct(blocks + i * 0x44);
+        ptrs[i] = (int)(blocks + i * 0x44);
+    }
+    I3dCacheManager__CreateOriginGarbage(cm);
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -400,7 +442,16 @@ void I3dScaleTransF4__Clear(int arg0) {
     I3dVecClear(arg0);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dScaleTransF4__ImportMatrix);
+void I3dVecCopy(float *, const float *);
+void I3dScaleTransF4__ImportMatrix(float *d, const float *m)
+{
+    float x = m[0], y = m[5], z = m[10];
+    d[0] = x;
+    d[1] = y;
+    d[2] = z;
+    d[3] = 0;
+    I3dVecCopy(d + 4, m + 12);
+}
 
 int I3dPicture__Construct(int *p)
 {
