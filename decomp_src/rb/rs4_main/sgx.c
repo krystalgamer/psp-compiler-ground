@@ -346,7 +346,39 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgx", D_00109CE0);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxInit);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxTerm);
+void sgxProc(float);
+void sgxSndStopAll(int);
+void sgxResCloseAll(void);
+void sgxPspWaitReadyTerm(void);
+void sgxSndTerm(void);
+void sgxSeqTerm(void);
+void sgxPortTerm(void);
+void sgxResTerm(void);
+void sgxBmgTerm(void);
+void sgxPspTerm(void);
+void sgxMutexDelete(int);
+void sgxTerm(void) {
+    if (gWork_11FBE0[0] == 0) {
+        if (gSgxDebugFlags & 1) sgxPrintfPref(gSgxPrefErr, D_00109CA8, 0x2CA, "system not initialized\n");
+        return;
+    }
+    if (gSgxDebugFlags & 4) sgxPrintf("=== SGX system terminate ... ===\n");
+    sgxSndStopAll(0);
+    sgxProc(0.0f);
+    sgxResCloseAll();
+    sgxPspWaitReadyTerm();
+    sgxSndTerm();
+    sgxSeqTerm();
+    sgxPortTerm();
+    sgxResTerm();
+    sgxBmgTerm();
+    sgxPspTerm();
+    if (gWork_11FBE0[10]) sgxMutexDelete(gWork_11FBE0[10]);
+    if (gWork_11FBE0[9]) sgxMutexDelete(gWork_11FBE0[9]);
+    if (gWork_11FBE0[5]) sgxFree((void *)gWork_11FBE0[5]);
+    memset(gWork_11FBE0, 0, 0x2C);
+    if (gSgxDebugFlags & 4) sgxPrintf("=== ... SGX system terminate ===\n");
+}
 
 void sgxFlush(void)
 {
