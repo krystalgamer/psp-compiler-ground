@@ -38,7 +38,7 @@ int rt_p2p_send_to(void *p2p, RtP2PAddr addr, void *data, int len);
 int rt_p2p_set_max_peers(void *p2p, int n); int rt_p2p_set_overlay_type(); int rt_p2p_join_overlay(); int rt_p2p_quit_overlay();
 int rt_p2p_quit_all_overlays(); int rt_p2p_ignore_peer_in_overlay();
 int rt_p2p_is_peer_in_overlay(char *p, unsigned char ov, unsigned short peer, int *out);
-int rt_p2p_send_overlay(); int rt_p2p_send_token_msg(); int rt_p2p_send_token_list_msg(); int rt_p2p_token_event_notify();
+int rt_p2p_send_overlay(); int rt_p2p_send_token_msg(char *, int, int, int, unsigned short); int rt_p2p_send_token_list_msg(); int rt_p2p_token_event_notify();
 int rt_p2p_get_latency_info(char *, unsigned short, void *);
 
 int NetUsePeerToPeer(void *arg0) {
@@ -815,7 +815,29 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_g
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_update_grid);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_send_token_msg);
+int rt_token_build_token_msg();
+int rt_msg_set_u2byte();
+int rt_p2p_send_token_msg(char *p, int tok, int a, int b, unsigned short idx)
+{
+    int ret;
+    RtP2PVec vec;
+    struct { unsigned char b[0x10]; } msg;
+    unsigned int len;
+    unsigned char *mp = msg.b;
+
+    len = 0;
+    if (p == NULL) return 2;
+    if (idx >= *(unsigned short *)(p + 0x19C)) return 0xD4E6;
+    if (*(unsigned short *)(p + 0x1A4) == idx) return 0xD4E6;
+    ret = rt_token_build_token_msg(mp + 2, 5, &len, (unsigned char)b, (unsigned short)tok, a);
+    if (ret != 0) return ret;
+    rt_msg_set_u2byte(mp, rt_p2p_pack_type(14, (unsigned short)(len + 2)));
+    vec.e[0].buf = mp;
+    vec.e[0].len = len + 2;
+    vec.total = len + 2;
+    vec.n = 1;
+    return rt_p2p_isend((int *)p, (int *)(*(char **)(p + 0x184) + idx * 80), 0xF000, (int)&vec);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_send_token_list_msg);
 
