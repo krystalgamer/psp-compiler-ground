@@ -6,7 +6,7 @@
 #include "../main.hpp"
 
 /* the module's .ctors/.dtors refer to the static constructor/destructor */
-__asm__(".globl _GLOBAL__I__ZN6gl_ext19pglBlendEquationExtE\n_GLOBAL__I__ZN6gl_ext19pglBlendEquationExtE = _GLOBAL__I__ZN6gl_ext16BlendEquationEXTEj__asm");
+__asm__(".globl _GLOBAL__I__ZN6gl_ext19pglBlendEquationExtE\n_GLOBAL__I__ZN6gl_ext19pglBlendEquationExtE = _GLOBAL__I__ZN6gl_ext16BlendEquationEXTEj");
 
 #include "UTST99332/demo_duck/gl.hpp"
 
@@ -19,7 +19,17 @@ std::vector<std::string> Initialize();
 }
 extern "C" const char D_001670FC[], D_00167110[];
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl_ext_pglBlendEquationExt", _ZN6gl_ext16BlendEquationEXTEj);
+extern "C" const char D_0016703C[], D_001670D0[], D_001670EC[], D_001670F0[];
+namespace gl_ext { void BlendEquationEXT(unsigned int); }
+extern const char BlendEquationEXT_name[] __asm__("_ZZN6gl_ext16BlendEquationEXTEjE19__PRETTY_FUNCTION__");
+void gl_ext::BlendEquationEXT(unsigned int _Mode)
+{
+    if (pglBlendEquationExt && use_extensions) {
+        SGL_ASSERT(_Mode == 0x8007 || _Mode == 0x8008 || _Mode == 0x800A || _Mode == 0x800B || _Mode == 0x8006, D_001670F0, D_0016703C, D_001670D0, BlendEquationEXT_name, 0x42, D_001670EC);
+        pglBlendEquationExt(_Mode);
+        VAIOBugCheck();
+    }
+}
 
 void gl_ext::BlendColorEXT(float r, float g, float b, float a)
 {
