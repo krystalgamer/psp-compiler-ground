@@ -359,7 +359,13 @@ int At3BufGetLeft(void *arg0) {
     return M2C_FIELD(arg0, int *, 0x2098);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", At3BufGetLinearLeftOfs);
+int At3BufGetLinearLeftOfs(char *b, int ofs) {
+    int pos = *(int *)(b + 0x2090) + ofs;
+    int size = *(int *)(b + 0x2094);
+    int left = *(int *)(b + 0x2098) - ofs;
+    int lin = size - pos % size;
+    return left < lin ? left : lin;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
