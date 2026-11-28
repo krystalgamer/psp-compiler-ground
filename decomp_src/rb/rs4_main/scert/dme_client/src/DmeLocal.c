@@ -1149,7 +1149,38 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", Ne
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIClose);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetMapRtError);
+int NetMapRtError(unsigned int e)
+{
+    int r;
+    switch (e) {
+    case 0x0: r = 0x0; break;
+    case 0x2: r = 0x17; break;
+    case 0x3: r = 0xA; break;
+    case 0x4: case 0xC350: case 0xC351: case 0xC353: case 0xC355: case 0xC356: r = 0x23; break;
+    case 0x5: r = 0x11; break;
+    case 0x64: r = 0x16; break;
+    case 0xC357: r = 0x19; break;
+    case 0xC358: r = 0xE; break;
+    case 0xCB25: r = 0xE; break;
+    case 0xC359: r = 0x2E; break;
+    case 0xC35A: r = 0xC; break;
+    case 0xC35B: r = 0x2C; break;
+    case 0xC35C: r = 0x2D; break;
+    case 0xCB21: case 0xCB22: r = 0x1E; break;
+    case 0xCB23: r = 0xF; break;
+    case 0xCB24: r = 0x3; break;
+    case 0xCB26: case 0xCB27: case 0xCB2B: r = 0xD; break;
+    case 0xCB28: r = 0x22; break;
+    case 0xCB29: r = 0x1A; break;
+    case 0xCB2A: case 0xCB2C: r = 0x25; break;
+    case 0xCB2D: r = 0x10; break;
+    case 0xCB2E: r = 0x2; break;
+    case 0xCB2F: r = 0x2B; break;
+    case 0xCB30: case 0xCB31: r = 0x20; break;
+    default: r = 0x1E; break;
+    }
+    return r;
+}
 
 extern void *gppClientPingInfo[];
 
