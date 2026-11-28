@@ -146,7 +146,39 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/actor", D_000FEE58);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/actor", ActorLightMove);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/actor", ActorMotionMove);
+float i3dMotTimeAdj(void *c, int mot, float t, int loop);
+void i3dMotUpdate(void *c, int mot, float t, float b, int f);
+float I3mRoot__GetMaxTime(void *);
+int ActorRecvMotion(char *a, char *name);
+typedef struct { void *c; int r4; int mot; int loop; float blend; float time; float spd; float bspd; } AMot;
+int ActorMotionMove(char *a)
+{
+	AMot *m = *(AMot **)(a + 0x38);
+	char *c = m->c;
+	float max;
+	void *root;
+	float b;
+
+	if (*(int *)(c + 0x34) != 0) {
+		if (m->mot < 0) {
+			i3dMotUpdate(c, -1, 0.0f, 0.0f, 1);
+		} else {
+			m->blend -= m->spd;
+			b = 0.0f;
+			if (m->blend > 0.0f)
+				b = m->blend;
+			m->blend = b;
+			m->time += m->bspd;
+			root = (*(void ***)(c + 0x38))[m->mot];
+			max = root != NULL ? I3mRoot__GetMaxTime(root) : 0.0f;
+			if (m->time < 0.0f || max <= m->time)
+				ActorRecvMotion(a, "Loop Mot");
+			m->time = i3dMotTimeAdj(c, m->mot, m->time, m->loop == 0);
+			i3dMotUpdate(c, m->mot, m->time, m->blend, 1);
+		}
+	}
+	return 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/actor", ActorAttachProc);
 
