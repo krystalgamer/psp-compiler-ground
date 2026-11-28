@@ -66,6 +66,11 @@ int mes_select_new(int ctx, int *priv);
 int mes_submit_new(int ctx, int *priv);
 int mes_text_new(int ctx, int *priv);
 int mes_textarea_new(int ctx, int *priv);
+void *JSI_getDocumentURL(void *dom);
+void JSI_freeURLRec(void *u);
+int mes_document_new(void *ctx, int *priv);
+typedef struct JDUrlStr { int f0; int len; UCSChar *str; } JDUrlStr;
+typedef struct JDUrl { int f0; int f4; JDUrlStr *s; } JDUrl;
 int JSObjGetCharsLength(const UCSChar *s)
 {
     int n = 0;
@@ -272,7 +277,34 @@ int js_setChildOfSelect(ctx, parent, elem)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", WindowSetInternal);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", DocumentSetInternal);
+int DocumentSetInternal(int a, int b, void *dom, int c)
+{
+    int *priv;
+    int doc;
+    int domain;
+    JDUrl *u;
+    int t;
+
+    priv = MEM_malloc(0, 8);
+    priv[0] = (int)dom;
+    priv[1] = 4;
+    doc = mes_document_new((void *)a, priv);
+    *--M2C_FIELD(a, int **, 0x18) = doc;
+    mes_object_setup((void *)a, M2C_FIELD(a, int *, 0xC), (M2C_UNK *)"document", doc, 7, 0);
+    u = JSI_getDocumentURL(dom);
+    domain = mes_string_new((void *)a, u->s->str, u->s->len);
+    *--M2C_FIELD(a, int **, 0x18) = domain;
+    JSI_freeURLRec(u);
+    mes_class_property_setup(a, b, "document", doc, 7);
+    mes_class_property_set((void *)a, doc, "domain", (void *)domain);
+    t = HistoryObjSetInternal(a, b);
+    *--M2C_FIELD(a, int **, 0x18) = t;
+    t = LocationSetInternal(a, b, (int)dom);
+    *--M2C_FIELD(a, int **, 0x18) = t;
+    JSObjSetEventHandler(a, doc, c);
+    M2C_FIELD(a, int **, 0x18) += 4;
+    return doc;
+}
 
 int ASetInternal(int ctx, int b, int node, int d)
 {
