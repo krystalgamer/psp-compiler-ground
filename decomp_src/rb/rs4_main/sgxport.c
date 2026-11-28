@@ -446,7 +446,22 @@ void CmdFilterTypeID(void *arg0) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", CmdPause_866D0);
+void CmdPause_866D0(char *port, int cmd)
+{
+	UnitT *u;
+	int a = ((int *)cmd)[1];
+	if (a) cmd = *(int *)(port + 0xC) | 4;
+	else cmd = *(int *)(port + 0xC) & ~4;
+	if (*(int *)(port + 0xC) == cmd) return;
+	*(int *)(port + 0xC) = cmd;
+	for (u = (UnitT *)PortListFirst(port + 0x18); u != NULL; u = (UnitT *)PortListNext((char *)u)) {
+		int i;
+		for (i = 0; i < u->s.nv; i++) {
+			if (u->s.v[i] >= 0)
+				sgxVoCtrl(u->s.v[i], 5, a, 0);
+		}
+	}
+}
 
 extern int D_00113CCC[];
 typedef void (*PortCmdFn)(void *, int *);
