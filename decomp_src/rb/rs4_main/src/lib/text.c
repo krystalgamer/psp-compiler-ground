@@ -13,7 +13,7 @@ extern unsigned char D_000FB428;
 extern unsigned char D_000FB444;
 
 int *_memAlloc(int, M2C_UNK *, M2C_UNK);            /* extern */
-int textToUCS4(M2C_UNK, unsigned char);                        /* extern */
+int textToUCS4(int code, int c);
 extern unsigned char D_000FB4FC;
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/text", textInit);
@@ -195,7 +195,33 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/lib/text", D_000FB5E4);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/lib/text", D_000FB5E8);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/text", textToUCS4);
+typedef struct { int sjis; int euc; int ucs4; } TextCodeTbl;
+extern TextCodeTbl D_00111040[];
+int textToUCS4(int code, int c)
+{
+	TextCodeTbl *t, *e;
+	int n, m;
+
+	switch (code) {
+	case 2:
+	case 3:
+	case 4:
+		return c;
+	case 0:
+		for (t = D_00111040, n = 0x5D; n != 0; n--, t++)
+			if (t->sjis == c)
+				return t->ucs4;
+		return c;
+	case 1:
+		for (e = D_00111040, m = 0x5D; m != 0; m--, e++)
+			if (e->euc == c)
+				return e->ucs4;
+		return c;
+	default:
+		consPrintf(&D_000FB428, &D_000FB408, 0x329, "textToUCS4", "FALSE");
+		return -1;
+	}
+}
 
 int *textASCIItoUCS4(signed char *arg0) {
     int *temp_v0_2;
