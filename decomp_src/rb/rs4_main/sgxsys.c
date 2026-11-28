@@ -19,15 +19,85 @@ void CbCallFunc(int arg0, M2C_UNK (*arg1)(int, int), int arg2, int arg3) {
 
 extern int gWork_11FBE0[];
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsys", sgxCbCallMode);
+typedef struct { int a, b, c, d; } CbEnt;
+typedef struct { CbEnt *ent; int count; int tail; int head; } CbQ;
+void sgxDI(void);
+void sgxEI(void);
+void sgxCbCallMode(int mode)
+{
+    CbQ *q = (CbQ *)gWork_11FBE0[5] + mode;
+    while (q->count > 0) {
+        CbEnt *e = &q->ent[q->head];
+        CbCallFunc(e->a, (void *)e->b, e->c, e->d);
+        sgxDI();
+        q->head = (q->head + 1) % gWork_11FBE0[6];
+        q->count--;
+        sgxEI();
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsys", sgxCbRegist);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsys", sgxFormSampleToByte);
+int sgxFormSampleToByte(unsigned int f, int ch, int n)
+{
+    if (n < 0) return n;
+    switch (f) {
+    default:
+    case 0:
+    case 1:
+    case 2:
+    case 4:
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+    case 10:
+    case 11:
+    case 12:
+    case 13:
+    case 14:
+    case 15:
+        return ch * n * 2;
+    case 3:
+        return n / 28 * ch * 16;
+    case 5:
+        return n / 6 * ch * 4;
+    case 16:
+    case 17:
+        return ch * n;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsys", sgxFormByteToSample);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsys", sgxGetFormUnitByte);
+int sgxGetFormUnitByte(unsigned int f)
+{
+    switch (f) {
+    default:
+    case 0:
+    case 1:
+    case 2:
+    case 4:
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+    case 10:
+    case 11:
+    case 12:
+    case 13:
+    case 14:
+    case 15:
+        return 2;
+    case 3:
+        return 0x10;
+    case 5:
+        return 4;
+    case 16:
+    case 17:
+        return 1;
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
