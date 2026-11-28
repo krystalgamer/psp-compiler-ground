@@ -81,7 +81,7 @@ extern void **gP2PInterfacePtr;
 int rt_udp_get_address();
 int rt_p2p_create(); int rt_p2p_destroy(); int rt_p2p_get_peer_address(int *, unsigned short, int, int *, int *);
 
-int rt_p2p_get_buffer_stats(); int rt_p2p_get_peer_buffer_stats();
+int rt_p2p_get_buffer_stats(); int rt_p2p_get_peer_buffer_stats(char *, unsigned short, int *, int *, int *, int *);
 int rt_p2p_host(); int rt_p2p_incoming_peer(); int rt_p2p_connect(); void rt_p2p_disconnect();
 int rt_p2p_send(char *, unsigned short, unsigned short, RtP2PVec *); int rt_p2p_send_list(char *, unsigned short, unsigned short, unsigned char *, unsigned short, RtP2PVec *);
 typedef struct { unsigned int ip; unsigned int port; } RtP2PAddr;
@@ -228,7 +228,43 @@ int rt_p2p_get_virtual_port(void *arg0, unsigned short *arg1) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_get_buffer_stats);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_get_peer_buffer_stats);
+#define PEER_CONN(p, i, n) (*(void **)&(*(RtP2PPeer **)((p) + 0x184))[i].conn##n)
+int rt_p2p_get_peer_buffer_stats(char *p, unsigned short idx, int *sendSize, int *sendUsed, int *recvSize, int *recvUsed)
+{
+    int ret = 2;
+    unsigned int used = 0;
+    unsigned int size = 0;
+    unsigned int pct = 0;
+
+    if (p == NULL) return 2;
+    if (idx >= *(unsigned short *)(p + 0x19C)) return 2;
+    if (sendSize == NULL) return 2;
+    if (recvSize == NULL) return 2;
+    if (sendUsed == NULL) return 2;
+    if (recvUsed == NULL) return 2;
+    *sendUsed = 0;
+    *sendSize = 0;
+    *recvUsed = 0;
+    *recvSize = 0;
+    ret = 0;
+    if (PEER_CONN(p, idx, 1) != 0) {
+        if (rt_udp_get_buffer_stats(*(void **)p, PEER_CONN(p, idx, 1), 0, &used, &size, &pct) != 0) return 0;
+        *sendUsed += used;
+        *sendSize += size;
+        if (rt_udp_get_buffer_stats(*(void **)p, PEER_CONN(p, idx, 1), 1, &used, &size, &pct) != 0) return 0;
+        *recvUsed += used;
+        *recvSize += size;
+    }
+    if (PEER_CONN(p, idx, 2) != 0) {
+        if (rt_udp_get_buffer_stats(*(void **)p, PEER_CONN(p, idx, 2), 0, &used, &size, &pct) != 0) return 0;
+        *sendUsed += used;
+        *sendSize += size;
+        if (rt_udp_get_buffer_stats(*(void **)p, PEER_CONN(p, idx, 2), 1, &used, &size, &pct) != 0) return 0;
+        *recvUsed += used;
+        *recvSize += size;
+    }
+    return 0;
+}
 
 int rt_p2p_set_send_aggregation(int *arg0) {
     int var_v0;
