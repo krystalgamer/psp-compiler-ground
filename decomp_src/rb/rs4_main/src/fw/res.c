@@ -17,6 +17,7 @@ typedef struct { int *p; int pad[7]; } InstEnt;
 
 typedef void (*OvlFn)(int, int, int);
 typedef struct { int a, b; OvlFn *tbl; int pad[5]; } InstEnt2;
+typedef struct { int p0, p4, f8, fC, p10, p14, f18, f1C; } ResEntX;
 
 int thrEntry();
 void _resReadInst();
@@ -326,7 +327,35 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FBE40);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FBE58);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resReleaseRefer);
+extern unsigned char D_000FBDD8;
+int resReleaseRefer(int type, int local)
+{
+	InstEnt2 *inst;
+	char *hdr;
+	OvlFn *tbl;
+	ResEntX *e;
+
+	consPrintf("%s : {\n", "resReleaseRefer");
+	inst = &((InstEnt2 *)&InstBuf)[type];
+	tbl = inst->tbl;
+	hdr = (char *)((int *)inst->a)[1];
+	e = (ResEntX *)(*(char **)(hdr + 0x10) + local * 32);
+	if (!(type >= 0))
+		consPrintf(&D_000FBA08, &D_000FB9F8, 0x344, "resReleaseRefer", &D_000FBD40);
+	if (!(local >= 0))
+		consPrintf(&D_000FBA08, &D_000FB9F8, 0x345, "resReleaseRefer", &D_000FBD68);
+	if (!((unsigned int)local < *(unsigned int *)(hdr + 0x14)))
+		consPrintf(&D_000FBA08, &D_000FB9F8, 0x347, "resReleaseRefer", &D_000FBDD8);
+	if (e->f1C < 0) {
+		if (tbl)
+			tbl[0](7, (int)e, 0);
+		e->f8 = 0;
+		e->f1C &= 0x7FFFFFFF;
+		e->fC = 0;
+		e->f18 |= 0xF0;
+	}
+	consPrintf("%s : }\n", "resReleaseRefer");
+}
 
 int resGetEntrySect(int arg0, int arg1) {
     if (arg0 < 0) {
@@ -583,7 +612,6 @@ char *resAsmRes(char *src, char *dst)
 	return resReadString(d, resReadTable(d, resReadLocal(d, dst)));
 }
 
-typedef struct { int p0, p4, f8, fC, p10, p14, f18, f1C; } ResEntX;
 int resReleaseRes(char *r)
 {
 	char *hdr = (char *)(*(int **)r)[1];
