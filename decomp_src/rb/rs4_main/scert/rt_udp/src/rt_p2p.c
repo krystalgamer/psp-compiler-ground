@@ -83,7 +83,7 @@ int rt_p2p_create(); int rt_p2p_destroy(); int rt_p2p_get_peer_address(int *, un
 
 int rt_p2p_get_buffer_stats(); int rt_p2p_get_peer_buffer_stats();
 int rt_p2p_host(); int rt_p2p_incoming_peer(); int rt_p2p_connect(); void rt_p2p_disconnect();
-int rt_p2p_send(); int rt_p2p_send_list();
+int rt_p2p_send(char *, unsigned short, unsigned short, RtP2PVec *); int rt_p2p_send_list();
 typedef struct { unsigned int ip; unsigned int port; } RtP2PAddr;
 
 int rt_p2p_quit_all_overlays();
@@ -332,7 +332,52 @@ int rt_p2p_update(char *p)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_send);
+int rt_p2p_send(char *p, unsigned short idx, unsigned short flags, RtP2PVec *v)
+{
+    unsigned short hdr;
+    int ret;
+    unsigned short i;
+    RtP2PPeer *peer;
+    unsigned int n = 0;
+    int bc = 0;
+
+    if (p == NULL) return 2;
+    flags |= 0x8000;
+    hdr = rt_p2p_pack_type(10, (unsigned short)(v->total + 2));
+    if (v->n < 8) {
+        v->e[v->n].buf = &hdr;
+        v->e[v->n].len = 2;
+        v->total += 2;
+        v->n++;
+    }
+    if (idx != 0xFFFF) {
+        if (idx >= *(unsigned short *)(p + 0x19C)) return 0xD4E6;
+        peer = (RtP2PPeer *)*(int *)(p + 0x184) + idx;
+        ret = 0xD2F3;
+        if ((unsigned int)(peer->a - 3) < 2)
+            ret = rt_p2p_isend((int *)p, (int *)peer, flags, (int)v);
+    } else {
+        i = 0;
+        peer = *(RtP2PPeer **)(p + 0x184);
+        for (; i < *(unsigned short *)(p + 0x19C); i++, peer++) {
+            if (peer->pad[2] == 0) continue;
+            if (peer->pad[3] != 0 && !(flags & 0x4000) && *(int *)(p + 0x1BC) != 0)
+                bc = 1;
+            else if ((unsigned int)(peer->a - 3) < 2)
+                (*(RtP2PPeer ***)(p + 0x190))[n++] = peer;
+        }
+        ret = rt_p2p_isend_list(p, *(int ***)(p + 0x190), n, flags, v);
+        if (ret != 0 && ret != 0xD2F3) return ret;
+        ret = 0;
+        if (bc) {
+            ret = rt_udp_broadcast(*(int *)p, flags, v);
+            if (ret != 0) return ret;
+        }
+    }
+    v->n--;
+    v->total -= v->e[v->n].len;
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_send_list);
 
