@@ -43,6 +43,22 @@ void addCSSRule();                               /* extern */
 
 void *MEM_malloc(void *, unsigned int size);
 void *newCSSRule(int type, int size, void *a2, void *a3);
+typedef struct InpStr { int size; unsigned int len; unsigned short *str; } InpStr;
+typedef struct InpPriv { void *dom; int form; } InpPriv;
+extern InpStr _DOMname, _DOMtype, _DOMvalue, _DOMchecked, _DOM_textarea;
+InpStr Element_getAttribute(void *elem, InpStr *name);
+int Element_hasAttribute(void *elem, InpStr *name);
+InpStr CharacterData_getData(void *node);
+InpStr Util_HTMLSelectElement_getType(void *sel);
+void *Node_getFirstChild(void *node);
+void *Node_getNextSibling(void *node);
+int Node_getNodeType(void *node);
+InpStr *JSI_getTextValue(void *node);
+void JSI_freeDOMString(InpStr *s);
+int JSI_getCheckboxState(void *node);
+int JSI_getRadioState(void *node);
+int mes_string_new(MesContext *ctx, const void *str, int len);
+int mes_string_new2(MesContext *ctx, const char *str, int len);
 int mes_input_inner(MesContext *ctx, int cmd, int kind)
 {
     InpMsg msg;
@@ -73,7 +89,81 @@ int mes_input_select(MesContext *ctx)
     return mes_input_inner(ctx, 0x80A, 0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_input", mes_input_get);
+int mes_input_get(MesContext *ctx, void *obj, InpPriv *elem, int id, int type)
+{
+    InpStr s;
+    InpStr *v;
+    void *n;
+    int r;
+
+    switch (id) {
+    case 1:
+        return elem->form;
+    case 2:
+        s = Element_getAttribute(elem->dom, &_DOMname);
+        goto str;
+    case 3:
+        switch (type) {
+        case 19:
+            s = Util_HTMLSelectElement_getType(elem->dom);
+            break;
+        case 22:
+            s = _DOM_textarea;
+            break;
+        default:
+            s = Element_getAttribute(elem->dom, &_DOMtype);
+            break;
+        }
+        goto str;
+    case 4:
+        switch (type) {
+        case 14:
+        case 16:
+        case 21:
+        case 22:
+            v = JSI_getTextValue(elem->dom);
+            r = 4;
+            if (v != NULL) {
+                r = mes_string_new(ctx, v->str, v->len);
+                JSI_freeDOMString(v);
+            }
+            return r;
+        case 17:
+            s = Element_getAttribute(elem->dom, &_DOMvalue);
+            if (s.len == 0)
+                r = mes_string_new2(ctx, "on", 2);
+            else
+                r = mes_string_new(ctx, s.str, s.len);
+            return r;
+        default:
+            s = Element_getAttribute(elem->dom, &_DOMvalue);
+            goto str;
+        }
+    case 5:
+        if (type == 22) {
+            n = Node_getFirstChild(elem->dom);
+            while (n != NULL && Node_getNodeType(n) != 3)
+                n = Node_getNextSibling(n);
+            if (n == NULL) {
+                s.size = 0;
+                s.len = 0;
+                s.str = NULL;
+            } else
+                s = CharacterData_getData(n);
+        } else
+            s = Element_getAttribute(elem->dom, &_DOMvalue);
+    str:
+        return mes_string_new(ctx, s.str, s.len);
+    case 6:
+        if (type == 13)
+            return JSI_getCheckboxState(elem->dom) == 1 ? 12 : 8;
+        return JSI_getRadioState(elem->dom) == 1 ? 12 : 8;
+    case 7:
+        return Element_hasAttribute(elem->dom, &_DOMchecked) ? 12 : 8;
+    default:
+        return 4;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_input", mes_input_put);
 
