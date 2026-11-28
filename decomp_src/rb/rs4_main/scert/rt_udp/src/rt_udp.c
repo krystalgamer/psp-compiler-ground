@@ -602,7 +602,20 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_s
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_send_messages);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_remove_non_delivery_critical_packets);
+typedef struct { struct { void *pkt; int x; } e[8]; int n2; int n; } RtCrit;
+void rt_udp_remove_non_delivery_critical_packets(int pool, RtCrit *c)
+{
+    int i;
+
+    for (i = 0; i < c->n; i++) {
+        if (c->e[i].pkt != NULL) {
+            rt_list_buf_remove(pool, c->e[i].pkt);
+            c->e[i].pkt = NULL;
+        }
+    }
+    c->n = 0;
+    c->n2 = 0;
+}
 
 //== rt_udp_send_broadcasts
 int rt_list_buf_remove();
