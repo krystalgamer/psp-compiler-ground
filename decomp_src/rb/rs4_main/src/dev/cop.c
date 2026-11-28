@@ -109,9 +109,20 @@ const float D_000F9C08 = 0.63661975f;
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/cop", copAtan);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/cop", copAcos);
+float copAtan(float y, float x);
+extern const float D_000F9C18;
+float copAcos(float x)
+{
+	return -copAtan(__builtin_allegrex_sqrt_s(__builtin_fabsf(D_000F9C18 - x * x)), x);
+}
+const float D_000F9C18 = 1.0f;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/cop", copAsin);
+extern const float D_000F9C1C;
+float copAsin(float x)
+{
+	return -copAtan(x, __builtin_allegrex_sqrt_s(__builtin_fabsf(D_000F9C1C - x * x)));
+}
+const float D_000F9C1C = 1.0f;
 
 void copUnitMat()
 {
