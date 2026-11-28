@@ -5,7 +5,9 @@
 #endif
 int rt_udp_mgr_destroy(void);
 M2C_UNK rt_udp_destroy(int);                        /* extern */
-extern int gMgr;
+typedef struct { unsigned short port; short pad; int a, b, c; } RtUdpMgrCh;
+typedef struct { int udp; RtUdpMgrCh ch[16]; unsigned int count; } RtUdpMgr;
+extern RtUdpMgr gMgr;
 
 int rt_udp_create();
 int rt_udp_mgr_create(char *cfg, int *out)
@@ -16,20 +18,33 @@ int rt_udp_mgr_create(char *cfg, int *out)
     *(int *)(cfg + 0x24) = 1;
     r = rt_udp_create(&gMgr, cfg);
     if (r != 0) return r;
-    *out = gMgr;
+    *out = gMgr.udp;
     return 0;
 }
 
 void *memset(void *s, int c, unsigned int n);
 int rt_udp_mgr_destroy(void) {
-    rt_udp_destroy(gMgr);
+    rt_udp_destroy(gMgr.udp);
     memset(&gMgr, 0, 0x108U);
     return 0;
 }
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp_mgr", rt_udp_mgr_get_channel_ref);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp_mgr", rt_udp_mgr_release_channel_ref);
+int rt_udp_mgr_release_channel_ref(unsigned short port)
+{
+    unsigned int i;
+
+    if (port == 0) return 2;
+    for (i = 0; i < 16; i++) {
+        if (gMgr.ch[i].port == port) {
+            memset(&gMgr.ch[i], 0, sizeof(RtUdpMgrCh));
+            gMgr.count--;
+            return 0;
+        }
+    }
+    return 2;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp_mgr", rt_udp_mgr_find_channel_ref);
 
