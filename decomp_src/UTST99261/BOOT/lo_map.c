@@ -2,6 +2,7 @@
 #include "common.h"
 #include "dom_domi.h"
 #include "m2c_macros.h"
+extern char lo_global[];
 int Element_getAttribute(DOMString *s, void *elem, void *name);
 char *DOMStringtoUTF8(DOMString *s);
 int strcmp(const char *a, const char *b);
@@ -28,7 +29,6 @@ int strcasecmp(const char *a, const char *b);
 typedef struct { char *name; int (*func)(void *node, void *box, void *a2); } TagBranch;
 extern TagBranch jt[];
 extern int D_001F5E1C;
-extern int D_00584D08;
 extern char D_00139428[], D_00139430[], D_0013950C[];
 int Element_getTagName(DOMString *s, void *elem);
 int DOMStringcasecmpChar(DOMString *s, char *str);
@@ -441,7 +441,7 @@ int htmlTagBranch(void *node, void *box, void *a2) {
     if (M2C_FIELD(box, s16 *, 0x3A) == 0x25 && strcmp(jt[idx].name, D_00139428) != 0 && strcmp(jt[idx].name, D_00139430) != 0) {
         return 0;
     }
-    if (D_00584D08 != 0 && strcmp(jt[idx].name, D_0013950C) != 0) {
+    if ((*(int *)(lo_global + 0x70)) != 0 && strcmp(jt[idx].name, D_0013950C) != 0) {
         return 0;
     }
     return jt[idx].func(node, box, a2);

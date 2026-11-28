@@ -2,6 +2,7 @@
 #include "common.h"
 #include "lo_box.h"
 #include "m2c_macros.h"
+extern char lo_global[];
 BOX *createBox(void *ctx, int type);
 BOX *getBodyBox(void *box);
 void linkBox(BOX *box, BOX *parent, BOX *prev);
@@ -12,7 +13,6 @@ void applyCSSInlinePropertyToBox(void *node, BOX *box);
 void delLinkBox(void *box);
 void freeBox(void *box, int a1);
 
-extern int D_00584D08;
 
 
 #ifndef NULL
@@ -99,7 +99,7 @@ BOX *html_OBJECT(void *node, BOX *parent, BOX *prev) {
             box->display = 1;
             box->html = 0x42;
             html_IMG_inner(node, box);
-            D_00584D08 = 1;
+            (*(int *)(lo_global + 0x70)) = 1;
         }
     }
     if (box == NULL) {
@@ -131,7 +131,7 @@ BOX *html_OBJECT(void *node, BOX *parent, BOX *prev) {
 #endif
 
 void html_OBJECT_after(void) {
-    D_00584D08 = 0;
+    (*(int *)(lo_global + 0x70)) = 0;
 }
 
 #ifndef NULL

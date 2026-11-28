@@ -27,7 +27,6 @@ void lo_sendHalt();
 void proc_msg_PL2(HALTMSG *m);
 void proc_msg_JL3(HALTMSG *m);
 extern int jsapi_lock;
-extern int D_00584D18;
 
 void lo_halt(void) {
     HALTBUF buf;
@@ -45,7 +44,7 @@ void lo_halt(void) {
     }
     lo_sendHalt();
     GUI_Toolkit_mutexUnlock();
-    q = D_00584D18;
+    q = (*(int *)((char *)&lo_global + 0x80));
     do {
         if (OS_mq_receive(q, &buf, 0x24, 0) == 0xB) {
             break;

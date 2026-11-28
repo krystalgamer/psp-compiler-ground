@@ -31,7 +31,6 @@ void *getDOMDocument(void *node);
 void actSetFocusByBox(void *frame, void *box, int arg);
 int scrollToFocusPosition();
 void *getBox_fromAccessKey(void *body, int key);
-extern int D_00584CEC;
 int isFocusInDisplay(void *frame, FOCUSLIST *l);
 typedef struct { int sid; u8 u4[0xC]; int x10; BOX *x14; void *x18; u8 u1C[0xC]; BOX *x28; int x2C; int x30; int x34; int x38; } LEHG;
 typedef struct { int u0; int x4; int x; int y; } LEHPT;
@@ -205,7 +204,7 @@ int handlePointingMove(void *ev) {
         }
     }
     g->x10 = 0;
-    if (D_00584CEC != 0) {
+    if (lo_global.unk54 != 0) {
         return 0;
     }
     if (box->content == 3) {
@@ -346,7 +345,7 @@ int handlePointingDown(void *ev) {
         }
     }
     g->x10 = 0;
-    if (D_00584CEC != 0) {
+    if (lo_global.unk54 != 0) {
         g->x14 = box;
         return 0;
     }
@@ -412,7 +411,7 @@ int handlePointingCheck(void *ev) {
         g->x14 = NULL;
         return 0;
     }
-    if (D_00584CEC == 0) {
+    if (lo_global.unk54 == 0) {
         n = g->x18;
         if (n == NULL) {
             return -1;
@@ -427,7 +426,7 @@ int handlePointingCheck(void *ev) {
         }
     }
     g->x14 = NULL;
-    if (D_00584CEC == 1) {
+    if (lo_global.unk54 == 1) {
         return 0;
     }
     return actDefaultClickAction(ev, box, getEventTargetNode(box), m->x, m->y);
@@ -468,7 +467,7 @@ int handleDragStart(void *ev) {
     if (sid != g->sid) {
         box = g->x14;
     }
-    if (D_00584CEC == 0 && sid == g->sid && M2C_FIELD(box, s16 *, 0x3E) == 0) {
+    if (lo_global.unk54 == 0 && sid == g->sid && M2C_FIELD(box, s16 *, 0x3E) == 0) {
         n = getEventTargetNode(box);
         if (Node_getJSObj(n) == NULL) {
             n = getDOMDocument(n);
@@ -483,7 +482,7 @@ int handleDragStart(void *ev) {
         sendJSEvent(Node_getJSObj(n), &jev);
         g->x18 = n;
     }
-    if (D_00584CEC == 1) {
+    if (lo_global.unk54 == 1) {
         freeScrollStart(box, m->x, m->y);
     }
     return 0;
@@ -521,7 +520,7 @@ int handleDragDoing(void *ev) {
     if (box == NULL || !checkBoxValidity(box)) {
         return -1;
     }
-    if (D_00584CEC == 0) {
+    if (lo_global.unk54 == 0) {
         body = M2C_FIELD(HST_getHeadHistoryNode(), BOX **, 0x6C);
         if (body == NULL || (box = getTargetBox(body, m->x, m->y, m->x4)) == NULL) {
             return -1;
@@ -548,7 +547,7 @@ int handleDragDoing(void *ev) {
             g->x18 = n;
         }
     }
-    if (D_00584CEC == 1) {
+    if (lo_global.unk54 == 1) {
         freeScroll(m->x, m->y);
     }
     return 0;
@@ -590,7 +589,7 @@ int handlePointingUp(void *ev) {
     if (box == NULL || !checkBoxValidity(box)) {
         return -1;
     }
-    if (D_00584CEC == 0) {
+    if (lo_global.unk54 == 0) {
         body = M2C_FIELD(HST_getHeadHistoryNode(), BOX **, 0x6C);
         if (body == NULL || (box = getTargetBox(body, m->x, m->y, m->x4)) == NULL) {
             g->x18 = NULL;
@@ -662,7 +661,7 @@ int handleEnter(void *ev) {
         return 0;
     }
     n = getEventTargetNode(t);
-    if (D_00584CEC == 0) {
+    if (lo_global.unk54 == 0) {
         t = n;
         if (Node_getJSObj(n) == NULL) {
             t = getDOMDocument(n);
@@ -1069,7 +1068,7 @@ int actDefaultClickAction(void *frame, BOX *box, void *node, int x, int y) {
         form = *fl;
     }
     if (form != NULL && (type = getInputType(node)) != 0) {
-        if (D_00584CEC == 0) {
+        if (lo_global.unk54 == 0) {
             r = 0;
             if (type == 10 || type == 5) {
                 initJSEvent((LEHJSEVENT *)&jev, 0x16, form, x, y);
@@ -1181,7 +1180,7 @@ int handleAccessKey(void *frame) {
     actSetFocusByBox(body, box, 1);
     scrollToFocusPosition();
     node = M2C_FIELD(box, void **, 0x28);
-    if (D_00584CEC == 0) {
+    if (lo_global.unk54 == 0) {
         target = node;
         if (Node_getJSObj(node) == NULL) {
             target = getDOMDocument(node);

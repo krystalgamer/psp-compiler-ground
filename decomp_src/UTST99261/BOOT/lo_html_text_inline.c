@@ -2,6 +2,7 @@
 #include "common.h"
 #include "lo_box.h"
 #include "m2c_macros.h"
+extern char lo_global[];
 BOX *createInlineBox(void *ctx, BOX *parent, BOX *prev);
 typedef struct UICOLORS { int color[4][7]; } UICOLORS;
 extern void *ui_global;
@@ -29,7 +30,6 @@ void *MEM_malloc(void *pool, unsigned int size);
 void MEM_free(void *pool, void *p);
 extern unsigned char _DOMtabindex;
 extern unsigned char _DOMhref;
-extern LIST D_00584CF0;
 BOX *commonProc_html_text_inline(void *node, BOX *parent, BOX *prev, s16 tag) {
     BOX *box = createInlineBox(node, parent, prev);
     if (box == NULL) {
@@ -150,7 +150,7 @@ BOX *html_A(void *node, BOX *parent, BOX *prev) {
         attr_FOCUSCOLOR(node, box);
         url = lo_fullUrl(box, href);
         if (url != NULL) {
-            if (searchUrlList(&D_00584CF0, url) == 1) {
+            if (searchUrlList(&(*(LIST *)(lo_global + 0x58)), url) == 1) {
                 box->style->unk54 = M2C_FIELD(box->style, int *, 0x5C);
             } else {
                 box->style->unk54 = M2C_FIELD(box->style, int *, 0x58);

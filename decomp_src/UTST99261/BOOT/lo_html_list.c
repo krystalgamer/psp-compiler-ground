@@ -2,6 +2,7 @@
 #include "common.h"
 #include "lo_box.h"
 #include "m2c_macros.h"
+extern char lo_global[];
 BOX *createBox(void *ctx, int type);
 void linkBox(BOX *box, BOX *parent, BOX *prev);
 void initLiContent(BOX *box, void *ctx);
@@ -37,9 +38,6 @@ signed char *getListNumChar(int n, int type);
 void *createLIBox_head(void *node, BOX *li, signed char *str, int type);
 void delLinkBox(BOX *b);
 void freeBox(BOX *b, int f);
-extern int D_00584CBC;
-extern int D_00584CC0;
-extern int D_00584CC4;
 void initTextContent(BOX *b, void *node, signed char *s);
 void initImageContent(BOX *b, void *node);
 void initTextBoxSize(BOX *b);
@@ -120,16 +118,16 @@ void *createLIBox_head(void *node, BOX *li, signed char *str, int type) {
     GUI_Graphics_getStringSize(b->style->unk64, "A", 1, &w, &h);
     switch (type) {
     case 1:
-        M2C_FIELD(b->geom, int *, 0) = D_00584CC0;
+        M2C_FIELD(b->geom, int *, 0) = (*(int *)(lo_global + 0x28));
         break;
     case 2:
-        M2C_FIELD(b->geom, int *, 0) = D_00584CC4;
+        M2C_FIELD(b->geom, int *, 0) = (*(int *)(lo_global + 0x2C));
         break;
     case 0:
-        M2C_FIELD(b->geom, int *, 0) = D_00584CBC;
+        M2C_FIELD(b->geom, int *, 0) = (*(int *)(lo_global + 0x24));
         break;
     default:
-        M2C_FIELD(b->geom, int *, 0) = D_00584CBC;
+        M2C_FIELD(b->geom, int *, 0) = (*(int *)(lo_global + 0x24));
         break;
     }
     initImageBoxSize(b, h, h);

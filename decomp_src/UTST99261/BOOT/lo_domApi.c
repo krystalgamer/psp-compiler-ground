@@ -2,6 +2,7 @@
 #include "common.h"
 #include "dom_domi.h"
 #include "m2c_macros.h"
+extern char lo_global[];
 typedef struct COLCONTENT { int x0; int span; int x8; u8 align; int x10; int x14; int x18; } COLCONTENT;
 int CharacterData_getData(DOMString *s, void *node);
 char *DOMStringtoUTF8(DOMString *s);
@@ -13,7 +14,6 @@ extern char tag_global[];
 void *MEM_malloc(M2C_UNK, M2C_UNK);                 /* extern */
 void initMapList(void *);                        /* extern */
 extern void *ui_global;
-extern int D_00584CAC;
 int getDOMAttributeValue(int, M2C_UNK *);           /* extern */
 extern unsigned char _DOMvalue;
 int Element_hasAttribute(int, M2C_UNK *);           /* extern */
@@ -316,7 +316,7 @@ void initImageContent(void *arg0) {
     M2C_FIELD(arg0, void **, 0x20) = temp_v0;
     M2C_FIELD(temp_v0, int *, 0) = 0;
     M2C_FIELD(arg0, short *, 0x38) = 0xA;
-    M2C_FIELD(temp_v0, int *, 0) = (int) D_00584CAC;
+    M2C_FIELD(temp_v0, int *, 0) = (int) (*(int *)(lo_global + 0x14));
     M2C_FIELD(temp_v0, int *, 0x14) = 0;
 }
 

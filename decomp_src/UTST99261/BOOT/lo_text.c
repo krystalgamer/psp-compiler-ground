@@ -4,7 +4,6 @@
 void MEM_free(M2C_UNK, void *);                  /* extern */
 void OS_timer_clear(int);                        /* extern */
 M2C_UNK OS_timer_stop(int);                         /* extern */
-extern void *D_00584CDC;
 void *MEM_malloc();
 int OS_timer_set(int, int, int, int, int, int, int); /* extern */
 M2C_UNK OS_timer_start(int);                        /* extern */
@@ -422,7 +421,7 @@ void lo_freeTimer(void) {
     void *temp_s2;
     void *var_s1;
 
-    temp_s2 = D_00584CDC;
+    temp_s2 = (*(void * *)((char *)&lo_global + 0x44));
     var_s1 = M2C_FIELD(M2C_FIELD(temp_s2, void **, 4), void **, 8);
     if (var_s1 != NULL) {
         do {
@@ -447,7 +446,7 @@ int lo_setTimer(int arg0, int arg1, int arg2, int arg3) {
     void *temp_v0_2;
     void *var_s0;
 
-    temp_s0 = D_00584CDC;
+    temp_s0 = (*(void * *)((char *)&lo_global + 0x44));
     temp_v0 = OS_timer_set(M2C_FIELD(temp_s0, int *, 8), arg0, arg1, arg2, arg3, arg1, arg2);
     OS_timer_start(temp_v0);
     var_s0 = M2C_FIELD(temp_s0, void **, 4);
@@ -612,8 +611,6 @@ void destroySelectList();
 void deleteDefaultImage();
 void initUrlList();
 void GUI_Toolkit_mutexUnlock();
-extern int D_00584D10;
-extern int D_00584CF0;
 extern int *gESPRIT_LO_GLOBAL_NDA;
 
 void proc_msg_JL3(JMSG *m) {
@@ -622,7 +619,7 @@ void proc_msg_JL3(JMSG *m) {
     int *nda;
     JMSG *q;
 
-    OS_thread_join(D_00584D10, &ret);
+    OS_thread_join((*(int *)((char *)&lo_global + 0x78)), &ret);
     h = HST_getHeadHistoryNode();
     if (h != NULL && h->body != NULL) {
         GUI_Toolkit_mutexLock();
@@ -644,7 +641,7 @@ void proc_msg_JL3(JMSG *m) {
     freeSessionSaveDataList();
     destroySelectList();
     deleteDefaultImage();
-    initUrlList(&D_00584CF0);
+    initUrlList(&(*(int *)((char *)&lo_global + 0x58)));
     nda = gESPRIT_LO_GLOBAL_NDA;
     OS_thread_mutex_destroy(nda[0x3C / 4]);
     OS_thread_mutex_destroy(nda[0x40 / 4]);

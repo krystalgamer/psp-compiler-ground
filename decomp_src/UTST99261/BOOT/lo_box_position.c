@@ -23,7 +23,6 @@ void *lfm_createPageRegion(BOX *box, int w);
 BOX *getBoxByHTML(BOX *box, int html);
 typedef struct { u8 pad[0x10]; int width; } TDCOL;
 typedef struct { LIST l; int f; } URLL;
-extern URLL D_00584CF0;
 void lfm_resetPageRegion(void *r, int w);
 extern char D_00139244[];
 void getBaseBlockPosition(void *arg0, int *arg1, int *arg2);
@@ -245,7 +244,7 @@ void calcTableBoxPosition(void *ctx, BOX *box) {
         }
     }
     if ((M2C_FIELD(box, u16 *, 0x40) & 2) && w == M2C_FIELD(box->geom, int *, 0xC) && right == M2C_FIELD(box->geom, int *, 0x10)) {
-        D_00584CF0.f = 1;
+        (*(URLL *)((char *)&lo_global + 0x58)).f = 1;
         if (ox != box->x || oy != box->y)
             moveBoxPositionChild(box, box->x - ox, box->y - oy);
     } else {
@@ -290,7 +289,7 @@ void calcTdBoxPosition(void *ctx, BOX *td) {
         td->x = st->unk26 + t->x + st->unk36 + x;
         td->y = st->unk20 + t->y + st->unk30 + M2C_FIELD(t, int *, 0x34);
         if (M2C_FIELD(ctx, s16 *, 0x16) == 0 && !(M2C_FIELD(td, u16 *, 0x40) & 1) && td->width == M2C_FIELD(td->geom, int *, 8)) {
-            D_00584CF0.f = 1;
+            (*(URLL *)((char *)&lo_global + 0x58)).f = 1;
             if (ox != td->x || oy != td->y)
                 moveBoxPositionChild(td, td->x - ox, td->y - oy);
             M2C_FIELD(td, u16 *, 0x40) |= 2;

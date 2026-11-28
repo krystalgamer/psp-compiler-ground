@@ -67,7 +67,6 @@ typedef struct {
     char *str;
 } LURLSTR;
 
-extern LIST D_00584CF0;
 int addUrlList(LIST *list, char *url);
 void *MEM_malloc(void *pool, unsigned int n);
 void *memcpy(void *d, const void *s, unsigned int n);
@@ -472,7 +471,6 @@ IMGENT *checkImageList(IMGLIST *list, char *name) {
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", requestImageData);
 
 int setBrokenImageData(LNODE *n, BOX *doc);
-extern void *D_00584CB0;
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", setImageData);
 
@@ -1002,7 +1000,7 @@ void proc_msg_IL5(LOMSG *m) {
         s = MEM_malloc(NULL, d->len + 1);
         memcpy(s, d->str, d->len);
         s[d->len] = 0;
-        if (addUrlList(&D_00584CF0, s) != 1) {
+        if (addUrlList(&(*(LIST *)((char *)&lo_global + 0x58)), s) != 1) {
             MEM_free(NULL, s);
         }
     }

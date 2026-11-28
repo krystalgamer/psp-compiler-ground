@@ -542,7 +542,6 @@ typedef struct PITEM {
     PBOX *box;                  /* 0xC */
 } PITEM;
 
-extern int D_00584CEC;
 void *Node_getBox(int node);
 PBOX *getNextTerminalFrame(PBOX *b, int n);
 void setFocus(PBOX *b, PBOX *t, int a, int c);
@@ -561,7 +560,7 @@ void proc_msg_PL13(PMSG *m) {
     char *s;
     int mode;
 
-    D_00584CEC = m->unk10;
+    lo_global.unk54 = m->unk10;
     h = (PHIST *)HST_getHeadHistoryNode();
     if (h == NULL) {
         return;

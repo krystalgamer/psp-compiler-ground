@@ -107,7 +107,7 @@ typedef struct SAVEDATA { /* size 0x1C */
     struct SAVEDATA *next;      /* 0x18 */
 } SAVEDATA;
 
-#define SAVELIST ((SAVEDATA *)D_00584CD8)
+#define SAVELIST ((SAVEDATA *)(*(void * *)((char *)&lo_global + 0x40)))
 typedef struct {
     u8 unk0[0x64];
     int unk64;
@@ -116,7 +116,6 @@ typedef struct {
 } RLOGLOBAL;
 
 extern RLOGLOBAL lo_global;
-extern int D_00584CFC;
 void relayoutProc(RLCTX *ctx, RBOX *b);
 void relayoutProcAfter(RLCTX *ctx, RBOX *b);
 void integrateTextBox(RBOX *a, RBOX *b);
@@ -127,7 +126,6 @@ SAVEDATA *getSessionSaveData(int id);
 void MEM_free(int pool, void *p);
 int adjustLineVposition();
 int getLineHeight(void **);                         /* extern */
-extern void *D_00584CD8;
 void HST_flushHistoryGarbageList();              /* extern */
 void *HST_getHistoryGarbageList();                  /* extern */
 
@@ -135,7 +133,6 @@ void *HST_getHistoryGarbageList();                  /* extern */
 int getPreferredFontSize();
 void setBoxSize(RBOX *b, int w, int h);
 typedef struct UIFTBL { int v[1][7]; } UIFTBL;
-extern int D_00584CEC;
 #define UIG(o) (((int *)ui_global)[(o) / 4])
 void *MEM_malloc(void *, unsigned int size);
 void *memcpy(void *, const void *, unsigned int);
@@ -631,7 +628,7 @@ void relayoutProcBodyOnly(RBOX *box, int flag) {
 void relayoutBoxTreeLoop(RLCTX *ctx, RBOX *root) {
     RBOX *b;
 
-    D_00584CFC = 0;
+    (*(int *)((char *)&lo_global + 0x64)) = 0;
     b = root->child;
     if (b != NULL && b != root)
     do {
@@ -767,7 +764,7 @@ void relayoutAtBody(RBOX *box, int mode)
     h = box->unk1C;
     w = UIG(0x88);
     sb = 0;
-    if (D_00584CEC == 0) {
+    if ((*(int *)((char *)&lo_global + 0x54)) == 0) {
         sb = GUI_ScrollPane_getVScrollbarWidth(((int *)box)[0xB]);
         if (FG(box)[2] < bw) {
             if (FG(box)[3] - sb < h)
@@ -784,7 +781,7 @@ void relayoutAtBody(RBOX *box, int mode)
     calcBoxSize(&ctx, box);
     if (box->flags40 & 1)
         redo = 1;
-    if (D_00584CEC == 0 && w == UIG(0x88)) {
+    if ((*(int *)((char *)&lo_global + 0x54)) == 0 && w == UIG(0x88)) {
         if (w < FG(box)[0x10 / 4]) {
             if (UIG(0x8C) - sb < box->unk1C)
                 redo = 1;
@@ -881,7 +878,7 @@ void initSessionSaveDataList(void) {
     M2C_FIELD(temp_v0, int *, 0x10) = 0;
     M2C_FIELD(temp_v0, int *, 0x14) = 0;
     M2C_FIELD(temp_v0, int *, 0x18) = 0;
-    D_00584CD8 = temp_v0;
+    (*(void * *)((char *)&lo_global + 0x40)) = temp_v0;
 }
 
 void freeSessionSaveDataList(void) {
@@ -895,7 +892,7 @@ void freeSessionSaveDataList(void) {
         next = p->next;
         MEM_free(0, p);
     }
-    D_00584CD8 = NULL;
+    (*(void * *)((char *)&lo_global + 0x40)) = NULL;
 }
 
 SAVEDATA *addSessionSaveData(int id) {
