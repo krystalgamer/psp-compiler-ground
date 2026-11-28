@@ -99,9 +99,29 @@ int NetRegisterObjectFilter(int a0, int a1)
     return e;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetCreateObject);
+int NetICreateObject();
+int NetCreateObject(a, b, c, d, e, f, g, h, i, j)
+{
+    int r, v;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    v = NetICreateObject(a, b, c, d, e, f, g, h, i, j);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return v;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetRequestCreateRemoteNamedObject);
+int NetIRequestCreateRemoteNamedObject();
+int NetRequestCreateRemoteNamedObject(a, b, c, d, e, f, g, h, i, j, k)
+{
+    int r, v;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    v = NetIRequestCreateRemoteNamedObject(a, b, c, d, e, f, g, h, i, j, k);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return v;
+}
 
 int NetGetObject(void **out, int id)
 {
@@ -483,7 +503,34 @@ void RemoteObjectDelete(unsigned int ci, int id)
     if (cb != NULL) cb(ci, id);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetFreeRemoteObject);
+void DmeFree();
+void RemoteObjectDelete(unsigned int ci, int id);
+int NetFreeRemoteObject(int id)
+{
+    char *g = (char *)gObjectInterface.p138;
+    char *o;
+    int *c;
+
+    if (g == NULL) return 8;
+    o = NetIGetObject(id);
+    if (o == NULL) return 8;
+    RemoteObjectDelete(*(int *)(o + 0x10), id);
+    o = NetIGetObject(id);
+    if (o != NULL) {
+        RemoveFromObjectUpdateList(id);
+        *(int *)(o + 4) = 1;
+        c = NetIGetClient(g, *(int *)(o + 0x10));
+        if (c != NULL && (id < c[2] || id >= c[2] + c[3]))
+            *(int *)(o + 4) = 0;
+        DmeFree(o + 0x28);
+        DmeFree(o + 0x24);
+        DmeFree(o + 0x40);
+        DmeFree(o + 0x44);
+        DmeFree(&o);
+        gObjectInterface.objs[id] = 0;
+    }
+    return 0;
+}
 
 int NetISendMessage();
 int NetFreeLocalObject(unsigned int id)
