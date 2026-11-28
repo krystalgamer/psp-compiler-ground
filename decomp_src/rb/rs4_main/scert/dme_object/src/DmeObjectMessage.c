@@ -32,7 +32,27 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObjectMess
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObjectMessage", DataStreamEndPacketHandler);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObjectMessage", ArbitrateJoinPacketHandler);
+void *NetGetClientInfo();
+void SendMyClientStatus();
+void AcceptClientIntoGame();
+int ArbitrateJoinPacketHandler(char *o, int a1, unsigned int idx, unsigned char *msg)
+{
+    char *ci;
+    int me;
+
+    if (o == NULL) return -1;
+    if (idx >= 256) return -1;
+    ci = NetGetClientInfo(o, msg[1]);
+    if (ci == NULL) return -1;
+    if (*(int *)(ci + 0x20) == 0) return -1;
+    *(int *)(ci + 0xC) = msg[0];
+    me = *(long *)(o + 0x404); /* a long field (alias set differs from int): its load is scheduled before the store */
+    if (me == 0x100) return -1;
+    SendMyClientStatus(o, msg[1]);
+    if (*(int *)(((char **)o)[me] + 0xC) == 5)
+        AcceptClientIntoGame(o, msg[1], msg[2], msg[3]);
+    return 4;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObjectMessage", SMMigrateOrderPacketHandler);
 
@@ -48,7 +68,34 @@ int ClientLeavesPacketHandler(int a, int b, int c)
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObjectMessage", ClientUpdatePacketHandler);
+void *NetIGetClient();
+void *NetCreateClient();
+void NetClientJoins();
+char *strcpy(char *, const char *);
+typedef struct { unsigned char idx; char pad[7]; unsigned short a, b, c, d, e; char pad2[4]; char name[1]; } DmeClientUpd;
+int ClientUpdatePacketHandler(char *o, int a1, int a2, DmeClientUpd *m)
+{
+    unsigned int idx;
+    int *c;
+
+    if (o == NULL) return 0x24;
+    if (*(char **)(o + 0x400) == NULL) return 0x24;
+    if ((unsigned)(*(int *)(*(char **)(o + 0x400) + 0xC) - 4) >= 2) return 0x24;
+    idx = m->idx;
+    if (idx >= 256) return 0x24;
+    c = NetIGetClient(o, idx);
+    if (c == NULL) c = NetCreateClient(o, idx);
+    if (c == NULL) return 0x24;
+    c[1] = m->a;
+    c[2] = m->b;
+    c[3] = m->c;
+    c[4] = m->d;
+    c[5] = m->e;
+    strcpy((char *)&c[6], m->name);
+    if (c[0] == 0)
+        NetClientJoins(o, idx);
+    return 0x24;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObjectMessage", rcsid_10DD00);
 

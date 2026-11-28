@@ -598,7 +598,25 @@ int NetFreeLocalObject(unsigned int id)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetIFreeObject);
+int NetIFreeObject(int id)
+{
+    char *ci = D_00132A34;
+    char *o;
+    int me;
+
+    if (ci == NULL) return 8;
+    o = NetIGetObject(id);
+    if (o == NULL) return 8;
+    me = *(int *)(ci + 0x404);
+    if (*(int *)(o + 0x10) == me) {
+        NetFreeLocalObject(id);
+        return 0;
+    }
+    if (*(int *)(o + 0xC) == me)
+        RemoveFromObjectUpdateList(id);
+    NetFreeRemoteObject(id);
+    return 0;
+}
 
 int strcmp(const char *, const char *);
 int LocalObjectName2Index(char *name, int a, int b)
