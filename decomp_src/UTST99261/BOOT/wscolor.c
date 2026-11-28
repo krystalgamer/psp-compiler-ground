@@ -13,7 +13,142 @@ M2C_UNK GUI_Graphics_getStringSize();               /* extern */
 M2C_UNK rnd_gdrawGetStringsVisibleLength();         /* extern */
 M2C_UNK colorValue();                               /* extern */
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wscolor", colorValue);
+typedef struct COLORNAME { int value; char *name; } COLORNAME;
+extern COLORNAME D_0013303C[];
+void *MEM_malloc(int, int);
+void MEM_free(int, void *);
+int strcasecmp(const char *, const char *);
+unsigned int strlen(const char *);
+int colorValue(name)
+    char *name;
+{
+    int lo;
+    int hi;
+    int mid;
+    int r;
+    int g;
+    int b;
+    int len;
+    int n;
+    int pad;
+    int cmp;
+    int i;
+    char c;
+    char *rs;
+    char *gs;
+    char *bs;
+
+    if (name == NULL) {
+        return -100;
+    }
+    if (*name != '#') {
+        lo = 0;
+        hi = 0x92;
+        while (lo <= hi) {
+            mid = lo + (hi - lo) / 2;
+            cmp = strcasecmp(D_0013303C[mid].name, name);
+            if (cmp == 0) {
+                return D_0013303C[mid].value;
+            }
+            if (cmp < 0) {
+                lo = mid + 1;
+            } else {
+                hi = mid - 1;
+            }
+        }
+    } else {
+        name++;
+    }
+    b = 0;
+    g = 0;
+    r = 0;
+    bs = NULL;
+    gs = NULL;
+    len = strlen(name);
+    n = (len + 2) / 3;
+    pad = 3 - len % 3;
+    if (pad == 3) {
+        pad = 0;
+    }
+    rs = MEM_malloc(0, n + 1);
+    memset(rs, 0, n + 1);
+    if (len >= 2) {
+        gs = MEM_malloc(0, n + 1);
+        memset(gs, 0, n + 1);
+    }
+    if (len >= 3) {
+        bs = MEM_malloc(0, n + 1);
+        memset(bs, 0, n + 1);
+    }
+    if (rs != NULL) {
+        memcpy(rs, name, n);
+    }
+    if (gs != NULL) {
+        memcpy(gs, name + n, n);
+    }
+    if (bs != NULL) {
+        memcpy(bs, name + n * 2, n - pad);
+        memset(bs + (n - pad), '0', pad);
+    }
+    if (rs != NULL) {
+        r = 0;
+        for (i = 0; i < n && (c = rs[i]) != 0; i++) {
+            if ((unsigned)(c - '0') < 10) {
+                r = (r << 4) | (c & 0xF);
+            } else if ((unsigned)(c - 'A') < 6 || (unsigned)(c - 'a') < 6) {
+                r = (r << 4) | ((c & 0xF) + 9);
+            } else if (c == 'O' || c == 'o') {
+                r <<= 4;
+            } else {
+                MEM_free(0, rs);
+                if (gs != NULL) {
+                    MEM_free(0, gs);
+                }
+                if (bs != NULL) {
+                    MEM_free(0, bs);
+                }
+                goto done;
+            }
+        }
+        MEM_free(0, rs);
+    }
+    if (gs != NULL) {
+        g = 0;
+        for (i = 0; i < n && (c = gs[i]) != 0; i++) {
+            if ((unsigned)(c - '0') < 10) {
+                g = (g << 4) | (c & 0xF);
+            } else if ((unsigned)(c - 'A') < 6 || (unsigned)(c - 'a') < 6) {
+                g = (g << 4) | ((c & 0xF) + 9);
+            } else if (c == 'O' || c == 'o') {
+                g <<= 4;
+            } else {
+                MEM_free(0, gs);
+                if (bs != NULL) {
+                    MEM_free(0, bs);
+                }
+                goto done;
+            }
+        }
+        MEM_free(0, gs);
+    }
+    if (bs != NULL) {
+        b = 0;
+        for (i = 0; i < n && (c = bs[i]) != 0; i++) {
+            if ((unsigned)(c - '0') < 10) {
+                b = (b << 4) | (c & 0xF);
+            } else if ((unsigned)(c - 'A') < 6 || (unsigned)(c - 'a') < 6) {
+                b = (b << 4) | ((c & 0xF) + 9);
+            } else if (c == 'O' || c == 'o') {
+                b <<= 4;
+            } else {
+                break;
+            }
+        }
+        MEM_free(0, bs);
+    }
+done:
+    return (r << 16) | (g << 8) | b;
+}
 
 void esp_colorNameToValue(void) {
     colorValue();
