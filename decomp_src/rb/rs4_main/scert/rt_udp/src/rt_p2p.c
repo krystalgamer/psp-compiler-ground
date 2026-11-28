@@ -681,7 +681,24 @@ int rt_p2p_get_peer_by_connection(char *p, int conn)
     return 0xFFFE;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_get_my_peer_status);
+void rt_p2p_get_my_peer_status(char *p, int *status, short *idx)
+{
+    int i;
+    int st = 0;
+    RtP2PPeer *peer;
+
+    *idx = -2;
+    *status = 0;
+    for (i = *(unsigned short *)(p + 0x19C); i-- > 0; ) {
+        st = (*(RtP2PPeer **)(p + 0x184))[i].a;
+        if (st >= 7 && st <= 9) break;
+        if (st == 1) { *status = 7; return; }
+    }
+    if (i >= 0) {
+        *status = st;
+        *idx = i;
+    }
+}
 
 unsigned short rt_p2p_find_free_peer_index(char *p)
 {
