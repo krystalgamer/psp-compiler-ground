@@ -69,7 +69,52 @@ static void save_rte (u_char *, struct in_addr);
  * IP initialization: fill in IP protocol switch table.
  * All protocols not implemented in kernel go to raw IP protocol handler.
  */
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_inet/nonmatchings/ip_input", func_00014890);
+void func_00014890(void)
+{
+	struct protosw *pr;
+	int i;
+
+	in_init();
+	anonportmin = IPPORT_ANONMIN;
+	anonportmax = IPPORT_ANONMAX;
+	lowportmin = IPPORT_RESERVEDMIN;
+	lowportmax = IPPORT_RESERVEDMAX;
+	ipforwarding = 0;
+	ipsendredirects = 1;
+	ip_defttl = IPDEFTTL;
+	ip_forwsrcrt = 1;
+	ip_directedbcast = 0;
+	ip_allowsrcrt = 1;
+	ip_mtudisc = 1;
+	ip_mtudisc_timeout = 600;
+	ip_mtudisc_timeout_q = NULL;
+	ip_nfragpackets = 0;
+	ip_maxfragpackets = 200;
+	ip_nhops = 0;
+	memset(&ipforward_rt, 0, sizeof(ipforward_rt));
+	memset(&ipintrq, 0, sizeof(ipintrq));
+	ipq_locked = 0;
+	ipqmaxlen = IFQ_MAXLEN;
+	memset(&ipstat, 0, sizeof(ipstat));
+	memset(&ip_srcrt, 0, sizeof(ip_srcrt));
+	in_proto_init();
+
+	pr = pffindproto(PF_INET, IPPROTO_RAW, SOCK_RAW);
+	for (i = 0; i < IPPROTO_MAX; i++)
+		ip_protox[i] = pr - inetsw;
+	for (pr = inetdomain.dom_protosw;
+	    pr < inetdomain.dom_protoswNPROTOSW; pr++)
+		if (pr->pr_domain->dom_family == PF_INET &&
+		    pr->pr_protocol && pr->pr_protocol != IPPROTO_RAW)
+			ip_protox[pr->pr_protocol] = pr - inetsw;
+	LIST_INIT(&ipq);
+	ip_id = sceNetGetSystemClockSec() & 0xffff;
+	ipintrq.ifq_maxlen = ipqmaxlen;
+	TAILQ_INIT(&in_ifaddr);
+	in_ifaddrhashtbl = hashinit(IN_IFADDR_HASH_SIZE, &in_ifaddrhash);
+	if (ip_mtudisc != 0)
+		ip_mtudisc_timeout_q = rt_timer_queue_create(ip_mtudisc_timeout);
+}
 
 
 /*
