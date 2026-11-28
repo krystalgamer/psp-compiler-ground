@@ -151,7 +151,26 @@ int textGetUTF16BE(void *arg0, void **arg1) {
     return var_a5;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/text", textGetChar);
+int textGetEUC(unsigned char *s, unsigned char **next);
+int textGetUTF8(unsigned char *s, unsigned char **next);
+int textGetChar(int code, void *s, void **next)
+{
+	switch (code) {
+	case 0:
+		return textGetSJIS(s, (unsigned char **)next);
+	case 1:
+		return textGetEUC(s, (unsigned char **)next);
+	case 2:
+		return textGetUTF8(s, (unsigned char **)next);
+	case 3:
+		return textGetUTF16BE(s, next);
+	case 4:
+		return textGetUTF16LE(s, next);
+	case -1:
+	default:
+		return -1;
+	}
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/lib/text", D_000FB4C8);
 
