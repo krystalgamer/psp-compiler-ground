@@ -349,7 +349,8 @@ void title_main_return(void)
 
 	if (TMR.f4 == 0) {
 		if (TMR.f8 == 0) {
-			/* volatile: the original emits these stores in source order (no reg-pressure reordering) */
+			/* STAND-IN: volatile reproduces the original store order but is unlikely to be the real
+			   source (the same trick worsens ziki_init/ufo_init_once); find the real shape */
 			volatile SBLUR_T *b = &screen_blur;
 			b->on = 1;
 			b->f8 = 2;
