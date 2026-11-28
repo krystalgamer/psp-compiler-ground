@@ -74,7 +74,14 @@ char *sgxNextLine(char *s, char *buf)
     return s;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxGetLineCount);
+int sgxGetLineCount(char *s)
+{
+    char buf[0x400];
+    int n = 0;
+    while (s = sgxNextLine(s, buf), *s != 0 || buf[0] != 0)
+        n++;
+    return n;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxConfReadStr);
 
@@ -125,7 +132,14 @@ void sgxStrCatN(signed char *arg0, int arg1, int arg2) {
     sgxStrCpyN(&arg0[temp_v0], arg1, arg2 - temp_v0);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxIsStrMatch);
+int sgxIsStrMatch(const char *a, const char *b)
+{
+    while (*a && *b && *a == *b) {
+        a++;
+        b++;
+    }
+    return *a == 0 && *b == 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxIsStrMatchWC);
 
