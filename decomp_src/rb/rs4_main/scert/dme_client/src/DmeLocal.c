@@ -255,7 +255,20 @@ int NetIGetBufferStatus(char *ci, int *a, int *b, int *c, int *d)
     return ret;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetISetSendAggregationInterval);
+int NetISetSendAggregationInterval(char *ci, int x, int val)
+{
+    int ret;
+
+    if (*(int *)(ci + 0x468) != 2) {
+        ret = NetMapRtError((*(int (**)(int))((char *)gMsgClientInterfacePtr + 0x48))(*(int *)(ci + 0x470)));
+        if (ret != 0) return ret;
+        ret = NetMapRtError((*(int (**)(int, int))((char *)gMsgClientInterfacePtr + 0x4C))(*(int *)(ci + 0x470), val));
+        if (ret != 0) return ret;
+    } else {
+        if ((*(int (**)(int, int, int))((char *)gP2PInterfacePtr + 0x28))(*(int *)(ci + 0x474), x, val) != 0) return 0x25;
+    }
+    return 0;
+}
 
 typedef struct { float f[16]; } DmeMetrics;
 int NetIGetBandwidthInfo(float *bw)
@@ -507,7 +520,21 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", Ne
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetSendMessageByTCP);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetFragSendCB);
+typedef struct { signed char idx; char pad[3]; char *conn; void *buf; } NetFragCtx;
+int NetFragSendCB(int len, NetFragCtx *c)
+{
+    int r;
+    char *conn = c->conn;
+
+    if (conn == NULL || *(int *)(conn + 0x468) == 2) {
+        r = NetSendMessageByUDP(c->idx, conn, c->buf, len);
+        if (r != 0) return r;
+    } else {
+        r = NetSendMessageByTCP(c->idx, conn, c->buf, len);
+        if (r != 0) return r;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetISendMessage);
 
