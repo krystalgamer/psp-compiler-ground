@@ -451,7 +451,6 @@ bss 0x191EF8 main_objs/sgi_rgb_bwtorgba
 bss 0x191EFC -
 bss 0x191EF4 main_objs/textures_textures_internal_Tga
 rodata 0x173A68 main_objs/math_factorial
-rodata 0x173A84 -
 bss 0x19175C main_objs/math_factorial
 rodata 0x168B7C main_objs/math_matrix_matrix
 rodata 0x168C64 -

@@ -437,7 +437,6 @@ bss 0x18EA78 main_objs/sgi_rgb_bwtorgba
 bss 0x18EA7C -
 bss 0x18EA74 main_objs/textures_textures_internal_Tga
 rodata 0x170B40 main_objs/math_factorial
-rodata 0x170B5C -
 bss 0x18E2DC main_objs/math_factorial
 rodata 0x165C5C main_objs/math_matrix_matrix
 rodata 0x165D44 -
