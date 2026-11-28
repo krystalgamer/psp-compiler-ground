@@ -87,6 +87,10 @@ void GUI_Toolkit_mutexUnlock(void);
 M2C_UNK *rnd_findParentBoxnode(M2C_UNK *arg0, int arg1);
 void *MEM_malloc(void *, unsigned int size);
 int strcmp(const char *, const char *);
+typedef struct BGSTYLE { int color; struct BGIMG *img; int px; int py; s8 hasColor; s8 fixed; s8 repeat; u8 pad13[0xD]; s16 mt, mr, mb, ml, bt, br, bb, bl, pt, pr, pb, pl; } BGSTYLE;
+typedef struct BGIMG { int type; int pixmap; } BGIMG;
+typedef struct BGRECT { int x; int y; int w; int h; } BGRECT;
+#define BS ((BGSTYLE *)n->style)
 void drawEachFrame(BNODE *node) {
     BLIST *l;
 
@@ -530,4 +534,97 @@ void rnd_drawBasicBoxnode(void *ctx, BNODE *n, int ox, int oy) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_api", rnd_drawBoxnodeBackground);
+void rnd_drawBoxnodeBackground(void *g, BNODE *n, int ox, int oy)
+{
+    BGRECT r;
+    int iw;
+    int ih;
+    BGIMG *img;
+    int dx;
+    int dy;
+    int type;
+
+    if (n->type == 1) {
+        GUI_ScrollPane_getScrollPosition(n->widget, &r.x, &r.y);
+        rnd_gdrawGetViewClientSize(n->widget, &r.w, &r.h);
+        r.x = 0;
+        r.y = 0;
+    } else {
+        r.x = BS->ml + n->x + BS->pl + ox;
+        r.y = BS->mt + n->y + BS->pt + oy;
+        r.w = n->w - (BS->ml + BS->mr) - (BS->pl + BS->pr);
+        r.h = n->h - (BS->mt + BS->mb) - (BS->pt + BS->pb);
+    }
+    if (BS->hasColor != 0)
+        rnd_gdrawFillrectangle(g, BS->color, r.x, r.y, r.w, r.h);
+    img = BS->img;
+    if (img == NULL)
+        return;
+    if (BS->fixed == 1) {
+        dx = -r.x;
+        dy = -r.y;
+    } else {
+        type = n->type;
+        dx = 0;
+        dy = 0;
+        if (type == 1) {
+            rnd_gdrawImageProperty(img, &iw, &ih);
+            dx = -ox % iw;
+            dy = -oy % ih;
+            switch (BS->repeat) {
+            case 3:
+                r.x = ox;
+                r.y = oy;
+                dx = 0;
+                dy = 0;
+                break;
+            case 1:
+                r.y = oy;
+                dy = 0;
+                break;
+            case 2:
+                r.x = ox;
+                dx = 0;
+                break;
+            }
+        }
+    }
+    rnd_gdrawImageProperty(img, &iw, &ih);
+    switch (BS->repeat) {
+    case 3:
+        if (BS->px != 0 || BS->py != 0) {
+            r.x += BS->px;
+            r.y += BS->py;
+            dx -= BS->px;
+            dy -= BS->py;
+        }
+        if (n->type == 1)
+            GUI_Graphics_drawTiledPixmap(g, img->pixmap, r.x, r.y, iw, ih, dx, dy);
+        else
+            GUI_Graphics_drawTiledPixmap(g, img->pixmap, r.x, r.y, r.w < iw ? r.w : iw, r.h < ih ? r.h : ih, dx, dy);
+        break;
+    case 1:
+        if (BS->px != 0 || BS->py != 0) {
+            r.y += BS->py;
+            dx -= BS->px;
+            dy -= BS->py;
+        }
+        GUI_Graphics_drawTiledPixmap(g, img->pixmap, r.x, r.y, r.w, r.h < ih ? r.h : ih, dx, dy);
+        break;
+    case 2:
+        if (BS->px != 0 || BS->py != 0) {
+            r.x += BS->px;
+            dx -= BS->px;
+            dy -= BS->py;
+        }
+        GUI_Graphics_drawTiledPixmap(g, img->pixmap, r.x, r.y, r.w < iw ? r.w : iw, r.h, dx, dy);
+        break;
+    default:
+        if (BS->px != 0 || BS->py != 0) {
+            dx -= BS->px;
+            dy -= BS->py;
+        }
+        GUI_Graphics_drawTiledPixmap(g, img->pixmap, r.x, r.y, r.w, r.h, dx, dy);
+        break;
+    }
+}
