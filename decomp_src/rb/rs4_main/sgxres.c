@@ -433,7 +433,20 @@ int sgxResGetSeqCount(int id, int idx) {
     return *(int *)(*(char **)(p + 0x14) + o + 4);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResIsSeqLoop);
+int sgxResIsSeqLoop(int id, int seq, int idx)
+{
+	char *p = ResGetSlot(id, SLOT_NAME("IsSeqLoop"));
+	char *t, *s;
+	int o, ret;
+	if (p == NULL || (t = *(char **)(p + 0x34)) == NULL || seq < 0 || *(int *)(p + 0x38) - 1 < seq || (o = *(int *)(t + seq * 4 + 8)) == 0) {
+		ret = 0;
+	} else {
+		s = *(char **)(p + 0x14) + o;
+		if (idx < 0 || *(int *)(s + 4) - 1 < idx || (o = *(int *)(s + idx * 4 + 8)) == 0) ret = 0;
+		else ret = *(int *)(*(char **)(p + 0x14) + o) & 1;
+	}
+	return ret;
+}
 
 void sgxResSetCategory(int id, int cat) {
     char *p = ResGetSlot(id, SLOT_NAME("SetCategory"));
