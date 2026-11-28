@@ -819,7 +819,61 @@ block_7:
     return var_v1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", MyClientConnectsPeerToPeer);
+typedef struct { char *ci; int flags; int z; int data; } DmeConnMsg;
+typedef struct { char *ci; int status; int x; int err; int data; } DmeConnMsg2;
+void MyClientConnectsPeerToPeer(char *ci, unsigned int idx, int ok, int cnt, int x)
+{
+    char *info = NULL;
+    int err;
+
+    if (ci == NULL) return;
+    if (*(long *)(ci + 0x454) == 1) return;
+    if (ok != 0) {
+        if (idx >= 256) return;
+        err = NetCreateClientInfo((void **)ci, idx, (void **)&info);
+        if (err != 0) return;
+        if (info == NULL) return;
+        *(int *)(ci + 0x404) = idx;
+        *(int *)(ci + 0x45C) = cnt - 1;
+        *(int *)(info + 0xC) = 2;
+        *(long *)(ci + 0x454) = 1;
+        *(int *)(info + 0x20) = 1;
+        *(char **)(ci + 0x400) = info;
+        *(int *)(info + 0x10) = 0;
+        *(int *)(info + 0x14) = 0;
+        if ((*(DmeFn0 *)((char *)gP2PInterfacePtr + 0x10))(*(long *)(ci + 0x474), 1, info, info + 8) != 0) return;
+    } else {
+        err = 3;
+        *(int *)(ci + 0x404) = 0x100;
+        *(int *)(ci + 0x400) = 0;
+        *(long *)(ci + 0x454) = 3;
+        if (gStreamMediaInterfacePtr != NULL && (*(DmeFn0 *)((char *)gStreamMediaInterfacePtr + 0x18))(ci) != 0)
+            (*(DmeFn0 *)((char *)gStreamMediaInterfacePtr + 0x8))(ci);
+    }
+    if (*(int *)(ci + 0x45C) == 0 && !(*(int *)(ci + 0x450) & 1) && *(int *)(ci + 0x4A8) == 0) {
+        *(int *)(ci + 0x4A8) = 1;
+        *(int *)(ci + 0x450) |= 1;
+        if (*(void **)(ci + 0x448) != NULL) {
+            DmeConnMsg m;
+            m.ci = ci;
+            m.flags = *(int *)(ci + 0x450);
+            m.data = *(long *)(ci + 0x44C);
+            m.z = 0;
+            (*(void (**)(DmeConnMsg *))(ci + 0x448))(&m);
+        }
+    }
+    if (*(void **)(ci + 0x428) != NULL) {
+        DmeConnMsg2 m2;
+        m2.ci = ci;
+        m2.status = *(long *)(ci + 0x454);
+        m2.x = x;
+        m2.err = err;
+        m2.data = *(long *)(ci + 0x42C);
+        (*(void (**)(DmeConnMsg2 *))(ci + 0x428))(&m2);
+        *(void **)(ci + 0x428) = NULL;
+        *(int *)(ci + 0x42C) = 0;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", MsgClientConnectCallback);
 
