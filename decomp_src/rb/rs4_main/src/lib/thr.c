@@ -131,7 +131,44 @@ int thrState(ThrCntx *pCntx)
 	return -1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/thr", thrEntry);
+int sceKernelStartThread(int thid, int size, void *argp);
+void *memcpy(void *, const void *, unsigned int);
+int thrEntry(ThrCntx *pCntx, void *Func, void *pArgv, int Argc)
+{
+	ThrCntx *p;
+
+	switch (thrState(pCntx)) {
+	case 1:
+		return 1;
+	case 0:
+		pCntx->pad[0] = (int)Func;
+		pCntx->pad[1] = (int)((char *)pCntx + 0x40);
+		pCntx->pad[2] = Argc;
+		if (pArgv != NULL && Argc != 0)
+			memcpy((char *)pCntx + 0x40, pArgv, Argc * 4);
+		p = pCntx;
+		switch (sceKernelStartThread(pCntx->Thid, 4, &p)) {
+		case 0:
+			return 0;
+		default:
+			THR_ASSERT(0xB0, "thrEntry");
+			break;
+		case 0x80020198:
+			THR_ASSERT(0xB1, "thrEntry");
+			break;
+		case 0x80020197:
+			THR_ASSERT(0xB2, "thrEntry");
+			break;
+		case 0x80020064:
+			THR_ASSERT(0xB3, "thrEntry");
+			break;
+		case 0x800201A4:
+			THR_ASSERT(0xB4, "thrEntry");
+			break;
+		}
+	}
+	return -1;
+}
 
 int sceKernelSleepThreadCB(void);
 void thrChange(void)
