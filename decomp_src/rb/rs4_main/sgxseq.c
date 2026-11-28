@@ -645,7 +645,34 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", MidiCMSysMes);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", MidiCore);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", UnitMidiProc);
+static inline void MidiReadDelta_(char *t) {
+    int v = 0;
+    int c;
+    do {
+        c = (*(SeqReadFn *)(t + 0x30))(t);
+        v = (v << 7) | (c & 0x7F);
+    } while (c & 0x80);
+    if (v > 0) *(int *)(t + 0x48) += (int)(v * *(float *)(t + 0x4C));
+}
+void UnitMidiProc(int u, char *t, int dt) {
+    int n;
+    if (*(int *)(t + 0x3C) == *(int *)(t + 0x44)) MidiReadDelta_(t);
+    n = 0;
+    while (t[0x51] == 0 && *(int *)(t + 0x48) <= 0 && (*(int (**)(void *))(t + 0x34))(t) > 0 && n < 0x4000) {
+        if (MidiCore(u, t, 1) == 0) return;
+        if (t[0x51] == 0) MidiReadDelta_(t);
+        n++;
+    }
+    if (n < 0x4000) {
+        if ((*(int (**)(void *))(t + 0x34))(t) > 0) {
+            *(int *)(t + 0x48) -= dt;
+            return;
+        }
+    } else {
+        SGX_ERR(0x8EC, D_0010AAB8);
+    }
+    t[0x51] = 1;
+}
 
 void UnitMidiStrProc(void *a, char *u, int dec)
 {
