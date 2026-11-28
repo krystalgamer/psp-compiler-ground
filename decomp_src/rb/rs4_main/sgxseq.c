@@ -573,7 +573,23 @@ int NoZero(int arg0, int arg1) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", SesqCore);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", UnitSesqProc);
+extern const char D_0010AAB8[];
+void UnitSesqProc(int u, char *t, int dt) {
+    int n = 0;
+    while (t[0x51] == 0 && *(int *)(t + 0x48) <= 0 && (*(int (**)(void *))(t + 0x34))(t) > 0 && n < 0x4000) {
+        n++;
+        if (SesqCore(u, t, 1) == 0) return;
+    }
+    if (n < 0x4000) {
+        if ((*(int (**)(void *))(t + 0x34))(t) > 0) {
+            *(int *)(t + 0x48) -= dt;
+            return;
+        }
+    } else {
+        SGX_ERR(0x730, D_0010AAB8);
+    }
+    t[0x51] = 1;
+}
 
 void UnitSesqStrProc(void *a, char *u, int dec)
 {
