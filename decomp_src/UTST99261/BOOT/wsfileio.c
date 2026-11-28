@@ -34,7 +34,38 @@ int strcmp(const char *a, const char *b);
 char *strcpy(char *d, const char *s);
 int OS_thread_mutex_lock(int m);
 int OS_thread_mutex_unlock(int m);
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsfileio", UTF8toEUC);
+char *UTF8toEUC(const char *s)
+{
+    int len;
+    unsigned short *ucs;
+    unsigned short *p;
+    char *euc;
+    int i;
+    int sz;
+
+    if (s == NULL)
+        return NULL;
+    len = strlen(s);
+    if (len == 0)
+        return NULL;
+    sz = len * 2 + 2;
+    ucs = MEM_malloc(0, sz);
+    if (ucs == NULL)
+        return NULL;
+    len = utf8ToUcs2(ucs, s, len);
+    p = ucs;
+    for (i = 0; i < len; i++, p++) {
+        if (*p == 0xA0)
+            *p = 0x20;
+    }
+    *p = 0;
+    sz = len * 3 + 1;
+    euc = MEM_malloc(0, sz);
+    if (euc != NULL)
+        euc[ucs2ToEuc(euc, ucs, len)] = 0;
+    MEM_free(0, ucs);
+    return euc;
+}
 
 int FIO_init(void)
 {
