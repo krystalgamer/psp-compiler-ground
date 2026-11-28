@@ -1,7 +1,5 @@
 /* lang: c++ */
 /* cflags: -Os */
-/* #pragma interface: the vtable and typeinfo stay in the module's asm .rodata */
-#pragma interface "rodata"
 #include "common.h"
 
 struct SceKernelThreadInfo { int size; char _[0x68]; };
@@ -18,14 +16,12 @@ extern "C" int sceKernelTerminateThread(int id);
 extern "C" int sceKernelStartThread(int id, int argSize, void *argp);
 extern "C" void *memcpy(void *, const void *, unsigned int);
 
-extern const char D_001047E4[], D_00104800[], D_00104818[], D_00104828[], D_00104840[];
-extern const char ThreadC1_FUNCTION[] __asm__("_ZZN9MetaMagic6ThreadC1EPKciijE12__FUNCTION__");
-extern const char ThreadD1_FUNCTION[] __asm__("_ZZN9MetaMagic6ThreadD1EvE12__FUNCTION__");
+#define cassert(e) if (!(e)) consPrintf("cassert : %s %d : %s : %s\n", "src/ys/libmm_thread.cc", __LINE__, __FUNCTION__, #e)
 
 namespace Ys {
 class Object {
 public:
-	static void operator delete(void *p) { _memFree(p, D_00104840, 25); }
+	static void operator delete(void *p) { _memFree(p, "src/ys/ys_object.h", 25); }
 };
 }
 
@@ -47,30 +43,22 @@ public:
 Thread::Thread(const char *name, int stack, int prio, unsigned int attr)
 {
 	id = sceKernelCreateThread(name, _EntryPoint, prio, stack, attr, 0);
-	if (!(id >= 0))
-		consPrintf(D_001047E4, D_00104800, 47, ThreadC1_FUNCTION, D_00104818);
+#line 47
+	cassert(id >= 0);
 	priority = prio;
 }
 
 Thread::~Thread()
 {
 	int current_thread_id = sceKernelGetThreadId();
-	if (!(current_thread_id >= 0))
-		consPrintf(D_001047E4, D_00104800, 68, ThreadD1_FUNCTION, D_00104828);
+#line 68
+	cassert(current_thread_id >= 0);
 	if (id == current_thread_id)
 		sceKernelExitDeleteThread(0);
 	else
 		sceKernelTerminateDeleteThread(id);
 }
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/libmm_thread", _ZZN9MetaMagic6ThreadC1EPKciijE12__FUNCTION__);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/libmm_thread", D_001047E4);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/libmm_thread", D_00104800);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/libmm_thread", D_00104818);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/libmm_thread", _ZZN9MetaMagic6ThreadD1EvE12__FUNCTION__);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/libmm_thread", D_00104828);
-/* ys_object.h's __FILE__ (Ys::Object::operator delete); the split keeps it in the D0 dtor's asm */
-__asm__(".section .rodata\n\t.align 2\nD_00104840:\n\t.asciz \"src/ys/ys_object.h\"\n\t.align 2\n\t.previous");
 
 int Thread::Set_Priority(int prio)
 {
@@ -108,8 +96,8 @@ int Thread::Start(int argSize, const void *argp)
 void Thread::Term()
 {
 	int current_thread_id = sceKernelGetThreadId();
-	if (!(current_thread_id >= 0))
-		consPrintf(D_001047E4, D_00104800, 167, __FUNCTION__, D_00104828);
+#line 167
+	cassert(current_thread_id >= 0);
 	if (id == current_thread_id)
 		sceKernelExitThread(0);
 	else
@@ -134,7 +122,3 @@ int Thread::_EntryPoint(unsigned int argSize, void *argp)
 }
 }
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/libmm_thread", _ZTVN9MetaMagic6ThreadE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/libmm_thread", D_00104868);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/libmm_thread", _ZTIN9MetaMagic6ThreadE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/libmm_thread", _ZTSN9MetaMagic6ThreadE);
