@@ -427,7 +427,76 @@ PMb parseAttrName(PCtx *c) {
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseAttrValue);
+PMb parseAttrValue(PCtx *c)
+{
+    PMb r;
+    PStrBuf *b;
+    PChar q;
+
+    r.str = NULL;
+    r.len = 0;
+    b = parseCreateBuffer();
+    if (parseNextChar(c) == 1)
+        goto fail;
+    while (*c->buf->cur == ' ' || *c->buf->cur == '\t' || *c->buf->cur == '\n' || *c->buf->cur == '\r') {
+        if (parseNextChar(c) == 1)
+            break;
+    }
+    if ((q = *c->buf->cur) == '"') {
+        if (parseNextChar(c) == 1)
+            goto fail;
+        while (*c->buf->cur != '"') {
+            if (*c->buf->cur != '\n' && *c->buf->cur != '\r') {
+                if (*c->buf->cur == '&')
+                    parseSetBuffer(b, parseCharEntity(c, 1));
+                else
+                    parseSetBuffer(b, *c->buf->cur);
+            }
+            if (parseNextChar(c) == 1)
+                goto fail;
+        }
+        if (parseNextChar(c) == 1)
+            goto fail;
+    } else if ((q = *c->buf->cur) == '\'') {
+        if (parseNextChar(c) == 1)
+            goto fail;
+        while (*c->buf->cur != '\'') {
+            if (*c->buf->cur != '\n' && *c->buf->cur != '\r') {
+                if (*c->buf->cur == '&')
+                    parseSetBuffer(b, parseCharEntity(c, 1));
+                else
+                    parseSetBuffer(b, *c->buf->cur);
+            }
+            if (parseNextChar(c) == 1)
+                goto fail;
+        }
+        if (parseNextChar(c) == 1)
+            goto fail;
+    } else {
+        while (*c->buf->cur != ' ' && *c->buf->cur != '\t' && *c->buf->cur != '\n' && *c->buf->cur != '\r' && *c->buf->cur != '>') {
+            if (*c->buf->cur != '\n' && *c->buf->cur != '\r') {
+                if (*c->buf->cur == '&')
+                    parseSetBuffer(b, parseCharEntity(c, 1));
+                else
+                    parseSetBuffer(b, *c->buf->cur);
+            }
+            if (parseNextChar(c) == 1)
+                goto fail;
+        }
+    }
+    parseAdjustBuffer(b);
+    r.str = parseStrnCpy(b->data, b->len);
+    r.len = b->len;
+    parseDeleteBuffer(b);
+    while (*c->buf->cur == ' ' || *c->buf->cur == '\t' || *c->buf->cur == '\n' || *c->buf->cur == '\r') {
+        if (parseNextChar(c) == 1)
+            break;
+    }
+    return r;
+fail:
+    parseDeleteBuffer(b);
+    return r;
+}
 
 void parseComment(PCtx *c) {
     if (parseWellFormedCommentWC(c) != 1) {
