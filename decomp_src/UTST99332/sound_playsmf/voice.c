@@ -132,7 +132,84 @@ int voice_init(unsigned int num)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/voice", voice_refresh);
+int sceSasSetKeyOff(int voice);
+int sceSasCore(void *buf);
+unsigned int sceSasGetEndFlag(void);
+int sceSasGetEnvelope(int voice);
+void func_0000C488(void);
+int voice_refresh(void *buf)
+{
+	unsigned int i;
+	unsigned int mask;
+	SsVoice *q;
+
+	if (g_vstate == -1)
+		return -1;
+	for (i = 0; i < g_cnt4; i++) {
+		sceSasSetKeyOff(g_lst4[i]->no);
+		q = g_lst4[i];
+		g_lst5[g_cnt5++] = q;
+		q->status = 5;
+	}
+	g_cnt4 = 0;
+	for (i = 0; i < g_cnt6; i++) {
+		sceSasSetKeyOff(g_lst6[i]->no);
+		func_0000C2D8(g_lst6[i]);
+		q = g_lst6[i];
+		g_lst3[g_cnt3++] = q;
+		q->status = 3;
+	}
+	g_cnt6 = 0;
+	for (i = 0; i < g_cnt8; i++) {
+		sceSasSetKeyOff(g_lst8[i]->no);
+		func_0000C2D8(g_lst8[i]);
+		q = g_lst8[i];
+		g_lst7[g_cnt7++] = q;
+		q->status = 7;
+	}
+	g_cnt8 = 0;
+	for (i = 0; i < g_cnt2; i++) {
+		func_0000C2D8(g_lst2[i]);
+		q = g_lst2[i];
+		g_lst3[g_cnt3++] = q;
+		q->status = 3;
+	}
+	g_cnt2 = 0;
+	for (i = 0; i < g_cnt9; i++) {
+		func_0000C2D8(g_lst9[i]);
+		q = g_lst9[i];
+		g_lst7[g_cnt7++] = q;
+		q->status = 7;
+	}
+	g_cnt9 = 0;
+	func_0000C488();
+	if (sceSasCore(buf) < 0)
+		return -1;
+	mask = sceSasGetEndFlag();
+	for (i = 0; i < g_vmax; i++) {
+		g_voice[i].i4 = sceSasGetEnvelope(g_voice[i].no);
+		if ((mask >> g_voice[i].no) & 1) {
+			switch (g_voice[i].status) {
+			case 5:
+				q = func_0000C240(&g_cnt5, g_lst5, &g_cnt1, g_lst1, i);
+				q->status = 1;
+				func_0000C1B0(q);
+				break;
+			case 3:
+				q = func_0000C240(&g_cnt3, g_lst3, &g_cnt1, g_lst1, i);
+				q->status = 1;
+				func_0000C1B0(q);
+				break;
+			case 7:
+				q = func_0000C240(&g_cnt7, g_lst7, &g_cnt1, g_lst1, i);
+				q->status = 1;
+				func_0000C1B0(q);
+				break;
+			}
+		}
+	}
+	return 0;
+}
 
 int voice_allocVoice(unsigned int prio)
 {
