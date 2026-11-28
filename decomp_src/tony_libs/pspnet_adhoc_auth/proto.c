@@ -288,11 +288,11 @@ void func_00003330(AuthCtx *ctx, Peer *peer, char *pkt)
 {
 	unsigned int seq;
 	int s;
+	char *hdr;
 
 	if (peer == 0 || peer->state != 4)
 		return;
-	char *hdr = pkt + 0x14;
-
+	hdr = pkt + 0x14;
 	if (sceMemab_driver_B54E1AA7(&peer->sa, pkt + 0x34, 16, hdr, 1, 0) < 0)
 		return;
 	memcpy(&seq, ((struct authpkt *)pkt)->seq, 4);
@@ -308,7 +308,6 @@ void func_00003330(AuthCtx *ctx, Peer *peer, char *pkt)
 		sceKernelCpuResumeIntr(s);
 	}
 }
-
 
 unsigned int func_00003424(void *common)
 {
