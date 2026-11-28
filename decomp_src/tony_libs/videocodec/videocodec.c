@@ -489,7 +489,39 @@ int func_00000AE8(VideocodecCtx *ctx, unsigned int type)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/videocodec/nonmatchings/videocodec", func_00000BB8);
+int func_00000BB8(VideocodecCtx *ctx, unsigned int type)
+{
+	unsigned int size;
+
+	if (!k1StaBufOk(ctx, 0x54) || !k1DynBufOk(ctx->unkC, 0) || !k1DynBufOk(ctx->unk14, ctx->unk18) || !k1DynBufOk(ctx->unk1C, ctx->unk20) || !k1DynBufOk(ctx->unk24, ctx->unk28))
+		return 0x80000023;
+	switch (type) {
+	case 0:
+		size = 0x28;
+		break;
+	case 1:
+	case 2:
+		size = 0x100;
+		break;
+	default:
+		return 0x806201FE;
+	}
+	if (!k1StaBufOk((void *)ctx->unk10, size))
+		return 0x80000023;
+	switch (type) {
+	case 0:
+		if (!k1DynBufOk(ctx->unk2C, ctx->unk3C * 0x2C) || !k1StaBufOk((void *)ctx->unk30, 0x64))
+			return 0x80000023;
+		if (ctx->unk38 != 0 && !k1DynBufOk(ctx->unk38, ctx->unk3C * 0x148))
+			return 0x80000023;
+		return 0;
+	case 1:
+	case 2:
+		return 0;
+	default:
+		return 0x806201FE;
+	}
+}
 
 void func_00000D84(VideocodecCtx *ctx, unsigned int type)
 {
@@ -503,4 +535,36 @@ void func_00000D84(VideocodecCtx *ctx, unsigned int type)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/videocodec/nonmatchings/videocodec", func_00000E1C);
+int func_00000E1C(VideocodecCtx *ctx, unsigned int type)
+{
+	unsigned int size;
+
+	if (!k1StaBufOk(ctx, 0x54) || !k1DynBufOk(ctx->unkC, 0))
+		return 0x80000023;
+	/* size is unused here (as in func_00000BB8's copy), but its switch is what
+	   leaves the original's second, redundant set of type tests */
+	switch (type) {
+	case 0:
+		size = 0x28;
+		break;
+	case 1:
+	case 2:
+		size = 0x100;
+		break;
+	default:
+		return 0x806201FE;
+	}
+	switch (type) {
+	case 0:
+		if (!k1DynBufOk(ctx->unk2C, ctx->unk3C * 0x2C) || !k1StaBufOk((void *)ctx->unk30, 0x64))
+			return 0x80000023;
+		if (ctx->unk38 != 0 && !k1DynBufOk(ctx->unk38, ctx->unk3C * 0x148))
+			return 0x80000023;
+		return 0;
+	case 1:
+	case 2:
+		return 0;
+	default:
+		return 0x806201FE;
+	}
+}
