@@ -68,7 +68,32 @@ int rt_socket_set_non_blocking_platform(int s, int v)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/psp/rt_socket_platform", rt_socket_get_available_bytes_to_read_platform);
+int sceNetInetGetsockopt(); int sceNetInetRecv(); int sceNetInetRecvfrom(); int *__errno();
+int rt_socket_get_available_bytes_to_read_platform(int s, int *avail)
+{
+    char buf[0x800];
+    int type;
+    int len;
+    int r;
+
+    *avail = 0;
+    len = 4;
+    type = 0;
+    if (sceNetInetGetsockopt(s, 0xFFFF, 0x1008, &type, &len) != 0)
+        return rt_socket_get_err_platform();
+    if (type == 1)
+        r = sceNetInetRecv(s, buf, 0x800, 2);
+    else if (type == 2)
+        r = sceNetInetRecvfrom(s, buf, 0x800, 2, 0, 0);
+    else
+        return 4;
+    if (r > 0) {
+        *avail = r;
+        return 0;
+    }
+    if (r < 0 && *__errno() == 0xB) return 0;
+    return rt_socket_get_err_platform();
+}
 
 typedef struct { int fd; short events; short revents; } RtPollFd;
 int sceNetInetPoll();
@@ -103,7 +128,40 @@ int rt_socket_find_sockets_with_data_platform(int *socks, int n, int timeout, in
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/psp/rt_socket_platform", rt_socket_find_closed_sockets_platform);
+int sceNetInetRecv();
+int rt_socket_find_closed_sockets_platform(RtPollFd *fds, unsigned int n, int timeout, int *count)
+{
+    char buf[16];
+    int ready;
+    unsigned int i;
+    int r;
+
+    if (fds == NULL || count == NULL) return 2;
+    r = rt_socket_check_readability_platform(fds, n, timeout, &ready);
+    if (r != 0) {
+        *count = 0;
+        return r;
+    }
+    if (ready == 0) {
+        *count = 0;
+        return 0;
+    }
+    ready = 0;
+    for (i = 0; i < n; i++) {
+        if (fds[i].revents & 0x18) {
+            fds[i].revents = 1;
+            ready++;
+        } else if (fds[i].revents & 0x40) {
+            if (sceNetInetRecv(fds[i].fd, buf, 1, 2) <= 0) {
+                fds[i].revents = 1;
+                ready++;
+            } else
+                fds[i].revents = 0;
+        }
+    }
+    *count = ready;
+    return 0;
+}
 
 int rt_socket_get_host_by_name(int *out, const char *name)
 {
