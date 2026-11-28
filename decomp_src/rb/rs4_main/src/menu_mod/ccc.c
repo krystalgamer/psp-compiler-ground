@@ -9,7 +9,25 @@ int sceCccSetErrorCharUTF8(int);
 int sceCccEncodeUTF8(char **, int);
 void *memset(void *, int, unsigned int);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/ccc", cccUcs4ToUtf8);
+/* separate flags: a combined test folds into an unsigned range check */
+static inline int cccValid(int c)
+{
+	int a = c != 0;
+	int b = ~c != 0;
+	return a & b;
+}
+int cccUcs4ToUtf8(char *dst, int *src)
+{
+	char *p = dst;
+	int i;
+
+	sceCccSetErrorCharUTF8(0x3013);
+	for (i = 0; cccValid(src[i]); i++)
+		sceCccEncodeUTF8(&p, src[i]);
+	*p = 0;
+	consPrintf("%s : [%s]\n", "cccUcs4ToUtf8", dst);
+	return 1;
+}
 
 int cccTtrToUcs4(int *dst, int a, int b, int c, int d)
 {
