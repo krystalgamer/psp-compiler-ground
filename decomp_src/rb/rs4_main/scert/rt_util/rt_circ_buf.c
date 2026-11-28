@@ -81,9 +81,66 @@ int rt_circ_buf_clear(RtCircBuf *cb)
     return ret;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_circ_buf", rt_circ_buf_free);
+/* STAND-IN?: the success `ret = 0` is shared through an `ok:` label (gotos from
+ * the normalize test): the block then has two predecessors, so cse cannot drop
+ * it on the known-zero edge and ce1 cannot if-convert it, as in the original. */
+int rt_circ_buf_free(RtCircBuf *cb, unsigned int n)
+{
+    unsigned int used = 0;
+    int ret = 2;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_circ_buf", rt_circ_buf_use);
+    if (cb != NULL) {
+        if (n == 0) {
+ok:
+            ret = 0;
+        } else {
+            ret = rt_circ_buf_get_used(cb, &used);
+            if (ret == 0) {
+                ret = 200;
+                if (used >= n) {
+                    if (n < cb->size - cb->head)
+                        cb->head += n;
+                    else
+                        cb->head = n - (cb->size - cb->head);
+                    cb->used -= n;
+                    ret = rt_circ_buf_normalize(cb, NULL);
+                    if (ret == 0)
+                        goto ok;
+                }
+            }
+        }
+    }
+    return ret;
+}
+
+int rt_circ_buf_use(RtCircBuf *cb, unsigned int n)
+{
+    unsigned int avail = 0;
+    int ret = 2;
+
+    if (cb != NULL) {
+        if (n == 0) {
+ok:
+            ret = 0;
+        } else {
+            ret = rt_circ_buf_get_avail(cb, &avail);
+            if (ret == 0) {
+                ret = 200;
+                if (avail >= n) {
+                if (n < cb->size - cb->tail)
+                    cb->tail += n;
+                else
+                    cb->tail = n - (cb->size - cb->tail);
+                cb->used += n;
+                ret = rt_circ_buf_normalize(cb, NULL);
+                if (ret == 0)
+                    goto ok;
+                }
+            }
+        }
+    }
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_circ_buf", rt_circ_buf_store);
 
