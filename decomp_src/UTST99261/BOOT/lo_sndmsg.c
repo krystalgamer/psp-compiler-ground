@@ -144,6 +144,16 @@ extern SLOGLOBAL lo_global;
 unsigned int strlen(const char *s);
 
 int ucs2ToUtf8();
+typedef struct LP22DS { void *str; int len; int x8; int xC; } LP22DS;
+extern unsigned char _DOMhref;
+extern unsigned char _DOMaction;
+extern unsigned char _DOMfocusparam;
+int Element_hasAttribute(void *node, void *name);
+void Element_getAttribute(LP22DS *s, void *node, void *name);
+char *DOMStringtoUTF8(LP22DS *s);
+void *getAncestorForm(void *node);
+void *getPreviousForm(void *node);
+void *MEM_calloc(int pool, unsigned int size);
 void *make_layoutMsg_template(int arg0, int arg1, int arg2) {
     void *temp_v0;
     void *var_v0;
@@ -697,7 +707,162 @@ void *make_msg_LP21(int session, LP21BOX *box) {
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_sndmsg", D_00133950);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_sndmsg", make_msg_LP22);
+void *make_msg_LP22(int session, void *f) {
+    LP22DS s;
+    char *tag;
+    char *url;
+    char *param;
+    void *m;
+    void *ret;
+    void *node;
+    void *form;
+    void *a;
+    int size;
+    int size2;
+    int size3;
+    char **buf;
+    char *p;
+
+    tag = NULL;
+    url = NULL;
+    param = NULL;
+    m = make_layoutMsg_template(2, session, 0x3D);
+    ret = NULL;
+    if (m != NULL) {
+    node = M2C_FIELD(M2C_FIELD(f, void **, 0xC), void **, 0x28);
+    if (node != NULL) {
+    switch (M2C_FIELD(M2C_FIELD(f, void **, 0xC), s16 *, 0x3A)) {
+    case 1:
+        tag = "A";
+        if (Element_hasAttribute(node, &_DOMhref)) {
+            Element_getAttribute(&s, node, &_DOMhref);
+            if (s.len != 0) {
+                url = DOMStringtoUTF8(&s);
+            }
+        }
+        break;
+    case 0x32:
+        form = getAncestorForm(node);
+        if (form == NULL && (form = getPreviousForm(node)) == NULL) {
+            break;
+        }
+        tag = "INPUT";
+        if (Element_hasAttribute(form, &_DOMaction)) {
+            Element_getAttribute(&s, form, &_DOMaction);
+            if (s.len != 0) {
+                url = DOMStringtoUTF8(&s);
+            }
+        }
+        break;
+    case 0x58:
+        form = getAncestorForm(node);
+        if (form == NULL && (form = getPreviousForm(node)) == NULL) {
+            break;
+        }
+        tag = "TEXTAREA";
+        if (Element_hasAttribute(form, &_DOMaction)) {
+            Element_getAttribute(&s, form, &_DOMaction);
+            if (s.len != 0) {
+                url = DOMStringtoUTF8(&s);
+            }
+        }
+        break;
+    case 0x4D:
+        form = getAncestorForm(node);
+        if (form == NULL && (form = getPreviousForm(node)) == NULL) {
+            break;
+        }
+        tag = "SELECT";
+        if (Element_hasAttribute(form, &_DOMaction)) {
+            Element_getAttribute(&s, form, &_DOMaction);
+            if (s.len != 0) {
+                url = DOMStringtoUTF8(&s);
+            }
+        }
+        break;
+    case 0x11:
+        form = getAncestorForm(node);
+        if (form == NULL && (form = getPreviousForm(node)) == NULL) {
+            break;
+        }
+        tag = "BUTTON";
+        if (Element_hasAttribute(form, &_DOMaction)) {
+            Element_getAttribute(&s, form, &_DOMaction);
+            if (s.len != 0) {
+                url = DOMStringtoUTF8(&s);
+            }
+        }
+        break;
+    case 0x31:
+        a = NULL;
+        if (M2C_FIELD(f, s8 *, 8) == 1) {
+            a = M2C_FIELD(f, void **, 0x14);
+        }
+        if (a == NULL || M2C_FIELD(a, void **, 0x14) == NULL) {
+            break;
+        }
+        node = M2C_FIELD(M2C_FIELD(a, void **, 0x14), void **, 4);
+        if (node == NULL) {
+            break;
+        }
+        tag = "AREA";
+        if (Element_hasAttribute(node, &_DOMhref)) {
+            Element_getAttribute(&s, node, &_DOMhref);
+            if (s.len != 0) {
+                url = DOMStringtoUTF8(&s);
+            }
+        }
+        break;
+    }
+    if (tag != NULL) {
+        if (Element_hasAttribute(node, &_DOMfocusparam)) {
+            Element_getAttribute(&s, node, &_DOMfocusparam);
+            if (s.len != 0) {
+                param = DOMStringtoUTF8(&s);
+            }
+        }
+    }
+    if (tag != NULL) {
+        size = strlen(tag) + 0xD;
+    } else {
+        size = 0xC;
+    }
+    if (url != NULL) {
+        size2 = size + strlen(url) + 1;
+    } else {
+        size2 = size;
+    }
+    if (param != NULL) {
+        size3 = size2 + strlen(param) + 1;
+    } else {
+        size3 = size2;
+    }
+    buf = MEM_calloc(0, size3);
+    p = (char *)buf + 0xC;
+    if (tag != NULL) {
+        buf[0] = p;
+        strcpy(p, tag);
+        p += strlen(tag) + 1;
+    }
+    if (url != NULL) {
+        buf[1] = p;
+        strcpy(p, url);
+        p += strlen(url) + 1;
+        MEM_free(0, url);
+    }
+    if (param != NULL) {
+        buf[2] = p;
+        strcpy(p, param);
+        p += strlen(param) + 1;
+        MEM_free(0, param);
+    }
+    M2C_FIELD(m, int *, 0x3C) = size3;
+    M2C_FIELD(m, char ***, 0x40) = buf;
+    ret = m;
+    }
+    }
+    return ret;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
