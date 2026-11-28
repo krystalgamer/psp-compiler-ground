@@ -145,7 +145,38 @@ int sgxResAttachBodyFile(int id, const char *name, int size) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResClose);
+typedef struct ResNode_ { struct ResNode_ *prev, *next; } ResNode_;
+static inline void ResNodeMove_(ResNode_ *l, ResNode_ *n) {
+    ResNode_ *p = n->prev;
+    ResNode_ *t;
+    if (p != n) {
+        p->next = n->next;
+        n->next->prev = p;
+    }
+    t = l->prev;
+    n->next = l;
+    t->next = n;
+    n->prev = t;
+    n->next->prev = n;
+}
+void sgxSndStopRes(int, int);
+void ResTuningClose(void *);
+void sgxSndUpdateSlotVolumeAll(int);
+void sgxResClose(int id) {
+    char *p = ResGetSlot(id, SLOT_NAME("Close"));
+    void *t;
+    if (p == NULL) return;
+    p[0x10] = 1;
+    sgxSndStopRes(id, 0);
+    sgxResSyncUse(id, 1);
+    sgxDI();
+    *(int *)(p + 0xC) = 0;
+    ResNodeMove_((ResNode_ *)&D_0011FC54, (ResNode_ *)p);
+    t = *(void **)(p + 0x4C);
+    ResTuningClose(p);
+    sgxEI();
+    if (t != NULL) sgxSndUpdateSlotVolumeAll(1);
+}
 
 static inline char *ResListFirstL(char *l) {
     char *p = *(char **)(l + 4);
