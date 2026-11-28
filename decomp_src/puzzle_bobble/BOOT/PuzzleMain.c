@@ -123,14 +123,15 @@ void SetCharacters(PZL_STAT *st, int chara, int which)
 		st->chara2 = chara;
 }
 
-#ifdef NON_MATCHING
-/* diff 28, registers only: the two chara_anim / 6 quotients land in other scratch
- * registers (the second one in s0, which the original keeps for the 1/6 constant).
- * chara_anim goes through an int local: `s8 / 6` is shortened and adds a seb. */
+/* chara_anim goes through an int local updated in place (`a /= 6`): a plain `s8 / 6`
+ * is shortened and adds a seb, `tbl[a / 6]` gives other scratch registers. */
 extern int *CHRTABLES[][8];
+extern SPRDATA D_00038A18;
 void DoCharacters(PZL_STAT *st)
 {
-	static SPRDATA PARTZBUF = { 0, 0, 64, 64, 0, 0 };
+	/* STAND-IN: numbering only; the real `static SPRDATA PARTZBUF = { 0, 0, 64, 64, 0, 0 };`
+	 * is .data, which stays asm (D_00038A18) */
+	static SPRDATA PARTZBUF __attribute__((section(".pbskipd")));
 	int low = GetBallLine(st) < 8;
 	int m = st->mapsub;
 	int *tbl;
@@ -140,14 +141,16 @@ void DoCharacters(PZL_STAT *st)
 		SetCharacters(st, 6, 0);
 	tbl = CHRTABLES[st->player][st->chara];
 	a = st->chara_anim;
-	c = tbl[a / 6];
-	PARTZBUF.u = (c % 8) * 64;
-	PARTZBUF.v = (c / 8) * 64;
-	PARTZBUF.no = st->player + 16;
-	PARTZBUF.flag = m == 2;
-	SpriteDrawC(0.0f, m == 2 ? 0x1AC : 0x33, 0x86, &PARTZBUF);
+	a /= 6;
+	c = tbl[a];
+	D_00038A18.u = (c % 8) * 64;
+	D_00038A18.v = (c / 8) * 64;
+	D_00038A18.no = st->player + 16;
+	D_00038A18.flag = m == 2;
+	SpriteDrawC(0.0f, m == 2 ? 0x1AC : 0x33, 0x86, &D_00038A18);
 	a = ++st->chara_anim;
-	c = tbl[a / 6];
+	a /= 6;
+	c = tbl[a];
 	if (c == -3)
 		st->chara_anim--;
 	if (c == -2)
@@ -162,15 +165,6 @@ void DoCharacters(PZL_STAT *st)
 		st->chara_anim = 0;
 	}
 }
-#else
-/* STAND-IN: DoCharacters is still asm.  Its statics, in its place and numbered as in the
- * original (PARTZBUF.0); data ones only keep the numbering (their .data stays asm). */
-static void __attribute__((section(".pbskip"), unused)) DoCharacters_statics(void)
-{
-	static SPRDATA PARTZBUF __attribute__((section(".pbskipd")));
-}
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DoCharacters);
-#endif
 
 void SetMonitor(PZL_STAT *st, int mon)
 {
