@@ -412,7 +412,7 @@ segments:
       - [0x163DD4, .rodata, main_objs/math_Trackball]
       - [0x163E14, rodata, asm/rodata_163D94]
       - [0x163E88, .rodata, main_objs/glutils_TrackballInterface]
-      - [0x163EA4, rodata, asm/rodata_163E24]
+      - [0x163EB0, rodata, asm/rodata_163E30]
       - [0x163F50, .rodata, main_objs/glutils_TurnTable]
       - [0x163F9C, rodata, asm/rodata_163F1C]
       - [0x164008, .rodata, main_objs/glutils_vertex_cache1]

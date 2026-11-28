@@ -550,7 +550,7 @@ rodata 0x170F84 -
 bss 0x18E3E4 main_objs/sh_SphericalRGBFn
 bss 0x18E468 -
 rodata 0x163E08 main_objs/glutils_TrackballInterface
-rodata 0x163E24 -
+rodata 0x163E30 -
 bss 0x18B0B4 main_objs/glutils_TrackballInterface
 bss 0x18B178 -
 # static initializers (header statics): float pools and .bss (s22, 2)

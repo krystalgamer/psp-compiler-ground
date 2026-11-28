@@ -23,7 +23,8 @@ struct TransformStack;
 struct vector_xyz {
     float x, y, z, _pad;
     vector_xyz() {}
-    vector_xyz(float x_, float y_, float z_) : x(x_), y(y_), z(z_) {}
+    /* STAND-IN: float pointer view like vector_xyzw's ctor (TrackballInterface() store order) */
+    vector_xyz(float x_, float y_, float z_) { float *p = &x; p[0] = x_; p[1] = y_; p[2] = z_; }
     vector_xyz operator*(float s) const { return vector_xyz(x * s, y * s, z * s); }
     void print(std::string, std::string, std::string) const;
 };
@@ -318,6 +319,17 @@ public:
     virtual void makeConsistantWith(const VirtualKeyFrameSequence *) INTERP_NOINLINE;
     void setKeyValue(int, T) INTERP_NOINLINE;
     T getKeyAbsRelValue(int) INTERP_NOINLINE;
+    /* user-defined: TrackballInterface::reset's inlined assignment copies every member but _loop */
+    KeyFrameSequenceBase &operator=(const KeyFrameSequenceBase &o)
+    {
+        _default = o._default;
+        _keys = o._keys;
+        _closed = o._closed;
+        _closeDt = o._closeDt;
+        _relative = o._relative;
+        _key_interval = o._key_interval;
+        return *this;
+    }
     T _default;
     std::vector<KeyFrame<T> > _keys;
     bool _closed;

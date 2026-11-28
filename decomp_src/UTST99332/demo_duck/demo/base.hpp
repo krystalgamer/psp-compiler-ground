@@ -831,8 +831,15 @@ void DrawCube(float);
 void DrawCube(float, float, float);
 class TrackballInterface : public PositioningInterface {
 public:
+    TrackballInterface();
+    void set_callback();
     void track();
+    void reset();
     virtual ~TrackballInterface();
+    math::Trackball _trackball;         /* 0x150 */
+    math::vector_xyz _center;           /* 0x1E4 */
+    math::matrix _m1F4;                 /* 0x1F4 */
+    math::vector_xyzw _p234;            /* 0x234 */
 };
 /* linkonce copies: glutils_TrackballInterface.o defines DEMO_LINKONCE_TrackballInterface */
 #if DEMO_LINKONCE_TrackballInterface

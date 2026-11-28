@@ -21,13 +21,17 @@ DEMO_LINKONCE_ORDER(
     DEMO_LINKONCE(_ZThn8_N7glutils18TrackballInterfaceD1Ev)
 );
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_TrackballInterface", _ZN7glutils18TrackballInterfaceC2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_TrackballInterface", _ZN7glutils18TrackballInterfaceC1Ev);
+glutils::TrackballInterface::TrackballInterface()
+    : _trackball(math::matrix::Identity()), _center(0, 0, 0), _p234(0, 0, 0, 1)
+{
+}
 
 void glutils::TrackballInterface::track() {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_TrackballInterface", _ZN7glutils18TrackballInterface5resetEv);
+void glutils::TrackballInterface::reset()
+{
+    *this = TrackballInterface();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_TrackballInterface", _ZN7glutils18TrackballInterface12set_callbackEv);
