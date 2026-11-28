@@ -2390,25 +2390,22 @@ void PutTime(int z, int x, int y, int t)
 	SpriteDrawC(z, x - 28, y, &NUMERIC_PARTZ[10]);
 }
 
-#ifdef NON_MATCHING
-/* Close (diff 18): the original computes b - a up front but x - b only inside the branch. */
 int Get2Dim(int x, int a, int b, int c, int d)
 {
 	int r = 0;
 
-	if (a <= x && x <= b)
-		r = -((x - b) * (x - b)) * 320 / ((b - a) * (b - a));
-	else if (b <= x && x <= c)
+	if (a <= x && x <= b) {
+		x -= b;
+		r = -(x * x) * 320 / ((b - a) * (b - a));
+	} else if (b <= x && x <= c)
 		r = 0;
-	else if (c <= x && x <= d)
-		r = (x - c) * (x - c) * 320 / ((d - c) * (d - c));
-	else
+	else if (c <= x && x <= d) {
+		x -= c;
+		r = x * x * 320 / ((d - c) * (d - c));
+	} else
 		r = 960;
 	return r;
 }
-#else
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", Get2Dim);
-#endif
 
 void DoBubStat(PZL_STAT *st, int arg)
 {
