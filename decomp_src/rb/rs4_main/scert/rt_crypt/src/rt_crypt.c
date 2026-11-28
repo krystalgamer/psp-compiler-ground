@@ -20,7 +20,7 @@ void *GetKeyChain(char *km, unsigned int id);
 void *GetKeyMaster();
 void GetSoftwareKeyPair();
 int KM_AddSymmetricKey(int a, unsigned int id, unsigned char *key);
-int KM_Cleanup();
+void KM_Cleanup();
 int KM_CompareSymmetricKey();
 int KM_CopyKeys();
 int KM_Create();
@@ -441,7 +441,23 @@ void KM_Destroy(int id)
     }
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_Cleanup);
+void KM_Cleanup(int which)
+{
+    KmEnt2 *k = *(KmEnt2 **)gCryptGlobals;
+
+    while (k != NULL) {
+        int kid = k->id;
+        if ((which == -1 && kid == -1) ||
+            (which == (int)0x80000000 && kid == (int)((kid & 0x7FFFFFFF) + 0x80000000)) ||
+            (which == 0 && kid == (kid & 0x7FFFFFFF))) {
+            KM_Destroy(kid);
+            k = *(KmEnt2 **)gCryptGlobals;
+        } else {
+            k = k->prev;
+            if (k == *(KmEnt2 **)gCryptGlobals) k = NULL;
+        }
+    }
+}
 
 void InitializePRNG(void) {
     if (D_00132074 != 0) {
