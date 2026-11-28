@@ -3,12 +3,46 @@
 #include "m2c_macros.h"
 M2C_UNK semaLock(int);                              /* extern */
 extern int SemaMod;
+typedef struct { const char *name; int a, b; int uid; } ModEnt;
+extern ModEnt ModTbl[3];
+extern int NetTbl[2];
+extern unsigned char D_000FA3A4, D_000FA3C0, D_000FA398, D_000FA3DC, D_000FA404, D_000FA42C, D_000FA45C, D_000FA484;
 M2C_UNK semaUnlock(int);
 
 void consPrintf(const char *fmt, ...);
 void fileLock(void);
 void fileUnlock(void);
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/mod", modInit);
+extern unsigned char D_000FA3A0, D_000FA3D0;
+int sceUtilityLoadNetModule(int module);
+int sceUtilityLoadAvModule(int module);
+int semaInit(const void *name);
+char *filePath(const char *path);
+int modLoad(int path);
+int modInit(void)
+{
+	int n;
+	unsigned int i;
+	ModEnt *p;
+
+	consPrintf(&D_000FA398, "modInit");
+	SemaMod = semaInit(&D_000FA3A0);
+	if (SemaMod <= 0)
+		consPrintf(&D_000FA3A4, &D_000FA3C0, 0x50, "modInit", &D_000FA3D0);
+	consPrintf(&D_000FA3DC, sceUtilityLoadAvModule(0));
+	consPrintf(&D_000FA404, sceUtilityLoadAvModule(1));
+	consPrintf(&D_000FA42C, sceUtilityLoadAvModule(2));
+	consPrintf(&D_000FA45C, sceUtilityLoadAvModule(3));
+	p = ModTbl;
+	for (n = 3; n != 0; n--) {
+		p->uid = modLoad((int)filePath(p->name));
+		p++;
+	}
+	for (i = 0; i < 2; i++)
+		while (sceUtilityLoadNetModule(NetTbl[i]) != 0)
+			sceKernelDelayThreadCB(1000);
+	consPrintf(&D_000FA484);
+	return 1;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/mod", D_000FA398);
 
@@ -30,10 +64,6 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/mod", D_000FA45C);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/mod", D_000FA484);
 
-typedef struct { const char *name; int a, b; int uid; } ModEnt;
-extern ModEnt ModTbl[3];
-extern int NetTbl[2];
-extern unsigned char D_000FA3A4, D_000FA3C0, D_000FA398, D_000FA3DC, D_000FA404, D_000FA42C, D_000FA45C, D_000FA484;
 int sceUtilityUnloadNetModule(int module);
 int sceUtilityUnloadAvModule(int module);
 int sceKernelDelayThreadCB(unsigned int usec);
