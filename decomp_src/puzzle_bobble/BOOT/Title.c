@@ -8,15 +8,10 @@ M2C_UNK SpriteAllFreeImage();                       /* extern */
 M2C_UNK SpriteSetFader(float);                        /* extern */
 M2C_UNK bgm_play(M2C_UNK);                          /* extern */
 M2C_UNK load_title_gim();                           /* extern */
-extern int D_0015295C;
 M2C_UNK LoadGimFile(M2C_UNK, M2C_UNK);              /* extern */
 M2C_UNK MsLoad();                                   /* extern */
-extern int D_00152968;
 M2C_UNK se_play(M2C_UNK);                           /* extern */
 extern int MsAccessFlag;
-extern int D_0015296C;
-extern int D_00152970;
-extern int D_00152974;
 int GetKeyHit(void);
 void SpriteSetColorRGBA(int r, int g, int b, int a);
 int DrawSpriteEz(float z, float x, float y, float w, float h, float u, float v, int no);
@@ -31,10 +26,11 @@ int LogoDisp(void) {
 }
 
 int TitleInit(void) {
+	static int isLoad;
     SpriteAllFreeImage();
     load_title_gim();
-    if (D_0015295C == 0) {
-        D_0015295C = 1;
+    if (isLoad == 0) {
+        isLoad = 1;
         PzlLoadFiles();
     }
     bgm_play(0);
@@ -45,60 +41,70 @@ int TitleInit(void) {
 #ifdef NON_MATCHING
 /* Close: %hi(D_00152960) and %hi(1.0f) swap saved registers, and the rotation
  * argument is computed before the zero stack arguments are stored. */
-extern int D_00152960;
-extern int D_00152964;
 void disp_title_bg(int alpha);
 void SetSpriteColorRGBA(int r, int g, int b, int a);
 int DrawSpriteEx(int no, float z, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7, float f8, float f9, float f10, float f11, float f12, float f13, int flag);
 
 int TitleDisp(void)
 {
+	static int count;
+	static int fade;
 	int ret = 0;
-	float fade;
+	float fade_l;
 	int a;
 
 	SpriteInit();
-	if (D_00152964 < 30) {
-		D_00152964++;
-		fade = D_00152964 / 30;
-	} else if (D_00152964 < 60) {
-		fade = 1.0f;
+	if (fade < 30) {
+		fade++;
+		fade_l = fade / 30;
+	} else if (fade < 60) {
+		fade_l = 1.0f;
 		if (GetKeyHit() & 0x2008) {
 			se_play(1);
 			ret = 5;
 		}
 	} else {
-		D_00152964++;
-		fade = (180 - D_00152964) / 120.0f;
-		if (D_00152964 >= 180) {
+		fade++;
+		fade_l = (180 - fade) / 120.0f;
+		if (fade >= 180) {
 			ret = 2;
-			D_00152964 = 0;
-			D_00152960 = 0;
+			fade = 0;
+			count = 0;
 		}
 	}
-	SpriteSetFader(fade);
+	SpriteSetFader(fade_l);
 	disp_title_bg(255);
 	DrawSpriteEz(1.0f, 108.0f, 0.0f, 264.0f, 256.0f, 0.0f, 0.0f, 5);
 	DrawSpriteEz(1.0f, 84.0f, 240.0f, 312.0f, 24.0f, 0.0f, 0.0f, 4);
-	D_00152960 = (D_00152960 + 1) % 180;
-	a = D_00152960 * 2 - 180;
+	count = (count + 1) % 180;
+	a = count * 2 - 180;
 	if (a < 0)
 		a = -a;
 	SetSpriteColorRGBA(255, 255, 255, a + 75);
-	DrawSpriteEx(3, 1.0f, 38.0f, 16.4f, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, (float)-D_00152960 * 3.14f / 90.0f, 1.0f, 0);
+	DrawSpriteEx(3, 1.0f, 38.0f, 16.4f, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, (float)-count * 3.14f / 90.0f, 1.0f, 0);
 	SpriteKick();
 	return ret;
 }
 #else
+/* STAND-IN: TitleDisp is still asm.  Its statics, in its place and numbered as in
+ * the original (count.1, fade.2); initialized ones only keep the numbering (their .data stays asm). */
+static void __attribute__((section(".pbskip"), unused)) TitleDisp_statics(void)
+{
+	static int count;
+	static int fade;
+}
+__asm__("D_00152960 = count.1\n"
+	"D_00152964 = fade.2");
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/Title", TitleDisp);
 #endif
 
 int SigInit(void) {
+	static int InitLoadFlag;
     SpriteAllFreeImage();
     LoadGimFile(0, 0x2AB);
-    if (D_00152968 == 0) {
+    if (InitLoadFlag == 0) {
         MsLoad();
-        D_00152968 = 1;
+        InitLoadFlag = 1;
     }
     SpriteSetFader(1.0f);
     return 0;
@@ -106,6 +112,7 @@ int SigInit(void) {
 
 int SigMain(void)
 {
+	static int count;
 	int ret = 0;
 	int c;
 
@@ -118,19 +125,19 @@ int SigMain(void)
 		return 0;
 	}
 	SpriteInit();
-	D_0015296C++;
-	if (D_0015296C < 60)
-		c = D_0015296C * 255 / 60;
-	else if (D_0015296C < 241)
+	count++;
+	if (count < 60)
+		c = count * 255 / 60;
+	else if (count < 241)
 		c = 255;
 	else
-		c = (300 - D_0015296C) * 255 / 60;
-	if (D_0015296C >= 300) {
-		D_0015296C = 0;
+		c = (300 - count) * 255 / 60;
+	if (count >= 300) {
+		count = 0;
 		ret = 1;
 	}
 	if (GetKeyHit() & 0x2008) {
-		D_0015296C = 0;
+		count = 0;
 		ret = 1;
 	}
 	SpriteSetColorRGBA(c, c, c, 255);
@@ -148,30 +155,32 @@ int EndCreditInit(void) {
 
 int EndCreditMain(void)
 {
+	static int count;
+	static int wait;
 	int ret = 0;
 	int c;
 
 	SpriteInit();
-	if (D_00152970 < 60) {
-		D_00152970++;
-		c = D_00152970 * 255 / 60;
-		D_00152974 = 0;
-	} else if (D_00152970 >= 120) {
-		D_00152970++;
-		c = (180 - D_00152970) * 255 / 60;
-		if (D_00152970 >= 180)
+	if (count < 60) {
+		count++;
+		c = count * 255 / 60;
+		wait = 0;
+	} else if (count >= 120) {
+		count++;
+		c = (180 - count) * 255 / 60;
+		if (count >= 180)
 			c = 0;
-		if (D_00152970 >= 200) {
+		if (count >= 200) {
 			ret = 4;
-			D_00152970 = 0;
-			D_00152974 = 0;
+			count = 0;
+			wait = 0;
 		}
 	} else {
-		D_00152974++;
-		if (D_00152974 > 1800)
-			D_00152970 = 120;
+		wait++;
+		if (wait > 1800)
+			count = 120;
 		if (GetKeyHit() & 0x2008)
-			D_00152970 = 120;
+			count = 120;
 		c = 255;
 	}
 	SpriteSetColorRGBA(c, c, c, 255);

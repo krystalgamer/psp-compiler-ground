@@ -254,6 +254,7 @@ segments:
       - { start: 0x5540C, type: .bss, vram: 0xD6488, name: wrap_sprite }
       - { start: 0x5540C, type: bss, vram: 0x14E768, name: bss_14E768 }
       - { start: 0x5540C, type: .bss, vram: 0x14E7FC, name: PuzzleMain }
-      - { start: 0x5540C, type: bss, vram: 0x15295C, name: bss_15295C }
+      - { start: 0x5540C, type: .bss, vram: 0x15295C, name: Title }
+      - { start: 0x5540C, type: bss, vram: 0x152978, name: bss_152978 }
   - [0x5540C, bin, elf_trailer]
   - [0x120214]
