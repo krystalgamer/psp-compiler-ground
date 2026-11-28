@@ -669,7 +669,6 @@ void sgxPspGetVoiceCount(void) {
     sgxVoGetSlotNum();
 }
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", D_0010B5DC);
 
 int sceSasGetEnvelope(int);
 extern const float D_0010B604;
@@ -680,7 +679,6 @@ float sgxPspVoGetEnvelope(int v)
     if (dev != 1) return 0.0f;
     return (float)(sceSasGetEnvelope(idx) >> 16) * D_0010B604;
 }
-const float D_0010B604 = 1.0f / 16384.0f;
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -698,7 +696,6 @@ float sgxPspVoGetVolume(int v, int ch)
     if (!VoiceToDeviceIndex(v, &dev, &idx)) return 0.0f;
     return (float)((SgxPspVoTab *)gWork_1207F0)->vol[dev * 32 + idx][ch] * D_0010B608;
 }
-const float D_0010B608 = 1.0f / 4096.0f;
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -715,7 +712,6 @@ float sgxPspVoGetPitch(int v)
     if (!VoiceToDeviceIndex(v, &dev, &idx)) return 0.0f;
     return (float)((SgxPspVoTab *)gWork_1207F0)->pitch[dev * 32 + idx] * D_0010B60C;
 }
-const float D_0010B60C = 1.0f / 4096.0f;
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -734,7 +730,35 @@ int sgxPspAt3GetLocalID(int id) {
     return -1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", sgxEffSetType);
+int sceSasSetEffect(int, int);
+int sceSasSetEffectType(int);
+void sgxEffSetType(int ch, unsigned int type)
+{
+	int t;
+	switch (type) {
+	case 0:
+		sceSasSetEffect(1, 0);
+		sceSasSetEffectVolume(0, 0);
+		return;
+	case 1: t = 0; break;
+	case 2: t = 1; break;
+	case 3: t = 2; break;
+	case 4: t = 3; break;
+	case 5: t = 4; break;
+	case 6: t = 5; break;
+	case 7: t = 6; break;
+	case 8: t = 7; break;
+	case 9: t = 8; break;
+	default: return;
+	}
+	sceSasSetEffectType(t);
+	sceSasSetEffect(1, 1);
+	sceSasSetEffectVolume(gWork_1207F0[0x46C / 4], gWork_1207F0[0x470 / 4]);
+	sceSasSetEffectParam(gWork_1207F0[0x474 / 4], gWork_1207F0[0x478 / 4]);
+}
+const float D_0010B604 = 1.0f / 16384.0f;
+const float D_0010B608 = 1.0f / 4096.0f;
+const float D_0010B60C = 1.0f / 4096.0f;
 
 void sgxEffSetDepth(int ch, int l, int r)
 {
