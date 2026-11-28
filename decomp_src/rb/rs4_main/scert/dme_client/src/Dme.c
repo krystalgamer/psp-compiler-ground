@@ -190,7 +190,32 @@ int NetSetDefaultInitializeParams(int *p)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetInitialize);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetClose);
+extern unsigned int gnInitCount_132A88;
+int NetIClose(); void ClearInterfacePointers(); int rt_mutex_destroy();
+int NetClose(void)
+{
+    int r, r2, r3, ret;
+
+    if (gnInitCount_132A88 == 0) return 0x11;
+    if (gnInitCount_132A88 > 1) {
+        gnInitCount_132A88--;
+        return 0;
+    }
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    ret = NetIClose();
+    r2 = NetMapRtError(NetMutexUnlock());
+    if (r2 != 0) return r2;
+    if (ret == 0) {
+        r3 = NetMapRtError(rt_mutex_destroy((char *)gDmeGlobals + 0x28));
+        if (r3 != 0) return r3;
+        *(int *)((char *)gDmeGlobals + 0x24) = 0;
+        gbInitialized_132A84 = 0;
+        gnInitCount_132A88 = 0;
+    }
+    ClearInterfacePointers();
+    return ret;
+}
 
 int NetMutexUnlock();
 int NetMapRtError();
