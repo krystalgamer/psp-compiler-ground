@@ -180,7 +180,38 @@ int ActorMotionMove(char *a)
 	return 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/actor", ActorAttachProc);
+int rsvKeyState(void *p, int k);
+void copLetMat(void *, void *);
+void copSclMat3(void *, void *, void *);
+void copMulMat(void *, void *, void *);
+void copMulMat3(void *, void *, void *);
+void copRotTraVec(void *, void *, void *);
+int ActorAttachProc(char *a)
+{
+	char *m = *(char **)(a + 0x38);
+	char *t = *(char **)(m + 0xF0);
+	float mat[16];
+	float mat2[16];
+	char *bone;
+
+	if (t != NULL) {
+		if (rsvKeyState(t, *(int *)(m + 0xF4)) != 2) {
+			copLetMat(a + 0xD0, a + 0x90);
+			*(void **)(m + 0xF0) = NULL;
+			*(int *)(m + 0xF4) = 0;
+		} else {
+			bone = *(char **)(**(char ***)(t + 0x38) + 8) + *(int *)(m + 0xF8) * 64;
+			copSclMat3(t + 0xD0, t + 0x60, mat);
+			copMulMat(mat, bone, mat);
+			copMulMat(t + 0xD0, bone, mat2);
+			copMulMat3(mat2, a + 0x90, a + 0xD0);
+			copRotTraVec(mat, a + 0xC0, a + 0x100);
+			return 1;
+		}
+	}
+	copLetMat(a + 0x90, a + 0xD0);
+	return 0;
+}
 
 extern int D_001123C8[];
 void *ActorGetAvatar(int n)
