@@ -2,7 +2,7 @@
 #include "m2c_macros.h"
 M2C_UNK sgxFree(int);                               /* extern */
 extern unsigned char gWork_11FEA4;
-M2C_UNK AttrSetValue(int, short, int);                /* extern */
+void AttrSetValue(short *, int, int);
 extern int D_0011FECC;
 extern int D_0011FEE4;
 extern int D_0011FEFC;
@@ -109,7 +109,19 @@ void AttrClear(short *a) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", AttrSetValue);
+void AttrSetValue(short *a, int idx, int v)
+{
+    if (idx >= 13 && idx < 37) {
+        a[idx] = v;
+    } else if (idx >= 2 && idx < 13) {
+        if (!((a[1] >> idx) & 1) || a[idx] != v) {
+            a[idx] = v;
+            int t0 = a[0], t1 = a[1];
+            a[0] = t0 | (1 << idx);
+            a[1] = t1 | (1 << idx);
+        }
+    }
+}
 
 int AttrGetValue(short *a, int idx) {
     if ((unsigned int)(idx - 13) < 24) return a[idx];

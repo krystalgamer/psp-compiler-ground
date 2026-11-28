@@ -179,7 +179,21 @@ int sgxListEnumID(char *l, int *out)
     return n;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxAttrSetValueSafe);
+void sgxAttrSetValueSafe(short *a, int idx, int v)
+{
+    if (idx >= 2 && idx < 13) {
+        if (!((a[1] >> idx) & 1) || a[idx] != v) {
+            int t0, t1;
+            sgxDI();
+            a[idx] = v;
+            t1 = a[1];
+            t0 = a[0];
+            a[1] = t1 | (1 << idx);
+            a[0] = t0 | (1 << idx);
+            sgxEI();
+        }
+    }
+}
 
 void sgxAttrSetUpdateSafe(short *a, int bit)
 {
@@ -231,7 +245,29 @@ void sgxAttrCopyEnable(short *d, short *s)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxAttrMergeEnable);
+void sgxAttrMergeEnable(short *d, short *s)
+{
+    int i;
+    int es = s[1];
+    if (es != 0) {
+        int ed = d[1];
+        for (i = 2; i < 13; i++) {
+            if ((es >> i) & 1) {
+                if (!((ed >> i) & 1)) {
+                    d[i] = s[i];
+                } else {
+                    switch (i) {
+                    case 5: d[5] = ((d[5] + s[5] - 0x1000) & 0x1FFF) + 0x1000; break;
+                    case 11: d[11] += s[11]; break;
+                    default: d[i] = (d[i] * s[i]) >> 12; break;
+                    }
+                }
+            }
+        }
+        { int t = d[1]; d[1] = t | es; }
+    }
+    { int t0 = s[0], t1 = d[0]; d[0] = t1 | t0; }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxStackMemOpen);
 
