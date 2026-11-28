@@ -207,7 +207,28 @@ void rt_token_remove_ownership(int idx, RtTokTab *t)
         rt_token_destroy_table((int *)t);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_build_token_msg);
+void rt_msg_set_u2byte();
+int rt_token_build_token_msg(char *out, unsigned int outsz, unsigned int *outlen, unsigned char type, unsigned short id, int owner)
+{
+    unsigned char buf[0x200];
+    unsigned char *p = buf;
+    unsigned int len;
+
+    if ((type < 1 || type > 3) && type != 7 && type != 8 && type != 10 && type != 9) return 2;
+    *p = type;
+    p++;
+    rt_msg_set_u2byte(p, id);
+    p += 2;
+    len = 3;
+    if (type == 7) {
+        rt_msg_set_u2byte(p, (unsigned short)owner);
+        len = 5;
+    }
+    if (outsz < len || out == NULL) return 2;
+    memcpy(out, buf, len);
+    *outlen = len;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_build_token_list_msg);
 
