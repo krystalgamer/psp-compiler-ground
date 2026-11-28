@@ -828,7 +828,30 @@ int rt_p2p_process_overlay_type(char *p, int peer, void *msg)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_process_join_overlay);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_process_join_response);
+int rt_p2p_update_grid(char *p, RtP2POvlTab *o, unsigned short me);
+int rt_p2p_process_join_response(char *p, unsigned short idx, void *msg)
+{
+    struct { unsigned char a, b, c, d; } m;
+    RtP2POvlTab *tab, *o;
+    unsigned short me;
+
+    if (p == NULL) return 2;
+    tab = *(RtP2POvlTab **)(p + 0x188);
+    memcpy(&m, msg, 4);
+    me = *(unsigned short *)(p + 0x1A4);
+    if (tab != NULL) {
+    o = (RtP2POvlTab *)(m.c * 24 + (int)tab);
+    if (o->peers[me] != NULL && o->peers[idx] == NULL) {
+    o->count++;
+    o->peers[idx] = (char *)*(void **)(p + 0x184) + idx * 80;
+    {
+        int r = rt_p2p_update_grid(p, o, me);
+        if (r != 0) return r;
+    }
+    }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_process_quit_overlay);
 
