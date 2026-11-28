@@ -27,6 +27,17 @@ typedef struct MesDocPriv {
 extern int *g_JS_NEEDREDRAW_;
 
 
+extern DOMString _DOMalink, _DOMbgcolor, _DOMtext, _DOMlink, _DOMvlink;
+DOMString *JSI_getDocumentCookie(void *doc);
+DOMString *JSI_getDocumentLastModified(void *doc);
+DOMString *JSI_getDocumentReferrer(void *doc);
+void *JSI_getDocumentURL(void *doc);
+void JSI_getDocumentSize(void *doc, int *w, int *h);
+DOMString *makeHref(void *url);
+char *HST_getTitle(void *node);
+void *HST_searchSessionIDHistoryNode(int sid);
+void UTF8toDOMString(DOMString *d, char *s);
+void DOMStringfree(DOMString *d);
 MesValue mes_document_get_selection(MesContext *ctx)
 {
     MesDocPriv *priv = mes_class_private_get(ctx->frame->thisobj);
@@ -84,7 +95,75 @@ void mes_document_redrawForce(void) {
     *g_JS_NEEDREDRAW_ = 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_document", mes_document_get);
+MesValue mes_document_get(MesContext *ctx, MesObject *obj, MesDocPriv *priv, int id)
+{
+    DOMString s;
+    DOMString *d;
+    void *url;
+    int w, h;
+    MesValue r;
+
+    if (priv == NULL)
+        return 0x20;
+    switch (id) {
+    case 1:
+        s = Element_getAttribute(Util_HTMLDocument_getBody(priv->doc), &_DOMalink);
+        return mes_string_new(ctx, s.str, s.len);
+    case 3:
+        s = Element_getAttribute(Util_HTMLDocument_getBody(priv->doc), &_DOMbgcolor);
+        return mes_string_new(ctx, s.str, s.len);
+    case 4:
+        d = JSI_getDocumentCookie(priv->doc);
+        goto str;
+    case 6:
+        s = Element_getAttribute(Util_HTMLDocument_getBody(priv->doc), &_DOMtext);
+        return mes_string_new(ctx, s.str, s.len);
+    case 8:
+        JSI_getDocumentSize(priv->doc, &w, &h);
+        r = MES_INT(h);
+        return r;
+    case 10:
+        d = JSI_getDocumentLastModified(priv->doc);
+        goto str;
+    case 11:
+        s = Element_getAttribute(Util_HTMLDocument_getBody(priv->doc), &_DOMlink);
+        return mes_string_new(ctx, s.str, s.len);
+    case 14:
+        d = JSI_getDocumentReferrer(priv->doc);
+    str:
+        if (d == NULL)
+            return 4;
+        r = mes_string_new(ctx, d->str, d->len);
+        JSI_freeDOMString(d);
+        return r;
+    case 15:
+        UTF8toDOMString(&s, HST_getTitle(HST_searchSessionIDHistoryNode(Node_getSid(priv->doc))));
+        r = mes_string_new(ctx, s.str, s.len);
+        DOMStringfree(&s);
+        return r;
+    case 13:
+    case 16:
+        url = JSI_getDocumentURL(priv->doc);
+        if (url == NULL)
+            return 4;
+        d = makeHref(url);
+        r = mes_string_new(ctx, d->str, d->len);
+        JSI_freeDOMString(d);
+        JSI_freeURLRec(url);
+        return r;
+    case 17:
+        s = Element_getAttribute(Util_HTMLDocument_getBody(priv->doc), &_DOMvlink);
+        return mes_string_new(ctx, s.str, s.len);
+    case 18:
+        JSI_getDocumentSize(priv->doc, &w, &h);
+        r = MES_INT(w);
+        return r;
+    case 5:
+        return priv->v;
+    default:
+        return 0x20;
+    }
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_document", D_0013F528);
 
