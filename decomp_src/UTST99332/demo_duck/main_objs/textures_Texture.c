@@ -390,7 +390,43 @@ void textures::Texture::makeImportForDirectX(int w, int h)
     m.load.alpha_flags = m.alpha_flags;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture12flipVerticalEv);
+void textures::Texture::flipVertical()
+{
+    int line;
+    switch (m.format) {
+    case FORMAT_1:
+    case FORMAT_2:
+        line = m.width * 4;
+        break;
+    case FORMAT_3:
+        line = m.width * 2;
+        break;
+    case FORMAT_4:
+        line = m.width;
+        break;
+    case FORMAT_5:
+        if (m.width & 1) {
+            common::Log() << "vertical flip non implemented for odd width, 4 bits index image\n";
+            return;
+        }
+        line = m.width / 2;
+        break;
+    default:
+        common::Log() << "unknown format, couldn't flip vertically\n";
+        return;
+    }
+    unsigned char *tmp = new unsigned char[line];
+    unsigned char *top = image.addr();
+    unsigned char *bottom = image.addr() + line * (m.height - 1);
+    for (int i = 0, j = m.height - 1; i < j; i++, j--) {
+        memcpy(tmp, bottom, line);
+        memcpy(bottom, top, line);
+        memcpy(top, tmp, line);
+        top += line;
+        bottom -= line;
+    }
+    delete[] tmp;
+}
 
 void textures::Texture::resize_channel_nearest(Texture &dst, Channel c)
 {
