@@ -1,7 +1,5 @@
 /* lang: c++ */
-/* cflags: -Os -fno-strength-reduce -fno-merge-constants -fno-exceptions */
-/* #pragma interface: the vtables, typeinfo and implicit destructors stay in the module's asm */
-#pragma interface "rodata"
+/* cflags: -Os -fno-strength-reduce -fno-exceptions */
 #include "common.h"
 
 struct tagTtrFontCntx;
@@ -46,16 +44,13 @@ GameCntx *gameGetCntx(void);
 CtrlState *ctrlState(int port);
 float bxAnmGetFrame(bxAnm *a);
 float bxAnmGetEndFrame(bxAnm *a);
-extern const char D_00104F90[];
-extern char D_00104FA4[];
-extern char D_00104FB4[];
 }
 
 namespace Ys {
 class Object {
 public:
-	static void *operator new(unsigned int size) { return _memAllocMBL(size, D_00104F90, 23); }
-	static void operator delete(void *p) { _memFree(p, D_00104F90, 25); }
+	static void *operator new(unsigned int size) { return _memAllocMBL(size, "src/ys/ys_object.h", 23); }
+	static void operator delete(void *p) { _memFree(p, "src/ys/ys_object.h", 25); }
 };
 
 namespace Cop {
@@ -149,11 +144,7 @@ public:
 	virtual int Run();
 };
 
-class VerticalMenu : public LineMenu {
-public:
-	VerticalMenu(MenuView *v, unsigned short a, unsigned short b, int c, int d) : LineMenu(v, a, b, c, d) {}
-	void Set_Vertical() { vertical = 1; }
-};
+class VerticalMenu;
 
 class ScreenPanel;
 
@@ -203,14 +194,7 @@ public:
 
 class MenuScreenPanel2;
 
-class MenuScreenPanel2_View : public MenuView {
-public:
-	MenuScreenPanel2 *panel_p;
-	MenuScreenPanel2_View *Init(MenuScreenPanel2 &p);
-	virtual int Set_Select(int n);
-	virtual void Open(int n);
-	virtual void Close();
-};
+class MenuScreenPanel2_View;
 
 class MenuScreenPanel2 : public ScreenPanel {
 public:
@@ -233,6 +217,21 @@ public:
 	int Get_SelectItem() const;
 	int Set_SelectItem(int n);
 	virtual void Receive_RunMessage(::Task *t, void *p, unsigned int n);
+};
+
+class MenuScreenPanel2_View : public MenuView {
+public:
+	MenuScreenPanel2 *panel_p;
+	MenuScreenPanel2_View *Init(MenuScreenPanel2 &p);
+	virtual int Set_Select(int n);
+	virtual void Open(int n);
+	virtual void Close();
+};
+
+class VerticalMenu : public LineMenu {
+public:
+	VerticalMenu(MenuView *v, unsigned short a, unsigned short b, int c, int d) : LineMenu(v, a, b, c, d) {}
+	void Set_Vertical() { vertical = 1; }
 };
 
 class YesNo_ScreenPanel : public MenuScreenPanel2 {
@@ -479,11 +478,6 @@ extern "C" {
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_screen_panel", _ZN2Ys16MenuScreenPanel218Receive_RunMessageEP4TaskPvj);
 }
 
-extern "C" {
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_screen_panel", D_00104F90);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_screen_panel", D_00104FA4);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_screen_panel", D_00104FB4);
-}
 
 void MenuScreenPanel2::OpenState::Run(Task &t, ::Task *p, void *q, unsigned int n)
 {
@@ -500,45 +494,11 @@ void MenuScreenPanel2::OpenState::Run(Task &t, ::Task *p, void *q, unsigned int 
 
 YesNo_ScreenPanel *YesNo_ScreenPanel::Init(tagTtrFontCntx &f, int se, Task *parent)
 {
-	tagTtrFontCntx *a = Create_ItemContext0(*resGetDatLocal(1, 5), D_00104FA4, 0, 0);
-	tagTtrFontCntx *b = Create_ItemContext1(*resGetDatLocal(1, 5), D_00104FB4, 0, 0);
+	tagTtrFontCntx *a = Create_ItemContext0(*resGetDatLocal(1, 5), "MENU_TEXT_08", 0, 0);
+	tagTtrFontCntx *b = Create_ItemContext1(*resGetDatLocal(1, 5), "MENU_TEXT_09", 0, 0);
 	MenuScreenPanel2::Init(f, *a, *b, se, parent);
 	return this;
 }
 
 }
 
-extern "C" {
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_screen_panel", _ZN2Ys18Cancel_ScreenPanelD1Ev);
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_screen_panel", _ZN2Ys18Cancel_ScreenPanelD0Ev);
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_screen_panel", _ZN2Ys16MenuScreenPanel29OpenStateD0Ev);
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_screen_panel", _ZN2Ys16MenuScreenPanel29OpenStateD1Ev);
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_screen_panel", _ZN2Ys21MenuScreenPanel2_ViewD1Ev);
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_screen_panel", _ZN2Ys21MenuScreenPanel2_ViewD0Ev);
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_screen_panel", _ZN2Ys12VerticalMenuD0Ev);
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_screen_panel", _ZN2Ys12VerticalMenuD1Ev);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_screen_panel", _ZTVN2Ys16MenuScreenPanel29OpenStateE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_screen_panel", D_00104FD0);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_screen_panel", _ZTVN2Ys16MenuScreenPanel2E);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_screen_panel", D_00104FF8);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_screen_panel", _ZTVN2Ys21MenuScreenPanel2_ViewE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_screen_panel", D_00105030);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_screen_panel", _ZTVN2Ys18Cancel_ScreenPanelE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_screen_panel", D_00105068);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_screen_panel", _ZTVN2Ys11ScreenPanelE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_screen_panel", D_001050A0);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_screen_panel", _ZTVN2Ys12VerticalMenuE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_screen_panel", D_001050D8);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_screen_panel", _ZTIN2Ys11ScreenPanelE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_screen_panel", _ZTIN2Ys18Cancel_ScreenPanelE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_screen_panel", _ZTIN2Ys16MenuScreenPanel29OpenStateE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_screen_panel", _ZTIN2Ys16MenuScreenPanel2E);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_screen_panel", _ZTIN2Ys21MenuScreenPanel2_ViewE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_screen_panel", _ZTIN2Ys12VerticalMenuE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_screen_panel", _ZTSN2Ys12VerticalMenuE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_screen_panel", _ZTSN2Ys21MenuScreenPanel2_ViewE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_screen_panel", _ZTSN2Ys16MenuScreenPanel2E);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_screen_panel", _ZTSN2Ys16MenuScreenPanel29OpenStateE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_screen_panel", _ZTSN2Ys18Cancel_ScreenPanelE);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_screen_panel", _ZTSN2Ys11ScreenPanelE);
-}

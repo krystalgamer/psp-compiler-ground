@@ -1,7 +1,5 @@
 /* lang: c++ */
-/* cflags: -Os -fno-strength-reduce -fno-merge-constants -fno-exceptions */
-/* #pragma interface: the vtables, typeinfo and implicit destructors stay in the module's asm */
-#pragma interface "rodata"
+/* cflags: -Os -fno-strength-reduce -fno-exceptions */
 #include "common.h"
 
 struct tagTtrFontCntx;
@@ -24,6 +22,7 @@ struct Task {
 
 extern "C" {
 void ttrFontUpdate(tagTtrFontCntx *f, void *a, void *b);
+void _memFree(void *p, const char *file, int line);
 float bxAnmGetFrame(bxAnm *a);
 float bxAnmGetEndFrame(bxAnm *a);
 }
@@ -39,6 +38,7 @@ class TaskState;
 
 class Task {
 public:
+	static void operator delete(void *p) { _memFree(p, "src/ys/ys_object.h", 25); }
 	::Task *task_p;
 	TaskState *state_p;
 	static TaskState *_default_state_p;
@@ -54,6 +54,7 @@ public:
 
 class TaskState {
 public:
+	static void operator delete(void *p) { _memFree(p, "src/ys/ys_object.h", 25); }
 	virtual ~TaskState();
 	virtual void Kill(Task &t, ::Task *p, void *q, unsigned int n);
 	virtual void Free(Task &t, ::Task *p, void *q, unsigned int n);
@@ -88,6 +89,30 @@ public:
 	virtual void Close();
 };
 
+namespace TextMenuViewState {
+class Open : public TaskState {
+public:
+	virtual void Run(Task &t, ::Task *p, void *q, unsigned int n);
+};
+class Close : public TaskState {
+public:
+	virtual void Run(Task &t, ::Task *p, void *q, unsigned int n);
+};
+class Unfocus : public TaskState {
+public:
+	virtual void Run(Task &t, ::Task *p, void *q, unsigned int n);
+};
+}
+
+/* STAND-IN: the states' D0 come before D1 in the original, so something deletes them by their own type;
+   this never-emitted inline only reproduces that mark-used order. */
+inline void Delete_TextMenuViewStates(TextMenuViewState::Open *a, TextMenuViewState::Close *b, TextMenuViewState::Unfocus *c)
+{
+	delete a;
+	delete b;
+	delete c;
+}
+
 class TextMenuView : public MenuView {
 public:
 	short loop;
@@ -109,21 +134,6 @@ public:
 	virtual void Receive_RunMessage(::Task *t, void *p, unsigned int n);
 	virtual void Receive_DrawMessage(::Task *t, void *p, unsigned int n);
 };
-
-namespace TextMenuViewState {
-class Open : public TaskState {
-public:
-	virtual void Run(Task &t, ::Task *p, void *q, unsigned int n);
-};
-class Close : public TaskState {
-public:
-	virtual void Run(Task &t, ::Task *p, void *q, unsigned int n);
-};
-class Unfocus : public TaskState {
-public:
-	virtual void Run(Task &t, ::Task *p, void *q, unsigned int n);
-};
-}
 
 TextMenuView *TextMenuView::Init(Task *parent, int n, int sel, int lp, int op, int cl, int uf, const short *tbl, tagTtrFontCntx *const *f)
 {
@@ -251,28 +261,3 @@ void TextMenuViewState::Unfocus::Run(Task &t, ::Task *p, void *q, unsigned int n
 }
 
 
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_text_menu_view", _ZN2Ys17TextMenuViewState4OpenD0Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_text_menu_view", _ZN2Ys17TextMenuViewState4OpenD1Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_text_menu_view", _ZN2Ys17TextMenuViewState5CloseD0Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_text_menu_view", _ZN2Ys17TextMenuViewState5CloseD1Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_text_menu_view", _ZN2Ys17TextMenuViewState7UnfocusD0Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_text_menu_view", _ZN2Ys17TextMenuViewState7UnfocusD1Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_text_menu_view", _ZN2Ys12TextMenuViewD1Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_text_menu_view", _ZN2Ys12TextMenuViewD0Ev); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_text_menu_view", _ZTVN2Ys17TextMenuViewState7UnfocusE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_text_menu_view", D_00105398); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_text_menu_view", _ZTVN2Ys17TextMenuViewState5CloseE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_text_menu_view", D_001053C0); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_text_menu_view", _ZTVN2Ys17TextMenuViewState4OpenE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_text_menu_view", D_001053E8); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_text_menu_view", _ZTVN2Ys12TextMenuViewE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_text_menu_view", D_00105410); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_text_menu_view", D_00105440); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_text_menu_view", _ZTIN2Ys17TextMenuViewState4OpenE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_text_menu_view", _ZTIN2Ys17TextMenuViewState5CloseE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_text_menu_view", _ZTIN2Ys17TextMenuViewState7UnfocusE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_text_menu_view", _ZTIN2Ys12TextMenuViewE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_text_menu_view", _ZTSN2Ys12TextMenuViewE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_text_menu_view", _ZTSN2Ys17TextMenuViewState7UnfocusE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_text_menu_view", _ZTSN2Ys17TextMenuViewState5CloseE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_text_menu_view", _ZTSN2Ys17TextMenuViewState4OpenE); }
