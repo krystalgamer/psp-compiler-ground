@@ -431,7 +431,15 @@ void At3StopAll(void)
     }
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", At3SetVolume);
+void At3SetVolume(int id, int l, int r) {
+    char *p = At3GetSlot(id, "SetVolume");
+    if (p != NULL) {
+        l = (l < -0x1000) ? -0x1000 : (l < 0x1000 ? l : 0x1000);
+        r = (r < -0x1000) ? -0x1000 : (r < 0x1000 ? r : 0x1000);
+        *(short *)(p + 0x3C) = l;
+        *(short *)(p + 0x3E) = r;
+    }
+}
 
 void At3SetPitch(int id, int v) {
     char *p = At3GetSlot(id, "SetPitch");
