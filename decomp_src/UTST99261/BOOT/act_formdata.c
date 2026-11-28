@@ -17,6 +17,10 @@ extern unsigned char search;
 
 int sprintf(char *buf, const char *fmt, ...);
 void deleteFileData(void *arg0);
+typedef struct FCITEM { char *name; char *value; void *file; struct FCITEM *next; } FCITEM;
+typedef struct FCOLL { int x0; int raw; int charset; int count; FCITEM *head; FCITEM *tail; } FCOLL;
+int DOMStringlen(int s);
+unsigned char *DOMStringEncode(int s, int cs);
 char *URLencode(char *p, int c) {
     char *dst = p;
 
@@ -82,7 +86,99 @@ void deleteFormCollect(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_formdata", getFormCollectData);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_formdata", addFormCollectSymbol);
+int addFormCollectSymbol(FCOLL *fc, int name, int value, void *file) {
+    char tmp[16];
+    char *n;
+    char *v;
+    unsigned char *e;
+    int len;
+    int i;
+    FCITEM *it;
+
+    v = NULL;
+    if (DOMStringlen(name) == 0) {
+        return 0;
+    }
+    if (fc->raw == 0) {
+        e = DOMStringEncode(name, fc->charset);
+        if (e == NULL) {
+            return -2;
+        }
+        len = 0;
+        for (i = 0; e[i] != 0; i++) {
+            URLencode(tmp, e[i]);
+            len += strlen(tmp);
+        }
+        n = MEM_malloc(0, len + 1);
+        if (n == NULL) {
+            return -2;
+        }
+        len = 0;
+        for (i = 0; e[i] != 0; i++) {
+            URLencode(n + len, e[i]);
+            len += strlen(n + len);
+        }
+        n[len] = 0;
+        MEM_free(0, e);
+    } else {
+        n = DOMStringEncode(name, fc->charset);
+        if (n == NULL) {
+            return -2;
+        }
+    }
+    if (DOMStringlen(value) != 0) {
+        if (fc->raw == 0) {
+            e = DOMStringEncode(value, fc->charset);
+            if (e == NULL) {
+                MEM_free(0, n);
+                return -2;
+            }
+            len = 0;
+            for (i = 0; e[i] != 0; i++) {
+                URLencode(tmp, e[i]);
+                len += strlen(tmp);
+            }
+            v = MEM_malloc(0, len + 1);
+            if (v == NULL) {
+                MEM_free(0, n);
+                return -2;
+            }
+            len = 0;
+            for (i = 0; e[i] != 0; i++) {
+                URLencode(v + len, e[i]);
+                len += strlen(v + len);
+            }
+            v[len] = 0;
+            MEM_free(0, e);
+        } else {
+            v = DOMStringEncode(value, fc->charset);
+            if (v == NULL) {
+                MEM_free(0, n);
+                return -2;
+            }
+        }
+    }
+    it = MEM_malloc(0, 0x10);
+    if (it == NULL) {
+        MEM_free(0, n);
+        if (v != NULL) {
+            MEM_free(0, v);
+        }
+        return -2;
+    }
+    it->name = n;
+    it->value = v;
+    it->file = file;
+    it->next = NULL;
+    if (fc->tail != NULL) {
+        fc->tail->next = it;
+    } else {
+        fc->head = it;
+    }
+    fc->tail = it;
+    fc->count++;
+    return 0;
+}
 
 int fileContentType(char *name) {
     char *ext;
