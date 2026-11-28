@@ -3,6 +3,7 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+typedef struct { int ip; int port; } RtUpnpAddr;
 int rt_upnp_add_port_mapping(void);
 int rt_upnp_delete_port_mapping(void);
 int rt_upnp_describe(void);
@@ -96,7 +97,16 @@ int rt_upnp_disable_natservice_heartbeat(void *arg0) {
     return var_v1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_upnp/src/rt_upnp", rt_upnp_uber_resolve);
+void upnp_iresolve_cb();
+int rt_upnp_resolve_external_address();
+int rt_upnp_uber_resolve(char *u, RtUpnpAddr addr, int t, void *cb, int user)
+{
+    if (u == NULL) return 2;
+    if (*(int *)(u + 0x3C) != 0) return 0xD6DA;
+    *(void **)(u + 0x44) = cb;
+    *(int *)(u + 0x48) = user;
+    return rt_upnp_resolve_external_address(u, addr, t, upnp_iresolve_cb);
+}
 
 int process_nat_resolution_timeslice();
 int process_heartbeat_timeslice();

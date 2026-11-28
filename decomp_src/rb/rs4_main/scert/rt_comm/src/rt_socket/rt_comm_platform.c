@@ -96,7 +96,18 @@ int rt_socket_sendmsg();
 int rt_socket_send_data_udp();
 int rt_comm_platform_get_listen_socket(int *);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_socket/rt_comm_platform", rt_comm_platform_get_listen_socket);
+int rt_comm_platform_get_listen_socket(int *s)
+{
+    int ret = 2;
+    unsigned int i = *s + 0x101;
+
+    if ((unsigned int)(*s + 0x100) < 0xFF) {
+        *s = gaListenSocket[i].sock;
+        ret = 0;
+    } else
+        *s = -1;
+    return ret;
+}
 
 void rt_comm_platform_linkaddress_setnull(RtLinkAddr *a)
 {
