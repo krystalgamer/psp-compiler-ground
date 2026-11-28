@@ -980,7 +980,25 @@ int rt_p2p_notify_peers_disconnect_forwarding(int mode, char *p, int st, unsigne
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_notify_peers_disconnect);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_save_backlog_connection);
+int rt_udp_deny();
+int rt_p2p_save_backlog_connection(char *p, int conn)
+{
+    unsigned int i;
+    unsigned int slot = 32;
+    int *b;
+
+    for (i = 0, b = (int *)(p + 4); i < 32; i++, b += 3) {
+        if (*b == conn) return 0;
+        if (*b == 0 && slot == 32) slot = i;
+    }
+    if (slot == 32) {
+        rt_udp_deny(*(int *)p, conn);
+        return 0;
+    }
+    *(int *)(p + slot * 12 + 4) = conn;
+    rt_time_start(p + slot * 12 + 8);
+    return 0;
+}
 
 int rt_udp_get_address();
 typedef struct { int ip; int port; } RtP2PLinkAddr;
