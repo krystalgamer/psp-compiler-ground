@@ -539,7 +539,38 @@ void WaitOneSec(volatile int *flag) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", FileCmdRopen);
+int sceIoOpen(const char *file, int flags, int mode);
+long long sceIoLseek(int fd, long long offset, int whence);
+static inline int FileOpenSize_(void *path, int *psize) {
+    int fd = sceIoOpen(path, 1, 0);
+    int r;
+    if (fd < 0) return fd;
+    *psize = sceIoLseek(fd, 0, 2);
+    if (*psize < 0) {
+        sceIoClose(fd);
+        return *psize;
+    }
+    r = sceIoLseek(fd, 0, 0);
+    if (r < 0) {
+        sceIoClose(fd);
+        return r;
+    }
+    return fd;
+}
+void FileCmdRopen(void *path, int *pfd, int *psize, volatile int *abort) {
+    *pfd = -1;
+    *psize = 0;
+    while (*abort == 0) {
+        int fd;
+        if (IsPathUmd(path)) UmdWaitReadable();
+        fd = FileOpenSize_(path, psize);
+        *pfd = fd;
+        if (fd >= 0) return;
+        if (!IsPathUmd(path)) return;
+        SGX_ERR(0xAE1, "open error (%s,%X)\n", path, *pfd);
+        WaitOneSec(abort);
+    }
+}
 
 void FileCmdClose(void *f, int fd) {
     int r;
