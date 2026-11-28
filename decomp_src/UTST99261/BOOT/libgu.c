@@ -467,7 +467,28 @@ int sceGuFinish(void)
 	return size;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/libgu", sceGuFinishId);
+int sceGuFinishId(unsigned int id)
+{
+	GuContext *context;
+	int size;
+
+	id &= 0xffff;
+	if (__aw_list_mode == 0 || __aw_list_mode == 2) {
+		send_commandi(15, id);
+		send_commandi_stall(12, 0);
+	} else if (call_mode == 1) {
+		send_commandi(14, 0x120000);
+		send_commandi(12, 0);
+		send_commandi_stall(0, 0);
+	} else {
+		send_commandi(11, 0);
+	}
+	context = pList;
+	size = (unsigned int)context->current - (unsigned int)context->start;
+	__aw_list_mode = context->parent_context;
+	pList = &_ctx[__aw_list_mode];
+	return size;
+}
 
 void sceGuCallMode(int mode)
 {
@@ -996,7 +1017,61 @@ void sceGuClearDepth(unsigned int depth)
 	_ctx[__aw_list_mode].clear_depth = depth;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/libgu", sceGuClear);
+struct Vertex {
+	unsigned int color;
+	unsigned short x, y, z;
+	unsigned short pad;
+};
+
+void sceGuClear(int flags)
+{
+	GuDrawBuffer *fb = &FBuf;
+	unsigned int filter;
+	struct Vertex *vertices;
+	int count;
+
+	if (FBuf.pixel_size == 3)
+		filter = (_ctx[__aw_list_mode].clear_stencil << 24) | (_ctx[__aw_list_mode].clear_color & 0xffffff);
+	else if (FBuf.pixel_size == 1)
+		filter = (_ctx[__aw_list_mode].clear_stencil << 31) | (_ctx[__aw_list_mode].clear_color & 0xffffff);
+	else if (FBuf.pixel_size == 2)
+		filter = (_ctx[__aw_list_mode].clear_stencil << 28) | (_ctx[__aw_list_mode].clear_color & 0xffffff);
+	else if (FBuf.pixel_size == 0)
+		filter = _ctx[__aw_list_mode].clear_color & 0xffffff;
+	else
+		filter = 0;
+	if (flags & 0x10) {
+		int i;
+
+		count = 16;
+		vertices = (struct Vertex *)sceGuGetMemory(count * sizeof(struct Vertex));
+		for (i = 0; i < count; i++) {
+			struct Vertex *curr = &vertices[i];
+			int j = i / 2;
+			int k = i % 2;
+
+			curr->color = filter;
+			curr->x = (j + k) * 64;
+			curr->y = k * fb->height;
+			curr->z = _ctx[__aw_list_mode].clear_depth;
+		}
+	} else {
+		count = 2;
+		vertices = (struct Vertex *)sceGuGetMemory(count * sizeof(struct Vertex));
+		vertices[0].color = filter;
+		vertices[0].x = 0;
+		vertices[0].y = 0;
+		vertices[0].z = _ctx[__aw_list_mode].clear_depth;
+		vertices[1].color = filter;
+		vertices[1].x = fb->width;
+		vertices[1].y = fb->height;
+		vertices[1].z = _ctx[__aw_list_mode].clear_depth;
+	}
+	send_commandi(211, ((flags & 7) << 8) | 1);
+	sceGuDrawArray(6, 0x80011C, count, 0, vertices);
+	send_commandi(211, 0);
+}
+
 
 void sceGuDrawBuffer(int psm, void *fbp, int frame_width)
 {
