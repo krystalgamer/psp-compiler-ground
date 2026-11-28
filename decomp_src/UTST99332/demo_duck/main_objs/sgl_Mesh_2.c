@@ -43,4 +43,33 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh_2", _ZN
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh_2", _ZN3sgl17StencilShadowData6updateEN4math11vector_xyzwERKNS1_6matrixEf);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh_2", _ZN3sgl17StencilShadowData4drawEj);
+extern "C" void glNormal3fv(const GLfloat *);
+extern const float ssd_one __asm__("D_0016EBB8");
+extern const char ssd_err[] __asm__("D_0016EC14");
+extern const char ssd_file[] __asm__("D_0016EC38");
+extern const char ssd_sp[] __asm__("D_0016EC54");
+extern const char ssd_expr[] __asm__("D_0016ECF0");
+extern const char ssd_draw_pf[] __asm__("_ZZN3sgl17StencilShadowData4drawEjE19__PRETTY_FUNCTION__");
+void sgl::StencilShadowData::draw(unsigned int)
+{
+    glCullFace(0x405);
+    glEnable(0xB44);
+    glBegin(7);
+    glColor3f(0, ssd_one, ssd_one);
+    for (unsigned int i = 0; i != _edges.size(); i++) {
+        if (_f48[i]) {
+            const Edge &e = _edges[i];
+            Position a = _f0c[e.vertex(0)];
+            Position b = _f0c[e.vertex(1)];
+            Position c = _f18[e.vertex(0)];
+            Position d = _f18[e.vertex(1)];
+            glNormal3fv(&_f24[i].x);
+            glVertex3fv(&a.x);
+            glVertex3fv(&c.x);
+            glVertex3fv(&d.x);
+            glVertex3fv(&b.x);
+        }
+    }
+    glEnd();
+    SGL_ASSERT(_triangles_centers.size() == _triangles_normals.size(), ssd_err, ssd_expr, ssd_file, ssd_draw_pf, 0x1DA, ssd_sp);
+}

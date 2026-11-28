@@ -414,10 +414,12 @@ struct StencilShadowData {
     std::vector<Position> _f0c;             /* 0x0C */
     std::vector<Position> _f18;             /* 0x18 */
     std::vector<Normal> _f24;               /* 0x24 */
-    std::vector<Normal> _f30;               /* 0x30 */
-    std::vector<Position> _f3c;             /* 0x3C */
+    std::vector<Normal> _triangles_normals;   /* 0x30 */
+    std::vector<Position> _triangles_centers; /* 0x3C */
     std::vector<bool> _f48;                 /* 0x48 */
     std::vector<int> _f5c;                  /* 0x5C */
+    void update(math::vector_xyzw, const math::matrix &, float);
+    void draw(unsigned int);
 };
 class Mesh : public CoreMesh {
 public:
