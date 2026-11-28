@@ -70,7 +70,50 @@ int sgxBmgLock(int id)
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgFree);
+typedef struct BmgNode { struct BmgNode *prev, *next; } BmgNode;
+extern unsigned char D_0011FC20;
+typedef void (*BmgFreeCb)(void *, int);
+void sgxBmgFree(int id)
+{
+    char *b = SlotGetAt_7A70C(id, "Free");
+    void *mem;
+    BmgFreeCb cb;
+    void *arg;
+    int parent, carg;
+    if (b == NULL) return;
+    sgxDI();
+    mem = NULL;
+    cb = NULL;
+    arg = NULL;
+    parent = -1;
+    carg = 0;
+    if (--*(short *)(b + 0x10) <= 0) {
+        BmgNode *n = (BmgNode *)b, *l = (BmgNode *)&D_0011FC20, *p, *t;
+        *(int *)(b + 0xC) = 0;
+        mem = *(void **)(b + 0x18);
+        cb = *(BmgFreeCb *)(b + 0x40);
+        arg = *(void **)(b + 0x1C);
+        parent = *(int *)(b + 0x14);
+        carg = *(int *)(b + 0x20);
+        p = n->prev;
+        if (p != n) {
+            p->next = n->next;
+            n->next->prev = p;
+        }
+        t = l->prev;
+        n->next = l;
+        t->next = n;
+        n->prev = t;
+        n->next->prev = n;
+    }
+    sgxEI();
+    if (mem) {
+        sgxFree(mem);
+        arg = NULL;
+    }
+    if (cb) cb(arg, carg);
+    if (parent >= 0) sgxBmgFree(parent);
+}
 
 void sgxBmgAlignBuf(int id, int al, int sz)
 {
