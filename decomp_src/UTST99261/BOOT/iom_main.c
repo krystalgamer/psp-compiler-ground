@@ -8,18 +8,7 @@ int iom_detachCache(void);
 int iom_detachCookie(void);
 int iom_detachHttpCtx(void);
 void MEM_free(M2C_UNK, void *);                  /* extern */
-extern void *D_005850D4;
-extern void *D_005850D8;
-extern void *D_005850DC;
-extern void *D_005850E0;
-extern void *D_005850E4;
-extern void *D_005850E8;
-extern void *D_005850EC;
-extern void *D_005850F0;
-extern void *D_005850F4;
-extern void *D_005850F8;
-extern void *D_005850FC;
-extern void *IOM_CONFIG;
+extern void *IOM_CONFIG[12];
 extern void *fatalErrMsg;
 extern void *fatalErrRepMsg;
 void *MEM_malloc(M2C_UNK, M2C_UNK);                 /* extern */
@@ -43,41 +32,41 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_main", iom_initializeEnviro
 void iom_finalizeEnvironment(void) {
     void *temp_a1;
 
-    if (IOM_CONFIG != NULL) {
-        MEM_free(0, IOM_CONFIG);
+    if (IOM_CONFIG[0] != NULL) {
+        MEM_free(0, IOM_CONFIG[0]);
     }
-    if (D_005850D4 != NULL) {
-        MEM_free(0, D_005850D4);
+    if (IOM_CONFIG[1] != NULL) {
+        MEM_free(0, IOM_CONFIG[1]);
     }
-    if (D_005850D8 != NULL) {
-        MEM_free(0, D_005850D8);
+    if (IOM_CONFIG[2] != NULL) {
+        MEM_free(0, IOM_CONFIG[2]);
     }
-    if (D_005850DC != NULL) {
-        MEM_free(0, D_005850DC);
+    if (IOM_CONFIG[3] != NULL) {
+        MEM_free(0, IOM_CONFIG[3]);
     }
-    if (D_005850E0 != NULL) {
-        MEM_free(0, D_005850E0);
+    if (IOM_CONFIG[4] != NULL) {
+        MEM_free(0, IOM_CONFIG[4]);
     }
-    if (D_005850E4 != NULL) {
-        MEM_free(0, D_005850E4);
+    if (IOM_CONFIG[5] != NULL) {
+        MEM_free(0, IOM_CONFIG[5]);
     }
-    if (D_005850E8 != NULL) {
-        MEM_free(0, D_005850E8);
+    if (IOM_CONFIG[6] != NULL) {
+        MEM_free(0, IOM_CONFIG[6]);
     }
-    if (D_005850EC != NULL) {
-        MEM_free(0, D_005850EC);
+    if (IOM_CONFIG[7] != NULL) {
+        MEM_free(0, IOM_CONFIG[7]);
     }
-    if (D_005850F0 != NULL) {
-        MEM_free(0, D_005850F0);
+    if (IOM_CONFIG[8] != NULL) {
+        MEM_free(0, IOM_CONFIG[8]);
     }
-    if (D_005850F4 != NULL) {
-        MEM_free(0, D_005850F4);
+    if (IOM_CONFIG[9] != NULL) {
+        MEM_free(0, IOM_CONFIG[9]);
     }
-    if (D_005850F8 != NULL) {
-        MEM_free(0, D_005850F8);
+    if (IOM_CONFIG[10] != NULL) {
+        MEM_free(0, IOM_CONFIG[10]);
     }
-    if (D_005850FC != NULL) {
-        MEM_free(0, D_005850FC);
+    if (IOM_CONFIG[11] != NULL) {
+        MEM_free(0, IOM_CONFIG[11]);
     }
     if (fatalErrMsg != NULL) {
         temp_a1 = M2C_FIELD(fatalErrMsg, void **, 0x20);

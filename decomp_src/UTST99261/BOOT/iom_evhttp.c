@@ -1,12 +1,12 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+extern int IOM_CONFIG[12];
 typedef struct { int mq; u8 pad[0xFC]; int x100; } IOMG_T;
 #define IOMG ((IOMG_T *)&iom)
 extern int (*D_0013F290[])(void *msg, void *data);
 void UTL_initqueue(M2C_UNK *);                   /* extern */
 int http_attach(M2C_UNK, int);                      /* extern */
-extern int D_005850FC;
 extern unsigned char D_005851FC;
 int http_detach();                                  /* extern */
 M2C_UNK iom_sendMsg(int, int);                      /* extern */
@@ -68,7 +68,7 @@ int iom_evHttpCtx(void *msg) {
 
 int iom_attachHttpCtx(void) {
     UTL_initqueue(&D_005851FC);
-    return (((int) ~http_attach(0x320, D_005850FC) >> 0x1F) & 0x12C) - 0x12C;
+    return (((int) ~http_attach(0x320, IOM_CONFIG[11]) >> 0x1F) & 0x12C) - 0x12C;
 }
 
 #ifndef NULL

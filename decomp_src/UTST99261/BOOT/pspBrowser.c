@@ -136,7 +136,6 @@ typedef union {
     REPORTBITS b;
 } REPORT;
 
-extern int D_0025B030;
 
 int pspBrowserReportValue(void) {
     unsigned int r;
@@ -144,72 +143,72 @@ int pspBrowserReportValue(void) {
 
     r = 0;
     st = 0;
-    if (D_0025B030 & 2) {
+    if (pspBrowserInstance.flags & 2) {
         r |= 0x80000000;
     } else {
         r &= ~0x80000000;
     }
-    if (D_0025B030 & 4) {
+    if (pspBrowserInstance.flags & 4) {
         r |= 0x40000000;
     } else {
         r &= ~0x40000000;
     }
-    if (D_0025B030 & 0x10) {
+    if (pspBrowserInstance.flags & 0x10) {
         r |= 0x20000000;
     } else {
         r &= ~0x20000000;
     }
-    if (D_0025B030 & 1) {
+    if (pspBrowserInstance.flags & 1) {
         r &= ~0x8000000;
     } else {
         r |= 0x8000000;
     }
-    if (D_0025B030 & 0x20) {
+    if (pspBrowserInstance.flags & 0x20) {
         r |= 0x2000000;
     } else {
         r &= ~0x2000000;
     }
-    if (D_0025B030 & 0x40) {
+    if (pspBrowserInstance.flags & 0x40) {
         r |= 0x4000000;
     } else {
         r &= ~0x4000000;
     }
-    if (D_0025B030 & 0x80) {
+    if (pspBrowserInstance.flags & 0x80) {
         r |= 0x1000000;
     } else {
         r &= ~0x1000000;
     }
-    if (D_0025B030 & 0x04000000) {
+    if (pspBrowserInstance.flags & 0x04000000) {
         st = 0x19;
-    } else if (D_0025B030 & 8) {
+    } else if (pspBrowserInstance.flags & 8) {
         st = 0x18;
-    } else if (D_0025B030 & 0x400) {
+    } else if (pspBrowserInstance.flags & 0x400) {
         st = 0x11;
-    } else if (D_0025B030 & 0x800) {
+    } else if (pspBrowserInstance.flags & 0x800) {
         st = 0x12;
-    } else if (D_0025B030 & 0x1000) {
+    } else if (pspBrowserInstance.flags & 0x1000) {
         st = 0x13;
-    } else if (D_0025B030 & 0x2000) {
+    } else if (pspBrowserInstance.flags & 0x2000) {
         st = 0x14;
-    } else if (D_0025B030 & 0x4000) {
+    } else if (pspBrowserInstance.flags & 0x4000) {
         st = 0x15;
-    } else if (D_0025B030 & 0x8000) {
+    } else if (pspBrowserInstance.flags & 0x8000) {
         st = 0x16;
-    } else if (D_0025B030 & 0x100) {
+    } else if (pspBrowserInstance.flags & 0x100) {
         st = 0x10;
-    } else if (D_0025B030 & 0x10000) {
+    } else if (pspBrowserInstance.flags & 0x10000) {
         st = 0x20;
-    } else if (D_0025B030 & 0x20000) {
+    } else if (pspBrowserInstance.flags & 0x20000) {
         st = 0x21;
-    } else if (D_0025B030 & 0xC0000) {
+    } else if (pspBrowserInstance.flags & 0xC0000) {
         st = 0x22;
-    } else if (D_0025B030 & 0x100000) {
+    } else if (pspBrowserInstance.flags & 0x100000) {
         st = 0x23;
-    } else if (D_0025B030 & 0x200000) {
+    } else if (pspBrowserInstance.flags & 0x200000) {
         st = 0x24;
-    } else if (D_0025B030 & 0x01C00000) {
+    } else if (pspBrowserInstance.flags & 0x01C00000) {
         st = 0x1E;
-    } else if (D_0025B030 & 0x02000000) {
+    } else if (pspBrowserInstance.flags & 0x02000000) {
         st = 0x1F;
     }
     if ((pspBrowserInstance.flags & 0x200)
@@ -438,7 +437,6 @@ typedef struct {
     char *b;
 } FOCUSREQ;
 
-extern u16 D_0025B034;
 int pspBrowserInit(PSPBROWSER_INI *ini);
 int pspBrowserSetState(int state, void *arg);
 int zWindExec(PSPBROWSER_INPUT *in);
@@ -469,7 +467,7 @@ int pspBrowserExec(PSPBROWSER_INPUT *in) {
         pspBrowserInit(&pspBrowserInstance.ini);
         pspBrowserSetState(0x18, url);
     }
-    if (in != NULL && D_0025B034 == 0) {
+    if (in != NULL && *(u16 *)&pspBrowserInstance.unk8 == 0) {
         buf = *in;
         p = &buf;
     }
