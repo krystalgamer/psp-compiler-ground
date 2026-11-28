@@ -291,7 +291,71 @@ int i3dCameraTerm(void) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", i3dCameraProc);
+extern unsigned char D_000FD840;
+extern char *pCameraNodeTbl[];
+int I3rRoot__GetNodeIndexByName(void *, char *);
+void copSubVec(void *, void *, void *);
+void copNomMat(void *, void *);
+void copMulMat(void *, void *, void *);
+float tanf(float);
+typedef struct { void *root; char *node; } CamArg;
+int i3dCameraProc(char *Tp, CamArg *Ap)
+{
+	float prm[16];
+	float mat[4][4];
+	float near = 1.0f;
+	float far = 20000.0f;
+	float aspect = 1.7647059f;
+	float fov = 0.7853982f;
+	void *root = Ap->root;
+	unsigned int i;
+	float w, h;
+	taskSendProc(Tp, &i3dTask_View, 0x10, (int)prm, 0);
+	taskSendProc(Tp, &i3dTask_View, 0x12, (int)mat, 0);
+	for (i = 0; i < 6; i++) {
+		int idx = I3rRoot__GetNodeIndexByName(root, pCameraNodeTbl[i]);
+		char *n;
+		if (idx < 0)
+			continue;
+		n = Ap->node + idx * 64;
+		switch (i) {
+		default:
+			consPrintf(&D_000FD5C4, &D_000FD5E0, 0x497, "i3dCameraProc", &D_000FD840);
+			break;
+		case 0:
+			copLetMat(n, mat);
+			break;
+		case 1:
+			copSubVec(n + 0x30, mat[3], mat[2]);
+			copNomMat(mat, mat);
+			break;
+		case 2:
+			near = *(float *)(n + 0x38);
+			break;
+		case 3:
+			far = *(float *)(n + 0x38);
+			break;
+		case 4:
+			aspect = *(float *)(n + 0x30);
+			break;
+		case 5:
+			fov = *(float *)(n + 0x30);
+			break;
+		}
+	}
+	w = near * tanf(fov * 0.5f);
+	h = w * aspect;
+	prm[0] = near;
+	prm[1] = far;
+	prm[2] = -h;
+	prm[3] = h;
+	prm[4] = -w;
+	prm[5] = w;
+	copMulMat(Tp + 0xD0, mat, mat);
+	taskSendProc(Tp, &i3dTask_View, 0x11, (int)prm, 0);
+	taskSendProc(Tp, &i3dTask_View, 0x13, (int)mat, 0);
+	return 1;
+}
 
 void i3dCameraGetParam(int a, int b)
 {
