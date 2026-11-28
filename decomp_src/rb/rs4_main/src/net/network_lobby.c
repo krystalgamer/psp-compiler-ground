@@ -142,7 +142,13 @@ public:
 	virtual void Reset();
 	virtual LobbyDoubleMessageQueue *Create_DoubleMessageQueue();
 	virtual LobbyTerminalList *Create_TerminalList();
+	int Get_Mode() const { return mode; }
+	int Get_MaxTerminal() const { return max_terminal; }
+	int Get_BufferSize() const { return buffer_size; }
 	int Get_Timeout() const { return _10; }
+	int Get_HelloInterval() const { return hello_interval; }
+	int Get_PingInterval() const { return ping_interval; }
+	int Get_InitCount() const { return init_count; }
 	int Get_EventHandlerThreadPriority() const { return event_handler_thread_priority; }
 	int Get_EventHandlerThreadStackSize() const { return event_handler_thread_stack_size; }
 	int Get_MessageReceiveThreadPriority() const { return message_receive_thread_priority; }
@@ -243,7 +249,37 @@ extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lo
 namespace Net {
 
 }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby", _ZN3Net5Lobby7StartupEv); }
+namespace Net {
+int Lobby::Startup()
+{
+	if (started)
+		return 1;
+	matching_id = -1;
+	flags = 0;
+	message_queue_p->Reset();
+	terminal_list_p->Reset();
+	LobbyBuilder &builder = *builder_p;
+	Network &network = *Network::_instance_p;
+	if (!network.Connect_IBSS_UseConnect(builder.group_name))
+		return 0;
+#line 153
+	cassert(sceNetAdhocMatchingInit(MATCHING_POOL_SIZE) == 0);
+	consPrintf("network lobby : matching initialized.\n");
+	int context_id = sceNetAdhocMatchingCreate(builder.Get_Mode(), builder.Get_MaxTerminal(), network.port, builder.Get_BufferSize(), timeout, builder.Get_HelloInterval(), builder.Get_PingInterval(), builder.Get_InitCount(), AdhocMatchingEventHandlerInterface);
+#line 165
+	cassert(context_id >= 0);
+	matching_id = context_id;
+	consPrintf("network lobby : matching context created. - %d\n", context_id);
+	int hello_option_size = this->hello_option_size;
+	char *hello_option_p = this->hello_option_p;
+	consPrintf("network lobby : priority : %d\n", builder.Get_EventHandlerThreadPriority());
+#line 180
+	cassert(sceNetAdhocMatchingStart( context_id, builder.Get_EventHandlerThreadPriority(), builder.Get_EventHandlerThreadStackSize(), builder.Get_MessageReceiveThreadPriority(), builder.Get_MessageReceiveThreadStackSize(), hello_option_size, hello_option_p) == 0);
+	started = 1;
+	state_p = &sleep_state;
+	return 1;
+}
+}
 namespace Net {
 
 
