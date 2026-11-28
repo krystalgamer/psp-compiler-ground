@@ -32,9 +32,58 @@ int rt_mutex_destroy(unsigned char *m)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_mutex", rt_mutex_lock);
+int rt_mutex_platform_lock();
+int rt_mutex_lock(RtMutexU *m, int *count)
+{
+    int ret;
+    int tid;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_mutex", rt_mutex_lock_no_block);
+    if (m == NULL) return 2;
+    if (m->state != 1) return 2;
+    ret = rt_mutex_platform_get_thread_id(&tid);
+    if (ret != 0) return ret;
+    if (m->count != 0 && tid == m->owner) {
+        m->count++;
+    } else {
+        ret = rt_mutex_platform_lock(m);
+        if (ret != 0) return ret;
+        ret = rt_mutex_platform_get_thread_id(&m->owner);
+        if (ret != 0) return ret;
+        m->count++;
+    }
+    if (count != NULL) *count = m->count;
+    return 0;
+}
+
+int rt_mutex_platform_lock_no_block();
+int rt_mutex_lock_no_block(RtMutexU *m, int *count)
+{
+    int ret;
+    unsigned char got;
+    int tid;
+
+    got = 0;
+    if (m == NULL) return 2;
+    if (m->state != 1) return 2;
+    if (count == NULL) return 2;
+    *count = 0;
+    ret = rt_mutex_platform_get_thread_id(&tid);
+    if (ret != 0) return ret;
+    if (m->count != 0 && tid == m->owner) {
+        m->count++;
+        *count = m->count;
+    } else {
+        ret = rt_mutex_platform_lock_no_block(m, &got);
+        if (ret != 0) return ret;
+        if (got == 1) {
+            ret = rt_mutex_platform_get_thread_id(&m->owner);
+            if (ret != 0) return ret;
+            m->count++;
+            *count = m->count;
+        }
+    }
+    return 0;
+}
 
 int rt_mutex_platform_get_thread_id();
 int rt_mutex_platform_unlock();
