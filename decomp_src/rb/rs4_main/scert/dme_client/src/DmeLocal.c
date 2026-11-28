@@ -499,7 +499,45 @@ void MsgClientDisconnectCallback(char *c)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetSetDefaultConnectParams);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIConnect);
+int NetConnect_ClientServerTCP(); int NetConnect_PeerToPeerUDP(); int rt_timebase_restart();
+int NetIConnect(int *ctx, int *out)
+{
+    int type;
+    int *tp;
+
+    if (out == NULL) return 0x17;
+    if (ctx[0xA4 / 4] == 0) {
+        out[1] = 0x17;
+        return 0x17;
+    }
+    out[1] = 3;
+    out[0] = 1;
+    if (ctx == NULL) {
+        out[1] = 0x17;
+        return 0x17;
+    }
+    if (ctx[0] == 0) {
+        out[1] = 0x26;
+        return 0x26;
+    }
+    if (ctx[0x158 / 4] != 0) {
+        if (gbTimebaseEnabled) {
+            out[1] = 0x2F;
+            return 0x2F;
+        }
+        rt_timebase_restart();
+        gbTimebaseEnabled = 1;
+    }
+    tp = &ctx[2];
+    type = *tp;
+    if (type == 1 || type == 3 || type == 4)
+        out[1] = NetConnect_ClientServerTCP(ctx, tp, out);
+    else if (type == 2)
+        out[1] = NetConnect_PeerToPeerUDP(ctx, tp, out);
+    else
+        out[1] = 0x17;
+    return out[1];
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetConnect_ClientServerTCP);
 
