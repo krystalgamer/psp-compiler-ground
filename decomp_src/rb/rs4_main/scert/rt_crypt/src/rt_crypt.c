@@ -29,7 +29,7 @@ int KM_Decrypt();
 int KM_Decrypt2();
 void KM_DeleteKeys(int a, int id);
 void KM_DeleteSymmetricKey(int a, unsigned int id);
-int KM_Destroy();
+void KM_Destroy();
 int KM_DigiSign();
 int KM_DigiVerify();
 int KM_Encrypt();
@@ -328,7 +328,33 @@ void KM_DeleteSymmetricKey(int a, unsigned int id)
     if (*(void **)(kc + 0x18) == NULL) memset(NULL, 0, 0x10C);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_CopyKeys);
+int KM_CopyKeys(int sid, unsigned int schain, int did, unsigned int dchain)
+{
+    char *km;
+    char *sc;
+    char *dc;
+
+    km = GetKeyMaster(sid);
+    if (km == NULL) return -1;
+    sc = GetKeyChain(km, schain);
+    if (sc == NULL) return -1;
+    km = GetKeyMaster(did);
+    if (km == NULL) return -1;
+    dc = GetKeyChain(km, dchain);
+    if (dc == NULL) {
+        dc = NewKeyChain();
+        *(unsigned int *)(dc + 8) = dchain;
+        AppendKeyChain(km, dc);
+    }
+    if (!IsNullRSAKey(*(void **)(sc + 0x10)))
+        KM_SetPublicKey(did, dchain, *(void **)(sc + 0x10));
+    if (!IsNullRCKey(*(unsigned char **)(sc + 0x1C))) {
+        KM_AddSymmetricKey(did, dchain, *(unsigned char **)(sc + 0x1C));
+        memcpy(*(void **)(dc + 0x14), *(void **)(sc + 0x14), 0x10C);
+        memcpy(*(void **)(dc + 0x18), *(void **)(sc + 0x18), 0x10C);
+    }
+    return 0;
+}
 
 int IsNullRSAKey(); void RSADecrypt();
 int KM_DigiSign(int id, int chain, void *key, void *mod, unsigned char *out)
@@ -382,7 +408,38 @@ void KM_DeleteKeys(int a, int id)
     }
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_Destroy);
+typedef struct KmEnt2 { struct KmEnt2 *next; struct KmEnt2 *prev; int a; KmKey *chains; int id; int type; int c; void *k1C; void *k20; void *k24; void *k28; void *k2C; } KmEnt2;
+
+extern char *gCryptGlobals;
+void KM_Destroy(int id)
+{
+    KmEnt2 *km;
+    KmKey *k;
+    void *p;
+
+    km = GetKeyMaster(id);
+    if (km != NULL) {
+    while ((k = km->chains) != NULL) {
+        RemoveKeyChain((KmMaster *)km, k);
+        DeleteKeyChain((int *)k);
+    }
+    if (km->k20 != NULL) rt_memory_free(&km->k20);
+    if (km->k1C != NULL) {
+        p = km->k1C;
+        rt_memory_free(&p);
+        km->k1C = NULL;
+    }
+    if (km->k2C != NULL) rt_memory_free(&km->k2C);
+    if (km->k24 != NULL) rt_memory_free(&km->k24);
+    if (km->k28 != NULL) rt_memory_free(&km->k28);
+    if (*(KmEnt2 **)gCryptGlobals == km) *(KmEnt2 **)gCryptGlobals = km->prev;
+    km->prev->next = km->next;
+    km->next->prev = km->prev;
+    if (*(KmEnt2 **)gCryptGlobals == km) *(KmEnt2 **)gCryptGlobals = NULL;
+    p = km;
+    rt_memory_free(&p);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_Cleanup);
 
