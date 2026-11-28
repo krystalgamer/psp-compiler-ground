@@ -44,6 +44,17 @@ extern char D_00139C98[];
 typedef struct { char *start; char *end; } STRWORD;
 STRWORD UTL_strword(char *s, char *delim, char *stop);
 extern char D_00139BEC[];
+void *MEM_malloc(int, int);
+void MEM_free(int, void *);
+int sprintf(char *, const char *, ...);
+char *iom_time2str(int t);
+int FIO_remove(char *path);
+extern char *D_005850E0;
+extern char D_00139BE4[];
+extern char D_00139C44[];
+extern char D_00139C4C[];
+extern char D_00139C5C[];
+extern char D_00139C60[];
 void iom_cookieFile_init(void) {
     cookieFile_init();
 }
@@ -235,7 +246,89 @@ int iom_loadCookie(void) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_cookie", iom_saveCookie);
+int iom_saveCookie(void) {
+    CFILE *f;
+    void *e;
+    void *next;
+    Cookie *c;
+    char *buf;
+    int len;
+    int n;
+    int sz;
+
+    buf = NULL;
+    f = cookieFile_open();
+    if (f == NULL) {
+        return -0x12F;
+    }
+    for (e = UTL_peekqueue(iomCookie + 4, NULL); e != NULL; e = next) {
+        next = UTL_peekqueue(iomCookie + 4, e);
+        c = M2C_FIELD(e, Cookie **, 8);
+        if (c->expire != -1 && c->expire != 0) {
+            n = 0;
+            if (c->name != NULL) {
+                n = strlen(c->name);
+            }
+            len = n + 1;
+            if (c->value != NULL) {
+                len = n + strlen(c->value) + 1;
+            }
+            if (len < (int)(strlen(((CookieDom *)c->dom)->name) + strlen(c->domain) + 9)) {
+                sz = strlen(((CookieDom *)c->dom)->name) + strlen(c->domain) + 9;
+            } else {
+                sz = len;
+            }
+            buf = MEM_malloc(0, sz + 100);
+            if (buf == NULL) {
+                break;
+            }
+            n = sprintf(buf, "%s://%s%s\n", c->secure == 1 ? D_00139BE4 : "http", ((CookieDom *)c->dom)->name, c->domain);
+            if (cookieFile_write(f, buf, n) < n) {
+                break;
+            }
+            n = sprintf(buf, "%s=%s;", c->name, c->value);
+            if (cookieFile_write(f, buf, n) < n) {
+                break;
+            }
+            n = sprintf(buf, " expires=%s;", iom_time2str(c->expire));
+            if (cookieFile_write(f, buf, n) < n) {
+                break;
+            }
+            if (c->secure == 1) {
+                n = sprintf(buf, " %s;", D_00139C44);
+                if (cookieFile_write(f, buf, n) < n) {
+                    break;
+                }
+            }
+            if (*M2C_FIELD(c, char **, 0x18) != 0) {
+                n = sprintf(buf, D_00139C4C, M2C_FIELD(c, char **, 0x18));
+                if (cookieFile_write(f, buf, n) < n) {
+                    break;
+                }
+            }
+            n = sprintf(buf, D_00139C5C, D_00139C60);
+            if (cookieFile_write(f, buf, n) < n) {
+                break;
+            }
+        } else if (c->expire == 0) {
+            iom_deleteCookie(c);
+        }
+        if (buf != NULL) {
+            MEM_free(0, buf);
+        }
+        buf = NULL;
+    }
+    if (buf != NULL) {
+        MEM_free(0, buf);
+    }
+    cookieFile_close(f);
+    if (e != NULL) {
+        FIO_remove(D_005850E0);
+        return -0x12F;
+    }
+    *(int *)iomCookie = 0;
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
