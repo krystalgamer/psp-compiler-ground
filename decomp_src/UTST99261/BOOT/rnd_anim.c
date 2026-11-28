@@ -80,7 +80,68 @@ loop_2:
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_anim", rnd_deleteAnimBoxnode);
+void rnd_deleteAnimBoxnode(int box)
+{
+    RLIST *p, *q, *r, *s;
+
+    while (rnd_global.x14 != NULL) {
+        if (checkParentBox(rnd_global.x14->x8, box) != 1)
+            break;
+        q = rnd_global.x14->next;
+        MEM_free(0, rnd_global.x14->xC);
+        MEM_free(0, rnd_global.x14);
+        rnd_global.x14 = q;
+    }
+    for (p = rnd_global.x14; p != NULL && p->next != NULL;) {
+        q = p->next;
+        if (checkParentBox(q->x8, box) == 1) {
+            p->next = q->next;
+            MEM_free(0, q->xC);
+            MEM_free(0, q);
+        } else
+            p = q;
+    }
+    while (rnd_global.x10 != NULL) {
+        if (rnd_global.x10->x8 == NULL)
+            break;
+        if (checkParentBox(((RLIST *)rnd_global.x10->x8)->x8, box) != 1)
+            break;
+        for (p = rnd_global.x10->x8; p != NULL; p = q) {
+            q = p->next;
+            MEM_free(0, p);
+        }
+        r = rnd_global.x10;
+        rnd_global.x10 = r->next;
+        MEM_free(0, r);
+    }
+    for (r = rnd_global.x10; r != NULL && r->next != NULL;) {
+        s = r->next;
+        if (s->x8 != NULL && checkParentBox(((RLIST *)s->x8)->x8, box) == 1) {
+            for (p = s->x8; p != NULL; p = q) {
+                q = p->next;
+                MEM_free(0, p);
+            }
+            r->next = s->next;
+            MEM_free(0, s);
+        } else
+            r = s;
+    }
+    while (rnd_global.xC != NULL) {
+        if (checkParentBox(rnd_global.xC->x8, box) != 1)
+            break;
+        q = rnd_global.xC->next;
+        MEM_free(0, rnd_global.xC);
+        rnd_global.xC = q;
+    }
+    for (p = rnd_global.xC; p != NULL && p->next != NULL;) {
+        q = p->next;
+        if (checkParentBox(q->x8, box) == 1) {
+            p->next = q->next;
+            MEM_free(0, q);
+        } else
+            p = q;
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
