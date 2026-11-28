@@ -644,7 +644,7 @@ segments:
       - [0x107B68, .rodata, src/net/saru_network]
       - [0x107E0C, .rodata, src/net/saru_network_lobby]
       - [0x107E98, .rodata, src/net/saru_network_lobby_builder]
-      - [0x108028, .rodata, src/net/saru_network_lobby_menu]
+      - [0x108020, .rodata, src/net/saru_network_lobby_menu]
       - [0x108084, .rodata, src/net/saru_network_lobby_menu_view]
       - [0x1081D4, .rodata, src/net/saru_network_lobby_message]
       - [0x108490, .rodata, src/net/saru_network_lobby_message_queue]

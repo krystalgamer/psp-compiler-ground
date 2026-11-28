@@ -1,19 +1,22 @@
 /* lang: c++ */
 /* cflags: -Os -fno-merge-constants -fno-exceptions */
 /* strength reduction on: Finish_Update matches only with it (address loop IV) */
-/* #pragma interface: the vtables, typeinfo and implicit destructors stay in the module's asm */
-#pragma interface "rodata"
 #include "common.h"
 
 extern "C" {
 void *memset(void *p, int c, unsigned int n);
 int memcmp(const void *a, const void *b, unsigned int n);
+void _memFree(void *p, const char *file, int line);
+void *_memAllocMBL(unsigned int size, const char *file, int line);
 }
 
 struct Task;
 
 namespace Ys {
 class Object {
+public:
+	static void *operator new(unsigned int size) { return _memAllocMBL(size, "src/ys/ys_object.h", 23); }
+	static void operator delete(void *p) { _memFree(p, "src/ys/ys_object.h", 25); }
 };
 
 class Task : public Object {
@@ -64,6 +67,11 @@ public:
 	LineMenu(MenuView *v, unsigned short next, unsigned short prev, int n, int sel);
 	virtual int Run();
 };
+
+class VerticalMenu : public LineMenu {
+public:
+	VerticalMenu(MenuView *v, unsigned short next, unsigned short prev, int n, int sel) : LineMenu(v, next, prev, n, sel) {}
+};
 }
 
 namespace Net {
@@ -99,7 +107,7 @@ public:
 	LobbyPlayerMenuItem &Copy(LobbyPlayerMenuItem &p);
 };
 
-class LobbyPlayerMenu : public Ys::LineMenu {
+class LobbyPlayerMenu : public Ys::VerticalMenu {
 public:
 	signed char item_count;
 	char _15[3];
@@ -138,7 +146,7 @@ LobbyPlayerMenuItem &LobbyPlayerMenuItem::Copy(LobbyPlayerMenuItem &p)
 }
 
 LobbyPlayerMenu::LobbyPlayerMenu(LobbyPlayerMenuView *v)
-	: Ys::LineMenu(v, 0x40, 0x10, 0, 0)
+	: Ys::VerticalMenu(v, 0x40, 0x10, 0, 0)
 {
 }
 
@@ -205,8 +213,3 @@ void LobbyPlayerMenu::Finish_Update()
 }
 
 
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_menu", _ZN7SaruNet15LobbyPlayerMenuD1Ev); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_menu", D_00107F68); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_menu", _ZN7SaruNet15LobbyPlayerMenuD0Ev); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_menu", _ZTIN7SaruNet15LobbyPlayerMenuE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_menu", _ZTSN7SaruNet15LobbyPlayerMenuE); }

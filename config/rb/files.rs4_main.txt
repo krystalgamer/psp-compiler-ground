@@ -110,6 +110,7 @@ rodata 0x105238 src/ys/ys_task
 rodata 0x104C48 src/ys/ys_fx_fade_task
 rodata 0x104D90 src/ys/ys_info_panel
 rodata 0x106D08 src/net/network_lobby_state
+rodata 0x107F60 src/net/saru_network_lobby_menu
 rodata 0x108560 src/net/saru_network_task
 # ys/net/bx objects without local symbols: placed by class (the STT_FILE link order and the
 # file names in _memAlloc/new calls: ys_card_anim, ys_task, network_lobby_message_queue, ...)
