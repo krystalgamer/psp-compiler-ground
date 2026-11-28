@@ -44,14 +44,15 @@ static __inline__ void send_commandi(int cmd, int argument)
 	*(pList->current++) = (cmd << 24) | (argument & 0xffffff);
 }
 
-static __inline__ void send_commandf(int cmd, float argument)
-{
-	unsigned int v = *(unsigned int *)&argument;
-
-	v >>= 8;
-	v &= 0xffffff;
-	send_commandi(cmd, v);
-}
+/* a macro: the argument is copied into a float before the command is evaluated */
+#define send_commandf(cmd, argument) do { \
+	float f_ = (argument); \
+	unsigned int v_ = *(unsigned int *)&f_; \
+\
+	v_ >>= 8; \
+	v_ &= 0xffffff; \
+	send_commandi(cmd, v_); \
+} while (0)
 
 static __inline__ unsigned int float_bits(float f)
 {
@@ -1265,7 +1266,22 @@ void sceGuShadeModel(int mode)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libgu", sceGuLight);
+void sceGuLight(int light, int type, int components, const ScePspFVector3 *position)
+{
+	int c;
+
+	send_commandf(lcmd[light].xpos, position->x);
+	send_commandf(lcmd[light].ypos, position->y);
+	send_commandf(lcmd[light].zpos, position->z);
+	if (components == 8) {
+		c = 2;
+	} else if (components == 6) {
+		c = 1;
+	} else {
+		c = 0;
+	}
+	send_commandi(lcmd[light].type, ((type & 3) << 8) | c);
+}
 
 void sceGuLightMode(int mode)
 {
@@ -1279,7 +1295,14 @@ void sceGuLightAtt(int light, float atten0, float atten1, float atten2)
 	send_commandf(lcmd[light].quadratic, atten2);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libgu", sceGuLightSpot);
+void sceGuLightSpot(int light, float exponent, float cutoff, const ScePspFVector3 *direction)
+{
+	send_commandf(lcmd[light].exponent, exponent);
+	send_commandf(lcmd[light].cutoff, cutoff);
+	send_commandf(lcmd[light].xdir, direction->x);
+	send_commandf(lcmd[light].ydir, direction->y);
+	send_commandf(lcmd[light].zdir, direction->z);
+}
 
 
 void sceGuLightColor(int light, int component, unsigned int color)
@@ -1525,8 +1548,10 @@ void sceGuBoneMatrix(unsigned int index, const ScePspFMatrix4 *matrix)
 
 void sceGuMorphWeight(int index, float weight)
 {
+	int cmd = 44 + index;
+
 	send_commandi(255, 0);
-	send_commandf(44 + index, weight);
+	send_commandf(cmd, weight);
 }
 
 void sceGuDebugPrint(int x, int y, unsigned int color, const char *str)
