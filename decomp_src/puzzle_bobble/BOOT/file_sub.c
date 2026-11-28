@@ -202,18 +202,21 @@ int save_confirm(void)
 	return 0;
 }
 
-#ifdef NON_MATCHING
-/* One instruction short: early returns, the ms_check() inline and the out-of-line 0xA5
- * call reproduce the original, except that its `err < 0` branch still goes through the
- * `err != 0` test (ours threads the jump straight to the save path). */
+/* ms_check() returns err early (`if (err < 0) return err;`): with `err = status == 1`
+ * in an if the err < 0 path is jump-threaded past the caller's test.  The three flag
+ * stores are written NowSaveFlag, MsAccessFlag, UtilityFlag. */
+/* STAND-IN: "mscmhc0:" stays asm data (disp_ms_dialog, still asm, uses it too). */
+extern const char D_0002F068[];
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/file_sub", D_0002F068);
+
 static __inline__ int ms_check(void)
 {
 	int status;
-	int err = sceIoDevctl("mscmhc0:", 0x02025806, NULL, 0, &status, sizeof(status));
+	int err = sceIoDevctl(D_0002F068, 0x02025806, NULL, 0, &status, sizeof(status));
 
-	if (err >= 0)
-		err = status == 1;
-	return err;
+	if (err < 0)
+		return err;
+	return status == 1;
 }
 int MsSave(void)
 {
@@ -241,8 +244,8 @@ int MsSave(void)
 		NowSaveFlag = 0;
 		return -1;
 	}
-	MsAccessFlag = 1;
 	NowSaveFlag = 1;
+	MsAccessFlag = 1;
 	UtilityFlag = 1;
 	if (ret_GameStat() != 2)
 		set_ms_dialog(0xA1);
@@ -250,12 +253,6 @@ int MsSave(void)
 		set_ms_dialog(0xA5);
 	return 0;
 }
-#else
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/file_sub", D_0002F068);
-/* strings it shares with the C around it */
-__asm__("D_0002F030 = 0x2F030\nD_0002F074 = 0x2F074");
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/file_sub", MsSave);
-#endif
 
 int MsSave2(void)
 {
