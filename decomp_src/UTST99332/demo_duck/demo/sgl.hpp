@@ -771,6 +771,7 @@ public:
     }
     void print(const char *) const;
     float eval(float, float, int) const;
+    bool equal(const Vector &, float) const;
     float v[COEFFS];
 };
 class VectorRGB {

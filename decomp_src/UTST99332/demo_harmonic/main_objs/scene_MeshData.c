@@ -182,4 +182,24 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_MeshDa
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_MeshData", _ZN5scene8MeshData26unfold_vertices_attributesISt6vectorIN3sgl8PositionESaIS4_EEEEbNS3_14VertexAttrEnumERT_);
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_MeshData", _ZN5scene8MeshData26unfold_vertices_attributesISt6vectorIN3sgl5ColorESaIS4_EEEEbNS3_14VertexAttrEnumERT_);
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_MeshData", _ZN5scene8MeshData26unfold_vertices_attributesISt6vectorIN3sgl6NormalESaIS4_EEEEbNS3_14VertexAttrEnumERT_);
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_MeshData", _ZNK2sh6Vector5equalERKS0_f);
+SGL_LINKONCE_BEGIN
+inline bool sh::Vector::equal(const Vector &o, float eps) const
+{
+    if (fabsf(o.v[0] - v[0]) > eps)
+        return false;
+    if (fabsf(o.v[1] - v[1]) > eps)
+        return false;
+    if (fabsf(o.v[2] - v[2]) > eps)
+        return false;
+    if (fabsf(o.v[3] - v[3]) > eps)
+        return false;
+    return true;
+}
+SGL_LINKONCE_END
+/* sh::Vector::equal's out-of-line copy: its callers are still asm (address taken in a discarded function) */
+extern "C" void scene_MeshData_equal_ref() __attribute__((section(".discard.asm")));
+extern "C" void scene_MeshData_equal_ref()
+{
+    static bool (sh::Vector::*p)(const sh::Vector &, float) const __attribute__((section(".discard.data"))) = &sh::Vector::equal;
+    __asm__ volatile("" : : "m"(p));
+}
