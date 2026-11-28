@@ -53,7 +53,15 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_MeshData",
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_MeshData", _ZN5scene8MeshData6finishEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_MeshData", _ZN5scene8MeshData4copyERKN3sgl4MeshE);
+void scene::MeshData::copy(const sgl::Mesh &m)
+{
+    _positions = m._positions;
+    _normals = m._normals;
+    _colors = m._colors;
+    _texcoords = m._texcoords;
+    _vertices = m._vertices;
+    _prims = m._prims;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_MeshData", _ZN5scene8MeshData14recoverShldataERKN2sh14VerticesVectorERN3sgl6KdTreeINS5_8PositionEEE);
 

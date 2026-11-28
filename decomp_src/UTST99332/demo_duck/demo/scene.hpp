@@ -570,6 +570,8 @@ class VertexArray {
 public:
     VertexArray();
     void use(Pass);
+    void extractFrom(const MeshData &);
+    void extractFrom(const MeshData &, std::vector<short>);
     struct Channel {
         Channel() : _fC(0) {}
         std::vector<math::vector_xyzw> _v;

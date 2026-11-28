@@ -58,4 +58,29 @@ void sgl::Box::draw(int c) const
     draw();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Box", _ZNK3sgl3Box4drawEv);
+void sgl::Box::draw() const
+{
+    glPushAttrib(0x2000);
+    glDisable(0xB50);
+    glDisable(0xDE1);
+    glBegin(3);
+    glVertex3fv(&_c[0].x);
+    glVertex3fv(&_c[1].x);
+    glVertex3fv(&_c[3].x);
+    glVertex3fv(&_c[7].x);
+    glVertex3fv(&_c[5].x);
+    glVertex3fv(&_c[1].x);
+    glVertex3fv(&_c[5].x);
+    glVertex3fv(&_c[4].x);
+    glVertex3fv(&_c[6].x);
+    glVertex3fv(&_c[7].x);
+    glVertex3fv(&_c[6].x);
+    glVertex3fv(&_c[2].x);
+    glVertex3fv(&_c[3].x);
+    glVertex3fv(&_c[2].x);
+    glVertex3fv(&_c[0].x);
+    glVertex3fv(&_c[4].x);
+    glVertex3fv(&_c[0].x);
+    glEnd();
+    glPopAttrib();
+}

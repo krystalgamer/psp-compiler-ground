@@ -32,7 +32,11 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_VertexArra
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_VertexArray", _ZN5scene11VertexArrayC1Ev);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_VertexArray", _ZN5scene11VertexArray11extractFromERKNS_8MeshDataE);
+void scene::VertexArray::extractFrom(const MeshData &md)
+{
+    std::vector<short> v;
+    extractFrom(md, v);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_VertexArray", _ZN5scene11VertexArray11extractFromERKNS_8MeshDataESt6vectorIsSaIsEE);
 
