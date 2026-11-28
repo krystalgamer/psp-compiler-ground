@@ -107,7 +107,18 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_cache", I3dPkSetPicture
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_cache", I3dPkSetClut);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_cache", I3dPkSelectTex);
+unsigned int *I3dPkSetClut();
+unsigned int *I3dPkSetPicture();
+unsigned int *I3dPkSelectTex(unsigned int *p, char *m, int idx)
+{
+	char *t = *(char **)(*(char **)(*(char **)(m + 0x18) + 0x814) + 0xFC) + (*(int **)(m + 0x24))[idx] * 16;
+	void *clut = *(void **)(t + 8);
+	void *pic;
+	if (clut != NULL) p = I3dPkSetClut(p, clut, *(int *)(t + 0xC));
+	pic = *(void **)(t + 4);
+	if (pic != NULL) p = I3dPkSetPicture(p, pic);
+	return p;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_cache", I3dPkSendFogStatus);
 
