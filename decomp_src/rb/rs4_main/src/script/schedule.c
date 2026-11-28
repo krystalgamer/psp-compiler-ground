@@ -54,13 +54,169 @@ int ScheduleGetTask(void *s, int idx)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/schedule", ScheduleTask);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/schedule", D_000FF9BC);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/schedule", D_000FF9C0);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/schedule", D_000FF9C4);
+void *_memAllocZero(int, const void *, int);
+int _memFree(void *, const void *, int);
+int taskKill(void *, int, int);
+int taskProc(void *, int, int, int);
+int taskDefaultMsg(void *, unsigned int, int, int);
+int sceKernelGetGPI();
+void drawPrintf(const char *, ...);
+int SequenceExec(void *, int, unsigned int, float);
+extern const float D_000FF9EC;
+typedef struct {
+	unsigned int w0a : 16;
+	unsigned int ref : 1;
+	unsigned int w0b : 15;
+	unsigned int w1a : 5;
+	unsigned int idx : 5;
+	int ofs : 10;
+	int ofs2 : 10;
+	unsigned int w1b : 2;
+} ScVar;
+float SequenceGetVariableFlt(void *, int, ScVar *, int);
+typedef union {
+	float time;
+	struct {
+		unsigned int idx : 5;
+		int ofs : 10;
+		int ofs2 : 10;
+		unsigned int pad : 6;
+		int var : 1;
+	} v;
+	int w;
+} ScTime;
+typedef struct { ScTime t; int seq; } ScItem;
+typedef struct { ScItem *items; int n; } ScList;
+typedef struct { char pad0[0x1C]; unsigned char prio; char pad1D[0x40 - 0x1D]; ScList *list; } ScScr;
+typedef struct { char pad[0x30]; ScScr *scr; } ScProg;
+typedef struct { int seq; int f4; int f8; int fC; int f10; int f14; float time; int idx; } ScWork;
+typedef struct {
+	char pad0[0x10];
+	ScProg *prog;
+	char pad14[0x24 - 0x14];
+	unsigned char f24;
+	char pad25[3];
+	int f28;
+	int f2C;
+	ScScr *scr;
+	ScWork *swork;
+	char pad38[0x40 - 0x38];
+	union { int arg; struct { unsigned short sched; short actor; } s; } u;
+} ScTask;
+#define cassert(e, l) if (!(e)) consPrintf(&D_000FF918, &D_000FF8F0, l, "ScheduleTask", #e)
+int ScheduleTask(ScTask *Tp, unsigned int msg, int a, int arg)
+{
+	ScProg *Pp;
+	ScScr *Sp;
+	ScWork *SWp;
+	switch (msg) {
+	case 0:
+	{
+		unsigned short ev;
+		cassert(Tp, 0x52);
+		Pp = Tp->prog;
+		cassert(Pp, 0x58);
+		Tp->f28 = -1;
+		Tp->u.arg = arg;
+		ev = arg;
+		Tp->f2C = 0x21;
+		Sp = Pp->scr;
+		SWp = _memAllocZero(0x20, &D_000FF8F0, 0x64);
+		cassert(SWp, 0x65);
+		Tp->f24 = Sp->prio;
+		Tp->swork = SWp;
+		Tp->scr = Sp;
+		ScheduleSetTask(Sp, ev, (int)Tp);
+		return (int)Tp;
+	}
+	case 4:
+		ScheduleSetTask(Tp->scr, Tp->u.s.sched, 0);
+		return (int)Tp;
+	case 1:
+		{
+			void *w = Tp->swork;
+			Tp->swork = NULL;
+			_memFree(w, &D_000FF8F0, 0x7F);
+		}
+		return 0;
+	case 2:
+		{
+		int sched, actor;
+		ScWork *SWp;
+		ScList *l;
+		SWp = Tp->swork;
+		sched = Tp->u.s.sched;
+		actor = Tp->u.s.actor;
+		SWp->time += D_000FF9EC;
+		if (sceKernelGetGPI() & 0x20)
+			drawPrintf("%s : Schedule %d : Actor %d : Time %f\n", "ScheduleTask", sched, actor, SWp->time);
+		if (SWp->fC != 0)
+			return 0;
+		if (SWp->f10 != 0)
+			return 0;
+		l = &Tp->scr->list[sched];
+		if (SWp->seq != 0)
+			goto exec;
+		do {
+			ScItem *it;
+			float t;
+			if (SWp->idx >= l->n)
+				break;
+			it = &l->items[SWp->idx];
+			if (it->t.v.var) {
+				ScVar var;
+				var.ref = 0;
+				var.idx = it->t.v.idx;
+				var.ofs = it->t.v.ofs;
+				var.ofs2 = it->t.v.ofs2;
+				t = SequenceGetVariableFlt(Tp, 0, &var, 0);
+			} else {
+				t = it->t.time;
+			}
+			if (!(t <= SWp->time))
+				return 0;
+			SWp->seq = it->seq;
+			SWp->idx++;
+		exec:
+			SWp->seq = SequenceExec(Tp, SWp->seq, actor, SWp->time);
+			if (SWp->seq == 0 && SWp->idx >= l->n) {
+				taskKill(Tp, 0, 0);
+				return 0;
+			}
+		} while (SWp->seq == 0);
+		}
+		return 0;
+	case 3:
+		return 0;
+	case 5:
+		return 0;
+	case 8:
+		{
+		ScWork *w = Tp->swork;
+		if (w->fC != 0 && w->fC == a) {
+			w->fC = 0;
+			taskProc(Tp, 2, 0, 0);
+		}
+		}
+		return 0;
+	default:
+		{
+		ScWork *w = Tp->swork;
+		if (w->fC != 0 && w->fC == a && w->f10 != 0 && w->f10 == msg) {
+			w->fC = 0;
+			w->f10 = 0;
+			taskProc(Tp, 2, 0, 0);
+			return 0;
+		}
+		}
+		break;
+	case 0x62:
+		if (arg == Tp->u.s.actor)
+			taskKill(Tp, 0, 0);
+		return 0;
+	}
+	return taskDefaultMsg(Tp, msg, a, arg);
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/schedule", D_000FF9EC);
 
