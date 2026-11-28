@@ -340,7 +340,21 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_com
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_process_response_header);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_skip_query_section);
+int rt_msg_get_ubyte();
+int rt_comm_skip_query_section(int a, char *buf, unsigned int len, unsigned int *off)
+{
+    unsigned char n = 0;
+
+    for (;;) {
+        rt_msg_get_ubyte(buf + *off, &n);
+        if (n == 0) break;
+        *off = *off + n + 1;
+        if (*off > len) return 0xC35A;
+    }
+    *off += 5;
+    if (*off > len) return 0xC35A;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_process_rr);
 
@@ -450,7 +464,27 @@ void rt_comm_echo_set_default_options(int *arg0) {
     *arg0 = 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_echo_enable);
+int rt_comm_create();
+int rt_comm_echo_enable(int *cfg)
+{
+    RtLinkAddr addr;
+    int params[4];
+    int ret = 5;
+
+    if ((&gEchoInfo)[0] == 0) {
+        params[0] = 3;
+        params[1] = 0;
+        params[2] = 0;
+        params[3] = 0;
+        rt_comm_linkaddress_setnull(&addr);
+        ret = rt_comm_create(&(&gEchoInfo)[1], &addr, 0, params);
+        if (ret == 0) {
+            (&gEchoInfo)[2] = *cfg;
+            (&gEchoInfo)[0] = 1;
+        }
+    }
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_echo_send);
 
