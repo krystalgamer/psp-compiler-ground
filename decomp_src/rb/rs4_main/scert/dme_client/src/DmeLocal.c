@@ -532,7 +532,33 @@ void MsgClientDisconnectCallback(char *c)
     (*(DmeDiscCb *)(c + 0x430))((DmeDiscMsg *)&m);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetSetDefaultConnectParams);
+unsigned int randomMT();
+int NetSetDefaultConnectParams(int *p)
+{
+    if (p == NULL) return 0x17;
+    memset(p, 0, 0x164);
+    p[1] = 0x100;
+    p[2] = 0;
+    if (gUDPInterfacePtr != NULL)
+        p[0x148 / 4] = *(int *)((char *)gUDPInterfacePtr + 0x84) + 1;
+    else
+        p[0x148 / 4] = randomMT() % 1000 + 6000;
+    p[0xA4 / 4] = 0;
+    p[0xAC / 4] = 0;
+    p[0xB4 / 4] = 0;
+    p[0xBC / 4] = 0;
+    p[0xC4 / 4] = 0;
+    p[0xC8 / 4] = 0;
+    p[0x14C / 4] = 0;
+    p[0x150 / 4] = 0;
+    p[0x158 / 4] = 1;
+    p[0x154 / 4] = 0;
+    p[0x15C / 4] = 0x2000;
+    p[0x160 / 4] = 0x2000;
+    NetSetDefaultStreamMediaParams(p + 0xD4 / 4);
+    p[0] = 1;
+    return 0;
+}
 
 int NetConnect_ClientServerTCP(); int NetConnect_PeerToPeerUDP(); int rt_timebase_restart();
 int NetIConnect(int *ctx, int *out)
@@ -874,13 +900,27 @@ int NetCheckForPingTimeouts(void)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIsPeerToPeerHost);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", EchoRequestCallback);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetProcessEchoRequests);
-
 typedef struct { unsigned char state; char pad[3]; DmeLinkAddr addr; char pad2[0x10]; void (*cb)(int, char *, int); } DmeEchoReq;
 extern DmeEchoReq gPendingEchoRequest[256];
 extern int gbEchoRequestsEnabled;
+int rt_comm_linkaddress_isnull(DmeLinkAddr); int rt_comm_linkaddress_isequal(DmeLinkAddr, DmeLinkAddr); int rt_time_elapsed();
+void EchoRequestCallback(DmeLinkAddr addr, int id)
+{
+    unsigned int i;
+    DmeEchoReq *r;
+
+    if (rt_comm_linkaddress_isnull(addr)) return;
+    for (i = 0, r = gPendingEchoRequest; i < 256; i++, r++) {
+        if (rt_comm_linkaddress_isequal(r->addr, addr) && r->state == 2 && ((id ^ *(int *)((char *)r + 0xC)) & 0xFFFF) == 0) {
+            rt_time_elapsed((char *)r + 0x10, (char *)r + 0x18);
+            r->state = 3;
+            return;
+        }
+    }
+}
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetProcessEchoRequests);
+
 int rt_comm_echo_shutdown(); int NetMapRtError();
 int NetDisablePingIPs(void)
 {
