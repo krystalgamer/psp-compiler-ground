@@ -2122,7 +2122,109 @@ void laser_init(void)
 		((RG_T *)&D_003538BC)[i].f0 = 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", laser_start);
+int bgm_rank(void);
+int inv_laser_start(int type, int mode);
+void efc_laser_start(int type, int no, float x, float y, float z);
+float rot2posf_x(float len, float rot);
+float rot2posf_y(float len, float rot);
+void laser_start(int type, int owner, float ang, float x, float y, float z, float vx, float vy, float vz)
+{
+	int i, id;
+	float s[2];
+	L2V3 t;
+	LASER_T *l;
+
+	for (i = 0; i < 32; i++) {
+		l = &gmain.laser[i];
+		if (l->f0 == 0) {
+			id = -1;
+			if (type == 0) {
+				id = inv_laser_start(3, 0);
+				s[0] = 10.0f;
+				s[1] = 5.0f;
+				efc_laser_start(type, 9, x, y, z);
+			} else if (type == 1) {
+				id = inv_laser_start(2, 1);
+				s[0] = 10.0f;
+				s[1] = 3.0f;
+				efc_laser_start(type, 31, x, y, z);
+			} else if (type == 2) {
+				if (bgm_rank() + 1 < 8) {
+					id = inv_laser_start(0, 1);
+					s[0] = (bgm_rank() + 1) * 5.0f * 0.125f + 5.0f;
+					s[1] = (bgm_rank() + 1) * 5.0f * 0.125f + 5.0f;
+				} else {
+					id = inv_laser_start(4, 1);
+					s[0] = 15.0f;
+					s[1] = 20.0f;
+				}
+				efc_laser_start(type, 9, x, y, z);
+			} else if (type == 3) {
+				id = inv_laser_start(1, 1);
+				s[0] = 20.0f;
+				s[1] = 20.0f;
+			} else if (type == 4) {
+				id = inv_laser_start(3, 0);
+				s[0] = 5.0f;
+				s[1] = 2.0f;
+			} else if (type == 5) {
+				if (bgm_rank() + 1 < 8) {
+					id = inv_laser_start(0, 1);
+					s[0] = (bgm_rank() + 1) * 5.0f * 0.125f + 10.0f;
+					s[1] = (bgm_rank() + 1) * 5.0f * 0.125f + 10.0f;
+				} else {
+					id = inv_laser_start(4, 1);
+					s[0] = 20.0f;
+					s[1] = 20.0f;
+				}
+			}
+			if (id == -1)
+				return;
+			l->f0 = 1;
+			l->f4 = id;
+			l->f8 = type;
+			l->f1c = owner;
+			l->f18 = 0;
+			l->pos.x = x;
+			l->pos.y = y;
+			l->pos.z = z;
+			l->f0c = 0;
+			l->f10 = 0;
+			l->f30.x = vx;
+			l->f30.y = vy;
+			l->f30.z = vz;
+			t.x = x - vx * s[0];
+			t.y = y - vy * s[0];
+			t.z = z - vz * s[0];
+			l->p[0].x = x - rot2posf_x(s[1], ang + 90.0f);
+			l->p[0].y = y;
+			l->p[0].z = z + rot2posf_y(s[1], ang + 90.0f);
+			l->p[1].x = t.x - rot2posf_x(s[1], ang + 90.0f);
+			l->p[1].y = t.y;
+			l->p[1].z = t.z + rot2posf_y(s[1], ang + 90.0f);
+			l->p[2].x = x - rot2posf_x(s[1], ang - 90.0f);
+			l->p[2].y = y;
+			l->p[2].z = z + rot2posf_y(s[1], ang - 90.0f);
+			l->p[3].x = t.x - rot2posf_x(s[1], ang - 90.0f);
+			l->p[3].y = t.y;
+			l->p[3].z = t.z + rot2posf_y(s[1], ang - 90.0f);
+			l->p[4].x = x;
+			l->p[4].y = y + s[1];
+			l->p[4].z = z;
+			l->p[5].x = t.x;
+			l->p[5].y = t.y + s[1];
+			l->p[5].z = t.z;
+			l->p[6].x = x;
+			l->p[6].y = y - s[1];
+			l->p[6].z = z;
+			l->p[7].x = t.x;
+			l->p[7].y = t.y - s[1];
+			l->p[7].z = t.z;
+			l->f20 = s[1];
+			return;
+		}
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", laser_control);
 
