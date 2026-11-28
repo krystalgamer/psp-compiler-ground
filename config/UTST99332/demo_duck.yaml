@@ -767,7 +767,6 @@ segments:
       - { start: 0x18CFCC, type: .bss, vram: 0x191120, name: main_objs/sh_Env }
       - { start: 0x18CFCC, type: bss, vram: 0x1911A4, name: bss_1911A4 }
       - { start: 0x18CFCC, type: .bss, vram: 0x191228, name: main_objs/Icosahedron_Bin }
-      - { start: 0x18CFCC, type: bss, vram: 0x19132C, name: bss_19132C }
       - { start: 0x18CFCC, type: .bss, vram: 0x191350, name: main_objs/sh_Matrix }
       - { start: 0x18CFCC, type: bss, vram: 0x191428, name: bss_191428 }
       - { start: 0x18CFCC, type: .bss, vram: 0x19152C, name: main_objs/sh_PolarFunction }

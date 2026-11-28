@@ -67,6 +67,15 @@ math::vector_xyzw Icosahedron::on_sphere(math::vector_xyzw v)
     return v;
 }
 
+/* STAND-IN: tri_subdiv (still asm) owns the static local color_count; it is defined here so that cc1plus
+   emits it while expanding this position, between in_negative_half_space's guard (emitted at parse time) and o */
+extern "C" void Icosahedron_tri_subdiv_statics(int v) __attribute__((section(".discard.asm")));
+extern "C" void Icosahedron_tri_subdiv_statics(int v)
+{
+    static int color_count __asm__("_ZZN11Icosahedron10tri_subdivEN4math11vector_xyzwES1_S1_hhE11color_count");
+    color_count = v;
+}
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/Icosahedron_Bin", _ZN11Icosahedron10tri_subdivEN4math11vector_xyzwES1_S1_hh);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/Icosahedron_Bin", _ZN11Icosahedron8draw_binERNS_3BinEh);
@@ -114,7 +123,12 @@ bool Icosahedron::Bin::intersect(math::vector_xyzw v) const
     return true;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/Icosahedron_Bin", _ZNK11Icosahedron3Bin22in_negative_half_spaceEN4math11vector_xyzwE);
+extern const float D_001727C8;
+bool Icosahedron::Bin::in_negative_half_space(math::vector_xyzw v) const
+{
+    static const math::vector_xyzw o(0, 0, 0, D_001727C8);
+    return math::dot(v, _v[0] - o) < 0 && math::dot(v, _v[1] - o) < 0 && math::dot(v, _v[2] - o) < 0;
+}
 
 Icosahedron::Bin *Icosahedron::Bin::searchLeaf(math::vector_xyzw v)
 {

@@ -490,7 +490,6 @@ bss 0x18B3E8 -
 rodata 0x16F838 main_objs/Icosahedron_Bin
 rodata 0x16F854 -
 bss 0x18DDA8 main_objs/Icosahedron_Bin
-bss 0x18DEAC -
 rodata 0x166240 main_objs/scene_Graph
 rodata 0x16625C -
 bss 0x18BC14 main_objs/scene_Graph

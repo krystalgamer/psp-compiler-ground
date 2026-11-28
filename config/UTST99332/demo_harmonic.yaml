@@ -748,7 +748,6 @@ segments:
       - { start: 0x189CE4, type: .bss, vram: 0x18DCA0, name: main_objs/sh_Env }
       - { start: 0x189CE4, type: bss, vram: 0x18DD24, name: bss_18DD24 }
       - { start: 0x189CE4, type: .bss, vram: 0x18DDA8, name: main_objs/Icosahedron_Bin }
-      - { start: 0x189CE4, type: bss, vram: 0x18DEAC, name: bss_18DEAC }
       - { start: 0x189CE4, type: .bss, vram: 0x18DED0, name: main_objs/sh_Matrix }
       - { start: 0x189CE4, type: bss, vram: 0x18DFA8, name: bss_18DFA8 }
       - { start: 0x189CE4, type: .bss, vram: 0x18E0AC, name: main_objs/sh_PolarFunction }
