@@ -1,3 +1,4 @@
+/* cflags: -O2 -fno-strict-aliasing */
 #include "common.h"
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_gim_control", pow2);
@@ -64,11 +65,46 @@ int I3rRoot__CopyClipSphereA(RootCS *root, float *center, float *radius)
 
 const float D_001090B8 = 1.0f;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_gim_control", I3rRoot__OffsetMaterialKey);
+typedef struct { float *key; int pad[3]; } MatEnt;
+int I3rRoot__OffsetMaterialKey(int *root, int i, float d)
+{
+    MatEnt *t = *(MatEnt **)(root[6] + 8);
+    float *m;
+    t += i;
+    m = t->key;
+    if (m) *m += d;
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_gim_control", I3rRoot__OffsetAllMaterialKey);
+int I3rRoot__OffsetAllMaterialKey(int *root, float d)
+{
+    unsigned int i, n;
+    int *r = root + 4;
+    n = *(unsigned int *)(r[2] + 4) << 8 >> 8;
+    for (i = 0; i < n; i++) {
+        MatEnt *t = *(MatEnt **)(r[2] + 8);
+        float *m;
+        t += i;
+        m = t->key;
+        if (m) *m += d;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_gim_control", I3rRoot__UpdateMarkedMaterial);
+int I3rRoot__UpdateMarkedMaterial(int *root)
+{
+    int i, n;
+    int *r = root + 4;
+    n = *(unsigned int *)(r[2] + 4) << 8 >> 8;
+    for (i = 0; i < n; i++) {
+        MatEnt *t = *(MatEnt **)(r[2] + 8);
+        char *m;
+        t += i;
+        m = (char *)t->key;
+        if (*(unsigned char *)(m + 0xC)) (*(short *)(m + 8))++;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_gim_control", I3rRoot__ReplaceStqMapEntity);
 

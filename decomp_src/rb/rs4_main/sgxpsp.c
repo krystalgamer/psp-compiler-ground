@@ -1,3 +1,4 @@
+/* cflags: -O2 -fno-strict-aliasing */
 #include "common.h"
 #include "m2c_macros.h"
 int *sgxMalloc(M2C_UNK, M2C_UNK);                   /* extern */

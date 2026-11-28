@@ -1,3 +1,4 @@
+/* cflags: -O2 -fno-strict-aliasing */
 #include "common.h"
 #include "m2c_macros.h"
 extern unsigned char D_00109C00;

@@ -1,3 +1,4 @@
+/* cflags: -O2 -fno-strict-aliasing */
 #include "common.h"
 #include "m2c_macros.h"
 int I3dPkDrawSphereMarkerA(int, int, int, int, float); /* extern */
@@ -291,7 +292,15 @@ void I3dSortTag__ConstructAsHead(int *t)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dSorter__OpenPacket_ByUint32);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dSorter__ClosePacket);
+typedef struct { char p0[0x10]; char *rd; char p1[0xC]; char *cur; char p2[4]; int used; } SorterP;
+int I3dSorter__ClosePacket(SorterP *s, char *end)
+{
+	char *c = s->cur;
+	s->used += end - *(char **)(c + 0x8);
+	*(char **)(c + 0xC) = end;
+	*(unsigned int *)(s->rd + 0xF4) = (((unsigned int)end + 0x87) & 0x3FFFFF80) | 0x40000000;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dSorter__OpenPacketUca_ByUint32);
 
@@ -299,7 +308,15 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dSorter__Clo
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dSorter__OpenPacketAndChangeState_ByUint32);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dSorter__ClosePacketAndChangeState);
+typedef struct { char p0[0x10]; char *rd; char p1[0xC]; char *cur; char p2[4]; int used; } SorterP2;
+int I3dSorter__ClosePacketAndChangeState(SorterP2 *s, char *end)
+{
+	char *c = s->cur;
+	s->used += end - *(char **)(c + 0x18);
+	*(char **)(c + 0x1C) = end;
+	*(unsigned int *)(s->rd + 0xF4) = (((unsigned int)end + 0x87) & 0x3FFFFF80) | 0x40000000;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dSorter__OpenPacketAndChangeStateUca_ByUint32);
 

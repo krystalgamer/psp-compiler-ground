@@ -1,3 +1,4 @@
+/* cflags: -O2 -fno-strict-aliasing */
 #include "common.h"
 #include "m2c_macros.h"
 M2C_UNK sgxFree(int);                               /* extern */
@@ -368,7 +369,17 @@ void SesqLoopBreak(char *s, int a, int b)
     }
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", SesqPlay);
+int SesqPlay(char *s, int a, int b, int c, int d)
+{
+	int cmd[12];
+	cmd[1] = a;
+	cmd[0] = 0;
+	cmd[2] = *(short *)*(int *)(s + 0x20);
+	cmd[3] = b;
+	cmd[4] = c;
+	cmd[5] = d;
+	return sgxPortCommand(*(short *)(s + 0x1A), (int)cmd);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", SesqPlayWave);
 
