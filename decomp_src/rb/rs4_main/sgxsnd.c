@@ -20,7 +20,7 @@ void SlotStopRes(int, int, float);
 void SlotStopName(int, int, float);
 void SlotStopCategory(int, int, float);
 void SlotStopAll(int, float);
-void SlotDoFade(int, int, int);
+void SlotDoFade(int, int, int, float);
 void sgxSndSetStrBufCB(int, int, int, int);
 extern const char D_0010A504[];
 extern const char D_0010A50C[];
@@ -497,9 +497,47 @@ int ConvVol12(int arg0) {
     return arg0 << 5;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndRelease);
+extern const char D_0010A518[];
+void sgxSndRelease(int id)
+{
+    char *s = SlotGetAt_7DD48(id, D_0010A518);
+    char *q;
+    int f;
+    if (s == NULL) return;
+    q = s + 0x86;
+    f = q[1];
+    if ((f & 8) == 8) goto skip;
+    sgxDI();
+    s[0x86] |= 8;
+    q[1] = (q[1] & ~8) | 8;
+    sgxEI();
+skip:
+    sgxDI();
+    *(int *)(s + 0xC) |= 8;
+    sgxEI();
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndPause);
+extern const char D_0010A520[];
+void sgxSndPause(int id, int pause)
+{
+    int v = pause ? 4 : 0;
+    char *s = SlotGetAt_7DD48(id, D_0010A520);
+    char *q;
+    int f;
+    if (s == NULL) return;
+    q = s + 0x86;
+    f = q[1];
+    if ((f & 4) != v) {
+        sgxDI();
+        s[0x86] |= 4;
+        q[1] = (q[1] & ~4) | v;
+        sgxEI();
+    }
+    sgxDI();
+    if (pause) *(int *)(s + 0xC) |= 4;
+    else *(int *)(s + 0xC) &= ~4;
+    sgxEI();
+}
 
 extern const char D_0010A528[];
 void sgxSndSetVolume(int id, int l, int r)
@@ -716,11 +754,29 @@ int sgxSndGetMidiCtrlMarkerRangeHi(int id)
     return M2C_FIELD(s, signed char *, 0xE3);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", SlotDoFade);
-
-void sgxSndDoFade(int a0, int a1)
+extern const char D_0010A6C4[];
+void SlotDoFade(int id, int vol, int flag, float t)
 {
-    SlotDoFade(a0, a1, 0);
+    char *s = SlotGetAt_7DD48(id, D_0010A6C4);
+    if (s == NULL) return;
+    vol = vol < -128 ? -128 : (vol > 128 ? 128 : vol);
+    if (t > 0.0f) {
+        *(short *)(s + 0x2A) = *(short *)(s + 0x26);
+        *(short *)(s + 0x28) = ConvVol12(vol);
+        *(float *)(s + 0x2C) = 0.0f;
+        *(float *)(s + 0x30) = t;
+    } else {
+        *(short *)(s + 0x26) = ConvVol12(vol);
+        *(float *)(s + 0x2C) = 0.0f;
+        *(float *)(s + 0x30) = 0.0f;
+        SlotUpdateVolume(s, 1);
+    }
+    if (flag) s[0xE5] = 1;
+}
+
+void sgxSndDoFade(int a0, int a1, float t)
+{
+    SlotDoFade(a0, a1, 0, t);
 }
 
 extern const char D_0010A6CC[];
@@ -856,7 +912,22 @@ void sgxSndSetMasterVolume(int a, int b)
     }
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndUpdateSlotVolumeAll);
+int sgxResGetTuningVolume(int, const char *);
+void sgxSndUpdateSlotVolumeAll(int tune)
+{
+    int n, i;
+    char **list;
+    sgxDI();
+    list = __builtin_alloca(D_0011FCAC * sizeof(void *));
+    n = MakeSlotList((void **)list);
+    sgxEI();
+    for (i = 0; i < n; i++) {
+        char *p = list[i];
+        if (tune && *(short *)(p + 0x12) >= 0 && *(char **)(p + 0x90) && **(char **)(p + 0x90))
+            *(short *)(p + 0x24) = sgxResGetTuningVolume(*(short *)(p + 0x12), *(char **)(p + 0x90));
+        SlotUpdateVolume(p, 1);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxCategorySetSoundRange);
 
