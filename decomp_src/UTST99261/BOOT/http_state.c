@@ -36,6 +36,18 @@ unsigned int strlen(const char *);
 int sceKernelTerminateThread(int);
 int sceKernelDeleteThread(int);
 void delThreadTbl(void *);
+typedef struct OSThreadAttr { int stacksize; int priority; } OSThreadAttr;
+typedef struct OSPrefUI { char pad[0x3C]; int threadPriority; } OSPrefUI;
+extern OSPrefUI *gPREF_UI;
+int esp_psThread(void);
+int esp_loThread(void);
+int esp_jsThread(void);
+int esp_iomThread(void);
+int esp_timerThread(void);
+int esp_msgThread(void);
+int addThreadTbl(OSThread *t);
+int sceKernelCreateThread(const char *name, void *entry, int prio, int stack, unsigned int attr, void *opt);
+int sceKernelStartThread(int thid, unsigned int len, void *argp);
 int http_state(int h)
 {
     int st;
@@ -193,7 +205,79 @@ int dumyFunc(int a, DumyArg *p)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_state", OS_thread_create);
+int OS_thread_create(int *th, OSThreadAttr *attr, void (*func)(void *), void *arg)
+{
+    DumyArg da;
+    char *name = NULL;
+    int stack;
+    int prio;
+    int tid;
+    int sema;
+    OSThread *t;
+
+    if (attr == NULL) {
+        if (func == (void *)esp_psThread) {
+            name = "pspBrowser-Parser";
+            stack = 0x4000;
+            prio = gPREF_UI->threadPriority;
+        } else if (func == (void *)esp_loThread) {
+            name = "pspBrowser-Layout";
+            stack = 0x4000;
+            prio = gPREF_UI->threadPriority;
+        } else if (func == (void *)esp_jsThread) {
+            name = "pspBrowser-JavaScript";
+            stack = 0x4000;
+            prio = gPREF_UI->threadPriority;
+        } else if (func == (void *)esp_iomThread) {
+            name = "pspBrowser-IOM";
+            stack = 0x4000;
+            prio = gPREF_UI->threadPriority;
+        } else if (func == (void *)esp_timerThread) {
+            name = "pspBrowser-Timer";
+            stack = 0x1000;
+            prio = gPREF_UI->threadPriority;
+        } else if (func == (void *)esp_msgThread) {
+            name = "pspBrowser-Message";
+            stack = 0x1000;
+            prio = gPREF_UI->threadPriority;
+        } else {
+            name = "pspBrowser-Unknown";
+            stack = 0x8000;
+            prio = gPREF_UI->threadPriority;
+        }
+    } else {
+        stack = attr->stacksize;
+        prio = attr->priority;
+    }
+    da.func = func;
+    da.arg = arg;
+    tid = sceKernelCreateThread(name, dumyFunc, prio, stack, 0x204000, NULL);
+    if (tid < 0)
+        return 3;
+    if (sceKernelStartThread(tid, 8, &da) < 0) {
+        sceKernelDeleteThread(tid);
+        return 3;
+    }
+    sema = sceKernelCreateSema("pspBrowser-thread", 0, 0, 1, NULL);
+    if (sema < 0) {
+        sceKernelTerminateThread(tid);
+        sceKernelDeleteThread(tid);
+        return 3;
+    }
+    t = MEM_malloc(0, sizeof(OSThread));
+    if (t == NULL)
+        return 4;
+    t->f0 = tid;
+    t->f4 = (int)name;
+    t->f8 = stack;
+    t->sema = sema;
+    t->retval = NULL;
+    t->f14 = 0;
+    if (addThreadTbl(t) != 0)
+        return 3;
+    *th = (unsigned int)t >> 1;
+    return 0;
+}
 
 void OS_thread_exit(void *ret)
 {
