@@ -178,7 +178,21 @@ int func_00005614(u_long cmd, void *data)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/if", func_000057D8);
+void func_000057D8(void)
+{
+	if_index = 0;
+	if (D_0000B068 > 0)
+		D_0000B034();
+	TAILQ_INIT(&ifnet);
+	__builtin_memset(D_0000BB04, 0, sizeof(D_0000BB04));
+	__builtin_memset(D_0000BAE4, 0, sizeof(D_0000BAE4));
+	ifindex2ifnet = D_0000BB04;
+	ifnet_addrs = D_0000BAE4;
+	if (D_0000B06C > 0)
+		D_0000B064();
+	_sce_pspnet_callout_init(&if_slowtimo_ch);
+	if_slowtimo_body();
+}
 
 int _sce_pspnet_if_nulloutput(struct ifnet *ifp, struct mbuf *m, void *dst, void *rt)
 {
