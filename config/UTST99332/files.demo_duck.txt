@@ -608,3 +608,6 @@ bss 0x18D85C -
 # CubeMap float pools
 rodata 0x1637E0 main_objs/CubeMap_Face_Texture
 rodata 0x16383C -
+# CubeMap statics
+bss 0x18DF60 main_objs/CubeMap_Face_Texture
+bss 0x18DFE4 -

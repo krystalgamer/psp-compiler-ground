@@ -2,7 +2,13 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN7CubeMap4Face7TextureC2Ev");
+__asm__(".globl _GLOBAL__D__ZN7CubeMap4Face7TextureC2Ev");
 #include "../gl.hpp"
 
 /* the strings stay in the module's .rodata (asm) */
@@ -17,8 +23,6 @@ extern const char init_texture_name[] __asm__("_ZZN7CubeMap12init_textureERNS_4F
         common::common_internal::on_error(); \
         common::common_internal::clash(); \
     } while (0)
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/CubeMap_Face_Texture", _Z41__static_initialization_and_destruction_0ii_248C0);
 
 CubeMap::Face::Texture::Texture() : _id(0)
 {
@@ -48,7 +52,6 @@ CubeMap::CubeMap()
     init_face((FaceEnum)4);
     init_face((FaceEnum)5);
 }
-
 
 void CubeMap::setBasename(const char *name)
 {
@@ -204,19 +207,3 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/CubeMap_Face_Tex
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/CubeMap_Face_Texture", _ZN7CubeMap16GetFaceTransformEi);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/CubeMap_Face_Texture", __tcf_0_272C4);
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_248C0");
-void _GLOBAL__I__ZN7CubeMap4Face7TextureC2Ev(void);
-void _GLOBAL__D__ZN7CubeMap4Face7TextureC2Ev(void);
-}
-
-void _GLOBAL__I__ZN7CubeMap4Face7TextureC2Ev(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN7CubeMap4Face7TextureC2Ev(void)
-{
-    static_init(0, 0xFFFF);
-}

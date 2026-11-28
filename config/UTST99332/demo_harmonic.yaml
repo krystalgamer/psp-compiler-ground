@@ -663,6 +663,8 @@ segments:
       - { start: 0x189CE4, type: .bss, vram: 0x18A9F8, name: main_objs/glutils_CheckerTexture }
       - { start: 0x189CE4, type: .bss, vram: 0x18AAD8, name: main_objs/vector_font_Console }
       - { start: 0x189CE4, type: bss, vram: 0x18AADC, name: bss_18AADC }
+      - { start: 0x189CE4, type: .bss, vram: 0x18AAE0, name: main_objs/CubeMap_Face_Texture }
+      - { start: 0x189CE4, type: bss, vram: 0x18AB64, name: bss_18AB64 }
       - { start: 0x189CE4, type: .bss, vram: 0x18AD18, name: main_objs/glutils_Material }
       - { start: 0x189CE4, type: .bss, vram: 0x18AD9C, name: main_objs/interp_Path }
       - { start: 0x189CE4, type: bss, vram: 0x18AE60, name: bss_18AE60 }
