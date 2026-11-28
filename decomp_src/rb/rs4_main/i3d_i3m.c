@@ -3,6 +3,12 @@
 #include "m2c_macros.h"
 M2C_UNK I3dQtSlerp(int, int, int);                  /* extern */
 M2C_UNK I3dVecInterA(int, int, int, float);           /* extern */
+typedef struct { int a[3]; } I3mNodeAnimX;
+typedef struct { float m[12]; } I3mPostureX;
+int I3mNodeAnim__GetSectionByTime(I3mNodeAnimX *, int, float);
+int I3mSection__GetPostureA(int, I3mPostureX *, float, int, void *);
+void GetBlendPosture(I3mPostureX *, void *, I3mNodeAnimX *, float, void *, I3mNodeAnimX *, float, float, int);
+void I3mPosture__InterPolateA(int, int, int, float);
 
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_i3m", GetBlendPosture);
@@ -14,10 +20,6 @@ float I3mRoot__GetMaxTime(void *arg0) {
     return M2C_FIELD(arg0, float *, 0x18);
 }
 
-typedef struct { int a[3]; } I3mNodeAnimX;
-typedef struct { float m[12]; } I3mPostureX;
-int I3mNodeAnim__GetSectionByTime(I3mNodeAnimX *, int, float);
-int I3mSection__GetPostureA(int, I3mPostureX *, float, int, void *);
 void I3mRoot__GetMotionA(char *m, I3mPostureX *out, int a2, float t)
 {
     int n = *(unsigned short *)(m + 0x14);
@@ -38,7 +40,6 @@ void I3mRoot__GetMotionTA(char *m, I3mPostureX *out, float *t, int a2)
     }
 }
 
-void GetBlendPosture(I3mPostureX *, void *, I3mNodeAnimX *, float, void *, I3mNodeAnimX *, float, float, int);
 void I3mRoot__GetBlendMotionA(char *m, I3mPostureX *out, char *m2, int a3, float f0, float f1, float f2)
 {
     int n = *(unsigned short *)(m + 0x14);
@@ -71,7 +72,6 @@ void I3mRoot__GetBlendMotionBTA(char *m, I3mPostureX *out, float *t1, char *m2, 
         GetBlendPosture(out + i, m, &(*(I3mNodeAnimX **)(m + 0x1C))[i], t1[i], m2, &(*(I3mNodeAnimX **)(m2 + 0x1C))[i], t2[i], w[i], a6);
 }
 
-void I3mPosture__InterPolateA(int, int, int, float);
 void I3mRoot__BlendMotionA(char *m, I3mPostureX *out, int a2, float t, float w)
 {
     int n = *(unsigned short *)(m + 0x14);
@@ -120,7 +120,20 @@ void I3mRoot__BlendMotionBTA(char *m, I3mPostureX *out, float *t, float *w, int 
     }
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_i3m", I3mRoot__IsBlendPossible);
+int I3mRoot__Get_nNode();
+char *I3mRoot__GetNodeName(void *, unsigned short);
+int strcmp(const char *, const char *);
+int I3mRoot__IsBlendPossible(void *a, void *b)
+{
+    int n = I3mRoot__Get_nNode(a);
+    int i;
+    if (n != I3mRoot__Get_nNode(b)) return 0;
+    for (i = 0; i < n; i++) {
+        if (strcmp(I3mRoot__GetNodeName(a, i), I3mRoot__GetNodeName(b, i)) != 0)
+            return 0;
+    }
+    return 1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
