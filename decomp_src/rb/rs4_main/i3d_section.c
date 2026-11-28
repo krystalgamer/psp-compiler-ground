@@ -185,7 +185,14 @@ void UnpackKey2(float *out, I3mKey *key, I3mSec2 *sec)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_section", UnpackSection);
+void UnpackSection(float *out, unsigned short *key, I3mSec *sec, int flags)
+{
+	UnpackKey2(out, (I3mKey *)key, (I3mSec2 *)sec);
+	if (flags & 0x222) {
+		UnpackKey(out + 24, (I3mKey *)((sec->flags & 2) ? key + 4 : key + 6), sec);
+		UnpackKey(out + 36, (I3mKey *)((sec->flags & 2) ? key + 2 : key + 3), sec);
+	}
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/i3d_section", g_MatHermite);
 
