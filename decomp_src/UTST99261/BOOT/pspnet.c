@@ -40,6 +40,14 @@ int memcmp(const void *a, const void *b, unsigned int n);
 unsigned int strlen(const char *s);
 void *memset(void *p, int c, unsigned int n);
 void *memcpy(void *d, const void *s, unsigned int n);
+typedef union {
+    char name[128];
+    int i;
+} NETPARAM;
+int sceUtilityCreateNetParam(int conf);
+int sceUtilitySetNetParam(int param, void *val);
+int sceNetApctlConnect(int conf);
+int sceNetApctlGetState(int *state);
 void apctl_handler_EB714(int old, int state, int event, int error, void *arg)
 {
     if (old == 4 && state == 0 && event == 6)
@@ -310,7 +318,59 @@ out:
     return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspnet", _NecApConnectAP);
+int _NecApConnectAP(void)
+{
+    NETPARAM param;
+    int state;
+    int ret;
+    int prev;
+
+    prev = 0;
+    sceUtilityCreateNetParam(0);
+    strcpy(param.name, "temporary");
+    ret = sceUtilitySetNetParam(0, &param);
+    if (ret < 0) {
+        printf("sceUtilitySetNetParam() failed. ret = 0x%x\n", ret);
+        return ret;
+    }
+    bCreateNetParam = 1;
+    strcpy(param.name, gAPSSID);
+    sceUtilitySetNetParam(1, &param);
+    param.i = 0;
+    sceUtilitySetNetParam(2, &param);
+    param.i = 0;
+    sceUtilitySetNetParam(4, &param);
+    param.i = 0;
+    sceUtilitySetNetParam(8, &param);
+    gConnectState = 2;
+    ret = sceNetApctlConnect(0);
+    if (ret != 0)
+        goto fail2;
+    printf("Connecting to %s\n", gAPSSID);
+    while (_bNecApCanceled == 0) {
+        sceKernelDelayThread(500000);
+        if (_NecApGetTickCount() >= _gNecApTimeout) {
+            ret = -3;
+            break;
+        }
+        sceNetApctlGetState(&state);
+        if (state == 3 && prev != 3)
+            puts("IP Obtaining...");
+        if (state == 4) {
+            puts("Connect!");
+            ret = 1;
+            break;
+        } else if (state == 0)
+            break;
+        prev = state;
+    }
+    if (_bNecApCanceled)
+        ret = -8;
+    return ret;
+fail2:
+    printf("sceNetApctlConnect() failed. ret = 0x%x\n", ret);
+    return ret;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
