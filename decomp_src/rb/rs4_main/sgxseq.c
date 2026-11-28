@@ -205,7 +205,36 @@ void UnitFreeByID_81E8C(void *sv, int id) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", LoopBegProc);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", LoopEndProc);
+int sgxSndGetSyncSignalCount(int);
+extern const float D_0010ACEC;
+int LoopEndProc(char *s) {
+    int idx = *(int *)(s + 0x68);
+    char *snd;
+    signed char c;
+    if (idx < 0) {
+        if (gSgxDebugFlags & 1) sgxPrintfPref(gSgxPrefErr, D_0010A814, 0x258, "loop underflow\n");
+        return 1;
+    }
+    if (*(signed char *)(s + 0x56) == 0) {
+        snd = *(char **)(*(char **)(s + 0x10) + 0x10);
+        if (*(short *)(snd + 0xE6) >= 0) {
+            if (!(*(int *)(snd + 0xE8) < sgxSndGetSyncSignalCount(*(short *)(snd + 0xE6)))) return 0;
+            *(int *)(s + 0x48) -= (int)(*(float *)(snd + 0xEC) * D_0010ACEC);
+            *(int *)(*(char **)(s + 0x10) + 0xC) |= 0x100;
+            idx = *(int *)(s + 0x68);
+        }
+        {
+            signed char *e = (signed char *)(idx + (int)s + 0x60);
+            c = e[0xC];
+            if (c < 0 || e[0xC]-- > 0) {
+            *(int *)(s + 0x44) = *(int *)(s + 0x70 + idx * 4);
+            return 1;
+        }
+        }
+    }
+    *(int *)(s + 0x68) = idx - 1;
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", CmdPlaySeq);
 
