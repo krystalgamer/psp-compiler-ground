@@ -4,7 +4,22 @@
 M2C_UNK I3dResourceTag__PurgeCache();               /* extern */
 
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", RemapOnMemorySub);
+void RemapOnMemorySub(int *dst, int *a, int *b, int w) {
+    int x = 0;
+    unsigned int y = 0;
+    int i;
+    for (i = 0; i < w * 4; i += 4) {
+        int *s;
+        if (y < 4) s = a + (w * y + x);
+        else s = b + (w * (y - 4) + x);
+        y++;
+        dst[i + 0] = s[0];
+        dst[i + 1] = s[1];
+        dst[i + 2] = s[2];
+        dst[i + 3] = s[3];
+        if (y >= 8) { y = 0; x += 4; }
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", RemapOnMemoryHalf);
 
