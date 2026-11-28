@@ -12,7 +12,36 @@ extern int g_I3dGuEmuWork[];
 unsigned int *I3dGuDepthRange_PSP(unsigned int *, int, int);
 #define INS __builtin_allegrex_ins
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", CalculateVertexSize);
+extern const unsigned int D_00109620[];
+extern const unsigned int D_00109630[];
+int CalculateVertexSize(unsigned int vtype, int *pflags, unsigned int *palign) {
+    unsigned int a = D_00109620[vtype & 3];
+    unsigned int c = D_00109630[(vtype & 0x1C) >> 2];
+    unsigned int n = D_00109620[(vtype >> 5) & 3];
+    unsigned int p = D_00109620[(vtype >> 7) & 3];
+    unsigned int t = a;
+    unsigned int m;
+    int size;
+    int f = 0x180;
+    if (a < c) a = c;
+    if (a < n) a = n;
+    if (a < p) a = p;
+    m = a - 1;
+    size = t * 2;
+    if (size & m) size = (size + m) & ~m;
+    size += c;
+    if (size & m) size = (size + m) & ~m;
+    size += n * 3;
+    if (size & m) size = (size + m) & ~m;
+    size += p * 3;
+    if (size & m) size = (size + m) & ~m;
+    if (t) f = 0x183;
+    if (c) f |= 0x1C;
+    if (n) f |= 0x60;
+    if (pflags) *pflags = f;
+    if (palign) *palign = a;
+    return size;
+}
 
 void ClipCheck()
 {
