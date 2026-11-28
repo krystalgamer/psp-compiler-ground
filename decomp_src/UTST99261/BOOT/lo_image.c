@@ -107,6 +107,44 @@ void delLLIST(LLIST *list, LNODE *n);
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+void OS_timer_stop();
+void OS_timer_start();
+void proc_msg_PL1();
+void proc_msg_PL2();
+void proc_msg_PL3();
+void proc_msg_PL4();
+void proc_msg_PL5();
+void proc_msg_PL6();
+void proc_msg_PL7();
+void proc_msg_PL8();
+void proc_msg_PL11();
+void proc_msg_PL13();
+void proc_msg_PL15();
+void proc_msg_PL16();
+void proc_msg_PL17();
+void proc_msg_PL18();
+void proc_msg_PL19();
+void proc_msg_IL1();
+void proc_msg_IL2();
+void proc_msg_IL3();
+void proc_msg_IL4();
+void proc_msg_IL5();
+void proc_msg_JL1();
+void proc_msg_JL2();
+void proc_msg_JL3();
+void proc_msg_JL4();
+void proc_msg_JL5();
+void proc_msg_JL6();
+void proc_msg_JL7();
+void proc_msg_JL8();
+void proc_msg_JL9();
+void proc_msg_JL10();
+void proc_msg_JL11();
+void proc_msg_JL12();
+void proc_msg_JL13();
+void proc_msg_JL14();
+void proc_msg_JL15();
+void proc_msg_TM();
 int getRestImageTotalSquareSize(IMGLIST *list) {
     return -1;
 }
@@ -716,7 +754,144 @@ int countRequestedLLIST(LLIST *list, int doc) {
     return count;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", msgBranch);
+void msgBranch(LOMSG *msg) {
+    if (lo_global.flags & 0x10) {
+        if (msg->unk0 != 8) {
+            return;
+        }
+        if (msg->unkC != 0x803 && msg->unkC != 0x809) {
+            return;
+        }
+    }
+    switch (msg->unk0) {
+    case 2:
+        switch (msg->unkC) {
+        case 0x301:
+            proc_msg_PL1(msg);
+            break;
+        case 0x302:
+            proc_msg_PL2(msg);
+            break;
+        case 0x303:
+            OS_timer_stop(lo_global.timer);
+            proc_msg_PL3(msg);
+            OS_timer_start(lo_global.timer);
+            break;
+        case 0x304:
+            proc_msg_PL4(msg);
+            break;
+        case 0x305:
+            OS_timer_stop(lo_global.timer);
+            proc_msg_PL5(msg);
+            OS_timer_start(lo_global.timer);
+            break;
+        case 0x306:
+            proc_msg_PL6(msg);
+            break;
+        case 0x307:
+            proc_msg_PL7(msg);
+            break;
+        case 0x308:
+            proc_msg_PL8(msg);
+            break;
+        case 0x30B:
+            proc_msg_PL11(msg);
+            break;
+        case 0x30D:
+            proc_msg_PL13(msg);
+            break;
+        case 0x30F:
+            proc_msg_PL15(msg);
+            break;
+        case 0x310:
+            proc_msg_PL16(msg);
+            break;
+        case 0x311:
+            proc_msg_PL17(msg);
+            break;
+        case 0x312:
+            proc_msg_PL18(msg);
+            break;
+        case 0x313:
+            proc_msg_PL19(msg);
+            break;
+        }
+        break;
+    case 5:
+        switch (msg->unkC) {
+        case 0x501:
+            proc_msg_IL1(msg);
+            break;
+        case 0x502:
+            proc_msg_IL2(msg);
+            break;
+        case 0x503:
+            proc_msg_IL3(msg);
+            break;
+        case 0x504:
+            proc_msg_IL4(msg);
+            break;
+        case 0x506:
+            proc_msg_IL5(msg);
+            break;
+        }
+        break;
+    case 8:
+        switch (msg->unkC) {
+        case 0x801:
+            proc_msg_JL1(msg);
+            break;
+        case 0x802:
+            proc_msg_JL2(msg);
+            break;
+        case 0x803:
+            proc_msg_JL3(msg);
+            break;
+        case 0x804:
+            proc_msg_JL4(msg);
+            break;
+        case 0x805:
+            proc_msg_JL5(msg);
+            break;
+        case 0x806:
+            proc_msg_JL6(msg);
+            break;
+        case 0x807:
+            proc_msg_JL7(msg);
+            break;
+        case 0x808:
+            if (!(lo_global.flags & 0x20)) {
+                proc_msg_JL8(msg);
+            }
+            break;
+        case 0x809:
+            proc_msg_JL9(msg);
+            break;
+        case 0x80A:
+            proc_msg_JL10(msg);
+            break;
+        case 0x80B:
+            proc_msg_JL11(msg);
+            break;
+        case 0x80C:
+            proc_msg_JL12(msg);
+            break;
+        case 0x80D:
+            proc_msg_JL13(msg);
+            break;
+        case 0x80E:
+            proc_msg_JL14(msg);
+            break;
+        case 0x80F:
+            proc_msg_JL15(msg);
+            break;
+        }
+        break;
+    case 9:
+        proc_msg_TM(msg);
+        break;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", proc_msg_IL1);
 

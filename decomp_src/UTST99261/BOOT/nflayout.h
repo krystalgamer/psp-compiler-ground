@@ -20,7 +20,9 @@ typedef struct {
     void *img2C;
     u8 unk30[0xC];
     int session;                /* 0x3C */
-    u8 unk40[0x14];
+    u8 unk40[0x8];
+    int timer;                  /* 0x48 */
+    u8 unk4C[0x8];
     int unk54;
     u8 unk58[0x10];
     int unk68;
