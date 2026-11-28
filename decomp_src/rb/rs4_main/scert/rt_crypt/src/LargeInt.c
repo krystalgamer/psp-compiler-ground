@@ -146,7 +146,27 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/LargeInt", QUO)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/LargeInt", QRMOD);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/LargeInt", GCD);
+typedef struct { unsigned int w[128]; } LInt;
+void MODIP();
+void GCD(LInt *r, LInt *a, LInt *b)
+{
+    LInt x, y;
+
+    memcpy(&x, a, sizeof(LInt));
+    memcpy(&y, b, sizeof(LInt));
+    for (;;) {
+        MODIP(&x, &y);
+        if (IsZero((int *)&x)) {
+            memcpy(r, &y, sizeof(LInt));
+            return;
+        }
+        MODIP(&y, &x);
+        if (IsZero((int *)&y)) {
+            memcpy(r, &x, sizeof(LInt));
+            return;
+        }
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/LargeInt", EMOD);
 
