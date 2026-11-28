@@ -202,7 +202,39 @@ int _PartCusConvPart3D(char *p, int cus)
 	return r;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", _PartCusConvEmit);
+int _PartCusConvEmit(float *e, int cus)
+{
+	char name[0x200];
+
+	if (cusSetSection(cus, D_000FDE1C) != 1)
+		return 0;
+	e[0] = cusGetFloat(cus, 0, "OpPerSec", 0.0f);
+	if (e[0] == 0.0f)
+		return 0;
+	e[2] = cusGetFloat(cus, 0, "Radius", -1.0f);
+	if (e[2] < 0.0f)
+		return 0;
+	e[1] = cusGetFloat(cus, 0, "Age", 0.0f);
+	if (e[1] < 0.0f)
+		e[1] = 0.0f;
+	e[3] = cusGetFloat(cus, 0, "RadMin", 0.0f);
+	e[4] = cusGetFloat(cus, 0, "RYpX", 1.0f);
+	e[5] = cusGetFloat(cus, 0, "RZpX", 1.0f);
+	e[7] = cusGetFloat(cus, 0, "AlpBStart", 1.0f);
+	e[8] = cusGetFloat(cus, 0, "AlpBMaxW", 0.3f);
+	e[9] = cusGetFloat(cus, 0, "AlpBFdOutW", 0.7f);
+	e[10] = cusGetFloat(cus, 0, "AlpBEnd", 1.0f);
+	e[11] = cusGetFloat(cus, 0, "SclBStart", 1.0f);
+	e[12] = cusGetFloat(cus, 0, "SclBMaxW", 0.3f);
+	e[13] = cusGetFloat(cus, 0, "SclBFdOutW", 0.7f);
+	e[14] = cusGetFloat(cus, 0, "SclBEnd", 1.0f);
+	e[15] = cusGetFloat(cus, 0, "OpsBStart", 1.0f);
+	e[16] = cusGetFloat(cus, 0, "OpsBMaxW", 0.3f);
+	e[17] = cusGetFloat(cus, 0, "OpsBFdOutW", 0.7f);
+	e[18] = cusGetFloat(cus, 0, "OpsBEnd", 1.0f);
+	((int *)e)[6] = cusGetInt(cus, 0, "Afct", 1);
+	return 1;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FE0C4);
 
