@@ -458,7 +458,14 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", UnitMergeVoiceStatus);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", SlotUnitProc_8716C);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", SlotUnitPauseProc);
+void SlotUnitPauseProc(char *s)
+{
+    char *e;
+    for (e = PortListFirst(s + 0x18); e != NULL; e = PortListNext(e)) {
+        *(int *)(s + 0xC) |= UnitMergeVoiceStatus(e) & 0x160;
+        { int m = *(short *)(*(char **)(s + 0x10) + 0x6C); int t = *(short *)(e + 0x54); *(short *)(e + 0x54) = t | m; }
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", sgxPortTickProc);
 
