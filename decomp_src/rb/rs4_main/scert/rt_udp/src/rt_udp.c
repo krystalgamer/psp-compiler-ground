@@ -349,7 +349,32 @@ int rt_udp_get_local_address(void *arg0, void *arg1, int *arg2) {
     return var_a3;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_get_address);
+int rt_udp_get_address(char *u, char *c, int *addr, int *type)
+{
+    int ret;
+    int *la;
+    char *p;
+
+    ret = 0xD2F2;
+    if (u == NULL) return ret;
+    if (c != NULL) {
+        addr[0] = *(int *)(c + 8);
+        addr[1] = *(int *)(c + 0xC);
+        *type = *(int *)(c + 0x10);
+        ret = 0;
+    } else {
+        ret = 3;
+        if (u + 0x2C == NULL) return ret;
+        p = *(char **)(u + 0x38);
+        if (p == NULL) return ret;
+        la = (int *)(p + 8);
+        addr[0] = la[0];
+        addr[1] = la[1];
+        *type = la[2];
+        ret = 0;
+    }
+    return ret;
+}
 
 int rt_udp_disable_nat_service_heartbeat(void *arg0) {
     int var_v0;
