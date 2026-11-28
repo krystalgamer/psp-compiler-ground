@@ -503,16 +503,7 @@ public:
     int _Num;                                           /* 0x0 */
     vector_xyzw *_Ctrl;                                 /* 0x4 */
 };
-class surface {
-public:
-    common::t_array2d<vector_xyzw> *net();
-    void *ctrlnet();
-    void setNet(common::t_array2d<vector_xyzw> *);
-    void globalEval();
-    /* data */
-    common::t_array2d<vector_xyzw> *_f0;
-    char _f4;
-};
+class surface;   /* demo/base.hpp: holds a common::t_array2d */
 }
 }
 

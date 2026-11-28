@@ -449,6 +449,23 @@ template<class T> const T &t_array2d<T>::at(int x, int y) const
 #endif
 }
 
+namespace math {
+namespace bspline {
+class surface {
+public:
+    surface(int, int, int);
+    common::t_array2d<vector_xyzw> *net();
+    void *ctrlnet();
+    void setNet(common::t_array2d<vector_xyzw> *);
+    void setType(int);
+    void globalEval();
+    /* data */
+    common::t_array2d<vector_xyzw> *_f0;
+    common::t_array2d<vector_xyzw> _f4;     /* the control net */
+};
+}
+}
+
 namespace common {
 class CmdLine {
 public:

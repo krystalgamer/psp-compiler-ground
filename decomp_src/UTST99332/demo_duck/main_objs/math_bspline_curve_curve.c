@@ -47,9 +47,14 @@ void *math::bspline::surface::ctrlnet()
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_bspline_curve_curve", _ZN4math7bspline7surface7setTypeEi);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_bspline_curve_curve", _ZN4math7bspline7surfaceC2Eiii);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_bspline_curve_curve", _ZN4math7bspline7surfaceC1Eiii);
+extern const char D_001687B4[], D_001687FC[], D_00168798[], D_00168808[], D_0016884C[], D_00168858[];
+extern const char surface_name[] __asm__("_ZZN4math7bspline7surfaceC1EiiiE19__PRETTY_FUNCTION__");
+math::bspline::surface::surface(int ctrlx, int ctrly, int type) : _f0(0), _f4(ctrlx, ctrly)
+{
+    SGL_ASSERT(ctrlx >= 4, D_001687B4, D_001687FC, D_00168798, surface_name, 145, D_00168808);
+    SGL_ASSERT(ctrly >= 4, D_001687B4, D_0016884C, D_00168798, surface_name, 146, D_00168858);
+    setType(type);
+}
 
 void math::bspline::surface::setNet(common::t_array2d<vector_xyzw> *net)
 {
