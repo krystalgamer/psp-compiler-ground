@@ -17,7 +17,7 @@ int rt_ip_string2ip(int);                           /* extern */
 extern void *gCommPlatformInterfacePtr;
 extern unsigned char gCommPlatformInterface;
 int rt_comm_platform_create();
-int rt_comm_platform_destroy();
+void rt_comm_platform_destroy();
 int rt_comm_platform_get_avail_bytes_to_read();
 int rt_comm_platform_get_broadcast_ip(int *);
 int rt_comm_platform_get_host_by_name();
@@ -173,7 +173,35 @@ int rt_comm_platform_update(void) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_socket/rt_comm_platform", rt_comm_platform_create);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_socket/rt_comm_platform", rt_comm_platform_destroy);
+int rt_socket_close();
+void rt_comm_platform_destroy(int s)
+{
+    int any;
+    unsigned int i;
+    unsigned int idx;
+    RtListenSocket *l;
+
+    if ((unsigned int)(s + 1) < 2) return;
+    if (gbInitialized_1313FC == 0) return;
+    if (s > 0) {
+        rt_socket_close(s);
+        return;
+    }
+    any = 0;
+    idx = s + 0x101;
+    if ((unsigned int)(s + 0x100) >= 0xFF) return;
+    l = &gaListenSocket[idx];
+    if (l->sock != -0x101)
+        rt_socket_close(l->sock);
+    l->sock = -1;
+    for (i = 1; i < 256; i++)
+        if (gaListenSocket[i].sock != -1)
+            any = 1;
+    if (!any) {
+        rt_socket_close(gaListenSocket[0].sock);
+        gaListenSocket[0].sock = -1;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_socket/rt_comm_platform", rt_comm_platform_send);
 
