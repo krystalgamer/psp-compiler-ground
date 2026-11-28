@@ -43,7 +43,19 @@ void *SlotGetAt_7A70C(int id, const char *name)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgInit);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgTerm);
+static inline char *BmgListFirst_(char *l) {
+    char *n = *(char **)(l + 4);
+    return (*(int *)(n + 8) < 0) ? NULL : n;
+}
+void sgxBmgTerm(void) {
+    char *p;
+    BmgWorkS *w;
+    if (*(int *)&gWork_11FC0C == 0) return;
+    while ((p = BmgListFirst_((char *)&gWork_11FC0C + 4)) != NULL) sgxBmgFree(*(int *)(p + 8));
+    w = (BmgWorkS *)&gWork_11FC0C;
+    sgxFree(w->slots);
+    memset(w, 0, 0x2C);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgAllocEx);
 
