@@ -16,7 +16,6 @@ MesValue mes_number_alloc_uint32(MesContext *ctx, unsigned int n);
 unsigned int mes_eval_to_uint32(MesContext *ctx, MesValue v);
 MesValue mes_eval_to_integer(MesContext *ctx, MesValue v);
 extern MesObject *D_00585364;
-extern unsigned int D_005852E4;       /* "length" */
 int mes_eval_to_int32(MesContext *ctx, MesValue v);
 void *mes_util_string_new(void);
 void mes_util_string_put_string(void *s, MesValue v);
@@ -51,7 +50,6 @@ extern unsigned char mes_string_method;
 
 int mes_util_streq(const UCSChar *a, const UCSChar *b, int n);
 MesValue mes_eval_to_number(MesContext *ctx, MesValue v);
-extern MesValue D_00585288;
 MesValue mes_regexp_constructor(MesContext *ctx, MesValue pattern, MesValue flags);
 void *mes_regexp_pattern_exec(MesContext *ctx, MesValue re, MesValue s, int i);
 MesValue mes_string_new(MesContext *ctx, const void *str, int len)
@@ -197,7 +195,7 @@ MesValue mes_string_add(MesContext *ctx, MesValue a, MesValue b)
             } else
                 r->str = NULL;
         } else
-            ctx->f14 = D_00585288;
+            ctx->f14 = (*(MesValue *)((char *)&mes_ids + 0x70));
     }
     ctx->sp += 2;
     if (r != NULL)
@@ -256,7 +254,7 @@ MesValue mes_string_constructor(MesContext *ctx, MesValue v)
         o = mes_object_new(ctx, 13, D_00585364);
         ctx->sp++;
         o->fC = s;
-        mes_object_set(o, D_005852E4, MES_INT(((MesStr *)(s & ~3))->len), 7);
+        mes_object_set(o, mes_ids[51], MES_INT(((MesStr *)(s & ~3))->len), 7);
         return (MesValue)o;
     }
     return s;

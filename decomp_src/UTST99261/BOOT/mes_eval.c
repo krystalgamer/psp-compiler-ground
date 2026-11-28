@@ -2,7 +2,6 @@
 #include "common.h"
 #include "m2c_macros.h"
 extern void *D_00585334, *D_00585350, *D_00585364;
-extern unsigned int D_005852A0;
 struct EvCtx;
 typedef struct EvSc {
     char pad[0x14];
@@ -28,7 +27,6 @@ struct EvCtx;
 extern const double D_0013B3E0;       /* 4294967296.0 */
 extern const double D_0013B3E8;       /* 2147483648.0 */
 extern const double D_0013B3F0;       /* 4294967296.0 */
-extern unsigned int D_005852F8, D_005852C4, D_0058531C, D_00585264, D_00585328, D_00585284;
 int mes_eval_to_primitive(struct EvCtx *ctx, int v, int hint);
 unsigned int mes_context_index(int s);
 double mes_number_fmod(double a, double b);
@@ -87,7 +85,6 @@ typedef struct EvCtx {
     int error;                        /* 0x14 */
     int *sp;                          /* 0x18 */
 } EvCtx;
-extern unsigned int D_005852E4;
 int mes_eval_object_set(int a, int b, int c, int d, int flags);
 int mes_eval_string(EvCtx *ctx, int s, int thisobj, int x);
 int mes_eval_to_number(EvCtx *ctx, int v);
@@ -99,7 +96,6 @@ void mes_gc_register(M2C_UNK *, M2C_UNK, M2C_UNK, M2C_UNK); /* extern */
 extern unsigned char mes_eval_method;
 void mes_native_setup(void *, int, M2C_UNK *, M2C_UNK); /* extern */
 void mes_object_set(int, int, M2C_UNK, M2C_UNK); /* extern */
-extern int D_00585320;
 extern unsigned char mes_eval_native_table;
 
 void mes_util_vals_free(int);                    /* extern */
@@ -122,7 +118,6 @@ typedef struct NatFn { char pad[0x18]; int (*fn)(); unsigned char nargs; } NatFn
 typedef struct NatArgs { unsigned int n; int v[1]; } NatArgs;
 typedef struct NatFrame { char pad[0x20]; NatFn *func; NatArgs *args; } NatFrame;
 typedef struct NatCtx { char pad[0x10]; NatFrame *frame; } NatCtx;
-extern unsigned int D_005852C0;
 EvArr *mes_util_vals(int n, int a);
 int mes_util_is_white_space(unsigned short c);
 int mes_string_new(EvCtx *ctx, unsigned short *s, int len);
@@ -161,7 +156,7 @@ void *mes_eval_scope_bind(EvCtx *ctx, int f, EvArr *args, int thisobj)
         goto fail;
     if (kind == 8) {
         thisobj = f;
-        f = mes_eval_object_get(ctx, f, D_005852C0);
+        f = mes_eval_object_get(ctx, f, mes_ids[42]);
         if ((f & 3) != 0 || (unsigned int)f <= 0x20)
             goto fail;
         kind = (*(EvGc **)f)->kind;
@@ -242,7 +237,7 @@ int mes_eval_scope_canput(EvCtx *ctx, EvScope *scope, unsigned int id)
 {
     EvObj *o;
 
-    if (id == D_005852E4)
+    if (id == mes_ids[51])
         return 0;
     o = scope->obj;
     if (o->gc->kind == 3 && id == o->f14)
@@ -414,13 +409,13 @@ int mes_eval_to_string(EvCtx *ctx, int v)
     switch ((unsigned int)v & 3) {
     case 0:
         if (v == 0)
-            return D_00585320;
+            return (*(int *)((char *)&mes_ids + 0x108));
         if (v == 0xC)
-            return D_0058531C;
+            return mes_ids[65];
         if (v == 8)
-            return D_005852C4;
+            return mes_ids[43];
         if (v == 4)
-            return D_005852F8;
+            return mes_ids[56];
         if (v >= 0x10 && v <= 0x1C)
             return mes_number_to_special(v);
         v = mes_eval_to_primitive(ctx, v, 0x3E);
@@ -434,7 +429,7 @@ int mes_eval_to_string(EvCtx *ctx, int v)
     case 3:
         return v;
     }
-    return D_00585320;
+    return (*(int *)((char *)&mes_ids + 0x108));
 }
 
 int mes_eval_to_object(EvCtx *ctx, int v)
@@ -467,7 +462,7 @@ int mes_eval_to_object(EvCtx *ctx, int v)
     o = mes_object_new(ctx, cls, mes_classes[cls]);
     o->fC = v;
     if (cls == 13)
-        mes_object_set((int)o, D_005852E4, (((EvStr *)(v & ~3))->len << 2) | 1, 7);
+        mes_object_set((int)o, mes_ids[51], (((EvStr *)(v & ~3))->len << 2) | 1, 7);
     return (int)o;
 }
 
@@ -476,21 +471,21 @@ unsigned int mes_eval_to_index(EvCtx *ctx, int v)
     switch ((unsigned int)v & 3) {
     case 0:
         if (v == 0)
-            return D_00585320;
+            return (*(int *)((char *)&mes_ids + 0x108));
         if (v == 4)
-            return D_005852F8;
+            return mes_ids[56];
         if (v == 8)
-            return D_005852C4;
+            return mes_ids[43];
         if (v == 0xC)
-            return D_0058531C;
+            return mes_ids[65];
         if (v == 0x10)
             return 1;
         if (v == 0x14)
-            return D_00585264;
+            return mes_ids[19];
         if (v == 0x18)
-            return D_00585328;
+            return mes_ids[68];
         if (v == 0x1C)
-            return D_00585284;
+            return mes_ids[27];
         break;
     case 1:
         return v;
@@ -547,7 +542,7 @@ int mes_eval_object_get(EvCtx *ctx, int obj, unsigned int id)
         obj = (int)D_00585350;
         break;
     case 3:
-        if (id == D_005852E4)
+        if (id == mes_ids[51])
             return (((EvStr *)(obj & ~3))->len << 2) | 1;
         if ((id & 3) == 1) {
             n = (int)id >> 2;
@@ -558,7 +553,7 @@ int mes_eval_object_get(EvCtx *ctx, int obj, unsigned int id)
         obj = (int)D_00585364;
         break;
     }
-    if (id == D_005852A0) {
+    if (id == mes_ids[34]) {
         r = ((EvObj *)obj)->f8;
         if (r != 0)
             return r;
@@ -643,13 +638,13 @@ int mes_eval_object_put2(EvCtx *ctx, int obj, unsigned int id, int v)
     case 2:
         return mes_eval_object_canput(ctx, (EvObj *)D_00585350, id);
     case 3:
-        if (id == D_005852E4)
+        if (id == mes_ids[51])
             return 0;
         return mes_eval_object_canput(ctx, (EvObj *)D_00585364, id);
     }
     if (v == 0x20)
         return mes_eval_object_delete(ctx, (void *)obj, id) == 0xC;
-    if (id == D_005852A0) {
+    if (id == mes_ids[34]) {
         if (v == 0 || v == 4)
             M2C_FIELD(obj, int *, 8) = 0;
         else
@@ -1217,7 +1212,7 @@ void mes_eval_initialize(void) {
 #endif
 
 void mes_eval_global_setup(void *arg0) {
-    mes_object_set(M2C_FIELD(arg0, int *, 0xC), D_00585320, 0, 6);
+    mes_object_set(M2C_FIELD(arg0, int *, 0xC), (*(int *)((char *)&mes_ids + 0x108)), 0, 6);
     mes_native_setup(arg0, M2C_FIELD(arg0, int *, 0xC), &mes_eval_native_table, 0xB);
 }
 

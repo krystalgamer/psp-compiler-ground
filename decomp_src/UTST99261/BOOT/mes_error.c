@@ -8,7 +8,6 @@ typedef struct MesErrNative {
 extern MesValue mes_empty;
 extern void *mes_error_table;
 extern MesErrNative mes_error_native_table[];
-extern unsigned int D_005852F4;       /* "name" */
 MesObject *mes_error_constructor(MesContext *ctx, MesValue msg);
 MesObject *mes_native_new(MesContext *ctx, int a, void *fn, int nargs, int flags);
 void mes_native_setup(MesContext *ctx, MesObject *o, void *table, int n);
@@ -23,7 +22,6 @@ extern MesObject *mes_classes[];
 extern unsigned int mes_ids[];
 MesValue mes_error_syntax(MesContext *ctx, MesValue msg);
 extern MesObject *D_0058533C;
-extern unsigned int D_005852EC;       /* "message" */
 MesValue mes_error_native(MesContext *ctx, MesValue msg, int type);
 MesValue mes_string_new2(MesContext *ctx, const char *s, int len);
 MesObject *mes_object_new(MesContext *ctx, int cls, MesObject *proto);
@@ -37,7 +35,7 @@ MesObject *mes_error_constructor(MesContext *ctx, MesValue msg)
     if (msg != 0) {
         *--ctx->sp = (MesValue)o;
         msg = mes_eval_to_string(ctx, msg);
-        mes_object_set(o, D_005852EC, msg, 0);
+        mes_object_set(o, mes_ids[53], msg, 0);
         ctx->sp++;
     }
     return o;
@@ -52,14 +50,14 @@ MesValue mes_error_to_string(MesContext *ctx)
 
     if (MES_IS_OBJECT(t)) {
     s = mes_util_string_new();
-    v = mes_eval_object_get(ctx, t, D_005852F4);
+    v = mes_eval_object_get(ctx, t, mes_ids[55]);
     if (v != 0x20) {
         *--ctx->sp = v;
         mes_util_string_put_string(s, mes_eval_to_string(ctx, v));
         ctx->sp++;
     } else
         mes_util_string_puts(s, "Error");
-    v = mes_eval_object_get(ctx, t, D_005852EC);
+    v = mes_eval_object_get(ctx, t, mes_ids[53]);
     if (v != 0x20) {
         mes_util_string_puts(s, ": ");
         *--ctx->sp = v;
@@ -90,7 +88,7 @@ MesValue mes_error_native(MesContext *ctx, MesValue msg, int type)
     if (msg != 0) {
         *--ctx->sp = (MesValue)o;
         msg = mes_eval_to_string(ctx, msg);
-        mes_object_set(o, D_005852EC, msg, 0);
+        mes_object_set(o, mes_ids[53], msg, 0);
         ctx->sp++;
     }
     return (MesValue)o;

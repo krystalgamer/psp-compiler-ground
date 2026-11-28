@@ -22,8 +22,6 @@ typedef struct MesArray {
     struct MesObject obj;
     unsigned int length;              /* 0x14 */
 } MesArray;
-extern unsigned int D_005852E4;       /* "length" */
-extern MesValue D_00585288;
 extern MesObject *mes_classes[];
 void *mes_gc_alloc(MesContext *ctx, int kind);
 void mes_object_init(MesObject *obj, int cls, MesObject *proto);
@@ -74,7 +72,7 @@ void mes_array_set(MesContext *ctx, MesArray *a, MesValue v)
 
 MesValue mes_array_get(MesContext *ctx, MesArray *a, unsigned int id)
 {
-    if (id == D_005852E4)
+    if (id == mes_ids[51])
         return mes_number_alloc_uint32(ctx, a->length);
     return mes_object_get(&a->obj, id);
 }
@@ -88,7 +86,7 @@ unsigned int mes_array_number_index(MesContext *ctx, int n)
     if (MES_INT(v) != n) {
         s = mes_util_string_new();
         if (s == NULL) {
-            ctx->f14 = D_00585288;
+            ctx->f14 = (*(MesValue *)((char *)&mes_ids + 0x70));
             ret = 0;
         } else {
             mes_util_string_puti(s, n, 0, 10);
@@ -133,7 +131,7 @@ void mes_array_put(MesContext *ctx, MesArray *a, unsigned int id, MesValue v)
     int d;
     unsigned short *p;
 
-    if (id == D_005852E4) {
+    if (id == mes_ids[51]) {
         n = mes_array_length(ctx, v);
         if (n < a->length) {
             for (i = n; i < a->length; i++)
@@ -181,7 +179,7 @@ int mes_array_canput(MesContext *ctx, MesArray *a, unsigned int id)
 {
     int ret = 1;
 
-    if (id != D_005852E4)
+    if (id != mes_ids[51])
         ret = mes_object_canput(&a->obj, id);
     return ret;
 }
@@ -243,7 +241,7 @@ MesValue mes_array_join(MesContext *ctx, int sep)
     unsigned int i;
     void *s;
 
-    v = mes_eval_object_get(ctx, t, D_005852E4);
+    v = mes_eval_object_get(ctx, t, mes_ids[51]);
     n = 0;
     if (v != 0x20)
         n = mes_eval_to_uint32(ctx, v);
@@ -286,7 +284,7 @@ MesValue mes_array_to_locale_string(MesContext *ctx)
     unsigned int i;
     void *s;
 
-    v = mes_eval_object_get(ctx, t, D_005852E4);
+    v = mes_eval_object_get(ctx, t, mes_ids[51]);
     n = 0;
     if (v != 0x20)
         n = mes_eval_to_uint32(ctx, v);
@@ -322,7 +320,7 @@ MesValue mes_array_pop(MesContext *ctx)
     MesValue v;
     unsigned int n;
 
-    v = mes_eval_object_get(ctx, t, D_005852E4);
+    v = mes_eval_object_get(ctx, t, mes_ids[51]);
     n = 0;
     if (v != 0x20)
         n = mes_eval_to_uint32(ctx, v);
@@ -333,7 +331,7 @@ MesValue mes_array_pop(MesContext *ctx)
         mes_eval_object_delete(ctx, t, MES_INT(n));
     }
     *--ctx->sp = v;
-    mes_eval_object_put(ctx, t, D_005852E4, MES_INT(n));
+    mes_eval_object_put(ctx, t, mes_ids[51], MES_INT(n));
     ctx->sp++;
     return v;
 }
@@ -346,7 +344,7 @@ MesValue mes_array_push(MesContext *ctx)
     unsigned int n;
     unsigned int i;
 
-    v = mes_eval_object_get(ctx, t, D_005852E4);
+    v = mes_eval_object_get(ctx, t, mes_ids[51]);
     n = 0;
     if (v != 0x20)
         n = mes_eval_to_uint32(ctx, v);
@@ -355,7 +353,7 @@ MesValue mes_array_push(MesContext *ctx)
         for (i = 0; i < a->argc; i++, n++)
             mes_eval_object_put(ctx, t, MES_INT(n), a->argv[i]);
     v = MES_INT(n);
-    mes_eval_object_put(ctx, t, D_005852E4, v);
+    mes_eval_object_put(ctx, t, mes_ids[51], v);
     return v;
 }
 
@@ -371,7 +369,7 @@ MesValue mes_array_reverse(MesContext *ctx)
     unsigned int ia;
     unsigned int ib;
 
-    x = mes_eval_object_get(ctx, t, D_005852E4);
+    x = mes_eval_object_get(ctx, t, mes_ids[51]);
     n = 0;
     if (x != 0x20)
         n = mes_eval_to_uint32(ctx, x);
@@ -397,7 +395,7 @@ MesValue mes_array_shift(MesContext *ctx)
     unsigned int n;
     unsigned int i;
 
-    v = mes_eval_object_get(ctx, t, D_005852E4);
+    v = mes_eval_object_get(ctx, t, mes_ids[51]);
     if (v != 0x20 && (n = mes_eval_to_uint32(ctx, v)) != 0) {
         first = mes_eval_object_get(ctx, t, MES_INT(0));
         for (i = 1; i < n; i++) {
@@ -405,7 +403,7 @@ MesValue mes_array_shift(MesContext *ctx)
             mes_eval_object_put(ctx, t, MES_INT(i - 1), v);
         }
         n--;
-        mes_eval_object_put(ctx, t, D_005852E4, MES_INT(n));
+        mes_eval_object_put(ctx, t, mes_ids[51], MES_INT(n));
         return first;
     }
     return 0;
@@ -423,7 +421,7 @@ MesValue mes_array_slice(MesContext *ctx, MesValue start, MesValue end)
     a = mes_array_new(ctx, 0);
     *--ctx->sp = (MesValue)a;
     t = (MesValue)ctx->frame->thisobj;
-    v = mes_eval_object_get(ctx, t, D_005852E4);
+    v = mes_eval_object_get(ctx, t, mes_ids[51]);
     n = 0;
     if (v != 0x20)
         n = mes_eval_to_uint32(ctx, v);
@@ -484,7 +482,7 @@ int mes_array_sort_compare(MesContext *ctx, MesValue fn, MesValue x, MesValue y)
                 return x >> 2;
             return 0;
         }
-        M2C_FIELD(ctx, MesValue *, 0x14) = D_00585288;
+        M2C_FIELD(ctx, MesValue *, 0x14) = (*(MesValue *)((char *)&mes_ids + 0x70));
         return 0;
     }
     x = mes_eval_to_string(ctx, x);
@@ -505,7 +503,7 @@ MesValue mes_array_sort(MesContext *ctx, MesValue fn)
     unsigned int ib;
     int sorted;
 
-    x = mes_eval_object_get(ctx, t, D_005852E4);
+    x = mes_eval_object_get(ctx, t, mes_ids[51]);
     n = 0;
     if (x != 0x20)
         n = mes_eval_to_uint32(ctx, x);
@@ -550,7 +548,7 @@ MesValue mes_array_splice(MesContext *ctx, MesValue start, MesValue count)
     }
     else
         nitems = 0;
-    v = mes_eval_object_get(ctx, t, D_005852E4);
+    v = mes_eval_object_get(ctx, t, mes_ids[51]);
     n = 0;
     if (v != 0x20)
         n = mes_eval_to_uint32(ctx, v);
@@ -584,7 +582,7 @@ MesValue mes_array_splice(MesContext *ctx, MesValue start, MesValue count)
     n += d;
     for (i = 0; i < nitems; i++)
         mes_eval_object_put(ctx, t, MES_INT(s + i), args->argv[i + 2]);
-    mes_eval_object_put(ctx, t, D_005852E4, MES_INT(n));
+    mes_eval_object_put(ctx, t, mes_ids[51], MES_INT(n));
     ctx->sp++;
     return (MesValue)a;
 }
@@ -597,7 +595,7 @@ MesValue mes_array_unshift(MesContext *ctx)
     unsigned int n;
     unsigned int i;
 
-    v = mes_eval_object_get(ctx, t, D_005852E4);
+    v = mes_eval_object_get(ctx, t, mes_ids[51]);
     n = 0;
     if (v != 0x20)
         n = mes_eval_to_uint32(ctx, v);
@@ -613,7 +611,7 @@ MesValue mes_array_unshift(MesContext *ctx)
     for (i = 0; i < a->argc; i++)
         mes_eval_object_put(ctx, t, MES_INT(i), a->argv[i]);
     v = MES_INT(n + a->argc);
-    mes_eval_object_put(ctx, t, D_005852E4, v);
+    mes_eval_object_put(ctx, t, mes_ids[51], v);
     return v;
 }
 

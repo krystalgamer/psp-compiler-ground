@@ -2,6 +2,7 @@
 #include "common.h"
 #include "mes_js.h"
 #include "m2c_macros.h"
+extern unsigned int mes_ids[];
 typedef struct MesNatEnt {
     const char *name;
     void *fn;                         /* 0x4 */
@@ -15,7 +16,6 @@ typedef struct MesNative {
     unsigned char nargs;              /* 0x1C */
     unsigned char f1D;
 } MesNative;
-extern unsigned int D_005852E4;       /* "length" */
 extern MesObject *D_00585344;
 void mes_object_set(MesObject *obj, unsigned int id, MesValue value, int flags);
 MesValue mes_object_get(MesObject *obj, unsigned int id);
@@ -56,14 +56,14 @@ MesValue mes_native_get(MesContext *ctx, MesNative *n, unsigned int id)
 {
     if (n->obj.proto == NULL)
         n->obj.proto = D_00585344;
-    if (id == D_005852E4)
+    if (id == mes_ids[51])
         return MES_INT(n->nargs);
     return mes_object_get(&n->obj, id);
 }
 
 void mes_native_put(MesContext *ctx, MesNative *n, unsigned int id, MesValue v)
 {
-    if (id != D_005852E4)
+    if (id != mes_ids[51])
         mes_object_set(&n->obj, id, v, 8);
 }
 

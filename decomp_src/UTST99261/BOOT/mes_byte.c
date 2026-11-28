@@ -2,12 +2,12 @@
 #include "common.h"
 #include "mes_js.h"
 #include "m2c_macros.h"
+extern unsigned int mes_ids[];
 typedef struct MesByteObj {
     struct MesObject obj;
     char pad[0x10];
     unsigned short len;               /* 0x24 */
 } MesByteObj;
-extern unsigned int D_005852E4;       /* "length" */
 MesValue mes_object_get(MesObject *obj, unsigned int id);
 M2C_UNK mes_util_vals_mark(int);                    /* extern */
 M2C_UNK mes_util_vals_free(int);                    /* extern */
@@ -17,7 +17,7 @@ extern unsigned char mes_byte_method;
 
 MesValue mes_byte_get(MesContext *ctx, MesByteObj *b, unsigned int id)
 {
-    if (id == D_005852E4)
+    if (id == mes_ids[51])
         return MES_INT(b->len);
     return mes_object_get(&b->obj, id);
 }

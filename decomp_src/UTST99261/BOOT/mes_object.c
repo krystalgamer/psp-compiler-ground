@@ -11,7 +11,6 @@ MesValue mes_eval_to_object(MesContext *ctx, MesValue v);
 extern MesObject *D_00585334;
 extern MesObject *D_00585350;
 extern MesObject *D_00585364;
-extern unsigned int D_005852E4;
 void mes_object_set(MesObject *obj, unsigned int id, int value, int flags);
 unsigned short *mes_util_strcp(unsigned short *d, const char *s);
 void mes_memory_copy(const void *src, void *dst, int n);
@@ -353,7 +352,7 @@ MesValue mes_object_object(MesContext *ctx, MesValue v)
             o->cls = 13;
             o->proto = D_00585364;
             o->fC = v;
-            mes_object_set(o, D_005852E4, MES_INT(((ObjStr *)(v & ~3))->slen), 7);
+            mes_object_set(o, mes_ids[51], MES_INT(((ObjStr *)(v & ~3))->slen), 7);
         } else
             return v;
         return (MesValue)o;

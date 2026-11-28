@@ -1,6 +1,7 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+extern unsigned int mes_ids[];
 typedef struct GcCtxNode {
     struct GcCtxNode *next;           /* 0x0 */
     int f4;                           /* 0x4 */
@@ -41,7 +42,6 @@ typedef struct GcCtx {
     int error;
 } GcCtx;
 extern GcTable mes_gc_table[13];
-extern int D_00585288;
 void *MEM_malloc(int heap, unsigned int size);
 void MEM_free(int heap, void *p);
 void mes_memory_zero(void *p, int n);
@@ -210,7 +210,7 @@ int *mes_gc_alloc(GcCtx *ctx, int kind)
         return o;
     }
     if (ctx != NULL) {
-        ctx->error = D_00585288;
+        ctx->error = (*(int *)((char *)mes_ids + 0x70));
     }
     return NULL;
 }

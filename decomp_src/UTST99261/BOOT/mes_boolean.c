@@ -12,8 +12,6 @@ typedef struct MesValueObj {
     struct MesObject obj;
 } MesValueObj;
 extern MesObject *D_00585334;
-extern MesValue D_0058531C;           /* "true" */
-extern MesValue D_005852C4;           /* "false" */
 MesValue mes_eval_to_boolean(MesContext *ctx, MesValue v);
 MesValue mes_eval_type_error(MesContext *ctx);
 MesObject *mes_object_new(MesContext *ctx, int cls, MesObject *proto);
@@ -38,9 +36,9 @@ MesValue mes_boolean_to_string(MesContext *ctx)
     if (MES_IS_OBJECT(v))
         v = ((MesObject *)v)->fC;
     if (v == MES_TRUE)
-        return D_0058531C;
+        return (*(MesValue *)((char *)&mes_ids + 0x104));
     if (v == MES_FALSE)
-        return D_005852C4;
+        return (*(MesValue *)((char *)&mes_ids + 0xAC));
     return mes_eval_type_error(ctx);
 }
 

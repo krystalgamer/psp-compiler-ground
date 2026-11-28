@@ -32,7 +32,6 @@ typedef struct MesNum {
     int f4;
     double d;
 } MesNum;
-extern MesValue D_0058532C, D_00585264, D_00585328, D_00585284;
 extern const double D_0013B760;
 double floor(double x);
 void *mes_gc_alloc(MesContext *ctx, int kind);
@@ -50,7 +49,6 @@ void mes_util_string_puti(void *s, int n, int w, int base);
 void *mes_util_string_new(void);
 MesValue mes_string_new3(MesContext *ctx, void *s);
 void mes_util_string_free(void *s);
-extern MesValue D_00585288;
 extern const double D_0013B780;
 extern const double D_0013B788;
 extern const double D_0013B790;
@@ -374,13 +372,13 @@ MesValue mes_number_to_special(MesValue v)
     MesValue ret;
 
     if (v == 0x10)
-        ret = D_0058532C;
+        ret = (*(MesValue *)((char *)&mes_ids + 0x114));
     else if (v == 0x14)
-        ret = D_00585264;
+        ret = (*(MesValue *)((char *)&mes_ids + 0x4C));
     else if (v == 0x18)
-        ret = D_00585328;
+        ret = (*(MesValue *)((char *)&mes_ids + 0x110));
     else if (v == 0x1C)
-        ret = D_00585284;
+        ret = (*(MesValue *)((char *)&mes_ids + 0x6C));
     else
         ret = 0;
     return ret;
@@ -405,7 +403,7 @@ MesValue mes_number_to_str(MesContext *ctx, MesValue radix)
         v >>= 2;
         s = mes_util_string_new();
         if (s == NULL)
-            return ctx->f14 = D_00585288;
+            return ctx->f14 = (*(MesValue *)((char *)&mes_ids + 0x70));
         if (v == 0)
             mes_util_string_put(s, '0');
         else {
@@ -466,7 +464,7 @@ MesValue mes_number_to_fixed(MesContext *ctx, MesValue digits)
     }
     s = mes_util_string_new();
     if (s == NULL)
-        return ctx->f14 = D_00585288;
+        return ctx->f14 = (*(MesValue *)((char *)&mes_ids + 0x70));
     if (d < 0) {
         d = -d;
         mes_util_string_put(s, '-');
@@ -512,7 +510,7 @@ MesValue mes_number_to_exponential(MesContext *ctx, MesValue digits)
     d = mes_num(v);
     s = mes_util_string_new();
     if (s == NULL)
-        return ctx->f14 = D_00585288;
+        return ctx->f14 = (*(MesValue *)((char *)&mes_ids + 0x70));
     if (d < 0) {
         d = -d;
         mes_util_string_put(s, '-');
@@ -567,7 +565,7 @@ MesValue mes_number_to_precision_sub(MesContext *ctx, double d, int prec)
 
     s = mes_util_string_new();
     if (s == NULL)
-        return ctx->f14 = D_00585288;
+        return ctx->f14 = (*(MesValue *)((char *)&mes_ids + 0x70));
     if (d < 0) {
         d = -d;
         mes_util_string_put(s, '-');

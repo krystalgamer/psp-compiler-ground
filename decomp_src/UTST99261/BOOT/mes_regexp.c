@@ -1,7 +1,6 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
-extern unsigned int D_0058530C, D_005852D0, D_005852D4, D_005852F0;
 int mes_number_alloc(void *ctx, double d);
 int mes_object_get(void *obj, unsigned int id);
 void *mes_util_string_new(void);
@@ -54,7 +53,6 @@ typedef struct RxState {
     int fC;
     int len;                          /* 0x10 */
 } RxState;
-extern unsigned int D_005852E0;       /* "lastIndex" */
 void *mes_gc_alloc(void *ctx, int kind);
 int *mes_util_vals(int n, int a);
 int mes_util_is_word_char(unsigned short c);
@@ -66,7 +64,6 @@ void *mes_regexp_disjunction(RxComp *c);
 RxClosure *mes_closure_new(void *ctx, int type, int n);
 extern unsigned int mes_ids[];
 extern void *mes_classes[];
-extern unsigned int D_005852B8;
 extern int mes_empty;
 extern unsigned int mes_regexp_dollar[];
 extern void *mes_regexp_table;
@@ -159,15 +156,15 @@ int mes_regexp_get(void *ctx, RxObj *re, unsigned int id)
 {
     int r;
 
-    if (id == D_0058530C) {
+    if (id == mes_ids[61]) {
         r = re->source;
-    } else if (id == D_005852D0) {
+    } else if (id == mes_ids[46]) {
         r = re->global ? 12 : 8;
-    } else if (id == D_005852D4) {
+    } else if (id == mes_ids[47]) {
         r = re->icase ? 12 : 8;
-    } else if (id == D_005852F0) {
+    } else if (id == mes_ids[54]) {
         r = re->multiline ? 12 : 8;
-    } else if (id == D_005852E0) {
+    } else if (id == mes_ids[50]) {
         r = mes_number_alloc(ctx, re->lastIndex);
     } else {
         r = mes_object_get(re, id);
@@ -177,7 +174,7 @@ int mes_regexp_get(void *ctx, RxObj *re, unsigned int id)
 
 void mes_regexp_put(void *ctx, RxObj *re, unsigned int id, int v)
 {
-    if (id == D_005852E0)
+    if (id == mes_ids[50])
         re->lastIndex = mes_num(mes_eval_to_number(ctx, v));
     else
         mes_object_set(re, id, v, 8);
@@ -185,7 +182,7 @@ void mes_regexp_put(void *ctx, RxObj *re, unsigned int id, int v)
 
 int mes_regexp_canput(void *ctx, RxObj *re, unsigned int id)
 {
-    if (id == D_005852E0)
+    if (id == mes_ids[50])
         return 1;
     if (id == mes_ids[61] || id == mes_ids[46] || id == mes_ids[47] || id == mes_ids[54])
         return 0;
@@ -751,7 +748,7 @@ void mes_regexp_setup(void *ctx)
         mes_regexp_dollar[i - 1] = id;
         mes_object_set(ctor, id, mes_empty, 0);
     }
-    mes_object_set(proto, D_005852B8, (int)ctor, 2);
+    mes_object_set(proto, mes_ids[40], (int)ctor, 2);
     mes_native_setup(ctx, proto, &mes_regexp_table, 3);
 }
 
