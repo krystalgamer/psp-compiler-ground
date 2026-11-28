@@ -94,7 +94,54 @@ INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc_auth/nonmatchings/api", sceNetAdhocA
 
 INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc_auth/nonmatchings/api", sceNetAdhocAuth_lib_6CE209A3);
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc_auth/nonmatchings/api", sceNetAdhocAuth_lib_2AD8C677);
+int sceNetAdhocAuth_lib_2AD8C677(void)
+{
+	int ret = 0;
+	int s;
+	Peer *p;
+	unsigned int oldk1;
+
+	K1_SAVE(oldk1);
+	if (D_00003EE0 <= 0) {
+		ret = 0x80410681;
+		goto end;
+	}
+	if (D_00003EE4 == 0) {
+		ret = 0x80410682;
+		goto end;
+	}
+	if (D_00003EE4->unk0 == 1)
+		goto end;
+	s = sceKernelCpuSuspendIntr();
+	if (D_00003EE4->alarm > 0) {
+		sceKernelCancelAlarm(D_00003EE4->alarm);
+		D_00003EE4->alarm = 0;
+	}
+	D_00003EE4->alarm = sceKernelSetAlarm(D_00003EE4->alarmTime, func_00003424, &D_00003EE4->arg);
+	sceKernelCpuResumeIntr(s);
+	for (p = D_00003EE4->first; p; p = p->next) {
+		if (p->state == 4) {
+			s = sceKernelCpuSuspendIntr();
+			if (p->alarm[2] > 0) {
+				sceKernelCancelAlarm(p->alarm[2]);
+				p->alarm[2] = 0;
+			}
+			p->alarm[2] = sceKernelSetAlarm(D_00003EE4->unkE8, func_000034D0, &p->arg[2]);
+			sceKernelCpuResumeIntr(s);
+			s = sceKernelCpuSuspendIntr();
+			if (p->alarm[1] > 0) {
+				sceKernelCancelAlarm(p->alarm[1]);
+				p->alarm[1] = 0;
+			}
+			p->alarm[1] = sceKernelSetAlarm(D_00003EE4->unkE4, func_00003528, &p->arg[1]);
+			sceKernelCpuResumeIntr(s);
+		}
+	}
+	func_000038D0(&D_00003EE4->unk0, 1);
+end:
+	K1_RESTORE(oldk1);
+	return ret;
+}
 
 int sceNetAdhocAuth_lib_BD144DA6(unsigned int *plen, char *buf)
 {
