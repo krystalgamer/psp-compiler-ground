@@ -22,7 +22,22 @@ extern const char D_00007994[];
 extern const StreamTypeInfo D_000078F4[];
 /* --- end declarations --- */
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/mpeg_ringbuf", sceMpegRingbufferPut);
+int sceMpegRingbufferPut(SceMpegRingbuffer *rb, int num, int avail)
+{
+	int ret, out, n;
+
+	n = func_00003A88(rb, num, avail);
+	ret = n;
+	if (ret < 0)
+		return ret;
+	ret = func_000014F4(rb->mp, rb, n, &out);
+	if (ret < 0)
+		return ret;
+	if (n != out)
+		return SCE_MPEG_ERROR_INVALID_VALUE;
+	ret = func_00003E90(rb, n);
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/mpeg_ringbuf", func_00003A88);
 
