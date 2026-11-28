@@ -303,9 +303,9 @@ int ModeSelInt(void)
 }
 
 #ifdef NON_MATCHING
-/* One instruction long: %hi(D_00154020) and %hi(SelWork) swap s2/s3, and in the key & 0x20
- * branch the delay slot gets an extra reload of D_00154020 instead of the lui.  The 64
- * unused bytes of frame are reproduced by buf[64]. */
+/* MATCHES (fntest, real static names; both key tests after the MsAccessFlag
+ * if/else).  Cannot be installed while the unit is mixed: its jump table must sit at
+ * D_0002F3B8, among the INCLUDE_RODATA blocks before the asm functions' floats. */
 extern int MsAccessFlag;
 extern int SelectModeFlag;
 extern int NowMode;
@@ -335,11 +335,11 @@ int ModeSelect(void)
 	} else {
 		key = GetKeyHit();
 		SpriteSetFader(1.0f);
-		if (key & 0x20) {
-			se_play(4);
-			SwitchDir = -2;
-			SwitchMode--;
-		}
+	}
+	if (key & 0x20) {
+		se_play(4);
+		SwitchDir = -2;
+		SwitchMode--;
 	}
 	if (SwitchMode < 0)
 		SwitchMode = 4;
