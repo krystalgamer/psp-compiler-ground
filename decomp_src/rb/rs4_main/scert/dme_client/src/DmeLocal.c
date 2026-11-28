@@ -722,7 +722,32 @@ int NetSetDefaultIncomingClientParams(int *arg0) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIIncomingClient);
+extern int gbUDPEnabled; int NetIsPeerToPeerHost(); int NetSetIncomingClient();
+typedef struct { int a; int err; } DmeIncRes;
+int NetIIncomingClient(int *in, DmeIncRes *out)
+{
+    int host = 0;
+
+    if (out == NULL) return 0x17;
+    out->err = 30;
+    out->a = 1;
+    if (in == NULL) {
+        out->err = 0x17;
+        return 0x17;
+    }
+    if (in[0] == 0) {
+        out->err = 0x26;
+        return 0x26;
+    }
+    if (gbUDPEnabled == 0) {
+        out->err = 0x1A;
+        return 0x1A;
+    }
+    out->err = NetIsPeerToPeerHost(NetGetConnInfo(0), &host);
+    if (out->err == 0 && host != 0)
+        NetSetIncomingClient(NetGetConnInfo(0), in, out);
+    return out->err;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetSetIncomingClient);
 
