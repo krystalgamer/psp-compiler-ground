@@ -47,7 +47,29 @@ void rt_timebase_reset_globaltime(int arg0) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_timebase", rt_timebase_update_globaltime);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_timebase", rt_timebase_get_percentiledelay);
+typedef struct { unsigned int d[100]; unsigned int count; } RtQueryRecord;
+int rt_timebase_get_percentiledelay(unsigned int *out)
+{
+    unsigned int s[100];
+    unsigned int t;
+    int i, j, n;
+
+    for (i = 0; i < 100; i++)
+        s[i] = ((RtQueryRecord *)&gQueryRecord)->d[i];
+    for (i = ((RtQueryRecord *)&gQueryRecord)->count - 1; i > 0; i--) {
+        for (j = 0; j < i; j++) {
+            if (s[j] > s[j + 1]) {
+                t = s[j];
+                s[j] = s[j + 1];
+                s[j + 1] = t;
+            }
+        }
+    }
+    n = ((RtQueryRecord *)&gQueryRecord)->count / 20;
+    if (n < 1) n = 1;
+    *out = s[n];
+    return 0;
+}
 
 extern unsigned int g_timebase_check_interval;
 int rt_time_platform_fast_elapsed_msecs();
