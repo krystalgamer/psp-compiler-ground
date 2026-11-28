@@ -183,7 +183,31 @@ int rt_p2p_tick(int arg0) {
     return (arg0 != 0) ? 0 : 2;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_update);
+int rt_p2p_complete_connection();
+int rt_p2p_send_local_broadcast_tests();
+int rt_p2p_send_peer_updates();
+void rt_timebase_is_query_ready();
+int rt_p2p_timebase_query();
+int rt_p2p_update(char *p)
+{
+    int ret;
+    int ready;
+
+    if (p == NULL) return 2;
+    if ((ret = rt_p2p_complete_connection(p)) != 0) return ret;
+    if ((ret = rt_p2p_send_local_broadcast_tests(p)) != 0) return ret;
+    if ((ret = rt_p2p_timeout_backlog_connection((int *)p)) != 0) return ret;
+    if ((ret = rt_p2p_send_peer_updates(p)) != 0) return ret;
+    if (*(unsigned short *)(p + 0x1A2) != 0xFFFE) {
+        if (*(unsigned short *)(p + 0x1A2) != *(unsigned short *)(p + 0x1A4)) {
+            ready = 0;
+            rt_timebase_is_query_ready(&ready);
+            if (ready != 0)
+                rt_p2p_timebase_query(p);
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_send);
 
@@ -385,7 +409,26 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_s
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_handle_connect_event);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_handle_connected_event);
+int rt_p2p_send_peer_info();
+int rt_p2p_get_peer_by_connection(char *p, int conn);
+void rt_p2p_handle_connected_event(char *p, int conn)
+{
+    unsigned int idx;
+    RtP2PPeer *peer;
+
+    idx = rt_p2p_get_peer_by_connection(p, conn);
+    if (idx < *(unsigned short *)(p + 0x19C)) {
+        peer = (RtP2PPeer *)(*(int *)(p + 0x184) + idx * sizeof(RtP2PPeer));
+        rt_time_start(p + 0x1AC);
+        *(int *)(p + 0x1A8) = 0;
+        if ((void *)conn == ((void **)peer)[1])
+            peer->pad[0] = 1;
+        else if ((void *)conn == ((void **)peer)[2])
+            peer->pad[1] = 1;
+        rt_p2p_send_peer_info(p, peer, idx);
+    } else
+        rt_udp_disconnect(*(int *)p, conn);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_handle_timeout_event);
 
@@ -529,7 +572,28 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_p
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_complete_connection);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_send_local_broadcast_tests);
+int rt_udp_broadcast();
+int rt_p2p_send_local_broadcast_tests(char *p)
+{
+    RtP2PVec vec;
+    unsigned int el;
+    struct { unsigned short type; } msg;
+
+    if (*(int *)(p + 0x1BC) != 0 && *(unsigned int *)(p + 0x1A8) < 10) {
+        rt_time_elapsed(p + 0x1AC, &el);
+        if (el >= 501) {
+            msg.type = rt_p2p_pack_type(4, 2);
+            vec.e[0].buf = &msg;
+            vec.e[0].len = 2;
+            vec.total = 2;
+            vec.n = 1;
+            rt_udp_broadcast(*(int *)p, 0, &vec);
+            (*(unsigned int *)(p + 0x1A8))++;
+            rt_time_start(p + 0x1AC);
+        }
+    }
+    return 0;
+}
 
 int rt_udp_send(int, int, int, int);
 int rt_p2p_isend(int *p, int *peer, unsigned short a, int b)
@@ -559,9 +623,54 @@ int rt_p2p_send_my_broadcast_flag(char *p, unsigned short idx)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_generic_disconnect);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_determine_new_host);
+int rt_p2p_determine_new_host(char *p, unsigned short *host)
+{
+    unsigned short i;
+    unsigned short min = 0xFFFE;
+    unsigned short best = 0xFFFF;
+    RtP2PPeer *peers, *peer;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_send_connection_detached_to_host);
+    if (host == NULL) return 2;
+    *host = 0xFFFE;
+    peer = peers = *(RtP2PPeer **)(p + 0x184);
+    for (i = 0; i < *(unsigned short *)(p + 0x19C); i++, peer++) {
+        if (peer->a == 3 || peer->a == 8) {
+            if (*(unsigned short *)((char *)peer + 0x34) < min) {
+                min = *(unsigned short *)((char *)peer + 0x34);
+                best = i;
+            }
+        }
+    }
+    peer = &peers[best];
+    if (peer->a == 3) {
+        peer->a = 4;
+        *host = best;
+    } else if (peer->a == 8) {
+        peer->a = 9;
+        *host = best;
+    }
+    *(unsigned short *)(p + 0x1A2) = *host;
+    return 0;
+}
+
+int rt_p2p_send_connection_detached_to_host(char *p, unsigned short a, unsigned short b)
+{
+    int ret = 2;
+    RtP2PVec vec;
+    struct { unsigned short type; unsigned short a; unsigned short b; } msg;
+
+    if (p != NULL) {
+        msg.type = rt_p2p_pack_type(13, 6);
+        msg.a = a;
+        msg.b = b;
+        vec.e[0].buf = &msg;
+        vec.e[0].len = 6;
+        vec.total = 6;
+        vec.n = 1;
+        ret = rt_p2p_isend((int *)p, (int *)(*(char **)(p + 0x184) + *(unsigned short *)(p + 0x1A2) * 80), 0xF000, (int)&vec);
+    }
+    return ret;
+}
 
 int rt_p2p_send_broadcast_disconnect(char *p, unsigned short idx)
 {
@@ -579,7 +688,21 @@ int rt_p2p_send_broadcast_disconnect(char *p, unsigned short idx)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_notify_peers_disconnect_forwarding);
+int rt_p2p_send_connection_detached_to_host(char *p, unsigned short a, unsigned short b);
+int rt_p2p_notify_peers_disconnect_forwarding(int mode, char *p, int st, unsigned short a, unsigned short idx)
+{
+    RtP2PPeer *ps;
+    if (mode == 3 || mode == 1) {
+        rt_p2p_send_broadcast_disconnect(p, idx);
+    } else if (mode == 2) {
+        ps = (RtP2PPeer *)(*(int *)(p + 0x184) + idx * sizeof(RtP2PPeer));
+        if (st == 9 || ps->a == 4)
+            rt_p2p_send_broadcast_disconnect(p, idx);
+        else
+            rt_p2p_send_connection_detached_to_host(p, a, idx);
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_notify_peers_disconnect);
 
@@ -645,7 +768,25 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_p
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_get_latency_info);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_set_host_invactivity_timeout_session);
+int rt_p2p_set_host_invactivity_timeout_session(char *p)
+{
+    int i = 0;
+    unsigned int t;
+    RtP2PPeer *peer;
+
+    if (*(int *)(p + 0x1E4) != 0) {
+        rt_udp_get_inactivity_timeout(&t);
+        peer = *(RtP2PPeer **)(p + 0x184);
+        t >>= 2;
+        for (; i < *(unsigned short *)(p + 0x19C); i++, peer++) {
+            if (peer->conn1 != 0)
+                rt_udp_set_connection_inactivity_timeout(peer->conn1, t);
+            else if (peer->conn2 != 0)
+                rt_udp_set_connection_inactivity_timeout(peer->conn2, t);
+        }
+    }
+    return 0;
+}
 
 int rt_udp_get_inactivity_timeout();
 int rt_udp_set_connection_inactivity_timeout();
