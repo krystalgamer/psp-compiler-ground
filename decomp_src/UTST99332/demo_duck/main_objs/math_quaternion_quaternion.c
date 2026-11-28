@@ -199,7 +199,42 @@ void math::quaternion::Shortest(quaternion &a, quaternion &b)
         b = quaternion(-b.x, -b.y, -b.z, -b.w);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_quaternion_quaternion", _ZN4math10quaternion5SlerpES0_S0_f);
+extern const float slerp_one __asm__("D_00168E18");
+extern const float slerp_eps __asm__("D_00168E1C");
+extern const float slerp_half_pi __asm__("D_00168E20");
+math::quaternion math::quaternion::Slerp(quaternion a, quaternion b, float t)
+{
+    quaternion r(0, 0, 0, slerp_one);
+    quaternion qb, qa;
+    qa = a;
+    qb = b;
+    Shortest(qa, qb);
+    float c = qa.dot(qb);
+    float s0, s1;
+    if (c + slerp_one > slerp_eps) {
+        if (slerp_one - c > slerp_eps) {
+            float om = safe_acosf(c);
+            float so = sinf(om);
+            s0 = sinf((slerp_one - t) * om) / so;
+            s1 = sinf(t * om) / so;
+        } else {
+            s0 = slerp_one - t;
+            s1 = t;
+        }
+        for (int i = 0; i < 4; i++)
+            (&r.x)[i] = s0 * (&qa.x)[i] + s1 * (&qb.x)[i];
+    } else {
+        r.x = -qa.y;
+        r.y = qa.x;
+        r.z = -qa.w;
+        r.w = qa.z;
+        s0 = sinf((slerp_one - t) * slerp_half_pi);
+        s1 = sinf(t * slerp_half_pi);
+        for (int i = 0; i < 3; i++)
+            (&r.x)[i] = s0 * (&qa.x)[i] + s1 * (&r.x)[i];
+    }
+    return r;
+}
 
 extern "C" {
 void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_5D6E0");
