@@ -128,6 +128,7 @@ M2C_UNK setGifBuffer();                             /* extern */
 
 char *strcpy(char *d, const char *s);
 
+typedef struct { char *start; char *end; } UTLWORD;
 char *trimspace(char *s) {
     char *buf;
     char *p;
@@ -1026,7 +1027,39 @@ MFILE *UTL_mfileduplicate(MFILE *f) {
     return d;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_strword);
+UTLWORD UTL_strword(char *p, char *skip, char *term) {
+    UTLWORD w;
+    char q[4];
+    int i;
+
+    while (*p != '\0') {
+        for (i = 0; skip[i]; i++)
+            if (*p == skip[i]) break;
+        if (skip[i] == 0) break;
+        p++;
+    }
+    if (*p == '\0') {
+        w.start = p;
+        w.end = p;
+        return w;
+    }
+    if (*p == '"' || *p == '\'') {
+        q[0] = *p++;
+        q[1] = '\r';
+        q[2] = '\n';
+        q[3] = 0;
+        term = q;
+    }
+    w.start = p;
+    while (*p != '\0') {
+        for (i = 0; term[i]; i++)
+            if (*p == term[i]) break;
+        if (term[i] != 0) break;
+        p++;
+    }
+    w.end = p;
+    return w;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
