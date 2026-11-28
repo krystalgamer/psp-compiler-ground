@@ -903,4 +903,62 @@ sceNetInetSocketAbort(int s)
 	return _sce_pspnet_thread_leave(ti, error);
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_inet/nonmatchings/uipc_syscalls", func_00008588);
+static __inline void
+sothread_attach_sel(struct thread_info *ti, struct socket *so)
+{
+	struct socket *t = ti->socks;
+
+	so->so_thread = ti;
+	ti->socks = so;
+	so->so_tnext = t;
+}
+
+static __inline void
+sothread_detach_sel(struct thread_info *ti, struct socket *so)
+{
+	struct socket *p;
+
+	so->so_thread = NULL;
+	p = ti->socks;
+	if (p == so)
+		ti->socks = p->so_tnext;
+	else {
+		for (;;) {
+			if (p == NULL)
+				break;
+			if (p->so_tnext != so) {
+				p = p->so_tnext;
+				continue;
+			}
+			p->so_tnext = so->so_tnext;
+			break;
+		}
+	}
+}
+
+__attribute__((noinline)) void
+selthread(struct thread_info *ti, fd_mask *ibitp, int nfd, int op)
+{
+	int msk, i, j, fd;
+	fd_mask ibits;
+	struct socket *so;
+
+	for (msk = 0; msk < 3; msk++) {
+		for (i = 0; i < nfd; i += NFDBITS) {
+			ibits = *ibitp++;
+			while ((j = ffs(ibits)) && (fd = i + --j) < nfd) {
+				ibits &= ~(1 << j);
+				so = getsock(fd);
+				if (so == NULL)
+					continue;
+				if (op == 0) {
+					if (so->so_thread == NULL)
+						sothread_attach_sel(ti, so);
+				} else if (op == 1) {
+					if (so->so_thread == ti)
+						sothread_detach_sel(ti, so);
+				}
+			}
+		}
+	}
+}
