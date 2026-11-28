@@ -1245,9 +1245,153 @@ int rt_p2p_generate_grid(char *p, unsigned int n)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_get_peer_grid_edges);
+extern const signed char grid1[][3];
+extern const signed char grid2[][3];
+extern const signed char grid3[][3];
+extern const signed char grid4[][3];
+extern const signed char grid5[][3];
+extern const signed char grid6[][3];
+extern const signed char grid7[][3];
+extern const signed char grid8[][3];
+extern const signed char grid9[][3];
+extern const signed char grid10[][3];
+extern const signed char grid11[][3];
+extern const signed char grid12[][3];
+extern const signed char grid13[][3];
+extern const signed char grid14[][3];
+extern const signed char grid15[][3];
+extern const signed char grid16[][3];
+extern const signed char grid17[][3];
+extern const signed char grid18[][3];
+extern const signed char grid19[][3];
+extern const signed char grid20[][3];
+extern const signed char grid21[][3];
+extern const signed char grid22[][3];
+extern const signed char grid23[][3];
+extern const signed char grid24[][3];
+extern const signed char grid25[][3];
+extern const signed char grid26[][3];
+extern const signed char grid27[][3];
+extern const signed char grid28[][3];
+extern const signed char grid29[][3];
+extern const signed char grid30[][3];
+extern const signed char grid31[][3];
+extern const signed char grid32[][3];
+int rt_p2p_generate_grid(char *, unsigned int);
+int rt_p2p_get_peer_grid_edges(char *p, unsigned int n, unsigned short idx, signed char **out)
+{
+    int ret = 0;
 
-int rt_p2p_get_peer_grid_edges();
+    if (n < idx) return 2;
+    switch (n) {
+    case 0:
+        ret = 4;
+        break;
+    case 1:
+        *out = (signed char *)grid1[idx];
+        break;
+    case 2:
+        *out = (signed char *)grid2[idx];
+        break;
+    case 3:
+        *out = (signed char *)grid3[idx];
+        break;
+    case 4:
+        *out = (signed char *)grid4[idx];
+        break;
+    case 5:
+        *out = (signed char *)grid5[idx];
+        break;
+    case 6:
+        *out = (signed char *)grid6[idx];
+        break;
+    case 7:
+        *out = (signed char *)grid7[idx];
+        break;
+    case 8:
+        *out = (signed char *)grid8[idx];
+        break;
+    case 9:
+        *out = (signed char *)grid9[idx];
+        break;
+    case 10:
+        *out = (signed char *)grid10[idx];
+        break;
+    case 11:
+        *out = (signed char *)grid11[idx];
+        break;
+    case 12:
+        *out = (signed char *)grid12[idx];
+        break;
+    case 13:
+        *out = (signed char *)grid13[idx];
+        break;
+    case 14:
+        *out = (signed char *)grid14[idx];
+        break;
+    case 15:
+        *out = (signed char *)grid15[idx];
+        break;
+    case 16:
+        *out = (signed char *)grid16[idx];
+        break;
+    case 17:
+        *out = (signed char *)grid17[idx];
+        break;
+    case 18:
+        *out = (signed char *)grid18[idx];
+        break;
+    case 19:
+        *out = (signed char *)grid19[idx];
+        break;
+    case 20:
+        *out = (signed char *)grid20[idx];
+        break;
+    case 21:
+        *out = (signed char *)grid21[idx];
+        break;
+    case 22:
+        *out = (signed char *)grid22[idx];
+        break;
+    case 23:
+        *out = (signed char *)grid23[idx];
+        break;
+    case 24:
+        *out = (signed char *)grid24[idx];
+        break;
+    case 25:
+        *out = (signed char *)grid25[idx];
+        break;
+    case 26:
+        *out = (signed char *)grid26[idx];
+        break;
+    case 27:
+        *out = (signed char *)grid27[idx];
+        break;
+    case 28:
+        *out = (signed char *)grid28[idx];
+        break;
+    case 29:
+        *out = (signed char *)grid29[idx];
+        break;
+    case 30:
+        *out = (signed char *)grid30[idx];
+        break;
+    case 31:
+        *out = (signed char *)grid31[idx];
+        break;
+    case 32:
+        *out = (signed char *)grid32[idx];
+        break;
+    default:
+        ret = rt_p2p_generate_grid(p, n);
+        *out = *(signed char **)(p + 0x198) + idx * 3;
+        break;
+    }
+    return ret;
+}
+
+int rt_p2p_get_peer_grid_edges(char *, unsigned int, unsigned short, signed char **);
 int rt_p2p_update_grid(char *p, RtP2POvlTab *o, unsigned short me)
 {
     signed char *edges;
