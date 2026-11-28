@@ -65,7 +65,14 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/anm", D_00108EA0);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/anm", bxAnmInitAssign);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/anm", bxAnmTerm);
+}
+template <class T> inline void SafeDelete(T *&p) { delete p; }
+extern "C" {
+void bxAnmTerm(B2A::Manager *m)
+{
+	SafeDelete(m->file);
+	SafeDelete(m);
+}
 
 int bxAnmExec(B2A::Manager *m)
 {
