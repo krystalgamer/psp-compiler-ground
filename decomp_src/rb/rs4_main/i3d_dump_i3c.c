@@ -33,9 +33,48 @@ void PrintTri(unsigned short *t, int indent)
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/i3d_dump_i3c", D_00109944);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_dump_i3c", PrintNode);
+typedef struct I3cDumpNode_ { unsigned short num; signed char c[3]; unsigned char e[3]; void *data; } I3cDumpNode_;
+void PrintNode(I3cDumpNode_ *n, int indent)
+{
+	int i, num;
+	PrintIndent(indent++);
+	puts("Node {");
+	PrintIndent(indent);
+	printf("Center = { %d %d %d }\n", n->c[0], n->c[1], n->c[2]);
+	PrintIndent(indent);
+	printf("Extent = { %d %d %d }\n", n->e[0], n->e[1], n->e[2]);
+	PrintIndent(indent);
+	printf("nData = %x\n", n->num);
+	if (n->num == 0) {
+		PrintIndent(indent);
+		printf("pData = %08x\n", n->data);
+	} else if ((short)n->num >= 0) {
+		I3cDumpNode_ *c = (I3cDumpNode_ *)n->data;
+		num = n->num;
+		for (i = 0; i < num; i++)
+			PrintNode(&c[i], indent);
+	} else {
+		unsigned short *t = (unsigned short *)n->data;
+		num = n->num & 0x7FFF;
+		for (i = 0; i < num; i++)
+			PrintTri(&t[i * 4], indent);
+	}
+	PrintIndent(--indent);
+	puts(D_00109944);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_dump_i3c", PrintTree);
+void PrintTree(float *t, int indent)
+{
+	PrintIndent(indent++);
+	puts("Tree {");
+	PrintVector("vecOrigin", t, indent);
+	PrintVector("vecExtent", t + 4, indent);
+	PrintIndent(indent);
+	printf("Group = %d\n", *(int *)(t + 8));
+	PrintNode(*(I3cDumpNode_ **)(t + 10), indent);
+	PrintIndent(--indent);
+	puts(D_00109944);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_dump_i3c", I3cRoot__TextDump);
 
