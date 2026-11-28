@@ -21,10 +21,14 @@ typedef struct {
     char s[32];
 } __attribute__((aligned(4))) APSSID; /* STAND-IN: aligned so the 32-byte copies are word moves; real type unknown */
 typedef struct {
+    u8 b[6];
+} __attribute__((aligned(4))) APBSSID; /* STAND-IN: aligned like APSSID */
+
+typedef struct {
     unsigned int len;
     APSSID ssid;
     u8 unk24[4];
-    u8 bssid[8];
+    APBSSID bssid;
     int unk30;
 } APENTRY;
 typedef struct {
@@ -132,7 +136,7 @@ int CheckAccessPoint(APLIST *cur, APLIST *scan, int *idx)
         for (; j < scan->n; j++) {
             if (pc->len - 1 >= 32)
                 break;
-            if (memcmp(buf, ps->ssid.s, strlen(buf)) == 0 && memcmp(pc->bssid, ps->bssid, 4) == 0
+            if (memcmp(buf, ps->ssid.s, strlen(buf)) == 0 && memcmp(&pc->bssid, &ps->bssid, 4) == 0
                 && pc->unk30 != ps->unk30 && pc->unk30 == 0) {
                 found = 1;
                 break;
@@ -178,7 +182,133 @@ int CheckAccessPoint(APLIST *cur, APLIST *scan, int *idx)
     return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspnet", _NecApScanAP);
+typedef union {
+    APSSID ssid;
+    APBSSID bssid;
+    int i;
+    char pad[48]; /* STAND-IN: size from the frame layout */
+} APINFO;
+
+typedef struct {
+    int unk0;
+    int id;
+} APDESC;
+
+extern int _bNecApCanceled;
+extern unsigned int _gNecApTimeout;
+extern char gAPSSID[];
+extern u8 _gAPMac[];
+unsigned int _NecApGetTickCount(void);
+int sceNetApctlScanUser(void);
+int sceNetApctlGetBSSDescIDListUser(int *size, void *buf);
+int sceNetApctlGetBSSDescEntryUser(int id, int type, void *info);
+int sceKernelDelayThread(unsigned int us);
+void *calloc(unsigned int n, unsigned int size);
+int puts(const char *s);
+int sprintf(char *buf, const char *fmt, ...);
+char *strcpy(char *d, const char *s);
+
+int _NecApScanAP(void)
+{
+    char mac[32];
+    APINFO info;
+    int size;
+    int idx;
+    int ret;
+    APDESC *desc;
+    APLIST *cur;
+    int cnt;
+    int lsize; /* a variable so memcpy(prev, cur) stays a call */
+    void *prev;
+    int r;
+    int k;
+    int prv;
+    int id;
+    unsigned int i;
+    unsigned int n;
+    APENTRY *e;
+
+    cur = NULL;
+    lsize = sizeof(APLIST) + 300 * sizeof(APENTRY);
+    size = 0;
+    ret = -1;
+    idx = 0;
+    puts("Scanning AccessPoint");
+    desc = calloc(4, 300);
+    if (desc == NULL)
+        goto out;
+    cur = calloc(1, lsize);
+    if (cur == NULL)
+        goto out;
+    prev = calloc(1, lsize);
+    if (prev == NULL)
+        goto out;
+    cnt = 0;
+    while (cnt < 30 && _bNecApCanceled == 0) {
+        if (_NecApGetTickCount() >= _gNecApTimeout)
+            break;
+        gScanEvent = 1;
+        r = sceNetApctlScanUser();
+        if (r < 0) {
+            printf("sceNetApctlScanUser() failed. ret = 0x%x\n", r);
+            goto out;
+        }
+        for (k = 0; k < 30;) {
+            sceKernelDelayThread(500000);
+            k++;
+            if (gScanEvent != 1)
+                break;
+        }
+        size = 300 * sizeof(int);
+        r = sceNetApctlGetBSSDescIDListUser(&size, desc);
+        if (r < 0) {
+            printf("sceNetApctlGetBSSDescIDListUser() failed. ret = 0x%x\n", r);
+            goto out;
+        }
+        n = 0;
+        printf("sceNetApctlGetBSSDescIDListUser() size:%d\n", size);
+        if (size / sizeof(APDESC) >= 20)
+            goto out;
+        for (i = 0; i < size / sizeof(APDESC); i++) {
+            id = desc[i].id;
+            if (sceNetApctlGetBSSDescEntryUser(id, 1, &info) == 0) {
+                memcpy(&cur->e[n].ssid, &info.ssid, sizeof(APSSID));
+                sceNetApctlGetBSSDescEntryUser(id, 2, &info);
+                cur->e[n].ssid.s[info.i] = 0;
+                cur->e[n].len = info.i;
+                sceNetApctlGetBSSDescEntryUser(id, 5, &info);
+                prv = info.i;
+                printf("   AP[%02d].  SSID=%s, Prv=%d\n", i + 1, cur->e[n].ssid.s, prv);
+                cur->e[n].unk30 = prv;
+                sceNetApctlGetBSSDescEntryUser(id, 0, &info);
+                memcpy(&cur->e[n].bssid, &info.bssid, 6);
+                n++;
+            }
+        }
+        cur->n = n;
+        if (CheckAccessPoint(cur, prev, &idx)) {
+            e = &cur->e[idx];
+            strcpy(gAPSSID, e->ssid.s);
+            memcpy(_gAPMac, &e->bssid, 6);
+            sprintf(mac, "%02X:%02X:%02X:%02X:%02X:%02X", _gAPMac[0], _gAPMac[1], _gAPMac[2], _gAPMac[3], _gAPMac[4], _gAPMac[5]);
+            printf("DETECTED!!! AccessPoint [SSID]=%s [BSSID]=%s\n", gAPSSID, mac);
+            break;
+        }
+        cnt++;
+        memcpy(prev, cur, lsize);
+    }
+    if (cnt >= 30 || _NecApGetTickCount() > _gNecApTimeout) {
+        ret = -3;
+        puts("ERROR TIMEOUT");
+        goto out;
+    }
+    if (_bNecApCanceled)
+        ret = -8;
+    else
+        ret = 1;
+out:
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspnet", _NecApConnectAP);
 
