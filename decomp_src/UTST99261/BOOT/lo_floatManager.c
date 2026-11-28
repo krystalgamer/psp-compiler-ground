@@ -197,7 +197,61 @@ int lfm_getHorizontalArea(LFMPAGE *pg, LFMBOX *b, int y, int *off, int *wout) {
     return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_floatManager", lfm_getVerticalPosition);
+int lfm_getVerticalPosition(LFMPAGE *pg, LFMBOX *b, int y, int mode, int need) {
+    int x, oy, width, w;
+    LFMRGN *r;
+
+    x = b->x + b->st->ml + b->st->pl + b->st->bl - pg->box->x - pg->box->st->ml - pg->box->st->pl - pg->box->st->bl;
+    oy = b->y + b->st->mt + b->st->pt + b->st->bt - pg->box->y - pg->box->st->mt - pg->box->st->pt - pg->box->st->bt;
+    y += oy;
+    if (y >= pg->h)
+        return y - oy;
+    r = pg->head->next;
+    while (r->next != r) {
+        if (y < r->y + r->h) {
+            switch (mode) {
+            case 1:
+                width = b->w - b->st->ml - b->st->pl - b->st->bl - b->st->br - b->st->pr - b->st->ml;
+                if (r->x + r->w > x + width) {
+                    if (x < r->x) {
+                        w = width - (r->x - x);
+                        if (w < need) break;
+                        goto found;
+                    } else
+                        goto found;
+                } else {
+                    if (x >= r->x)
+                        w = r->x + r->w - x;
+                    else
+                        w = r->w;
+                }
+                if (w >= need)
+                    goto found;
+                break;
+            case 2:
+                if (r->x == 0)
+                    goto found;
+                break;
+            case 3:
+                if (r->x + r->w == pg->w)
+                    goto found;
+                break;
+            case 4:
+                if (r->x == 0 && r->w == pg->w)
+                    goto found;
+                break;
+            }
+        }
+        r = r->next;
+    }
+found:
+    if (r->next != r) {
+        if (r->y < y)
+            return y - oy;
+        return r->y - oy;
+    }
+    return pg->h - oy;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
