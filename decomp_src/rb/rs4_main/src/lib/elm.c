@@ -23,7 +23,21 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/lib/elm", D_000FAB54);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/lib/elm", D_000FAB5C);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/elm", elmTerm);
+void _memFree(void *p, const char *file, int line);
+int sceKernelGetGPI(void);
+int elmTerm(void *pCntx)
+{
+	if (pCntx == NULL)
+		consPrintf(&D_000FAB04, &D_000FAB20, 0x32, "elmTerm", &D_000FAB54);
+	if (sceKernelGetGPI() & 1)
+		consPrintf("%s  : 0x%08x\n", "elmTerm", pCntx);
+	if (pCntx != NULL) {
+		_memFree(pCntx, &D_000FAB20, 0x37);
+		return 1;
+	}
+	consPrintf(&D_000FAB04, &D_000FAB20, 0x3A, "elmTerm", "FALSE");
+	return 0;
+}
 
 short elmCall(void *arg0) {
     short var_a0;
