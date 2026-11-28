@@ -112,9 +112,33 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", D_000FAE0C);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", _memFree);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", _memRealloc);
+void *memcpy(void *, const void *, unsigned int);
+void _memFree(void *p, const char *file, int line);
+void *_memRealloc(void *p, int size, const char *file, int line)
+{
+	int old = ((int *)p)[-11];
+	void *q;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", _memReallocMBL);
+	_memFree(p, file, line);
+	q = _memAlloc(size, file, line);
+	if (p != q)
+		memcpy(q, p, size < old ? size : old);
+	return q;
+}
+
+void *_memReallocMBL(void *p, int size, const char *file, int line)
+{
+	int old = ((int *)p)[-11];
+	unsigned char *q;
+
+	_memFree(p, file, line);
+	q = _memAlloc(size, file, line);
+	if (p != q)
+		memcpy(q, p, size < old ? size : old);
+	if (q)
+		q[-0x2F] = 1;
+	return q;
+}
 
 void *_memAllocZero(unsigned int arg0) {
     void *temp_v0;
