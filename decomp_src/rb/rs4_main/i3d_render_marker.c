@@ -4,7 +4,7 @@
 int I3dPkDrawSphereMarkerA(int, int, int, int, float); /* extern */
 int I3dPkDrawBoxMarkerA(int, int, int, int, int, int); /* extern */
 int I3dPkDrawObbMarkerA(int, int, int, int, int);   /* extern */
-M2C_UNK I3dSorter__ClosePacketAndClearStateUca(int); /* extern */
+int I3dSorter__ClosePacketAndClearStateUca();
 M2C_UNK I3dSorter__OpenPacketAndClearState_ByUint32(int, M2C_UNK, M2C_UNK); /* extern */
 M2C_UNK I3dSorter__OpenPacketAndClearStateUca_ByUint32(int, M2C_UNK, M2C_UNK); /* extern */
 
@@ -290,7 +290,25 @@ void I3dSortTag__ConstructAsHead(int *t)
 	t[3] = (int)t;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dSorter__OpenPacket_ByUint32);
+int I3dSorter__OpenPacket_ByUint32(int *s, unsigned int key)
+{
+	int *rd = (int *)s[4];
+	int *c;
+	int *t;
+	int p;
+	c = (int *)rd[0xF8 / 4];
+	c -= 4;
+	rd[0xF8 / 4] = (int)c;
+	s[8] = (int)c;
+	p = (rd[0xF4 / 4] + 0x7F) & 0x3FFFFF80;
+	t = (int *)s[3];
+	c[0] = key;
+	t[1] = (int)c;
+	c[2] = p;
+	s[3] = (int)c;
+	s[9]++;
+	return p;
+}
 
 typedef struct { char p0[0x10]; char *rd; char p1[0xC]; char *cur; char p2[4]; int used; } SorterP;
 int I3dSorter__ClosePacket(SorterP *s, char *end)
@@ -302,9 +320,35 @@ int I3dSorter__ClosePacket(SorterP *s, char *end)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dSorter__OpenPacketUca_ByUint32);
+int I3dSorter__OpenPacketUca_ByUint32(int *s, unsigned int key)
+{
+	int *rd = (int *)s[4];
+	int *c;
+	int *t;
+	int p;
+	c = (int *)rd[0xF8 / 4];
+	c -= 4;
+	rd[0xF8 / 4] = (int)c;
+	s[8] = (int)c;
+	p = rd[0xF4 / 4];
+	t = (int *)s[3];
+	c[0] = key;
+	t[1] = (int)c;
+	c[2] = p;
+	s[3] = (int)c;
+	s[9]++;
+	return p;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dSorter__ClosePacketUca);
+int I3dSorter__ClosePacketUca(SorterP *s, char *end)
+{
+	char *c = s->cur;
+	s->used += end - *(char **)(c + 0x8);
+	*(char **)(c + 0xC) = end;
+	end += 8;
+	*(char **)(s->rd + 0xF4) = end;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dSorter__OpenPacketAndChangeState_ByUint32);
 
@@ -320,7 +364,15 @@ int I3dSorter__ClosePacketAndChangeState(SorterP2 *s, char *end)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dSorter__OpenPacketAndChangeStateUca_ByUint32);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dSorter__ClosePacketAndChangeStateUca);
+int I3dSorter__ClosePacketAndChangeStateUca(SorterP2 *s, char *end)
+{
+	char *c = s->cur;
+	s->used += end - *(char **)(c + 0x18);
+	*(char **)(c + 0x1C) = end;
+	end += 8;
+	*(char **)(s->rd + 0xF4) = end;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dSorter__OpenPacketAndClearState_ByUint32);
 
@@ -339,6 +391,14 @@ int I3dSorter__ClosePacketAndClearState(void *arg0, int arg1) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dSorter__OpenPacketAndClearStateUca_ByUint32);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dSorter__ClosePacketAndClearStateUca);
+int I3dSorter__ClosePacketAndClearStateUca(SorterP2 *s, char *end)
+{
+	char *c = s->cur;
+	*(char **)(c + 0x18) = end;
+	s->used += end - *(char **)(c + 0x14);
+	end += 8;
+	*(char **)(s->rd + 0xF4) = end;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dSorter__MergePacket);
