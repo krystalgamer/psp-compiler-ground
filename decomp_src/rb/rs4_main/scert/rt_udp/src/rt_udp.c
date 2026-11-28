@@ -110,7 +110,16 @@ int rt_udp_ack_list_flush(int *u, char *c)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_buffer_ack);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_get_first_sub_header);
+unsigned char *rt_udp_get_first_sub_header(unsigned char *h)
+{
+    struct { unsigned short n; unsigned short first; } a;
+    int len;
+
+    if ((*(unsigned short *)h & 0x4000) == 0) return h + 2;
+    a.n = *(unsigned short *)(h + 2);
+    len = a.n * 2 + 4;
+    return h + len;
+}
 
 int GetUDPSecurityMode(void)
 {
