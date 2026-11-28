@@ -8,7 +8,7 @@ HstNode *parseCopyHistoryNode();
 int HST_getHeadHistoryNode();                       /* extern */
 int HST_getHistoryWithOffset(M2C_UNK);              /* extern */
 int parseDeleteMultiBuffer();                       /* extern */
-M2C_UNK parseRoundHistoryNode(int, int);            /* extern */
+void parseRoundHistoryNode(HstNode *a, HstNode *b);
 
 M2C_UNK HST_moveBackHistory();                      /* extern */
 M2C_UNK HST_moveFrontHistory();                     /* extern */
@@ -362,4 +362,63 @@ int copyEntities(HstNode *a, HstNode *b) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseHistory", parseRoundHistoryNode);
+void parseRoundHistoryNode(HstNode *a, HstNode *b) {
+    int skip;
+    HstNode *an;
+    HstNode *bn;
+
+    if (a->child == NULL || copyEntities(a, b) == 0) {
+        parseHST_deleteHistoryNode(0, 0);
+        flushRequestFlag(a);
+        HST_setTransStatus(a, 1);
+        return;
+    }
+    skip = 0;
+    while ((a != NULL) & (b != NULL)) {
+        if (a->child != NULL && ((b->child != NULL) & (skip == 0))) {
+            if (copyEntities(a->child, b->child) == 0 && a->child->flag >= 0 && b->child->flag >= 0) {
+                parseHST_deleteHistoryNode(b->child->x18, b->child->x1C);
+                flushRequestFlag(a->child);
+                HST_setTransStatus(a->child, 1);
+                a = a->child;
+                b = b->child;
+                skip = 1;
+            } else {
+                a = a->child;
+                b = b->child;
+            }
+            continue;
+        }
+        skip = 0;
+        if ((an = a->next) != NULL && (bn = b->next) != NULL)
+            goto sib;
+        goto up;
+    found:
+        if (b->next->flag >= 0) {
+            parseHST_deleteHistoryNode(b->next->x18, b->next->x1C);
+            flushRequestFlag(a->next);
+            HST_setTransStatus(a->next, 1);
+            a = a->next;
+            b = b->next;
+            skip = 1;
+            continue;
+        }
+        goto adv;
+    up:
+        a = a->parent;
+        b = b->parent;
+        while ((a != NULL) & (b != NULL)) {
+            if ((an = a->next) != NULL && (bn = b->next) != NULL) {
+            sib:
+                if (copyEntities(an, bn) == 0 && a->next->flag >= 0)
+                    goto found;
+            adv:
+                a = a->next;
+                b = b->next;
+                break;
+            }
+            a = a->parent;
+            b = b->parent;
+        }
+    }
+}
