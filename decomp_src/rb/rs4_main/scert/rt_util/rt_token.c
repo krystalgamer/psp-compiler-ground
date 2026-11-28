@@ -161,7 +161,35 @@ int rt_token_release_ownership(unsigned int idx, int owner, RtTokTab *t)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_update_ownership);
+void rt_token_remove_ownership(int idx, RtTokTab *t);
+int rt_token_create_table(unsigned int n, RtTokTab *t);
+int rt_token_expand_table(unsigned int n, RtTokTab *t);
+int rt_token_update_ownership(unsigned int idx, int owner, RtTokTab *t)
+{
+    RtTokEnt *e;
+
+    if (t == NULL) rt_token_start(&t);
+    if (t->size == 0) {
+        if (owner == 0xFFFF) return 0;
+        if (rt_token_create_table(idx, t) != 0) return 0xDAC4;
+    } else if (idx >= t->size) {
+        if (owner == 0xFFFF) return 0;
+        if (rt_token_expand_table(idx, t) != 0) return 0xDAC4;
+    } else {
+        e = (RtTokEnt *)(idx * sizeof(RtTokEnt) + (int)t->ents);
+        if (e->owner == 0xFFFF) {
+            if (owner == 0xFFFF) return 0;
+        } else {
+            if (owner == 0xFFFF)
+                rt_token_remove_ownership(idx, t);
+            else
+                e->owner = owner;
+            return 0;
+        }
+    }
+    rt_token_add_ownership(idx, owner, (int *)t);
+    return 0;
+}
 
 void rt_token_list_check_ownership(unsigned char *mask, unsigned int nbytes, unsigned int base, unsigned short *owners, unsigned int *count, RtTokTab *t)
 {
