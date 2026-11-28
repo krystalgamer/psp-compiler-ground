@@ -473,7 +473,29 @@ void textures::Texture::resize_nearest(int w, int h)
     swap(tmp);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture14resize_bicubicEii);
+void textures::Texture::resize_bicubic(int w, int h)
+{
+    if (m.width == 0 || m.height == 0)
+        return;
+    TEX_ASSERT(m.format == FORMAT_1 || m.format == FORMAT_2, "_m._format == ABGR32 || _m._format == BGR24", __PRETTY_FUNCTION__, 1336);
+    Texture tmp(w, h, *this);
+    int unused[4];      /* the original's frame has 16 more bytes after tmp */
+    (void)unused;
+    common::t_array2d<math::vector_xyzw> net(w, h);
+    math::bspline::surface s(m.width, m.height, 0);
+    s.setNet(&net);
+    resize_channel_bicubic(tmp, (Channel)0, s);
+    resize_channel_bicubic(tmp, (Channel)1, s);
+    resize_channel_bicubic(tmp, (Channel)2, s);
+    if (m.load.alpha_flags == 0 || (m.load.alpha_flags & 0x20)) {
+        common::Log() << " (bicubic also for alpha)";
+        resize_channel_bicubic(tmp, (Channel)3, s);
+    } else {
+        common::Log() << " (nearset for alpha)";
+        resize_channel_nearest(tmp, (Channel)3);
+    }
+    swap(tmp);
+}
 
 bool textures::Texture::resize(int w, int h, bool bicubic)
 {
