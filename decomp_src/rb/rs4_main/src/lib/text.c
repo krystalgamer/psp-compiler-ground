@@ -229,7 +229,28 @@ int *textASCIItoUCS4(signed char *arg0) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/text", textUCS4toASCII);
+char *textUCS4toASCII(int *s)
+{
+	char *p, *d;
+	int n;
+	int c;
+
+	if (s == NULL)
+		return NULL;
+	n = textLen(s);
+	p = (char *)_memAlloc(n + 1, &D_000FB408, 0x36D);
+	d = p;
+	if (p == NULL)
+		consPrintf(&D_000FB428, &D_000FB408, 0x370, "textUCS4toASCII", &D_000FB4FC);
+	for (; n != 0; n--) {
+		c = *s;
+		s++;
+		*d = (c >= 0x21 && c <= 0x7E) ? c : '?';
+		d++;
+	}
+	*d = 0;
+	return p;
+}
 
 int *textChr(int *p, int c)
 {
