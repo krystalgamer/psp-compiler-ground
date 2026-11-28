@@ -141,7 +141,30 @@ void rt_comm_adhoc_shutdown(void) {
     gbInitialized_130B2C = 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/psp/rtadhocnet/src/rt_comm_platform", rt_comm_adhoc_create);
+int sceNetAdhocPdpCreate();
+int rt_comm_adhoc_create(int *out, RtLinkAddr addr, int *port, long *cfg, int *state)
+{
+    struct { void *next; int id; unsigned char mac[6]; unsigned short port; int rcvd; } st;
+    void *mac;
+    int id, r;
+
+    mac = &addr;
+    if (rt_comm_adhoc_linkaddress_isnull(addr)) mac = &gLocalAddress;
+    if (gbInitialized_130B2C == 0) return 5;
+    *state = 0;
+    if (cfg[0] != 1) return 4;
+    if (cfg[1] <= 0) return 2;
+    id = sceNetAdhocPdpCreate(mac, (unsigned short)*port, 0xFFF3, 0);
+    if (id <= 0) return 0xC350;
+    if (*port == 0) {
+        r = rt_comm_get_stat(id, &st);
+        if (r != 0) return r;
+        *port = st.port;
+    }
+    *state = 1;
+    *out = id;
+    return 0;
+}
 
 void rt_comm_adhoc_destroy(int id)
 {
@@ -178,7 +201,26 @@ int rt_comm_adhoc_vsend_to(int id, RtLinkAddr addr, unsigned int port, RtAdhocVe
     return rt_comm_adhoc_send_to(id, addr, port, D_00130B30, v->total, sent);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/psp/rtadhocnet/src/rt_comm_platform", rt_comm_adhoc_receive_from);
+int sceNetAdhocPdpRecv();
+int rt_comm_adhoc_receive_from(int id, void *mac, int *port, void *buf, unsigned int size, int *got)
+{
+    unsigned short p;
+    int len;
+    int r;
+
+    if (gbInitialized_130B2C == 0) return 5;
+    if (id < 0) return 2;
+    *got = 0;
+    len = size > 0xFFF3 ? 0xFFF3 : size;
+    r = sceNetAdhocPdpRecv(id, mac, &p, buf, &len, 0, 1);
+    if (r < 0) {
+        if (r != (int)0x80410709) return 0xC350;
+        len = 0;
+    }
+    if (len != 0) *port = p;
+    *got = len;
+    return 0;
+}
 
 int rt_comm_adhoc_get_local_ip(RtAdhocAddr *out)
 {
