@@ -27,7 +27,7 @@ void _GUI_Graphics_Pop(void);
 void zWindDrawBox();
 void zWindFontDraw();
 void zWindDrawImage();
-void pspBrowserUtf8ToSjis();
+int pspBrowserUtf8ToSjis();
 extern u8 D_00584BB6;
 void zWindDrawImageScl();
 int IMG_sortImage();
@@ -217,7 +217,57 @@ int GUI_Graphics_drawString(GUIGRAPHICS *g_, char *str, int len, int x, int y) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_getStringSize);
+int GUI_Graphics_getStringSize(GUIFONT *font, char *s, int n, int *w, int *h) {
+    int i;
+    int cnt;
+    s8 c;
+
+    *w = 0;
+    *h = 0;
+    if (font == NULL) {
+        puts("[X1]GUI_Graphics_getStringSize");
+        return -1;
+    }
+    if (font->type != 4) {
+        puts("[X2]GUI_Graphics_getStringSize");
+        return -1;
+    }
+    *h = font->style;
+    switch (D_00584BB6) {
+    case 1:
+        *w = font->size * pspBrowserUtf8ToSjis(0, s, n);
+        return;
+    case 8:
+        i = 0;
+        cnt = 0;
+        while (i < n) {
+            c = s[i];
+            if (c >= 0) {
+                i++;
+                cnt++;
+            } else if ((c & 0xE0) == 0xC0) {
+                i += 2;
+                cnt += 2;
+            } else if ((c & 0xF0) == 0xE0) {
+                i += 3;
+                cnt += 2;
+            } else if ((c & 0xF8) == 0xF0) {
+                i += 4;
+            } else if ((c & 0xFC) == 0xF8) {
+                i += 5;
+            } else {
+                /* STAND-IN: i += 6 before the 0xFC test (orig fills the exit branch delay slot with it) */
+                i += 6;
+                if ((c & 0xFE) != 0xFC)
+                    break;
+            }
+        }
+        *w = cnt * font->size;
+        return;
+    default:
+        return 0;
+    }
+}
 
 int GUI_Graphics_getStringBound(GUIFONT *font, char *s, int n, int d) {
     if (font == NULL || font->type != 4) {
