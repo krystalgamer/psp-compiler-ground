@@ -14,9 +14,10 @@ __asm__(".globl _GLOBAL__D__ZN5scene8MaterialC2ESsb\n_GLOBAL__D__ZN5scene8Materi
 extern const char D_0016B99C[];
 #include "../gl.hpp"
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Material", _ZN5scene8MaterialC2ESsb);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Material", _ZN5scene8MaterialC1ESsb);
+scene::Material::Material(std::string name, bool b) : Setup(name, b)
+{
+    set_default_name();
+}
 
 /* inline in the class (weak copies emitted with the vtable, in the object's tail) */
 SGL_LINKONCE_BEGIN

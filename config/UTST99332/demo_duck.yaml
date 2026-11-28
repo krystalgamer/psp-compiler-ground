@@ -470,7 +470,7 @@ segments:
       - [0x16B7A8, .rodata, main_objs/scene_Group]
       - [0x16B7C4, rodata, asm/rodata_16B744]
       - [0x16B9E8, .rodata, main_objs/scene_Material]
-      - [0x16BA04, rodata, asm/rodata_16B984]
+      - [0x16BA1C, rodata, asm/rodata_16B99C]
       - [0x16BA80, .rodata, main_objs/scene_Mesh]
       - [0x16BA9C, rodata, asm/rodata_16BA1C]
       - [0x16BDF8, .rodata, main_objs/scene_MeshData]

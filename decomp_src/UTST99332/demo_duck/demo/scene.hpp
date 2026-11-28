@@ -55,11 +55,16 @@ namespace glutils {
 /* scene::Material's member (glutils::Material::setup is in the base library) */
 class Material {
 public:
+    Material()
+        : ambient(0.2f, 0.2f, 0.2f, 1), diffuse(0.8f, 0.8f, 0.8f, 1), specular(0, 0, 0, 1), emission(0, 0, 0, 1),
+          shininess(0), f44(0)
+    {
+    }
     void setup();
     void print(std::ostream &);
     math::vector_xyzw ambient, diffuse, specular, emission;
     float shininess;
-    int f44;
+    float f44;
 };
 }
 

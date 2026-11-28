@@ -461,7 +461,7 @@ rodata 0x16B728 main_objs/scene_Group
 rodata 0x16B744 -
 bss 0x18F7B4 main_objs/scene_Group
 rodata 0x16B968 main_objs/scene_Material
-rodata 0x16B984 -
+rodata 0x16B99C -
 bss 0x18F838 main_objs/scene_Material
 # C++ static initializers (header statics): their float pools and .bss (the units' other data stays asm)
 rodata 0x16D230 main_objs/scene_TraversalVarStack
