@@ -59,7 +59,7 @@ int memcmp(const void *, const void *, unsigned int);
 void consPrintf(const char *fmt, ...);
 int SetData_Normal(int mode, char *p);
 void FreeData_Sizes(int a);
-void SetData_Paramsfo_String(int arg0) {
+void SetData_Paramsfo_String(int arg0, int mode) {
     signed char *temp_s2;
 
     temp_s2 = arg0 + 0x80;
@@ -71,7 +71,7 @@ void SetData_Paramsfo_String(int arg0) {
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", D_00103954);
 
-void SetData_GameData(char *p)
+void SetData_GameData(char *p, int mode)
 {
 	void *d = _memAllocZero(0x14B0, &D_00103954, 0x81);
 	SaveGameCntx *g;
@@ -148,7 +148,7 @@ void SetData_Pic1Buf(void *p) {
 void SetData_Snd0Buf(void *p) {
 }
 
-void SetData_Icon0(SavePIcon0 *p)
+void SetData_Icon0(SavePIcon0 *p, int mode)
 {
 	SaveDatIcon0 *r;
 	r = resGetDatLocal(l_atSaveRes[0], l_atSaveRes[1]);
@@ -157,7 +157,7 @@ void SetData_Icon0(SavePIcon0 *p)
 	p->d.size = r->size;
 }
 
-void SetData_Pic1(SavePPic1 *p)
+void SetData_Pic1(SavePPic1 *p, int mode)
 {
 	SaveDatIcon0 *r;
 	r = resGetDatLocal(l_atSaveRes[0], l_atSaveRes[3]);
@@ -166,7 +166,7 @@ void SetData_Pic1(SavePPic1 *p)
 	p->d.size = r->size;
 }
 
-void SetData_Icon1(SavePIcon1 *p)
+void SetData_Icon1(SavePIcon1 *p, int mode)
 {
 	SaveDatIcon0 *r;
 	if (l_atSaveRes[2] < 0)
@@ -177,7 +177,7 @@ void SetData_Icon1(SavePIcon1 *p)
 	p->d.size = r->size;
 }
 
-void SetData_Snd0(SavePSnd0 *p)
+void SetData_Snd0(SavePSnd0 *p, int mode)
 {
 	SaveDatIcon0 *r;
 	r = resGetDatLocal(l_atSaveRes[0], l_atSaveRes[4]);
@@ -355,7 +355,26 @@ void FreeData_Load(int a, int b) {
     FreeData_GameBuf(a);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", SetData_Save);
+void SetData_Save(char *p, int mode)
+{
+	unsigned int len;
+
+	len = strlen((char *)localeGetRegionCntx() + 5);
+	__builtin_memcpy(p + 0x3C, (char *)localeGetRegionCntx() + 5, len);
+	*(char *)(len + (int)p + 0x3C) = 0;
+	memcpy(p + 0x4C, &D_00104098, 4);
+	p[0x50] = 0;
+	if (mode != 0)
+		sprintf(p + 0x64, &D_00103BF4, &D_001040A0);
+	else
+		sprintf(p + 0x64, &D_00103BF4, &D_001040AC);
+	SetData_GameData(p, 0);
+	SetData_Paramsfo_String((int)p, 0);
+	SetData_Icon0((void *)p, 0);
+	SetData_Icon1((void *)p, 0);
+	SetData_Pic1((void *)p, 0);
+	SetData_Snd0((void *)p, 0);
+}
 
 void FreeData_Save(int a, int b)
 {
