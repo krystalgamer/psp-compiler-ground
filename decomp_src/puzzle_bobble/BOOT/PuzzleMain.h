@@ -144,10 +144,6 @@ typedef struct {
 
 extern PZL_STAT Stat[3];
 extern const s16 MapXBeginPos[];
-extern int bubx[1024];
-extern int buby[1024];
-extern int bubcnt[1024];
-extern int bubcol[1024];
 
 int GetMapWidth(int no);
 void GetBallCoordinate(PZL_STAT *st, int idx, int *x, int *y);

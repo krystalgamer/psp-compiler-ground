@@ -3,20 +3,41 @@
 #include "m2c_macros.h"
 #include "PuzzleMain.h"
 
-extern int ssTimes;
+/* The unit's .bss (config `bss 0x14E7FC PuzzleMain`), in the original's
+ * order: these zero-initialized variables, then the function statics in
+ * source order (name.N), then the tentative definitions below. */
+static int isSurvival = 0;
+static int SurvCont = 0;
+static int PauseFlag = 0;
+static int isPause = 0;
+static unsigned char PauseOk = 0;
+static int Cont = 0;
+int BuffSize = 0;
+static short mframe = 0;
+static short mtick = 0;
+static int frame_anim[16] = { 0 };
+static u8 CpuCheckBall[8] = { 0 };
+static int StageNum = 0;
+static int ssTimes = 0;
+static int tp;
+static int TimeBonus;
+static int Ti;
+static int KeyStat;
+static int KeyHit;
+static int VKeyHit;
+static int bubx[1024];
+static int buby[1024];
+static int bubcnt[1024];
+static int bubcol[1024];
+
 int DrawSpriteEz(float z, float x, float y, float w, float h, float u, float v, int no);
 int PzlDataGetWidth(int no);
 int GetKeyHit();                                    /* extern */
 int PollShutter(M2C_UNK);                           /* extern */
-extern int PauseFlag;
-extern unsigned char PauseOk;
-extern int StageNum;
 extern int gim_bg_endress;
 extern int ColorRndMaxVS;
-extern int frame_anim[];
 int SpriteDrawZoom(int no, int color, float z, float x, float y, float w, float h, float u, float v, float cx, float cy, float sx, float sy);
 extern int ColorTableVS[];
-extern int D_0014E92C;
 int CvtBallPos2MapPos(PZL_STAT *st, int x, int y);
 int CheckBallAround(PZL_STAT *st, int x, int y);
 int CheckOneColorAll(PZL_STAT *st);
@@ -58,20 +79,11 @@ int LoadGimFile(int no, int file);
 int bgm_play(int no);
 int SpriteDrawEz(int no, float z, int color, float x, float y, float w, float h, float u, float v);
 int GetBallNext(PZL_STAT *st, int flag);
-extern int isSurvival;
-extern int SurvCont;
 extern int SelectPlayer;
 extern int gimfile_main[];
 extern int gimfile_bubble[];
 extern const int mx[];
 extern const int my[];
-extern int D_0014E86C;
-extern int D_0014E870;
-extern int D_0014E874;
-extern int D_0014E878;
-extern int D_0014E87C;
-extern int D_0014E880;
-extern int D_0014E884;
 void LoadFileList(int no, int *list);
 void SpriteAllFreeImage(void);
 void VSModeInit(int);
@@ -151,6 +163,12 @@ void DoCharacters(PZL_STAT *st)
 	}
 }
 #else
+/* STAND-IN: DoCharacters is still asm.  Its statics, in its place and numbered as in the
+ * original (PARTZBUF.0); data ones only keep the numbering (their .data stays asm). */
+static void __attribute__((section(".pbskip"), unused)) DoCharacters_statics(void)
+{
+	static SPRDATA PARTZBUF __attribute__((section(".pbskipd")));
+}
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DoCharacters);
 #endif
 
@@ -239,6 +257,8 @@ INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", LIGHT_PARTZ
 extern SPRDATA D_00038A30;
 void DoMonitor(PZL_STAT *st)
 {
+	/* STAND-IN: numbering only; the real static (its .data, D_00038A30) stays asm */
+	static SPRDATA MONITOR_PARTZ __attribute__((section(".pbskipd")));
 	int tbl[6] = { 0, 3, 4, 1, 2, 5 };
 	int pat = 3;
 	int next = GetBallLine(st) < 8 ? 0 : 18;
@@ -1458,31 +1478,39 @@ int CvtBallPos2MapPosLocal(PZL_STAT *st, int x, int y)
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CvtBallPos2MapPosLocal);
 #endif
 
-int GetBallMapAddr(PZL_STAT *st, int x, int y, int dir)
+int GetBallMapAddr(PZL_STAT *st, int bx, int by, int dir)
 {
-	D_0014E878 = GetMapWidth(st->mapno) * 16;
+	static int ret;
+	static int x;
+	static int y;
+	static int maxX;
+
+	maxX = GetMapWidth(st->mapno) * 16;
 	if (dir < 0)
 		dir = 0;
 	else if (dir >= 7)
 		dir = 6;
-	D_0014E870 = x + mx[dir];
-	D_0014E874 = y + my[dir];
-	if (D_0014E870 < 0 || D_0014E874 < 0 || D_0014E870 >= D_0014E878)
-		D_0014E86C = -1;
+	x = bx + mx[dir];
+	y = by + my[dir];
+	if (x < 0 || y < 0 || x >= maxX)
+		ret = -1;
 	else
-		D_0014E86C = CvtBallPos2MapPosLocal(st, D_0014E870, D_0014E874);
-	return D_0014E86C;
+		ret = CvtBallPos2MapPosLocal(st, x, y);
+	return ret;
 }
 
-void GetBallCoordinate(PZL_STAT *st, int idx, int *x, int *y)
+void GetBallCoordinate(PZL_STAT *st, int idx, int *px, int *py)
 {
+	static int x;
+	static int LX;
+	static int LY;
 	int line;
 
-	D_0014E880 = GetMapWidth(st->mapno);
-	D_0014E87C = idx % (D_0014E880 * 2);
-	line = idx / (D_0014E880 * 2);
-	*y = (line * 2 + D_0014E87C / D_0014E880 - D_0014E884) * 14;
-	*x = (D_0014E87C < D_0014E880) ? D_0014E87C * 16 : (D_0014E87C - D_0014E880) * 16 + 8;
+	LX = GetMapWidth(st->mapno);
+	x = idx % (LX * 2);
+	line = idx / (LX * 2);
+	*py = (line * 2 + x / LX - LY) * 14;
+	*px = (x < LX) ? x * 16 : (x - LX) * 16 + 8;
 }
 
 #ifdef NON_MATCHING
@@ -2137,6 +2165,16 @@ done:
 	st->guide_n = n / 8;
 }
 #else
+/* STAND-IN: CheckBallGuide is still asm.  Its statics, in its place and numbered as in the
+ * original (X.9, Y.10, DX.11, DY.12); data ones only keep the numbering (their .data stays asm). */
+static void __attribute__((section(".pbskip"), unused)) CheckBallGuide_statics(void)
+{
+	static int X;
+	static int Y;
+	static int DX;
+	static int DY;
+}
+__asm__("D_0014E888 = X.9\nD_0014E88C = Y.10\nD_0014E890 = DX.11\nD_0014E894 = DY.12");
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckBallGuide);
 #endif
 
@@ -2257,12 +2295,25 @@ void CheckBallGuideVS(PZL_STAT *st)
 	st->guide_n = n / 8;
 }
 #else
+/* STAND-IN: CheckBallGuideVS is still asm.  Its statics, in its place and numbered as in the
+ * original (X.13, Y.14, DX.15, DY.16, AX.17, AY.18, PushTime1.19); data ones only keep the numbering (their .data stays asm). */
+static void __attribute__((section(".pbskip"), unused)) CheckBallGuideVS_statics(void)
+{
+	static int X;
+	static int Y;
+	static int DX;
+	static int DY;
+	static int AX;
+	static int AY;
+	static short PushTime1;
+}
+__asm__("D_0014E898 = X.13\nD_0014E89C = Y.14\nD_0014E8A0 = DX.15\nD_0014E8A4 = DY.16\nD_0014E8A8 = AX.17\nD_0014E8AC = AY.18\nD_0014E8B0 = PushTime1.19");
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckBallGuideVS);
 #endif
 
-extern int D_0014E8B4;
 int CheckGuideLine(PZL_STAT *st)
 {
+	static int AllowSe;
 	int key;
 	int ret;
 	int done = 0;
@@ -2332,13 +2383,13 @@ int CheckGuideLine(PZL_STAT *st)
 	ret = 0;
 	if (st->unk47F) {
 		ret = 1;
-		if (st->unk006 < 0x18 && D_0014E8B4 == 0) {
+		if (st->unk006 < 0x18 && AllowSe == 0) {
 			se_play(21);
-			D_0014E8B4 = 5;
+			AllowSe = 5;
 		}
 	}
-	if (D_0014E8B4 > 0)
-		D_0014E8B4--;
+	if (AllowSe > 0)
+		AllowSe--;
 	return ret;
 }
 
@@ -3098,6 +3149,21 @@ int PuzzleBody(void)
 	return ret;
 }
 #else
+/* STAND-IN: PuzzleBody is still asm.  Its statics, in its place and numbered as in the
+ * original (Ticks.21, X.22, Y.23, zoom.24, frame.25, zen.26, eye.27, bgnum.28, LCount.29); data ones only keep the numbering (their .data stays asm). */
+static void __attribute__((section(".pbskip"), unused)) PuzzleBody_statics(void)
+{
+	static int Ticks;
+	static int X;
+	static int Y;
+	static float zoom __attribute__((section(".pbskipd")));
+	static int frame;
+	static int zen;
+	static int eye __attribute__((section(".pbskipd")));
+	static int bgnum;
+	static int LCount;
+}
+__asm__("D_0014E8B8 = Ticks.21\nD_0014E8BC = X.22\nD_0014E8C0 = Y.23\nD_0014E8C4 = frame.25\nD_0014E8C8 = zen.26\nD_0014E8CC = bgnum.28\nD_0014E8D0 = LCount.29");
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", PuzzleBody);
 #endif
 
@@ -3190,6 +3256,17 @@ int CPUThinking(PZL_STAT *st)
 	return ret;
 }
 #else
+/* STAND-IN: CPUThinking is still asm.  Its statics, in its place and numbered as in the
+ * original (PushTime0.30, PushTime1.31, ArrowDir.32, ArrowTime.33, ArrowType.34); data ones only keep the numbering (their .data stays asm). */
+static void __attribute__((section(".pbskip"), unused)) CPUThinking_statics(void)
+{
+	static short PushTime0;
+	static short PushTime1;
+	static int ArrowDir;
+	static int ArrowTime;
+	static int ArrowType __attribute__((section(".pbskipd")));
+}
+__asm__("D_0014E8D4 = PushTime0.30\nD_0014E8D6 = PushTime1.31\nD_0014E8D8 = ArrowDir.32\nD_0014E8DC = ArrowTime.33");
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CPUThinking);
 #endif
 
@@ -4104,6 +4181,23 @@ int VSModeBody(int pl)
 	return ret;
 }
 #else
+/* STAND-IN: VSModeBody is still asm.  Its statics, in its place and numbered as in the
+ * original (Ticks.35, X.36, Y.37, AtkNum.38, AtkPos.39, zoom.40, frame.41, zen.42, eye.43, bgnum.44, LCount.45); data ones only keep the numbering (their .data stays asm). */
+static void __attribute__((section(".pbskip"), unused)) VSModeBody_statics(void)
+{
+	static int Ticks;
+	static int X;
+	static int Y;
+	static int AtkNum;
+	static int AtkPos[8] __attribute__((section(".pbskipd")));
+	static float zoom __attribute__((section(".pbskipd")));
+	static int frame[3];
+	static int zen[3];
+	static int eye[3] __attribute__((section(".pbskipd")));
+	static int bgnum;
+	static int LCount;
+}
+__asm__("D_0014E8E0 = Ticks.35\nD_0014E8E4 = X.36\nD_0014E8E8 = Y.37\nD_0014E8EC = AtkNum.38\nD_0014E8F0 = frame.41\nD_0014E8FC = zen.42\nD_0014E908 = bgnum.44\nD_0014E90C = LCount.45");
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", VSModeBody);
 #endif
 
@@ -4684,15 +4778,32 @@ int EndressBody(int pl)
 	return ret;
 }
 #else
+/* STAND-IN: EndressBody is still asm.  Its statics, in its place and numbered as in the
+ * original (Ticks.46, X.47, Y.48, zoom.49, frame.50, zen.51, eye.52, bgnum.53, LCount.54); data ones only keep the numbering (their .data stays asm). */
+static void __attribute__((section(".pbskip"), unused)) EndressBody_statics(void)
+{
+	static int Ticks;
+	static int X;
+	static int Y;
+	static float zoom __attribute__((section(".pbskipd")));
+	static int frame;
+	static int zen;
+	static int eye __attribute__((section(".pbskipd")));
+	static int bgnum;
+	static int LCount;
+}
+__asm__("D_0014E910 = Ticks.46\nD_0014E914 = X.47\nD_0014E918 = Y.48\nD_0014E91C = frame.50\nD_0014E920 = zen.51\nD_0014E924 = bgnum.53\nD_0014E928 = LCount.54");
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", EndressBody);
 #endif
 
 void MonitorPut(PZL_STAT *st)
 {
+	static int Count;
+
 	if (st->mapsub < 2) {
-		D_0014E92C = (D_0014E92C + 3) % 60;
-		SpriteDrawC(1.0f, 50, 241, &PUZZLE_PARTZ[13 + D_0014E92C / 20]);
-		SpriteDrawC(1.0f, 430, 241, &PUZZLE_PARTZ[13 + 4 + D_0014E92C / 15]);
+		Count = (Count + 3) % 60;
+		SpriteDrawC(1.0f, 50, 241, &PUZZLE_PARTZ[13 + Count / 20]);
+		SpriteDrawC(1.0f, 430, 241, &PUZZLE_PARTZ[13 + 4 + Count / 15]);
 	}
 }
 
@@ -4804,11 +4915,23 @@ int PollShutter(int req)
 	return ret;
 }
 #else
+/* STAND-IN: PollShutter is still asm.  Its statics, in its place and numbered as in the
+ * original (Count.56, Tick.57, Stat.58); data ones only keep the numbering (their .data stays asm). */
+static void __attribute__((section(".pbskip"), unused)) PollShutter_statics(void)
+{
+	static int Count;
+	static int Tick;
+	static int Stat;
+}
+__asm__("D_0014E930 = Count.56\nD_0014E934 = Tick.57\nD_0014E938 = Stat.58");
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", PollShutter);
 #endif
 
 void DrawLight(int x, int y, int col, int no)
 {
+	/* STAND-IN: numbering only; the real `static int Count[4] = { 0, 8, 4, 12 };`
+	 * is .data, which stays asm (D_00038A8C) */
+	static int Count[4] __attribute__((section(".pbskipd")));
 	int a, b;
 
 	D_00038A8C[no] = (D_00038A8C[no] + 1) % 48;
@@ -4822,12 +4945,12 @@ void DrawLight(int x, int y, int col, int no)
 extern const SPRDATA PUZZLE_PARTZ[];
 extern const SPRDATA GAMEMODE_PARTZ[];
 extern const int ChNamePos[];
-extern int D_0014E93C;
-extern int D_0014E940;
 void DoCharacters(PZL_STAT *st);
 void DoMonitor(PZL_STAT *st);
 void disp_game_bg(void)
 {
+	static int LCount;
+	static int bgnum;
 	PZL_STAT *st = Stat;
 
 	DrawSpriteEz(1.0f, 0.0f, 0.0f, 480.0f, 32.0f, 0.0f, 0.0f, 0);
@@ -4840,13 +4963,13 @@ void disp_game_bg(void)
 	DrawLight(415, 52, 0, 3);
 	DoMonitor(st);
 	DoMonitor(st + 2);
-	D_0014E93C = (D_0014E93C + 1) % 50;
+	LCount = (LCount + 1) % 50;
 	SpriteDrawC(2.0f, 52, 216, &PUZZLE_PARTZ[6]);
 	SpriteDrawC(2.0f, 428, 216, &PUZZLE_PARTZ[8]);
-	SpriteDrawC(1.0f, 44, 28, &PUZZLE_PARTZ[2 + D_0014E93C / 25]);
-	SpriteDrawC(1.0f, 436, 28, &PUZZLE_PARTZ[4 + D_0014E93C / 25]);
-	SpriteDrawC(2.0f, 50, 241, &PUZZLE_PARTZ[D_0014E93C / 25]);
-	SpriteDrawC(2.0f, 430, 241, &PUZZLE_PARTZ[D_0014E93C / 25]);
+	SpriteDrawC(1.0f, 44, 28, &PUZZLE_PARTZ[2 + LCount / 25]);
+	SpriteDrawC(1.0f, 436, 28, &PUZZLE_PARTZ[4 + LCount / 25]);
+	SpriteDrawC(2.0f, 50, 241, &PUZZLE_PARTZ[LCount / 25]);
+	SpriteDrawC(2.0f, 430, 241, &PUZZLE_PARTZ[LCount / 25]);
 	SpriteDrawEz(12, 2.0f, -1, 16.0f, 190.0f, 72.0f, 16.0f, 0.0f, ChNamePos[st->player]);
 	SpriteDrawEz(10, 7.0f, -1, 4.0f, 165.0f, 96.0f, 48.0f, 0.0f, 0.0f);
 	SpriteDrawEz(11, 7.0f, -1, 381.0f, 165.0f, 96.0f, 48.0f, 0.0f, 0.0f);
@@ -4856,8 +4979,8 @@ void disp_game_bg(void)
 	DrawSpriteEz(8.0f, 0.0f, 136.0f, 240.0f, 136.0f, 0.0f, 136.0f, 0);
 	DrawSpriteEz(8.0f, 240.0f, 0.0f, 240.0f, 136.0f, 240.0f, 0.0f, 0);
 	DrawSpriteEz(8.0f, 240.0f, 136.0f, 240.0f, 136.0f, 240.0f, 136.0f, 0);
-	DrawSpriteEz(9.0f, 0.0f, 0.0f, 240.0f, 272.0f, 0.0f, 0.0f, D_0014E940 + 22);
-	DrawSpriteEz(9.0f, 240.0f, 0.0f, 240.0f, 272.0f, 240.0f, 0.0f, D_0014E940 + 22);
+	DrawSpriteEz(9.0f, 0.0f, 0.0f, 240.0f, 272.0f, 0.0f, 0.0f, bgnum + 22);
+	DrawSpriteEz(9.0f, 240.0f, 0.0f, 240.0f, 272.0f, 240.0f, 0.0f, bgnum + 22);
 }
 
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", D_0002EA00);
@@ -4875,3 +4998,14 @@ INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", D_0002EA14)
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", D_0002EA18);
 
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", D_0002EA1C);
+
+/* Labels the asm (also file_sub's and plsel's) uses inside this .bss: the
+ * high halves of X.9/X.13, and %lo parts splat paired with the wrong %hi
+ * (their real symbols share the low 16 bits: MsAccessFlag, Stat, ...). */
+__asm__("D_0014E88A = X.9 + 2\n"
+	"D_0014E89A = X.13 + 2\n"
+	".globl D_0014F38C\nD_0014F38C = bubx + 0xA30\n"
+	".globl D_0014F390\nD_0014F390 = bubx + 0xA34\n"
+	".globl D_00150868\nD_00150868 = buby + 0xF0C\n"
+	".globl D_001508D4\nD_001508D4 = buby + 0xF78\n"
+	".globl D_0015273C\nD_0015273C = bubcol + 0xDE0\n");

@@ -250,6 +250,8 @@ segments:
     bss_size: 0xFC70D8
     subsegments:
       - [0x31840, data, data]
-      - { start: 0x5540C, type: bss, vram: 0x55380 }
+      - { start: 0x5540C, type: bss, vram: 0x55380, name: bss_55380 }
+      - { start: 0x5540C, type: .bss, vram: 0x14E7FC, name: PuzzleMain }
+      - { start: 0x5540C, type: bss, vram: 0x15295C, name: bss_15295C }
   - [0x5540C, bin, elf_trailer]
   - [0x120214]

@@ -35,3 +35,8 @@
 rodata 0x2EA74 sound
 # gim_picture.c's libinfo (the first rodata after staff's)
 rodata 0x30000 gim_picture
+# bss ADDR UNIT: PuzzleMain.c's .bss (0x14E7FC-0x15295C) is its C object's: the
+# zero-initialized file variables, the function statics (name.N) in source
+# order, then the tentative definitions.
+bss 0x14E7FC PuzzleMain
+bss 0x15295C -
