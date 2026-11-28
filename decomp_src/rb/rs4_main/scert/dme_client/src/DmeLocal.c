@@ -102,6 +102,7 @@ void *memcpy(void *, const void *, unsigned long);
 int NetGetNatService(M2C_UNK **arg0);
 
 typedef struct { int ip; int port; } DmeLinkAddr;
+typedef struct { int a, b; } LinkAddrS;
 
 typedef struct { int set; DmeLinkAddr ext; int port; } DmeMyAddr;
 extern void *gObjectInterfacePtr;
@@ -576,7 +577,34 @@ int NetBitMaskToSendMask(unsigned char *out, unsigned int *in, unsigned int nbit
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetSendMessageByUDP);
+LinkAddrS NetGetServerIpAddress(char *c);
+typedef struct { int err; int target; unsigned int mask[9]; unsigned int nbits; } DmeSendInfo;
+int NetSendMessageByUDP(signed char flags, char *conn, DmeSendInfo *s, int len)
+{
+    unsigned short tf;
+    unsigned char mask[32];
+    unsigned short me;
+    int r;
+
+    me = 0xFFFE;
+    tf = 0;
+    {
+        int e = NetConvertTransportFlags(flags, &tf);
+        s->err = e;
+        if (e != 0) return e;
+    }
+    r = (*(DmeP2pHostFn *)((char *)gP2PInterfacePtr + 0x14))(*(int *)(conn + 0x474), &me);
+    if (s->target == 0xFFFF) {
+        r = (*(int (**)(int, LinkAddrS, unsigned short, int))((char *)gUDPInterfacePtr + 0x4C))(*(int *)((char *)gDmeGlobals + 0x14), NetGetServerIpAddress(conn), *(int *)((char *)gUDPInterfacePtr + 0x84), len);
+    } else if (s->target == 0x100) {
+        NetBitMaskToSendMask(mask, s->mask, s->nbits);
+        r = (*(int (**)(int, int, unsigned short, unsigned char *, unsigned short, int))((char *)gP2PInterfacePtr + 0x48))(*(int *)(conn + 0x474), 0, s->nbits, mask, tf, len);
+    } else if (s->target != me) {
+        r = (*(int (**)(int, unsigned short, unsigned short, int))((char *)gP2PInterfacePtr + 0x44))(*(int *)(conn + 0x474), s->target, tf, len);
+    }
+    s->err = NetMapRtError(r);
+    return r;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetSendMessageByTCP);
 
@@ -1055,8 +1083,6 @@ void NetDestroyClientInfo(void **arr, int idx)
     if (arr != NULL)
         DmeFree(&arr[idx]);
 }
-
-typedef struct { int a, b; } LinkAddrS;
 
 LinkAddrS NetGetServerIpAddress(char *c)
 {
