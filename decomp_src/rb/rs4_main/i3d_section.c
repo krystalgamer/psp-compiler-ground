@@ -341,4 +341,18 @@ void I3dQtSlerp(float *out, const float *p, const float *q, float t)
 
 const float D_001096CC = 0.9f;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_section", I3dQtLerp);
+float I3dQtDotProduct_f(const float *a, const float *b) __asm__("I3dQtDotProduct");
+void I3dVecScale(float *, const float *, float);
+void I3dVecInter(float *, const float *, const float *, float);
+extern const float D_001096D0;
+void I3dQtLerp(float *out, const float *a, const float *b, float t)
+{
+	float tmp[4];
+	if (I3dQtDotProduct_f(a, b) < 0.0f) {
+		I3dVecScale(tmp, a, D_001096D0);
+		I3dVecInter(out, tmp, b, t);
+	} else {
+		I3dVecInter(out, a, b, t);
+	}
+}
+const float D_001096D0 = -1.0f;
