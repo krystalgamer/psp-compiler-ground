@@ -503,7 +503,18 @@ void SesqBendW(char *s, int a, int b, int c, int global) {
     else sgxPortCommand(*(short *)(s + 0x1A), (int)cmd);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", PortIsUsedGlobal);
+int PortIsUsedGlobal(char *port, int id)
+{
+	char *p, *u;
+	int res = *(short *)(*(char **)(*(char **)(port + 0x10) + 0x10) + 0x12);
+	for (p = SeqListFirst((char *)&D_0011FE68 - 4); p != NULL; p = SeqListNext(p)) {
+		if (*(short *)(*(char **)(p + 0x10) + 0x12) != res) continue;
+		for (u = SeqListFirst(p + 0x14); u != NULL; u = SeqListNext(u)) {
+			if (sgxPortGetUnitStatus(*(short *)(u + 0x1A), id) & 1) return 1;
+		}
+	}
+	return 0;
+}
 
 int SesqMakeSubID(a0, s, id)
     void *a0;
