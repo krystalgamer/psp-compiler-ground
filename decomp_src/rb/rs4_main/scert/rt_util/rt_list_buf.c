@@ -186,7 +186,19 @@ int rt_list_buf_resize_buffer(RtList *list, unsigned int max)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_list_buf", pool_alloc);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_list_buf", pool_free);
+void pool_free(RtListPool *p, void *ptr)
+{
+    unsigned int off, idx, n, i;
+
+    if (p == NULL) return;
+    if (ptr == NULL) return;
+    off = (char *)ptr - p->buf;
+    if (off % p->blk != 0) return;
+    idx = off / p->blk;
+    n = p->used[idx] & 0x7F;
+    for (i = 0; i < n; i++)
+        p->used[idx + i] = 0;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_list_buf", rcsid_10C164);
 
