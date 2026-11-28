@@ -1178,6 +1178,23 @@ the exact matches and lists the module code that nothing covers
     newer 0x700000A1 relocation format and no sections.  They were not
     analysed.
 
+## Symbol names decide some register ties (gcse hashes by name)
+
+gcc 3.3's gcse (`hash_expr_1`, SYMBOL_REF) hashes a global by its NAME
+string ("Don't hash on the symbol's address ... different hash values may
+cause expressions to be recorded in different orders and thus different
+registers to be used").  So the order gcse creates pseudos for hoisted
+`%hi` address parts — and which of two equal-priority values gets the lower
+s-register — depends on the real symbol names, which a decompilation with
+`D_XXXXXXXX` placeholders doesn't have.  Evidence: tony_libs pspnet_adhocctl
+func_00002614 matches as soon as D_00007060's spelling changes (a rename
+for the whole unit breaks func_000021DC, so the real name hashes differently
+again); pspnet_inet ip_init drops from diff14 to diff10 with the real
+NetBSD global names.  cse.c hashes symbols by string address instead, i.e.
+by declaration order in the original headers.  Where a register tie
+involves global addresses, the real names (from SDK headers, NetBSD, open
+source counterparts) are worth recovering first.
+
 ## Solved: libgu two-command register tie (stale `REG_FREQ`)
 
 `sceGuTexScale`, `sceGuTexOffset`, `sceGuMorphWeight` and `sceGuLightColor`
