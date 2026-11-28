@@ -36,7 +36,28 @@ int NetSetDefaultLatencyMetricsParams(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeMetrics", NetGetLatencyMetrics);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeMetrics", MetricsEvent);
+typedef struct { int a, b, c; } DmeLatData;
+typedef struct { int a; int b; int c1; int c0; int c2; int zero; int user; } DmeMetricMsg;
+typedef struct { void (*cb)(DmeMetricMsg *); int user; } DmeLatCfg;
+void MetricsEvent(int a, int b, void *data, unsigned int type)
+{
+    DmeLatData d;
+    DmeMetricMsg m;
+
+    if (type == 0 || type == 1) {
+        if (type == 1) {
+        memcpy(&d, data, sizeof d);
+        m.a = a;
+        m.b = b;
+        m.zero = 0;
+        m.user = ((DmeLatCfg *)&gLatencyMetrics)->user;
+        m.c0 = d.a;
+        m.c1 = d.b;
+        m.c2 = d.c;
+        ((DmeLatCfg *)&gLatencyMetrics)->cb(&m);
+        }
+    }
+}
 
 void NetSetLatencyMetricsCallback(int arg0, int arg1) {
     M2C_FIELD(&gLatencyMetrics, int *, 0) = arg0;
