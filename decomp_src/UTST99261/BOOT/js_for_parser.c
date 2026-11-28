@@ -4,7 +4,7 @@
 int js_setChildOfDocument(int a, int b, int c, int d, int type);
 int js_setChildOfForm(int a, int b, int c, int d, int type);
 void *js_setChildOfWindow(void *ctx, int b, int c, int type);
-int JSObjSetEventHandler(int a, int b, int c);
+void JSObjSetEventHandler(int a, int b, int c);
 typedef unsigned short UCSChar;
 int mes_event_new();                                /* extern */
 M2C_UNK mes_object_setup(void *, int, M2C_UNK *, int, M2C_UNK, M2C_UNK); /* extern */
@@ -77,55 +77,61 @@ int JSObjGetCharsLength(const UCSChar *s)
     return n;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", JSObjSetEventHandler);
+unsigned int strlen(const char *s);
+int mes_util_streq3(const UCSChar *a, const char *b, unsigned int n);
+int mes_string_new(void *ctx, const UCSChar *s, int len);
+void *js_common_buffer_open(UCSChar *s, int n);
+int js_common_execute(void *ctx, void *buf, int f);
+void js_common_buffer_close(void *buf);
+typedef struct JSEvCtx {
+    char pad[0x14];
+    int error;
+    int *sp;
+} JSEvCtx;
+typedef struct JSEvStr {
+    UCSChar *str;
+    int len;
+} JSEvStr;
+void JSObjSetEventHandler(int ctx_, int b, int c)
+{
+    char *names[24] = {
+        "onabort", "onblur", "onchange", "onclick", "ondblclick", "ondragdrop",
+        "onerror", "onfocus", "onkeydown", "onkeypress", "onkeyup", "onload",
+        "onmousedown", "onmousemove", "onmouseout", "onmouseover", "onmouseup", "onmove",
+        "onreset", "onresize", "onselect", "onsubmit", "onunload", 0
+    };
+    int i;
+    int v;
+    int r;
+    void *buf;
+    int null;
 
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", D_0013C880);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", D_0013C888);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", D_0013C890);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", D_0013C89C);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", D_0013C8A4);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", D_0013C8B0);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", D_0013C8BC);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", D_0013C8C4);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", D_0013C8CC);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", D_0013C8D8);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", D_0013C8E4);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", D_0013C8EC);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", D_0013C8F4);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", D_0013C900);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", D_0013C90C);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", D_0013C918);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", D_0013C924);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", D_0013C930);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", D_0013C938);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", D_0013C940);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", D_0013C94C);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", D_0013C958);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", D_0013C964);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", D_0013C970);
+    if (((UCSChar **)c) == NULL)
+        return;
+    null = 4;
+    while (((UCSChar **)c)[0] != NULL) {
+        for (i = 0; names[i] != NULL; i++) {
+            if (mes_util_streq3(((UCSChar **)c)[0], names[i], strlen(names[i])) != 1)
+                continue;
+            v = mes_string_new((JSEvCtx *)ctx_, ((UCSChar **)c)[1], JSObjGetCharsLength(((UCSChar **)c)[1]));
+            *--((JSEvCtx *)ctx_)->sp = v;
+            if ((v & 3) != 3)
+                continue;
+            buf = js_common_buffer_open(((JSEvStr *)(v & ~3))->str, ((JSEvStr *)(v & ~3))->len * 2);
+            r = js_common_execute((JSEvCtx *)ctx_, buf, 0);
+            ((JSEvCtx *)ctx_)->error = 0;
+            if (r == 0) {
+                ((JSEvCtx *)ctx_)->sp++;
+                break;
+            }
+            *--((JSEvCtx *)ctx_)->sp = r;
+            mes_object_setup((JSEvCtx *)ctx_, null ? b : null, (M2C_UNK *)names[i], r, 0, 0);
+            ((JSEvCtx *)ctx_)->sp += 2;
+            js_common_buffer_close(buf);
+        }
+        c += 8;
+    }
+}
 
 void *js_setChildOfWindow(void *ctx, int parent, int a, int type)
 {
