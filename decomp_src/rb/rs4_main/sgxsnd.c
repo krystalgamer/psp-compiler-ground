@@ -404,7 +404,36 @@ void sgxSndPlayNameF(int a, const char *fmt, int c, ...) {
     sgxSndPlayName(a, buf, c);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", SlotStop);
+int sgxGetSyncMode(void);
+int sgxGetCurrentThreadID(void);
+int sgxGetMainThreadID(void);
+static inline void SlotSetReqFlag_(char *s, int bit)
+{
+	char *q = s + 0x86;
+	int f = q[1];
+	if ((f & bit) == bit) return;
+	sgxDI();
+	s[0x86] |= bit;
+	q[1] = (q[1] & ~bit) | bit;
+	sgxEI();
+}
+void SlotStop(int id, int flag, float fade, const void *name)
+{
+	char *s = SlotGetAtStop(id, name);
+	if (s == NULL) return;
+	if (fade > 0.0f) {
+		SlotDoFade(id, 0, 1, fade);
+		return;
+	}
+	if (*(short *)(s + 0x1E) >= 0)
+		sgxBmgSetLowBufCallback(*(short *)(s + 0x1E), 0, -1, -1, 0);
+	if (sgxGetSyncMode() == 0 && sgxGetCurrentThreadID() == sgxGetMainThreadID() && *(short *)(s + 0x1E) < 0) {
+		SlotFree(s, flag);
+		return;
+	}
+	if (flag) SlotSetReqFlag_(s, 0x10);
+	SlotSetReqFlag_(s, 2);
+}
 
 void sgxSndStop(int id, int a1)
 {
