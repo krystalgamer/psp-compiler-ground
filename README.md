@@ -51,7 +51,13 @@ A unit with a `/* lang: c++ */` comment is C++: it is preprocessed with the
 psp-gcc 1.3.1 release's libstdc++ and newlib headers (`include/cxx` first:
 g++'s predefines, 1.6.1's `gthr-psp.h`) and built by `cc1plus-VERSION`.
 `#pragma interface` in a unit's header keeps vtables and typeinfo in the
-module's data. With `-O3` cc1plus outputs every function at the end of the
+module's data. Without it, cc1plus puts the vtables, typeinfo and type names
+of classes without a key function in `.gnu.linkonce.r.*` sections (and their
+implicit destructors in `.gnu.linkonce.t.*`): `tools/split.py` links each C++
+object's linkonce sections of the symbols in its own `.text`/`.rodata`
+ranges (the first copy wins, as in Sony's link), the `.r` ones after its
+`.rodata`, with its `.rodata.*` (rb/rs4_main has them right after the
+object's strings, in cc1plus's order). With `-O3` cc1plus outputs every function at the end of the
 file, so a C++ unit that still has asm includes `cxx/defer_asm.h`, whose
 `INCLUDE_ASM` defers the asm the same way. A unit's data can be given to it
 with `rodata ADDR UNIT` / `bss ADDR UNIT` lines (and `rodata|bss ADDR -` to

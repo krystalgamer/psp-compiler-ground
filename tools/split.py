@@ -142,33 +142,51 @@ def cxx_linkonce(text, cfg):
     demos no instance appears twice and its holder precedes every other
     object that needs it.  ld keeps the first copy in script order, so each
     C++ object keeps the linkonce sections of the functions in its own
-    address range (its copies of other objects' instances are discarded)."""
-    funcs = []
+    address range (its copies of other objects' instances are discarded).
+
+    Without `#pragma interface`, vtables, typeinfo and type names of classes
+    with no key function go to .gnu.linkonce.r.* sections.  rb/rs4_main has
+    them after the object's .rodata (its strings), in the object's order
+    (src/net/network_lobby_message: the file name string, the 11 _ZTV, _ZTI
+    and _ZTS as cc1plus emits them; Ys::Object's typeinfo only in the first
+    object, libmm_semaphore).  So each C++ object also keeps the
+    .gnu.linkonce.r sections of the data symbols in its own .rodata range,
+    linked with its .rodata.* (rodata_order)."""
+    funcs, data = [], []
     for path in cfg.get("options", {}).get("symbol_addrs_path", []):
         if Path(path).is_file():
             for line in Path(path).read_text().splitlines():
-                m = re.match(r"(\S+) = 0x([0-9A-Fa-f]+); // type:func", line)
-                if m:
+                m = re.match(r"(\S+) = 0x([0-9A-Fa-f]+);(.*)", line)
+                if not m:
+                    continue
+                if re.match(r"\s*// type:func", m.group(3)):
                     funcs.append((int(m.group(2), 16), m.group(1)))
+                elif not re.match(r"(D|jtbl)_[0-9A-Fa-f]+$", m.group(1)):
+                    data.append((int(m.group(2), 16), m.group(1)))
     if not funcs:
         return text
     funcs.sort()
+    data.sort()
     for seg in cfg["segments"]:
         if not isinstance(seg, dict) or seg.get("type") != "code":
             continue
         subs = [sub for sub in seg.get("subsegments", []) if isinstance(sub, list)]
         for k, sub in enumerate(subs):
-            if sub[1] != "c":
+            if sub[1] not in ("c", ".rodata"):
                 continue
             src = Path(cfg["options"].get("src_path", "src")) / f"{sub[2]}.c"
             if not src.is_file() or "/* lang: c++ */" not in src.read_text(errors="replace"):
                 continue
             lo = sub[0] - seg["start"] + seg["vram"]
             hi = (subs[k + 1][0] - seg["start"] + seg["vram"]) if k + 1 < len(subs) else 1 << 32
-            names = [n for a, n in funcs if lo <= a < hi]
-            keep = "".join(f" .gnu.linkonce.t.{n}" for n in names)
-            obj = re.escape(f"/{src}.o(.text);")
-            text = re.sub(rf"^(\s*\S+?){obj}$", lambda m: f"{m.group(1)}/{src}.o(.text{keep});", text, count=1, flags=re.M)
+            if sub[1] == "c":
+                kind, names = "t", [n for a, n in funcs if lo <= a < hi]
+            else:
+                kind, names = "r", [n for a, n in data if lo <= a < hi]
+            sec = ".text" if kind == "t" else ".rodata"
+            keep = "".join(f" .gnu.linkonce.{kind}.{n}" for n in names)
+            obj = re.escape(f"/{src}.o({sec});")
+            text = re.sub(rf"^(\s*\S+?){obj}$", lambda m: f"{m.group(1)}/{src}.o({sec}{keep});", text, count=1, flags=re.M)
     return text
 
 
@@ -177,19 +195,21 @@ def rodata_order(text, module):
     links *(.rodata .rodata.*), i.e. in each object's own section order.  The
     release assemblers have .rodata first; the 1.6.1.internal toolchain's
     creates the sections as they are first used (config/compilers.txt
-    objorder)."""
+    objorder).  A C++ object's .gnu.linkonce.r sections (cxx_linkonce) are
+    created as first used too, so they link with its .rodata.*."""
     sys.path.insert(0, str(Path(__file__).parent))
     import compiler
 
     def rep(m):
-        obj = m[1]
+        obj, extra = m[1], m[2]
         u = re.search(r"decomp_src/([^/]+)/" + re.escape(module) + r"/(.+)\.c\.o$", obj)
         if u and compiler.object_order(u[1], module, u[2]):
-            return f"{obj}(.rodata .rodata.*);"
-        return f"{obj}(.rodata);\n        {obj}(.rodata.*);"
-    text = re.sub(r"(\S+\.c\.o)\(\.rodata \.rodata\.\*\);", r"\1(.rodata);", text)
-    text = re.sub(r"(\S+\.c\.o)\(\.rodata\);\n\s*\1\(\.rodata\.\*\);", r"\1(.rodata);", text)
-    return re.sub(r"(\S+\.c\.o)\(\.rodata\);", rep, text)
+            return f"{obj}(.rodata .rodata.*{extra});"
+        return f"{obj}(.rodata);\n        {obj}(.rodata.*{extra});"
+    lo = r"((?: \.gnu\.linkonce\.r\.[^\s)]+)*)"
+    text = re.sub(r"(\S+\.c\.o)\(\.rodata \.rodata\.\*" + lo + r"\);", r"\1(.rodata\2);", text)
+    text = re.sub(r"(\S+\.c\.o)\(\.rodata\);\n\s*\1\(\.rodata\.\*" + lo + r"\);", r"\1(.rodata\2);", text)
+    return re.sub(r"(\S+\.c\.o)\(\.rodata" + lo + r"\);", rep, text)
 
 
 if __name__ == "__main__" and sys.argv[1:2] == ["--rodata-order"]:
