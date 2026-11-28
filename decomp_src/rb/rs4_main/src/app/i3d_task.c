@@ -397,7 +397,80 @@ void i3dCameraCardBattle(void)
 	taskSendProc(0, &i3dTask_View, 0x11, (int)p, 0);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d_task", i3dLightInit);
+extern char *pTypeTbl[];
+extern unsigned char D_000FD86C;
+int I3rRoot__GetNodeIndexByName(void *, char *);
+void *_memAllocZero(int, const void *, int);
+#define cassertL(e, l) if (!(e)) consPrintf(&D_000FD5C4, &D_000FD5E0, l, "i3dLightInit", &D_000FD86C)
+int i3dLightInit(int a, char *Tp)
+{
+	void *root = *(void **)Tp;
+	int i;
+	float *pParam;
+	for (i = 0; i < 4; i++) {
+		if (I3rRoot__GetNodeIndexByName(root, pTypeTbl[i]) >= 0) {
+			consPrintf("%s : findout : %s\n", "i3dLightInit", pTypeTbl[i]);
+			break;
+		}
+	}
+	*(int *)(Tp + 0x6C) = i;
+	switch (i) {
+	default:
+		consPrintf("%s : undefined\n", "i3dLightInit");
+		break;
+	case 0:
+		pParam = _memAllocZero(0x20, &D_000FD5E0, 0x52B);
+		cassertL(pParam, 0x52C);
+		*(float **)(Tp + 0x70) = pParam;
+		pParam[0] = 0.0f;
+		pParam[1] = -1.0f;
+		pParam[2] = 0.0f;
+		pParam[4] = 1.0f;
+		pParam[5] = 1.0f;
+		pParam[6] = 1.0f;
+		pParam[7] = 0.0f;
+		break;
+	case 1:
+		pParam = _memAllocZero(0x20, &D_000FD5E0, 0x53A);
+		cassertL(pParam, 0x53B);
+		*(float **)(Tp + 0x70) = pParam;
+		pParam[0] = 0.0f;
+		pParam[1] = -1.0f;
+		pParam[2] = 0.0f;
+		pParam[4] = 1.0f;
+		pParam[5] = 1.0f;
+		pParam[6] = 1.0f;
+		pParam[7] = 0.0f;
+		break;
+	case 2:
+		pParam = _memAllocZero(0x40, &D_000FD5E0, 0x549);
+		cassertL(pParam, 0x54A);
+		*(float **)(Tp + 0x70) = pParam;
+		pParam[0] = 0.0f;
+		pParam[1] = -1.0f;
+		pParam[2] = 0.0f;
+		pParam[4] = 0.0f;
+		pParam[5] = -1.0f;
+		pParam[6] = 0.0f;
+		pParam[8] = 1.0f;
+		pParam[9] = 1.0f;
+		pParam[10] = 1.0f;
+		pParam[11] = 0.0f;
+		pParam[12] = 0.5235988f;
+		pParam[13] = 0.7853982f;
+		break;
+	case 3:
+		pParam = _memAllocZero(0x10, &D_000FD5E0, 0x55F);
+		cassertL(pParam, 0x560);
+		*(float **)(Tp + 0x70) = pParam;
+		pParam[0] = 0.5f;
+		pParam[1] = 0.5f;
+		pParam[2] = 0.5f;
+		pParam[3] = 1.0f;
+		break;
+	}
+	return 1;
+}
 
 int i3dLightTerm(int a, char *p)
 {
