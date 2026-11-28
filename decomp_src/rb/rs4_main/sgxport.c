@@ -590,7 +590,30 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", LfoCalc);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", UnitVolumeProc);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", UnitPitchProc);
+int sgxCent128ToPitch(int);
+void UnitPitchProc(void *uv, short *ctl) {
+    UnitT *u = uv;
+    char *port = *(char **)((char *)u + 0x10);
+    int pitch = *(short *)((char *)u + 0x4C);
+    int flags = ctl[1];
+    int bend;
+    int i;
+    if (flags & 0x200) pitch = (pitch * ctl[9]) >> 12;
+    if (flags & 0x800) pitch = (pitch * sgxCent128ToPitch(ctl[11])) >> 12;
+    bend = (flags & 0x100) ? ctl[8] : 0;
+    if (*(int *)(port + 0x14) == 1) bend += (((MidiChX *)(port + 0x38))[((signed char *)u)[0xB]].x[3] - 0x40) << 6;
+    if (bend != 0) {
+        int r;
+        if (bend < 0) r = ((signed char *)u)[0x52];
+        else if (bend > 0) r = ((signed char *)u)[0x53];
+        else goto skip;
+        pitch = (pitch * sgxCent128ToPitch(((r << 7) * bend) >> 12)) >> 12;
+    }
+skip:
+    for (i = 0; i < u->s.nv; i++) {
+        if (u->s.v[i] >= 0) sgxVoCtrl(u->s.v[i], 4, pitch, 0);
+    }
+}
 
 signed char sgxVoGetStatus(int v);
 long long sgxVoGetPlayUnitSamples(int v);
