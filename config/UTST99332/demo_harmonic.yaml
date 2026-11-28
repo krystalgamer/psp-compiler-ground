@@ -429,8 +429,7 @@ segments:
       - [0x1649EC, rodata, asm/rodata_16496C]
       - [0x165678, .rodata, main_objs/math_SphericalCoord]
       - [0x1656A8, .rodata, main_objs/math_ZYZ]
-      - [0x1656C8, rodata, asm/rodata_165648]
-      - [0x1656E4, .rodata, main_objs/math_basic_net_basic_net]
+      - [0x1656C8, .rodata, main_objs/math_basic_net_basic_net]
       - [0x1656F4, rodata, asm/rodata_165674]
       - [0x165810, .rodata, main_objs/math_bspline_curve_curve]
       - [0x165860, rodata, asm/rodata_1657E0]
@@ -526,7 +525,7 @@ segments:
       - [0x16F390, rodata, asm/rodata_16F310]
       - [0x16F3E8, .rodata, main_objs/sh_Env]
       - [0x16F404, rodata, asm/rodata_16F384]
-      - [0x16F674, .rodata, main_objs/sh_HDRMap]
+      - [0x16F658, .rodata, main_objs/sh_HDRMap]
       - [0x16F6B4, rodata, asm/rodata_16F634]
       - [0x16F8B8, .rodata, main_objs/Icosahedron_Bin]
       - [0x16F8D4, rodata, asm/rodata_16F854]
@@ -687,7 +686,7 @@ segments:
       - { start: 0x189CE4, type: .bss, vram: 0x18B628, name: main_objs/interp_KeyFrameSequence }
       - { start: 0x189CE4, type: .bss, vram: 0x18B6EC, name: main_objs/math_SphericalCoord }
       - { start: 0x189CE4, type: .bss, vram: 0x18B76C, name: main_objs/math_ZYZ }
-      - { start: 0x189CE4, type: bss, vram: 0x18B7EC, name: bss_18B7EC }
+      - { start: 0x189CE4, type: .bss, vram: 0x18B7EC, name: main_objs/math_basic_net_basic_net }
       - { start: 0x189CE4, type: .bss, vram: 0x18B86C, name: main_objs/math_bspline_curve_curve }
       - { start: 0x189CE4, type: bss, vram: 0x18B8EC, name: bss_18B8EC }
       - { start: 0x189CE4, type: .bss, vram: 0x18B8EC, name: main_objs/math_matrix_eigenVectors }
@@ -748,7 +747,7 @@ segments:
       - { start: 0x189CE4, type: .bss, vram: 0x18DA44, name: main_objs/sgl_Edge }
       - { start: 0x189CE4, type: .bss, vram: 0x18DB48, name: main_objs/sh_DebugMap }
       - { start: 0x189CE4, type: .bss, vram: 0x18DCA0, name: main_objs/sh_Env }
-      - { start: 0x189CE4, type: bss, vram: 0x18DD24, name: bss_18DD24 }
+      - { start: 0x189CE4, type: .bss, vram: 0x18DD24, name: main_objs/sh_HDRMap }
       - { start: 0x189CE4, type: .bss, vram: 0x18DDA8, name: main_objs/Icosahedron_Bin }
       - { start: 0x189CE4, type: .bss, vram: 0x18DED0, name: main_objs/sh_Matrix }
       - { start: 0x189CE4, type: bss, vram: 0x18DFA8, name: bss_18DFA8 }

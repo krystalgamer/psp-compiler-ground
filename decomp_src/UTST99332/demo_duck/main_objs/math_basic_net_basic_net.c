@@ -2,8 +2,12 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
 #define DEMO_TEMPLATE_DEFS
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN4math9basic_netC2Ev");
 #include "../../demo_duck/gl.hpp"
 
 /* the object's .gnu.linkonce.t sections in the original's order (basic_net's inline destructor clones are asm) */
@@ -42,9 +46,6 @@ DEMO_LINKONCE_ORDER(
 );
 
 extern "C" void glVertex3fv(const GLfloat *);
-
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_basic_net_basic_net", _Z41__static_initialization_and_destruction_0ii_4FBD8);
 
 math::basic_net::basic_net()
 {
@@ -105,16 +106,6 @@ void math::basic_net::draw_w() const
         glEnd();
         p++;
     }
-}
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_4FBD8");
-void _GLOBAL__I__ZN4math9basic_netC2Ev(void);
-}
-
-void _GLOBAL__I__ZN4math9basic_netC2Ev(void)
-{
-    static_init(1, 0xFFFF);
 }
 
 CONT_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_basic_net_basic_net", _ZN4math9basic_netD1Ev, _ZN4math9basic_netD1Ev)

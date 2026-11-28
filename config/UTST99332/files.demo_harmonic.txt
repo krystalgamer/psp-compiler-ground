@@ -108,7 +108,7 @@ rodata 0x16EE8C main_objs/math_TransformStackFunc
 rodata 0x16EEA8 -
 bss 0x18B6EC main_objs/math_SphericalCoord
 bss 0x18B76C main_objs/math_ZYZ
-bss 0x18B7EC -
+bss 0x18B7EC main_objs/math_basic_net_basic_net
 bss 0x18D9C4 main_objs/math_TransformStackFunc
 # draw_mesh_enabled: vector<short>::reserve()'s "vector::reserve" (after PrimitiveIndex's strings)
 rodata 0x1699E0 main_objs/draw_mesh_enabled
@@ -124,7 +124,7 @@ rodata 0x16EBEC -
 rodata 0x16FD1C main_objs/sh_Matrix
 rodata 0x16FD64 -
 # sh_HDRMap: the float pools of convert01f .. eval (load's is its asm's)
-rodata 0x16F5F4 main_objs/sh_HDRMap
+rodata 0x16F5D8 main_objs/sh_HDRMap
 rodata 0x16F634 -
 # sh_PRT: the float pools of PRT::draw_samples .. draw_averaged_normals (draw_with_sh's are its asm's)
 rodata 0x16FDB4 main_objs/sh_PRT
@@ -160,7 +160,7 @@ rodata 0x1626F8 -
 rodata 0x171220 main_objs/sh_TestEnvSet_TestEnv
 rodata 0x171250 -
 # math_basic_net_basic_net: the float pools of basic_net::basic_net(unsigned, unsigned) (C2, C1)
-rodata 0x165664 main_objs/math_basic_net_basic_net
+rodata 0x165648 main_objs/math_basic_net_basic_net
 rodata 0x165674 -
 # math_TransformStack: the header statics' float pool, the float pools (Identity()'s 1.0f) of push and identity, strings and __PRETTY_FUNCTION__s
 rodata 0x16ECD0 main_objs/math_TransformStack
@@ -465,7 +465,7 @@ bss 0x18D020 main_objs/sgl_Heap
 rodata 0x16F368 main_objs/sh_Env
 rodata 0x16F384 -
 bss 0x18DCA0 main_objs/sh_Env
-bss 0x18DD24 -
+bss 0x18DD24 main_objs/sh_HDRMap
 rodata 0x170C78 main_objs/sh_SphereSampling_Sample
 bss 0x18E360 main_objs/sh_SphereSampling_Sample
 bss 0x18E3E4 -

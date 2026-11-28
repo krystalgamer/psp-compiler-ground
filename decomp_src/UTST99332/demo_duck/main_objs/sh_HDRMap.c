@@ -2,21 +2,23 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
 #define SGL_LINKONCE_HDRMap 1
 #define DEMO_TEMPLATE_DEFS 1
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN2sh6HDRMapC2EPKcf");
+__asm__(".globl _GLOBAL__D__ZN2sh6HDRMapC2EPKcf");
 namespace math {
 template<class T> T min_(T, T);
 }
-
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _Z41__static_initialization_and_destruction_0ii_DAD48);
 
 sh::HDRMap::HDRMap(const char *name, float exposure) : _exposure(exposure), _name(name)
 {
     load();
 }
-
 
 float sh::HDRMap::convert01f(float v) const
 {
@@ -163,22 +165,6 @@ void sh::HDRMap::eval(float theta, float phi, float &r, float &g, float &b) cons
     r = c[0] * (1.0f / 255);
     g = c[1] * (1.0f / 255);
     b = c[2] * (1.0f / 255);
-}
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_DAD48");
-void _GLOBAL__I__ZN2sh6HDRMapC2EPKcf(void);
-void _GLOBAL__D__ZN2sh6HDRMapC2EPKcf(void);
-}
-
-void _GLOBAL__I__ZN2sh6HDRMapC2EPKcf(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN2sh6HDRMapC2EPKcf(void)
-{
-    static_init(0, 0xFFFF);
 }
 
 /* the original's .gnu.linkonce.t order */
