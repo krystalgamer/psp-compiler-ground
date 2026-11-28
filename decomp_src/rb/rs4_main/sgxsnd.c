@@ -644,7 +644,27 @@ void sgxSndSetStrBuf(int a0, int a1, int a2)
     sgxSndSetStrBufCB(a0, a1, a2, 0);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndSetStrBufCB);
+extern const char D_0010A574[];
+int sgxBmgAlloc(int, int, int);
+void sgxBmgAlignBuf(int, int, int);
+void sgxSndSetStrBufCB(int id, int a, int size, int b)
+{
+	char *s = SlotGetAt_7DD48(id, D_0010A574);
+	void (*fn)(char *, int *, int *);
+	int al, sz;
+	if (s == NULL) return;
+	if (*(short *)(s + 0x1E) >= 0) {
+		sgxBmgFree(*(short *)(s + 0x1E));
+		*(short *)(s + 0x1E) = -1;
+	}
+	if (size <= 0) return;
+	*(short *)(s + 0x1E) = sgxBmgAlloc(a, size, b);
+	if (*(short *)(s + 0x1E) < 0) return;
+	if (*(int *)(*(char **)(s + 0x8C) + 0x1C) != 0) {
+		(*(void (**)(char *, int *, int *))(*(char **)(s + 0x8C) + 0x1C))(s, &al, &sz);
+		sgxBmgAlignBuf(*(short *)(s + 0x1E), al, sz);
+	}
+}
 
 extern const char D_0010A580[];
 void sgxSndSetStrLowBufCB(int id, int cb, int a, int b) {
