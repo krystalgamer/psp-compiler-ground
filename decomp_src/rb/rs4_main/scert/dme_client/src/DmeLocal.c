@@ -225,7 +225,29 @@ int NetIGetMyIpAddress(void *out)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIGetMyNetAddress);
+typedef struct { int type; DmeLinkAddr addr; int pad[2]; unsigned int port; } DmeNetAddr;
+int NetIGetMyNetAddress(DmeNetAddr *out, char *ctx)
+{
+    unsigned short p;
+    int r;
+
+    NetIGetMyExtIP(&out->addr);
+    out->type = 4;
+    out->port = 0;
+    if (gP2PInterfacePtr != NULL)
+        out->port = *(unsigned short *)((char *)gUDPInterfacePtr + 0x84);
+    if (ctx != NULL) {
+        if (*(int *)(ctx + 0x468) == 2) {
+            p = 0;
+            r = (*(int (**)())((char *)gP2PInterfacePtr + 0x1C))(*(int *)(ctx + 0x474), &p);
+            if (r != 0) return r;
+            out->type = 6;
+            out->port |= p << 16;
+        } else
+            out->port = 0;
+    }
+    return 0;
+}
 
 void *memset(void *s, int c, unsigned int n);
 int NetIGetClientIpAddress(void *arg0, int arg1, int arg2) {
@@ -813,7 +835,28 @@ void p2p_system_change_cb(int arg0, int arg1, void *arg2) {
     M2C_FIELD(arg2, int *, 0x450) = (int) (M2C_FIELD(arg2, int *, 0x450) & ~arg0);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", p2p_host_change_cb);
+typedef struct { char *ctx; int host; void *data; } DmeHostChangeEv;
+extern void *gStreamMediaInterfacePtr;
+void p2p_host_change_cb(unsigned short host, char *ctx)
+{
+    DmeHostChangeEv ev;
+
+    if (ctx == NULL) return;
+    if (*(int *)(ctx + 0x468) == 2) {
+        ((struct { unsigned int b : 1; unsigned int r : 31; } *)(ctx + 0x450))->b = 0;
+        if (gpfHostChangeCallback != 0) {
+            ev.ctx = ctx;
+            ev.host = host;
+            ev.data = (void *)gpHostChangeCallbackData;
+            ((void (*)(DmeHostChangeEv *))gpfHostChangeCallback)(&ev);
+        }
+        return;
+    }
+    if (gStreamMediaInterfacePtr != NULL) {
+        if ((*(int (**)())((char *)gStreamMediaInterfacePtr + 0x18))(ctx))
+            (*(int (**)())((char *)gStreamMediaInterfacePtr + 0x64))(ctx, host);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", udp_resolve_cb);
 
