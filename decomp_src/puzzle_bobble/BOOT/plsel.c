@@ -544,15 +544,23 @@ int RoundSelect(void)
 }
 
 #ifdef NON_MATCHING
+/* diff 26: `d = num % 10; n = num / 10;` reproduces the original's num / 10 temporary
+ * copied into a saved register (cse reuses the % expansion's quotient), but every block's
+ * division temporaries land in v0/v1 where the original uses a1 (the subu result is not
+ * tied to the dying mfhi value).  The plain digit form is one instruction short. */
 /* Close (one insn): the original computes num / 10 into a temporary and copies it to a saved register. */
 void write_op_num(int x, int y, int num)
 {
+	int d, n;
+
 	if (num >= 10000)
 		num = 9999;
-	DrawSpriteEz(2.0f, x, y, 24.0f, 24.0f, num % 10 * 24, 0.0f, 13);
+	d = num % 10;
+	n = num / 10;
+	DrawSpriteEz(2.0f, x, y, 24.0f, 24.0f, d * 24, 0.0f, 13);
 	if (num < 10)
 		return;
-	DrawSpriteEz(2.0f, x - 20, y, 24.0f, 24.0f, num / 10 % 10 * 24, 0.0f, 13);
+	DrawSpriteEz(2.0f, x - 20, y, 24.0f, 24.0f, n % 10 * 24, 0.0f, 13);
 	if (num < 100)
 		return;
 	DrawSpriteEz(2.0f, x - 40, y, 24.0f, 24.0f, num / 100 % 10 * 24, 0.0f, 13);
