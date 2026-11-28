@@ -909,7 +909,63 @@ int NetFreeAllDataStreams(void)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetILeave);
+int NetISetMyClientReceiveBroadcast(); int NetClientIndexToClientIndexPacket(); void NetFreeClients(void *); void SendMyClientStatus(); void *NetGetConnInfo(unsigned int);
+int NetILeave(char *ci)
+{
+    DmeSendMsg m;
+    char buf[0x30];
+    unsigned char d[16];
+    char *c;
+    int i;
+
+    if (ci == NULL) return 0x17;
+    if (gObjectInterface.p138 == 0) return 0x10;
+    NetISetMyClientReceiveBroadcast(ci, 0);
+    d[0] = NetClientIndexToClientIndexPacket(*(int *)(ci + 0x404));
+    memset(&m, 0, sizeof(m));
+    m.type = 0x50;
+    m.b = -1;
+    m.a = 0x12;
+    m.c = *(int *)(ci + 0x460);
+    m.data = d;
+    m.d = 1;
+    m.dest = (int)ci;
+    NetISendMessage(&m, buf, 0);
+    NetFreeAllDataStreams();
+    NetIFreeAllObjects();
+    NetFreeClients(ci);
+    gObjectInterface.p138 = 0;
+    *(int *)((char *)gObjectInterfacePtr + 0x124) = 0;
+    *(int *)((char *)gObjectInterfacePtr + 0x128) = 0;
+    c = *(char **)(ci + 0x400);
+    if (c == NULL) return 0x17;
+    *(int *)(c + 0xC) = 2;
+    *(int *)(c + 0x10) = 0;
+    *(int *)(c + 0x14) = 0;
+    SendMyClientStatus(ci, -1);
+    for (i = 0; i < 4; i++) {
+        char *cj = NetGetConnInfo(i);
+        if (cj != NULL) {
+            NetSetSessionMasterClientIndex(cj, 0x100);
+            *(int *)(ci + 0x478) = 0;
+            *(int *)(ci + 0x47C) = 0;
+            *(int *)(ci + 0x480) = 0;
+            *(int *)(ci + 0x484) = 0;
+        }
+    }
+    InitObjectUpdateList();
+    {
+    char *g = (char *)&gObjectInterface;
+    *(int *)(g + 0x144) = 0;
+    *(int *)((char *)gObjectInterfacePtr + 0x154) = 0;
+    *(int *)(g + 0x140) = 0;
+    *(int *)(g + 0x120) = 0;
+    *(int *)((char *)gObjectInterfacePtr + 0x14C) = 0;
+    *(int *)((char *)gObjectInterfacePtr + 0x150) = 0;
+    *(int *)((char *)gObjectInterfacePtr + 0x148) = 0;
+    }
+    return 0;
+}
 
 void *NetCreateClient();
 
