@@ -35,10 +35,10 @@ int rt_p2p_host(); int rt_p2p_incoming_peer(); int rt_p2p_connect(); int rt_p2p_
 int rt_p2p_send(); int rt_p2p_send_list(); int rt_p2p_receive_broadcasts(char *, int);
 typedef struct { unsigned int ip; unsigned int port; } RtP2PAddr;
 int rt_p2p_send_to(void *p2p, RtP2PAddr addr, void *data, int len);
-int rt_p2p_set_max_peers(void *p2p, int n); int rt_p2p_set_overlay_type(); int rt_p2p_join_overlay(); int rt_p2p_quit_overlay();
+int rt_p2p_set_max_peers(void *p2p, int n); int rt_p2p_set_overlay_type(char *, unsigned char, unsigned int); int rt_p2p_join_overlay(); int rt_p2p_quit_overlay();
 int rt_p2p_quit_all_overlays(); int rt_p2p_ignore_peer_in_overlay();
 int rt_p2p_is_peer_in_overlay(char *p, unsigned char ov, unsigned short peer, int *out);
-int rt_p2p_send_overlay(); int rt_p2p_send_token_msg(char *, int, int, int, unsigned short); int rt_p2p_send_token_list_msg(); int rt_p2p_token_event_notify();
+int rt_p2p_send_overlay(); int rt_p2p_send_token_msg(char *, int, int, int, unsigned short); int rt_p2p_send_token_list_msg(char *, int, unsigned char, int, int, int, int, unsigned short); int rt_p2p_token_event_notify();
 int rt_p2p_get_latency_info(char *, unsigned short, void *);
 
 int NetUsePeerToPeer(void *arg0) {
@@ -274,7 +274,35 @@ int rt_p2p_set_max_peers(void *p2p, int n)
     return ret;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_set_overlay_type);
+int rt_p2p_set_overlay_type(char *p, unsigned char ov, unsigned int type)
+{
+    int ret;
+    short me;
+    int st;
+    struct { unsigned short t; unsigned char ov; unsigned char pad; unsigned int type; } msg;
+    RtP2PVec vec;
+
+    me = -2;
+    st = 0;
+    if (p == NULL) return 2;
+    if (ov >= *(unsigned int *)(p + 0x1D8)) return 2;
+    if (*(char **)(p + 0x188) == NULL) return 3;
+    rt_p2p_get_my_peer_status(p, &st, &me);
+    if (st != 9) return 0xD4ED;
+    ret = 2;
+    if (type < 2) {
+        *(unsigned int *)(*(char **)(p + 0x188) + ov * 24 + 0x14) = type;
+        msg.t = rt_p2p_pack_type(5, 8);
+        vec.e[0].buf = &msg;
+        msg.ov = ov;
+        msg.type = type;
+        vec.e[0].len = 8;
+        vec.total = 8;
+        vec.n = 1;
+        ret = rt_p2p_isend_list(p, 0, 0, 0xF000, &vec);
+    }
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_join_overlay);
 
