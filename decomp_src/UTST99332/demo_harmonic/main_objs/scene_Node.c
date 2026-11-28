@@ -5,6 +5,7 @@
 #define DEMO_STATICS_MATH
 #define DEMO_STATICS_IOSTREAM
 #define DEMO_STATICS_SGL
+#define SCENE_BVDATA_LITERALS
 #include "../main.hpp"
 
 /* the module's .ctors/.dtors refer to the static constructor/destructor */
@@ -55,7 +56,25 @@ bool scene::Group::calcbv(math::TransformStack &ts, sgl::BV &bv)
     return true;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node", _ZN5scene5Group17traverse_childrenERN4math14TransformStackERN3sgl2BVE);
+bool scene::Group::traverse_children(math::TransformStack &ts, sgl::BV &bv)
+{
+    sgl::BV b;
+    bool any = false;
+    b.start();
+    for (std::list<common::handle<Node> >::iterator it = _children.begin(); it != _children.end(); ++it) {
+        if (hnull(*it))
+            continue;
+        if ((*it)->calcbv(ts, bv)) {
+            b.add(bv);
+            any = true;
+        }
+    }
+    b.finish();
+    bv = b;
+    if (_bvdata.valid() && any)
+        *_bvdata._bv = b;
+    return any;
+}
 
 bool scene::Object::calcbv(math::TransformStack &ts, sgl::BV &bv)
 {
@@ -89,6 +108,33 @@ bool scene::StaticTransform::calcbv(math::TransformStack &ts, sgl::BV &bv)
     return true;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node", _ZN5scene4Mesh6calcbvERN4math14TransformStackERN3sgl2BVE);
+bool scene::Mesh::calcbv(math::TransformStack &, sgl::BV &bv)
+{
+    bv = _bvdata.get();
+    const float *h = bv._h;
+    /* STAND-IN: the original emits BVdata::get's __PRETTY_FUNCTION__ before this function's; a
+       function's own one is declared at the top of its body (finish_fname_decls), so this block-scope
+       static with its label (declared after the inlined get) reproduces the .rodata order */
+    static const char name[] __asm__("_ZZN5scene4Mesh6calcbvERN4math14TransformStackERN3sgl2BVEE19__PRETTY_FUNCTION__") =
+        "virtual bool scene::Mesh::calcbv(math::TransformStack&, sgl::BV&)";
+    SCENE_WARN(h[0] != 0.f, " *** warning ", "_BV.getHalfSize().x() != 0.f", "../lib/scene/Graph_calcbv.cpp",
+               name, 168, getName().c_str());
+    SCENE_WARN(h[1] != 0.f, " *** warning ", "_BV.getHalfSize().y() != 0.f", "../lib/scene/Graph_calcbv.cpp",
+               name, 169, getName().c_str());
+    SCENE_WARN(h[2] != 0.f, " *** warning ", "_BV.getHalfSize().z() != 0.f", "../lib/scene/Graph_calcbv.cpp",
+               name, 170, getName().c_str());
+    return true;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node", _ZN5scene6Switch6calcbvERN4math14TransformStackERN3sgl2BVE);
+bool scene::Switch::calcbv(math::TransformStack &ts, sgl::BV &bv)
+{
+    int sel = getSelected();
+    if (sel < 0 || sel >= (int)children().size())
+        return false;
+    const std::list<common::handle<Node> > &c = children();
+    std::list<common::handle<Node> >::const_iterator it = c.begin();
+    for (; sel != 0; sel--)
+        ++it;
+    common::handle<Node> child = *it;
+    return child->calcbv(ts, bv);
+}

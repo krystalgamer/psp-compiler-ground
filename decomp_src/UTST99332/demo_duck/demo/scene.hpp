@@ -331,7 +331,7 @@ public:
     void calcbv();
     void traverse(TraversalType, sgl::Frustum &, const math::matrix &, const math::matrix &, const math::matrix &,
                   const sh::VectorRGB &, float);
-    void traverse_children(math::TransformStack &, sgl::BV &);
+    bool traverse_children(math::TransformStack &, sgl::BV &);
     void traverse_children(TraversalVarStack &);
     void addChild(common::handle<Node>);
     void addChild(common::handle<Group>, common::handle<Node>);
