@@ -707,7 +707,82 @@ int rnd_gdrawStrings(int g, int font, int color, int x, int y, char *str, int le
     return w;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawGetStringsVisibleLength);
+int rnd_gdrawGetStringsVisibleLength(int font, char *str, int len, int maxw, int limit, int *outw)
+{
+    int w;
+    int h;
+    char *p;
+    char *start;
+    char *prev;
+    int total;
+    int width;
+    int n;
+    unsigned short c;
+
+    p = str;
+    start = str;
+    width = maxw;
+    total = 0;
+    w = 0;
+    while (len > 0) {
+        prev = p;
+        if (*p >= 0) {
+            c = *p;
+            p++;
+            len--;
+        } else if (((*p & 0xE0) == 0xC0) & (len >= 2)) {
+            c = (*p & 0x1F) << 6;
+            p++;
+            c += *p & 0x3F;
+            p++;
+            len -= 2;
+        } else if (((*p & 0xF0) == 0xE0) & (len >= 3)) {
+            c = (*p & 0xF) << 12;
+            p++;
+            c += (*p & 0x3F) << 6;
+            p++;
+            c += *p & 0x3F;
+            p++;
+            len -= 3;
+        } else
+            break;
+        if (c == ' ' || c == '-' || (c >= 0x4E00 && c <= 0x9FAF) || (c >= 0x31F0 && c <= 0x4DBF)
+            || (c >= 0xAC00 && c <= 0xD7AF) || (c >= 0x1100 && c <= 0x11FF) || (c >= 0x2E80 && c <= 0x31BF)
+            || (c >= 0xF900 && c <= 0xFAFF) || (c >= 0xFE30 && c <= 0xFE4F) || (c >= 0xFF00 && c <= 0xFFEF)) {
+            if (c != '-' && prev - start > 0) {
+                GUI_Graphics_getStringSize(font, start, prev - start, &w, &h);
+                if (width < w) {
+                    p = prev;
+                    break;
+                }
+                total += prev - start;
+                width -= w;
+                start = prev;
+            }
+            n = p - start;
+            GUI_Graphics_getStringSize(font, start, n, &w, &h);
+            if (width < w)
+                break;
+            total += n;
+            width -= w;
+            start = p;
+            w = 0;
+        }
+    }
+    if ((w == 0) & (p != start)) {
+        n = p - start;
+        GUI_Graphics_getStringSize(font, start, n, &w, &h);
+        if (width >= w)
+            total += n;
+    }
+    if (total == 0) {
+        if (outw != NULL)
+            *outw = w;
+        if (limit >= 0 && limit < w)
+            return p - start;
+    }
+    return total;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", D_00133564);
 
