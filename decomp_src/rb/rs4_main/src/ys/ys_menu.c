@@ -1,7 +1,5 @@
 /* lang: c++ */
 /* cflags: -Os -fno-strength-reduce -fno-merge-constants -fno-exceptions */
-/* #pragma interface: the vtables, typeinfo and implicit destructors stay in the module's asm */
-#pragma interface "rodata"
 #include "common.h"
 
 struct CtrlState {
@@ -16,7 +14,6 @@ void _memFree(void *p, const char *file, int line);
 CtrlState *ctrlState(int port);
 CtrlState *ctrlStateV(int entry);
 int gameGetEntry(void);
-extern const char D_00104DE8[];
 }
 
 struct Task;
@@ -24,7 +21,7 @@ struct Task;
 namespace Ys {
 class Object {
 public:
-	static void operator delete(void *p) { _memFree(p, D_00104DE8, 25); }
+	static void operator delete(void *p) { _memFree(p, "src/ys/ys_object.h", 25); }
 };
 
 class Task : public Object {
@@ -90,6 +87,10 @@ public:
 	LineMenu(MenuView *v, unsigned short next, unsigned short prev, int n, int sel);
 	virtual int Run();
 };
+
+/* STAND-IN: some header code deletes a LineMenu (its D0 is emitted before D1 in the original); this
+   never-emitted inline only reproduces that mark-used order. */
+inline void Delete_LineMenu(LineMenu *m) { delete m; }
 
 class TableMenu : public Menu {
 public:
@@ -298,20 +299,3 @@ int TableMenu::Run()
 }
 
 
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZN2Ys8LineMenuD0Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZN2Ys8LineMenuD1Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZN2Ys9TableMenuD1Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZN2Ys9TableMenuD0Ev); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", D_00104DE8); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZTVN2Ys9TableMenuE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", D_00104E08); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZTVN2Ys8LineMenuE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", D_00104E30); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZTVN2Ys4MenuE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", D_00104E58); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZTIN2Ys4MenuE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZTIN2Ys8LineMenuE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZTIN2Ys9TableMenuE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZTSN2Ys9TableMenuE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZTSN2Ys8LineMenuE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZTSN2Ys4MenuE); }
