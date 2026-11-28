@@ -568,10 +568,7 @@ int OptionInit(void) {
     return 0;
 }
 
-#ifdef NON_MATCHING
-/* Byte-matches (fntest) but cannot be installed while the unit is mixed: its switch's
- * jump table must sit at D_0002F428, before the float literals of the C functions that
- * precede it.  Each two-way alpha/u choice is two separate calls (crossjumped). */
+/* Each two-way alpha/u choice is two separate calls (crossjumped). */
 typedef struct {
 	int unk00, unk04, unk08, unk0C, unk10, unk14, unk18, unk1C, unk20, unk24;
 } SaveData;
@@ -716,22 +713,6 @@ int OptionMode(void)
 	SpriteKick();
 	return ret;
 }
-#else
-/* STAND-IN: OptionMode is still asm.  Its statics, in its place and numbered as in
- * the original (OptionSelect.11, RecordsFlag.12, RecordsClearFlag.13, Reconfirm.14); initialized ones only keep the numbering (their .data stays asm). */
-static void __attribute__((section(".pbskip"), unused)) OptionMode_statics(void)
-{
-	static int OptionSelect;
-	static int RecordsFlag;
-	static int RecordsClearFlag;
-	static int Reconfirm;
-}
-__asm__("D_0015402C = OptionSelect.11\n"
-	"D_00154030 = RecordsFlag.12\n"
-	"D_00154034 = RecordsClearFlag.13\n"
-	"D_00154038 = Reconfirm.14");
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", OptionMode);
-#endif
 
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", D_0002F648);
 
