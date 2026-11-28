@@ -1,7 +1,5 @@
 /* lang: c++ */
 /* cflags: -Os -fno-strength-reduce -fno-merge-constants -fno-exceptions */
-/* #pragma interface: the vtables, typeinfo and implicit destructors stay in the module's asm */
-#pragma interface "rodata"
 #include "common.h"
 
 struct Task {
@@ -9,11 +7,14 @@ struct Task {
 	int f28;
 };
 
+extern "C" void _memFree(void *p, const char *file, int line);
+
 namespace Ys {
 class TaskState;
 
 class Task {
 public:
+	static void operator delete(void *p) { _memFree(p, "src/ys/ys_object.h", 25); }
 	::Task *task_p;
 	TaskState *state_p;
 	static TaskState *_sleep_state_p;
@@ -76,8 +77,3 @@ void MenuView::Close()
 }
 
 
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu_view", _ZN2Ys8MenuViewD1Ev); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu_view", D_00104ED4); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu_view", _ZN2Ys8MenuViewD0Ev); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu_view", _ZTIN2Ys8MenuViewE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu_view", _ZTSN2Ys8MenuViewE); }

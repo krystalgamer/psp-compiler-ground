@@ -315,5 +315,3 @@ extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _
 extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZTSN2Ys9TableMenuE); }
 extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZTSN2Ys8LineMenuE); }
 extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZTSN2Ys4MenuE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZTVN2Ys8MenuViewE); }
-extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", D_00104ED0); }
