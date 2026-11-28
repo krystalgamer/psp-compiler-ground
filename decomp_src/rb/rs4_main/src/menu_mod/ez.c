@@ -132,7 +132,85 @@ int ezAnmTask(EaTask *Tp, unsigned int msg, EaArg *p, int arg)
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/ez", D_00102AC4);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/ez", ezGimTask);
+void i3dDrawImg(void *, void *, void *);
+typedef struct { char pad[8]; unsigned short w, h; } EgImg;
+typedef struct { char pad0[0x18]; void *img; char pad1c[0x8C - 0x1C]; unsigned char type; char pad8d[0xA0 - 0x8D]; } EgPic;
+EgImg *sceGimPictureGetImage(void *);
+typedef struct {
+	int prio;
+	int local;
+	unsigned int f0 : 4;
+	unsigned int res : 4;
+	unsigned int pri : 8;
+	unsigned int f16 : 4;
+	unsigned int pic : 1;
+	unsigned int f21 : 11;
+} EgArg;
+typedef struct {
+	char pad0[0x24];
+	signed char f24;
+	char pad25[3];
+	int f28;
+	int f2C;
+	void *dat;
+	char pad34[0x60 - 0x34];
+	char attr[0x30];
+	float m0[4][4];
+	char m1[0x40];
+} EgTask;
+int ezGimTask(EgTask *Tp, unsigned int msg, EgArg *p, int arg)
+{
+	int pic, res, local;
+	char *d;
+	EgPic *e;
+	EgImg *g;
+	switch (msg) {
+	case 0:
+		if (Tp == NULL)
+			consPrintf(&D_00102A88, &D_00102AA4, 0xB2, "ezGimTask", &D_00102AC4);
+		Tp->f28 = -1;
+		Tp->f24 = p ? p->pri : 0;
+		Tp->f2C = p ? p->prio : 0;
+		copUnitMat(Tp->m0);
+		copUnitMat(Tp->m1);
+		copInitAttr(Tp->attr);
+		pic = p ? p->pic : 0;
+		res = p ? p->res : 0;
+		local = p ? p->local : 0;
+		d = (char *)resGetDatLocal(res, local);
+		Tp->dat = d;
+		{
+			EgPic *tbl = (EgPic *)((((int)*(void **)(d + 0x10) + 15) & ~15) + 16);
+			e = &tbl[pic];
+		}
+		g = sceGimPictureGetImage(e->type == 3 ? e->img : NULL);
+		{
+			int h = g->h;
+			int w = g->w;
+			Tp->m0[3][0] = (480 - w) / 2;
+			Tp->m0[3][1] = (272 - h) / 2;
+		}
+		return (int)Tp;
+	case 1:
+		Tp->dat = NULL;
+		return 0;
+	case 2:
+		copLetMat(Tp->m0, Tp->m1);
+		return 0;
+	case 3:
+		i3dDrawImg(Tp->dat, Tp->m1, Tp->attr);
+		return 0;
+	case 4:
+		return (int)Tp;
+	case 0x5C:
+		Tp->f28 = 0;
+		return 0;
+	case 0x5D:
+		Tp->f28 = -1;
+		return 0;
+	}
+	return taskDefaultMsg(Tp, msg, p, arg);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/ez", ezMenuTask);
 
