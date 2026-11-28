@@ -70,8 +70,8 @@ void SetSpriteColorRGBA(int r, int g, int b, int a);
 int se_play(int no);
 void PutNumeric(int z, int x, int y, int num, int digits);
 int Get2Dim(int x, int a, int b, int c, int d);
-int SpriteDraw(int no, float z, int color, float x0, float y0, float u0, float v0, float x1, float y1, float u1, float v1, float x2, float y2, float u2, float v2, float x3, float y3, float u3, float v3);
-int DrawSpritePt4(int no, float z, int color, float x0, float y0, float u0, float v0, float x1, float y1, float u1, float v1, float x2, float y2, float u2, float v2, float x3, float y3, float u3, float v3);
+int SpriteDraw(int no, int color, float z, float x0, float y0, float u0, float v0, float x1, float y1, float u1, float v1, float x2, float y2, float u2, float v2, float x3, float y3, float u3, float v3);
+int DrawSpritePt4(int no, int color, float z, float x0, float y0, float u0, float v0, float x1, float y1, float u1, float v1, float x2, float y2, float u2, float v2, float x3, float y3, float u3, float v3);
 int SpriteDrawC(float z, int x, int y, const SPRDATA *p);
 int EndressValueInit(int, int, int);
 void SpriteSetFader(float);
@@ -794,7 +794,7 @@ void DrawCharcterFlip(int z, int x, int y, PARTZ *tbl, int idx)
 {
 	PARTZ *p = (PARTZ *)(idx * sizeof(PARTZ) + (int)tbl);
 
-	SpriteDraw(p->no, z, -1, x, y, p->u + p->w, p->v, x + p->w, y, p->u, p->v, x, y + p->h, p->u + p->w, p->v + p->h, x + p->w, y + p->h, p->u, p->v + p->h);
+	SpriteDraw(p->no, -1, z, x, y, p->u + p->w, p->v, x + p->w, y, p->u, p->v, x, y + p->h, p->u + p->w, p->v + p->h, x + p->w, y + p->h, p->u, p->v + p->h);
 }
 #else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DrawCharcterFlip);
@@ -806,7 +806,7 @@ void DrawCharcter2(int z, int x, int y, PARTZ *tbl, int idx)
 {
 	PARTZ *p = (PARTZ *)(idx * sizeof(PARTZ) + (int)tbl);
 
-	DrawSpritePt4(p->no, z, -1, x, y, p->u, p->v, x + p->w, y, p->u + p->w, p->v, x, y + p->h, p->u, p->v + p->h, x + p->w, y + p->h, p->u + p->w, p->v + p->h);
+	DrawSpritePt4(p->no, -1, z, x, y, p->u, p->v, x + p->w, y, p->u + p->w, p->v, x, y + p->h, p->u, p->v + p->h, x + p->w, y + p->h, p->u + p->w, p->v + p->h);
 }
 #else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DrawCharcter2);
