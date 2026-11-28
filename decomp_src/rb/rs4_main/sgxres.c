@@ -367,7 +367,18 @@ int sgxResGetWaveCount(int id) {
     return *(int *)(p + 0x30);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResIsWaveLoop);
+int sgxResIsWaveLoop(int id, int idx) {
+    char *p = ResGetSlot(id, SLOT_NAME("IsWaveLoop"));
+    char *t;
+    int ret;
+    if (p == NULL || (t = *(char **)(p + 0x24)) == NULL || idx < 0 || *(int *)(p + 0x30) - 1 < idx) {
+        ret = 0;
+    } else {
+        char *w = t + idx * 56 + 8;
+        ret = *(int *)(w + 0x24) >= 0;
+    }
+    return ret;
+}
 
 int sgxResGetWaveInfo(int id, int idx, int *out) {
     char *p = ResGetSlot(id, SLOT_NAME("GetWaveInfo"));
